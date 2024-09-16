@@ -11,6 +11,19 @@
 		B2F8F33D2C97BB3E00B9618E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2F8F33C2C97BB3E00B9618E /* Assets.xcassets */; };
 		B2F8F3402C97BB3E00B9618E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2F8F33F2C97BB3E00B9618E /* Preview Assets.xcassets */; };
 		B2F8F3472C97BB5500B9618E /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F3462C97BB5500B9618E /* RootView.swift */; };
+		B2F8F34A2C97BC7700B9618E /* RecapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F3492C97BC7700B9618E /* RecapView.swift */; };
+		B2F8F34C2C97BC7F00B9618E /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F34B2C97BC7F00B9618E /* MapView.swift */; };
+		B2F8F34E2C97BC8A00B9618E /* AIAssistantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F34D2C97BC8A00B9618E /* AIAssistantView.swift */; };
+		B2F8F3502C97BC9600B9618E /* ItineraryPlanningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F34F2C97BC9600B9618E /* ItineraryPlanningView.swift */; };
+		B2F8F3532C97BCAB00B9618E /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F3522C97BCAB00B9618E /* User.swift */; };
+		B2F8F3552C97BCBB00B9618E /* Trip.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F3542C97BCBB00B9618E /* Trip.swift */; };
+		B2F8F3572C97BCC400B9618E /* POI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F3562C97BCC400B9618E /* POI.swift */; };
+		B2F8F3592C97BCD400B9618E /* Restaurant.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F3582C97BCD400B9618E /* Restaurant.swift */; };
+		B2F8F35B2C97BD2200B9618E /* RestStop.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F35A2C97BD2200B9618E /* RestStop.swift */; };
+		B2F8F35D2C97BD3000B9618E /* GasStation.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F35C2C97BD3000B9618E /* GasStation.swift */; };
+		B2F8F3602C97BD6200B9618E /* FirebaseViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F35F2C97BD6200B9618E /* FirebaseViewModel.swift */; };
+		B2F8F3622C97BD8900B9618E /* AIAssistantViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F3612C97BD8900B9618E /* AIAssistantViewModel.swift */; };
+		B2F8F3642C97BD9B00B9618E /* UserViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F3632C97BD9B00B9618E /* UserViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,6 +32,19 @@
 		B2F8F33C2C97BB3E00B9618E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B2F8F33F2C97BB3E00B9618E /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		B2F8F3462C97BB5500B9618E /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		B2F8F3492C97BC7700B9618E /* RecapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecapView.swift; sourceTree = "<group>"; };
+		B2F8F34B2C97BC7F00B9618E /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
+		B2F8F34D2C97BC8A00B9618E /* AIAssistantView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIAssistantView.swift; sourceTree = "<group>"; };
+		B2F8F34F2C97BC9600B9618E /* ItineraryPlanningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItineraryPlanningView.swift; sourceTree = "<group>"; };
+		B2F8F3522C97BCAB00B9618E /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+		B2F8F3542C97BCBB00B9618E /* Trip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Trip.swift; sourceTree = "<group>"; };
+		B2F8F3562C97BCC400B9618E /* POI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = POI.swift; sourceTree = "<group>"; };
+		B2F8F3582C97BCD400B9618E /* Restaurant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Restaurant.swift; sourceTree = "<group>"; };
+		B2F8F35A2C97BD2200B9618E /* RestStop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestStop.swift; sourceTree = "<group>"; };
+		B2F8F35C2C97BD3000B9618E /* GasStation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GasStation.swift; sourceTree = "<group>"; };
+		B2F8F35F2C97BD6200B9618E /* FirebaseViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseViewModel.swift; sourceTree = "<group>"; };
+		B2F8F3612C97BD8900B9618E /* AIAssistantViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIAssistantViewModel.swift; sourceTree = "<group>"; };
+		B2F8F3632C97BD9B00B9618E /* UserViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,6 +79,9 @@
 			children = (
 				B2F8F3362C97BB3C00B9618E /* NomadApp.swift */,
 				B2F8F3462C97BB5500B9618E /* RootView.swift */,
+				B2F8F3482C97BC6400B9618E /* Views */,
+				B2F8F3512C97BC9900B9618E /* Models */,
+				B2F8F35E2C97BD4B00B9618E /* ViewModels */,
 				B2F8F33C2C97BB3E00B9618E /* Assets.xcassets */,
 				B2F8F33E2C97BB3E00B9618E /* Preview Content */,
 			);
@@ -65,6 +94,40 @@
 				B2F8F33F2C97BB3E00B9618E /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		B2F8F3482C97BC6400B9618E /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B2F8F3492C97BC7700B9618E /* RecapView.swift */,
+				B2F8F34B2C97BC7F00B9618E /* MapView.swift */,
+				B2F8F34D2C97BC8A00B9618E /* AIAssistantView.swift */,
+				B2F8F34F2C97BC9600B9618E /* ItineraryPlanningView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B2F8F3512C97BC9900B9618E /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				B2F8F3522C97BCAB00B9618E /* User.swift */,
+				B2F8F3542C97BCBB00B9618E /* Trip.swift */,
+				B2F8F3562C97BCC400B9618E /* POI.swift */,
+				B2F8F3582C97BCD400B9618E /* Restaurant.swift */,
+				B2F8F35A2C97BD2200B9618E /* RestStop.swift */,
+				B2F8F35C2C97BD3000B9618E /* GasStation.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		B2F8F35E2C97BD4B00B9618E /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				B2F8F35F2C97BD6200B9618E /* FirebaseViewModel.swift */,
+				B2F8F3612C97BD8900B9618E /* AIAssistantViewModel.swift */,
+				B2F8F3632C97BD9B00B9618E /* UserViewModel.swift */,
+			);
+			path = ViewModels;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -137,8 +200,21 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B2F8F35D2C97BD3000B9618E /* GasStation.swift in Sources */,
+				B2F8F3592C97BCD400B9618E /* Restaurant.swift in Sources */,
+				B2F8F3602C97BD6200B9618E /* FirebaseViewModel.swift in Sources */,
 				B2F8F3472C97BB5500B9618E /* RootView.swift in Sources */,
+				B2F8F3572C97BCC400B9618E /* POI.swift in Sources */,
+				B2F8F3502C97BC9600B9618E /* ItineraryPlanningView.swift in Sources */,
+				B2F8F34C2C97BC7F00B9618E /* MapView.swift in Sources */,
+				B2F8F34E2C97BC8A00B9618E /* AIAssistantView.swift in Sources */,
+				B2F8F3552C97BCBB00B9618E /* Trip.swift in Sources */,
+				B2F8F34A2C97BC7700B9618E /* RecapView.swift in Sources */,
+				B2F8F35B2C97BD2200B9618E /* RestStop.swift in Sources */,
 				B2F8F3372C97BB3C00B9618E /* NomadApp.swift in Sources */,
+				B2F8F3532C97BCAB00B9618E /* User.swift in Sources */,
+				B2F8F3642C97BD9B00B9618E /* UserViewModel.swift in Sources */,
+				B2F8F3622C97BD8900B9618E /* AIAssistantViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
