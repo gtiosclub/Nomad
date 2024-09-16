@@ -8,11 +8,13 @@
 import SwiftUI
 
 struct ItineraryPlanningView: View {
+    @State var showText: Bool = false
     var body: some View {
         Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
         Button("Start Planning") {
-            print("Let's Go!")
+            showText = true
         }
+        showText ? Text("Let's Go!!") : Text("")
     }
 }
 
