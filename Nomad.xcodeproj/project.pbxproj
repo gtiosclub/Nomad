@@ -24,6 +24,7 @@
 		B2F8F3602C97BD6200B9618E /* FirebaseViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F35F2C97BD6200B9618E /* FirebaseViewModel.swift */; };
 		B2F8F3622C97BD8900B9618E /* AIAssistantViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F3612C97BD8900B9618E /* AIAssistantViewModel.swift */; };
 		B2F8F3642C97BD9B00B9618E /* UserViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F3632C97BD9B00B9618E /* UserViewModel.swift */; };
+		B2F8F3672C97BE2E00B9618E /* ChatGPTSwift in Frameworks */ = {isa = PBXBuildFile; productRef = B2F8F3662C97BE2E00B9618E /* ChatGPTSwift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -52,6 +53,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B2F8F3672C97BE2E00B9618E /* ChatGPTSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -146,6 +148,9 @@
 			dependencies = (
 			);
 			name = Nomad;
+			packageProductDependencies = (
+				B2F8F3662C97BE2E00B9618E /* ChatGPTSwift */,
+			);
 			productName = Nomad;
 			productReference = B2F8F3332C97BB3C00B9618E /* Nomad.app */;
 			productType = "com.apple.product-type.application";
@@ -174,6 +179,9 @@
 				Base,
 			);
 			mainGroup = B2F8F32A2C97BB3C00B9618E;
+			packageReferences = (
+				B2F8F3652C97BE2E00B9618E /* XCRemoteSwiftPackageReference "ChatGPTSwift" */,
+			);
 			productRefGroup = B2F8F3342C97BB3C00B9618E /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -420,6 +428,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B2F8F3652C97BE2E00B9618E /* XCRemoteSwiftPackageReference "ChatGPTSwift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/alfianlosari/ChatGPTSwift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.3.3;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B2F8F3662C97BE2E00B9618E /* ChatGPTSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B2F8F3652C97BE2E00B9618E /* XCRemoteSwiftPackageReference "ChatGPTSwift" */;
+			productName = ChatGPTSwift;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B2F8F32B2C97BB3C00B9618E /* Project object */;
 }
