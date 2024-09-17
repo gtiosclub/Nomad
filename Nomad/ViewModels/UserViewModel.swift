@@ -6,7 +6,9 @@
 //
 
 import Foundation
+import MapKit
 
 class UserViewModel: ObservableObject {
     
 }
+
