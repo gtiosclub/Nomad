@@ -1,7 +1,7 @@
 # Nomad
 Fall 2024 Project
 
-[# Figma]([url](https://www.figma.com/design/VVrrXAWspLEOhcyuR1ehLV/General-Meeting-Mockup?node-id=2058-9&node-type=canvas&t=FXT8dot8J4nS2Bi5-0))
+[**# Figma Link**]([https://www.figma.com/design/VVrrXAWspLEOhcyuR1ehLV/General-Meeting-Mockup?node-id=2058-9&node-type=canvas&t=FXT8dot8J4nS2Bi5-0])
 
 # Subteams
 - Navigation: Jaehun, Karen, Rudra, Aryan, Ira
