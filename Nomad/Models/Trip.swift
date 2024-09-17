@@ -8,5 +8,9 @@
 import Foundation
 
 struct Trip {
-    
+    var stops: [POI]
+    var start_location: POI
+    var end_location: POI
+    var start_date: String
+    var end_date: String
 }

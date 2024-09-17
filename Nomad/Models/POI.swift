@@ -12,4 +12,5 @@ protocol POI {
     var name: String { get set }
     
     mutating func setAddress(newAddress: String)
+    mutating func setName(newName: String)
 }

@@ -1,19 +1,20 @@
 //
-//  RestStop.swift
+//  Activity.swift
 //  Nomad
 //
-//  Created by Nicholas Candello on 9/15/24.
+//  Created by Austin Huguenard on 9/17/24.
 //
 
-import Foundation
-
-struct RestStop: POI {
+struct Activity: POI {
     var address: String
     var name: String
+    var rating: Double?
+    var website: String?
     
-    init(address: String, name: String) {
+    init(address: String, name: String, rating: Double? = nil) {
         self.address = address
         self.name = name
+        self.rating = rating
     }
     
     mutating func setAddress(newAddress: String) {
@@ -24,4 +25,3 @@ struct RestStop: POI {
         self.name = newName
     }
 }
-
