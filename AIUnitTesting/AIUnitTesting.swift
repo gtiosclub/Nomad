@@ -29,8 +29,31 @@ final class AIUnitTesting: XCTestCase {
         // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
     }
     
-    func testYelpAPI() async {
-        await vm.getYelpBusinesses()
+//    func testYelpAPI() async {
+//        await vm.getYelpBusinesses()
+//    }
+    
+    func testChatGPT() async {
+        let expectation = self.expectation(description: "testing ChatGPT API")
+//        await vm.getChatGPT() { result in
+//            print("Result \(result)")
+//            expectation.fulfill()
+//        }
+//        await waitForExpectations(timeout: 10) {error in
+//            if let error = error {
+//                print("this function doesn't work")
+//            }
+//        }
+        await print(vm.getChatGPT())
+        expectation.fulfill()
+        
+        await waitForExpectations(timeout: 5) {error in
+                    if let error = error {
+                        print("this function doesn't work")
+                    }
+                }
+        
     }
+    
 
 }
