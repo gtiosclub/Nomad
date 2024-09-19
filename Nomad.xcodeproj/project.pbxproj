@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		48BBC2D22C9CE5070093D9D0 /* DetailRecapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48BBC2D12C9CE5070093D9D0 /* DetailRecapView.swift */; };
 		8419ED6C2C99536E003AD5C2 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED6B2C99536E003AD5C2 /* FirebaseAnalytics */; };
 		8419ED6E2C99536E003AD5C2 /* FirebaseAnalyticsOnDeviceConversion in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED6D2C99536E003AD5C2 /* FirebaseAnalyticsOnDeviceConversion */; };
 		8419ED702C99536E003AD5C2 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED6F2C99536E003AD5C2 /* FirebaseAnalyticsWithoutAdIdSupport */; };
@@ -51,6 +52,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		48BBC2D12C9CE5070093D9D0 /* DetailRecapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRecapView.swift; sourceTree = "<group>"; };
 		B2F8F3332C97BB3C00B9618E /* Nomad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Nomad.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2F8F3362C97BB3C00B9618E /* NomadApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NomadApp.swift; sourceTree = "<group>"; };
 		B2F8F33C2C97BB3E00B9618E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -148,6 +150,7 @@
 			isa = PBXGroup;
 			children = (
 				B2F8F3492C97BC7700B9618E /* RecapView.swift */,
+				48BBC2D12C9CE5070093D9D0 /* DetailRecapView.swift */,
 				B2F8F34B2C97BC7F00B9618E /* MapView.swift */,
 				B2F8F34D2C97BC8A00B9618E /* AIAssistantView.swift */,
 				B2F8F34F2C97BC9600B9618E /* ItineraryPlanningView.swift */,
@@ -287,6 +290,7 @@
 				B2F8F34C2C97BC7F00B9618E /* MapView.swift in Sources */,
 				B2F8F34E2C97BC8A00B9618E /* AIAssistantView.swift in Sources */,
 				B2F8F3552C97BCBB00B9618E /* Trip.swift in Sources */,
+				48BBC2D22C9CE5070093D9D0 /* DetailRecapView.swift in Sources */,
 				B2F8F34A2C97BC7700B9618E /* RecapView.swift in Sources */,
 				B2F8F35B2C97BD2200B9618E /* RestStop.swift in Sources */,
 				B2F8F3372C97BB3C00B9618E /* NomadApp.swift in Sources */,
