@@ -38,4 +38,26 @@ struct Trip {
             removedStops.contains(where: { $0.name == stop.name })
         }
     }
+    
+    func getStops() -> [POI] {
+        return stops
+    }
+
+    func getStartLocation() -> POI {
+        return start_location
+    }
+
+    func getEndLocation() -> POI {
+        return end_location
+    }
+
+    func getStartDate() -> String? {
+        return start_date
+    }
+
+    func getEndDate() -> String? {
+        return end_date
+    }
+
+    
 }
