@@ -29,9 +29,9 @@ final class AIUnitTesting: XCTestCase {
         // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
     }
     
-//    func testYelpAPI() async {
-//        await vm.getYelpBusinesses()
-//    }
+    func testFetchBusinesses() async {
+        await vm.fetchBusinesses()
+    }
     
     func testChatGPT() async {
         let expectation = self.expectation(description: "testing ChatGPT API")
@@ -54,6 +54,4 @@ final class AIUnitTesting: XCTestCase {
                 }
         
     }
-    
-
 }
