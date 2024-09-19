@@ -30,7 +30,6 @@
 		8419ED942C99536E003AD5C2 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED932C99536E003AD5C2 /* FirebaseStorage */; };
 		8419ED962C99536E003AD5C2 /* FirebaseStorageCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED952C99536E003AD5C2 /* FirebaseStorageCombine-Community */; };
 		8419ED982C99536E003AD5C2 /* FirebaseVertexAI-Preview in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED972C99536E003AD5C2 /* FirebaseVertexAI-Preview */; };
-		8419ED9A2C9A2E67003AD5C2 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8419ED992C9A2E67003AD5C2 /* GoogleService-Info.plist */; };
 		B2F8F3372C97BB3C00B9618E /* NomadApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F3362C97BB3C00B9618E /* NomadApp.swift */; };
 		B2F8F33D2C97BB3E00B9618E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2F8F33C2C97BB3E00B9618E /* Assets.xcassets */; };
 		B2F8F3402C97BB3E00B9618E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2F8F33F2C97BB3E00B9618E /* Preview Assets.xcassets */; };
@@ -52,7 +51,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		8419ED992C9A2E67003AD5C2 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../../../../Downloads/GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B2F8F3332C97BB3C00B9618E /* Nomad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Nomad.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2F8F3362C97BB3C00B9618E /* NomadApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NomadApp.swift; sourceTree = "<group>"; };
 		B2F8F33C2C97BB3E00B9618E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -133,7 +131,6 @@
 				B2F8F3512C97BC9900B9618E /* Models */,
 				B2F8F35E2C97BD4B00B9618E /* ViewModels */,
 				B2F8F33C2C97BB3E00B9618E /* Assets.xcassets */,
-				8419ED992C9A2E67003AD5C2 /* GoogleService-Info.plist */,
 				B2F8F33E2C97BB3E00B9618E /* Preview Content */,
 			);
 			path = Nomad;
@@ -271,7 +268,6 @@
 			files = (
 				B2F8F3402C97BB3E00B9618E /* Preview Assets.xcassets in Resources */,
 				B2F8F33D2C97BB3E00B9618E /* Assets.xcassets in Resources */,
-				8419ED9A2C9A2E67003AD5C2 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
