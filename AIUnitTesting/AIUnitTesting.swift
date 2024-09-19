@@ -32,4 +32,26 @@ final class AIUnitTesting: XCTestCase {
     func testFetchBusinesses() async {
         await vm.fetchBusinesses()
     }
+    
+    func testChatGPT() async {
+        let expectation = self.expectation(description: "testing ChatGPT API")
+//        await vm.getChatGPT() { result in
+//            print("Result \(result)")
+//            expectation.fulfill()
+//        }
+//        await waitForExpectations(timeout: 10) {error in
+//            if let error = error {
+//                print("this function doesn't work")
+//            }
+//        }
+        await print(vm.getChatGPT())
+        expectation.fulfill()
+        
+        await waitForExpectations(timeout: 5) {error in
+                    if let error = error {
+                        print("this function doesn't work")
+                    }
+                }
+        
+    }
 }

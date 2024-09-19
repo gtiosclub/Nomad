@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import ChatGPTSwift
 
 class AIAssistantViewModel: ObservableObject {
     
@@ -31,6 +32,20 @@ class AIAssistantViewModel: ObservableObject {
         } catch {
             print("Error fetching data: \(error.localizedDescription)")
         }
+    }
+  
+    func getChatGPT() async -> (String)  {
+        let apiKey = ChatGPTAPI(apiKey: "*Put api key*")
+        
+        let question:String = "where is Atlanta?"
+        var result = ""
+        do {
+            let response = try await apiKey.sendMessage(text: question)
+            return response
+        } catch {
+            print(error.localizedDescription)
+        }
+        return ""
     }
 }
  
