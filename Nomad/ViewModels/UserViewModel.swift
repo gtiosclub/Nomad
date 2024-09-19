@@ -11,5 +11,10 @@ import MapKit
 class UserViewModel: ObservableObject {
     @Published var user: User?
     @Published var current_trip: Trip?
+    
+    //take in POI and add that to a trip within a user
+    func addStop(stop: POI) {
+        current_trip?.addStops(additionalStops: [stop])
+    }
 }
 
