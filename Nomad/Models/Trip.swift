@@ -8,11 +8,14 @@
 import Foundation
 
 struct Trip {
+    var id: String
     var stops: [POI]
     var start_location: POI
     var end_location: POI
     var start_date: String?
     var end_date: String?
+    var created_date: String
+    var modified_date: String
     
     init(stops: [POI], start_location: POI, end_location: POI, start_date: String? = nil, end_date: String? = nil) {
         self.stops = stops
