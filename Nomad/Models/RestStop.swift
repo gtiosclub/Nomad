@@ -23,5 +23,13 @@ struct RestStop: POI {
     mutating func setName(newName: String) {
         self.name = newName
     }
+    
+    func getAddress() -> String {
+        return address
+    }
+    
+    func getName() -> String {
+        return name
+    }
 }
 
