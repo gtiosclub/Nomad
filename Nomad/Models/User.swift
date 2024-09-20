@@ -10,4 +10,9 @@ import Foundation
 struct User: Identifiable {
     var id: String
     var trips: [Trip]
+    
+    mutating func addTrip(trip: Trip){
+        self.trips.append(trip)
+    }
 }
+
