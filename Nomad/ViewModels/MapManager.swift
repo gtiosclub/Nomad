@@ -15,6 +15,8 @@ class MapManager: ObservableObject {
     @Published var route: MKRoute?
     @Published var source = MKPlacemark(coordinate: CLLocationCoordinate2D())
     @Published var destination =  MKPlacemark(coordinate: CLLocationCoordinate2D())
+    @Published var bearing: Double = 0.0
+    @Published var mapType: MapTypes = .defaultMap
     
     // Source Setters
     func setSource(coord: CLLocationCoordinate2D) {
