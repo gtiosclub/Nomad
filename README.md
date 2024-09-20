@@ -2,6 +2,7 @@
 Fall 2024 Project
 
 Tech Leads: Nick Candello, Rik Roy
+
 Senior Developers: Austin Huguenard, Datta Kansal, Shaunak Karnik
 
 # Design Info
