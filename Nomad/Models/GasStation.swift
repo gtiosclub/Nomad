@@ -7,6 +7,6 @@
 
 import Foundation
 
-struct GasStation: POI {
+struct GasStation {
     
 }
