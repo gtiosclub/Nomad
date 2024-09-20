@@ -18,14 +18,14 @@ struct Trip {
     var modified_date: String
 
     
-    init(id: String, stops: [POI], start_location: POI, end_location: POI, start_date: String? = nil, end_date: String? = nil) {
+    init(start_location: POI, end_location: POI, start_date: String? = nil, end_date: String? = nil, stops: [POI]? = []) {
+        self.stops = stops ?? []
         self.id = id
-        self.stops = stops
         self.start_location = start_location
         self.end_location = end_location
         self.start_date = start_date
         self.end_date = end_date
-        
+        self.id = UUID().uuidString        
         self.created_date = Trip.getCurrentDateTime()
         self.modified_date = self.created_date
     }
