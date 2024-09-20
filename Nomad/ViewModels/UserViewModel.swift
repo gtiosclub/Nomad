@@ -20,7 +20,11 @@ class UserViewModel: ObservableObject {
         if var user = user {
             user.addTrip(trip: trip)
         }
+    }
         
+    //take in POI and add that to a trip within a user
+    func addStop(stop: POI) {
+        current_trip?.addStops(additionalStops: [stop])
     }
 }
 
