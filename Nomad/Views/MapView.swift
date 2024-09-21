@@ -17,8 +17,8 @@ struct MapView: View {
     )
     
     private let destinationCoordinates = CLLocationCoordinate2D(
-        latitude: 40.849761,
-        longitude: 14.263364
+        latitude: 33.748997,
+        longitude: -84.387985
     )
     
     var body: some View {
