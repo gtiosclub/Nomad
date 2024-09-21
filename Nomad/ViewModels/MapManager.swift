@@ -20,6 +20,10 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var destination =  MKPlacemark(coordinate: CLLocationCoordinate2D())
     @Published var motion = Motion()
     
+    // Map State/Settings
+    @Published var mapPosition: MapCameraPosition = .userLocation(fallback: .camera(MapCamera(centerCoordinate: CLLocationCoordinate2D(latitude: .zero, longitude: .zero), distance: 0)))
+    @Published var bearing: Double = 0.0
+    @Published var mapType: MapTypes = .defaultMap
     
     override init() {
         super.init()
@@ -48,7 +52,6 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         print("Failed to find user's location: \(error.localizedDescription)")
     }
     
-    
     // Source Setters
     func setSource(coord: CLLocationCoordinate2D) {
         self.source = MKPlacemark(coordinate: coord)
@@ -66,6 +69,10 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     // Directions
     func getDirections() {
+        self.route = nil
+        
+        // Check if there is a selected result
+        
         // Create and configure the request
         let request = MKDirections.Request()
         request.source = MKMapItem(placemark: source)
