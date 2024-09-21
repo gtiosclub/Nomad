@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Trip {
+struct Trip: Identifiable {
     var id: String
     var stops: [POI]
     var start_location: POI
@@ -20,7 +20,6 @@ struct Trip {
     
     init(start_location: POI, end_location: POI, start_date: String? = nil, end_date: String? = nil, stops: [POI]? = []) {
         self.stops = stops ?? []
-        self.id = id
         self.start_location = start_location
         self.end_location = end_location
         self.start_date = start_date

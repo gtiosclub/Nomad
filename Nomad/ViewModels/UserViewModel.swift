@@ -30,5 +30,9 @@ class UserViewModel: ObservableObject {
     func addStop(stop: POI) {
         current_trip?.addStops(additionalStops: [stop])
     }
+    
+    func getTrips() -> [Trip] {
+        user?.trips ?? []
+    }
 }
 
