@@ -1,12 +1,16 @@
 # Nomad
 Fall 2024 Project
 
+Tech Leads: Nick Candello, Rik Roy
+
+Senior Developers: Austin Huguenard, Datta Kansal, Shaunak Karnik
+
 # Design Info
 Figma Link: https://www.figma.com/design/VVrrXAWspLEOhcyuR1ehLV/General-Meeting-Mockup?node-id=2058-9&node-type=canvas&t=FXT8dot8J4nS2Bi5-0
 
 # Subteams
-- Navigation: Jaehun, Karen, Rudra, Aryan, Ira
-- Itinerary Planning: Neel, Brayden, Vignesh, Lingchen, Amber
+- Navigation: Jaehun, Karen, Rudra, Aryan, Ira, Vignesh
+- Itinerary Planning: Neel, Brayden, Lingchen, Amber, Dahyun
 - AI Assistant: Ganden, Connor, Yingqi, Ethan
 - Recap: Angela, Daira, Nithyaa
 - Firebase: Shlok, Alec, Vidhi
