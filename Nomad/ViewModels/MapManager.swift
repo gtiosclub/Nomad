@@ -7,6 +7,7 @@
 
 import Foundation
 import MapKit
+import SwiftUI
 
 class MapManager: ObservableObject {
     
@@ -15,6 +16,10 @@ class MapManager: ObservableObject {
     @Published var route: MKRoute?
     @Published var source = MKPlacemark(coordinate: CLLocationCoordinate2D())
     @Published var destination =  MKPlacemark(coordinate: CLLocationCoordinate2D())
+    
+    // Map State/Settings
+    @Published var mapPosition: MapCameraPosition = .userLocation(fallback: .camera(MapCamera(centerCoordinate: CLLocationCoordinate2D(latitude: .zero, longitude: .zero), distance: 0)))
+    
     @Published var bearing: Double = 0.0
     @Published var mapType: MapTypes = .defaultMap
     

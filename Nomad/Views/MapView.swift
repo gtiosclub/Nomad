@@ -21,10 +21,11 @@ struct MapView: View {
         longitude: 14.263364
     )
     
+    
     var body: some View {
         ZStack {
             // All views within Map
-            Map {
+            Map(position: $mapManager.mapPosition) {
                 // Adding the marker for the starting point
                 Marker("Start", coordinate: mapManager.source.coordinate)
                 Marker("Finish", coordinate: mapManager.destination.coordinate)
