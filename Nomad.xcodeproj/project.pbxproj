@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		599F66172C9CE4F90025A8F8 /* Motion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 599F66162C9CE4F90025A8F8 /* Motion.swift */; };
+		B298EB552C98F9DE0078696A /* MapManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B298EB542C98F9DE0078696A /* MapManager.swift */; };
 		48974B842C9A438B0057B073 /* Activity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B832C9A43880057B073 /* Activity.swift */; };
 		48974B862C9A44A30057B073 /* Hotel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B852C9A449F0057B073 /* Hotel.swift */; };
 		8419ED6C2C99536E003AD5C2 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED6B2C99536E003AD5C2 /* FirebaseAnalytics */; };
@@ -58,6 +60,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		599F66162C9CE4F90025A8F8 /* Motion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Motion.swift; sourceTree = "<group>"; };
+		B298EB542C98F9DE0078696A /* MapManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapManager.swift; sourceTree = "<group>"; };
 		48974B832C9A43880057B073 /* Activity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Activity.swift; sourceTree = "<group>"; };
 		48974B852C9A449F0057B073 /* Hotel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hotel.swift; sourceTree = "<group>"; };
 		B2154C6C2C9D01BA00A6F238 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
@@ -192,6 +196,7 @@
 				B2F8F3582C97BCD400B9618E /* Restaurant.swift */,
 				B2F8F35A2C97BD2200B9618E /* RestStop.swift */,
 				B2F8F35C2C97BD3000B9618E /* GasStation.swift */,
+				599F66162C9CE4F90025A8F8 /* Motion.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -202,6 +207,7 @@
 				B2F8F35F2C97BD6200B9618E /* FirebaseViewModel.swift */,
 				B2154C6F2C9D02C900A6F238 /* MapManager.swift */,
 				B2F8F3612C97BD8900B9618E /* AIAssistantViewModel.swift */,
+				B298EB542C98F9DE0078696A /* MapManager.swift */,
 				B2F8F3632C97BD9B00B9618E /* UserViewModel.swift */,
 			);
 			path = ViewModels;
@@ -308,13 +314,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				599F66172C9CE4F90025A8F8 /* Motion.swift in Sources */,
 				B2154CD02C9E2DF400A6F238 /* CompassView.swift in Sources */,
 				B2154CD22C9E319C00A6F238 /* RecenterMapView.swift in Sources */,
 				B2F8F35D2C97BD3000B9618E /* GasStation.swift in Sources */,
 				B2F8F3592C97BCD400B9618E /* Restaurant.swift in Sources */,
 				B2F8F3602C97BD6200B9618E /* FirebaseViewModel.swift in Sources */,
 				B2F8F3472C97BB5500B9618E /* RootView.swift in Sources */,
-				B2154C702C9D02C900A6F238 /* MapManager.swift in Sources */,
+				B298EB552C98F9DE0078696A /* MapManager.swift in Sources */,
 				B2F8F3572C97BCC400B9618E /* POI.swift in Sources */,
 				B2F8F3502C97BC9600B9618E /* ItineraryPlanningView.swift in Sources */,
 				48974B842C9A438B0057B073 /* Activity.swift in Sources */,
@@ -462,9 +469,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Nomad/Preview Content\"";
-				DEVELOPMENT_TEAM = 3U7XP56VTS;
+				DEVELOPMENT_TEAM = 422P875XS4;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -475,7 +483,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.nicholascandello.Nomad;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rudraamin.Nomad;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -491,9 +499,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Nomad/Preview Content\"";
-				DEVELOPMENT_TEAM = 3U7XP56VTS;
+				DEVELOPMENT_TEAM = 422P875XS4;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -504,7 +513,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.nicholascandello.Nomad;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rudraamin.Nomad;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
