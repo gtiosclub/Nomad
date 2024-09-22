@@ -8,6 +8,8 @@
 import Foundation
 import MapKit
 
+import MapboxNavigationCore
+
 class MapManager: ObservableObject {
     
     

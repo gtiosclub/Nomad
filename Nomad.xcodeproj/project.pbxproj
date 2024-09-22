@@ -30,6 +30,9 @@
 		8419ED942C99536E003AD5C2 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED932C99536E003AD5C2 /* FirebaseStorage */; };
 		8419ED962C99536E003AD5C2 /* FirebaseStorageCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED952C99536E003AD5C2 /* FirebaseStorageCombine-Community */; };
 		8419ED982C99536E003AD5C2 /* FirebaseVertexAI-Preview in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED972C99536E003AD5C2 /* FirebaseVertexAI-Preview */; };
+		94F91F682C9F883E00A63F7A /* MapboxNavigationCore in Frameworks */ = {isa = PBXBuildFile; productRef = 94F91F672C9F883E00A63F7A /* MapboxNavigationCore */; };
+		94F91F6A2C9F883E00A63F7A /* MapboxNavigationUIKit in Frameworks */ = {isa = PBXBuildFile; productRef = 94F91F692C9F883E00A63F7A /* MapboxNavigationUIKit */; };
+		94F91F6C2C9F883E00A63F7A /* _MapboxNavigationTestKit in Frameworks */ = {isa = PBXBuildFile; productRef = 94F91F6B2C9F883E00A63F7A /* _MapboxNavigationTestKit */; };
 		B2154C6D2C9D01BA00A6F238 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B2154C6C2C9D01BA00A6F238 /* GoogleService-Info.plist */; };
 		B2154C702C9D02C900A6F238 /* MapManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2154C6F2C9D02C900A6F238 /* MapManager.swift */; };
 		B2F8F3372C97BB3C00B9618E /* NomadApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F3362C97BB3C00B9618E /* NomadApp.swift */; };
@@ -53,6 +56,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		94F91F652C9F875F00A63F7A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B2154C6C2C9D01BA00A6F238 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B2154C6F2C9D02C900A6F238 /* MapManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapManager.swift; sourceTree = "<group>"; };
 		B2F8F3332C97BB3C00B9618E /* Nomad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Nomad.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -88,6 +92,7 @@
 				8419ED922C99536E003AD5C2 /* FirebaseRemoteConfig in Frameworks */,
 				8419ED7C2C99536E003AD5C2 /* FirebaseDatabase in Frameworks */,
 				8419ED7E2C99536E003AD5C2 /* FirebaseDynamicLinks in Frameworks */,
+				94F91F682C9F883E00A63F7A /* MapboxNavigationCore in Frameworks */,
 				8419ED6C2C99536E003AD5C2 /* FirebaseAnalytics in Frameworks */,
 				8419ED6E2C99536E003AD5C2 /* FirebaseAnalyticsOnDeviceConversion in Frameworks */,
 				B2F8F3672C97BE2E00B9618E /* ChatGPTSwift in Frameworks */,
@@ -95,6 +100,7 @@
 				8419ED8E2C99536E003AD5C2 /* FirebaseMessaging in Frameworks */,
 				8419ED8A2C99536E003AD5C2 /* FirebaseInstallations in Frameworks */,
 				8419ED862C99536E003AD5C2 /* FirebaseFunctionsCombine-Community in Frameworks */,
+				94F91F6A2C9F883E00A63F7A /* MapboxNavigationUIKit in Frameworks */,
 				8419ED722C99536E003AD5C2 /* FirebaseAppCheck in Frameworks */,
 				8419ED702C99536E003AD5C2 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */,
 				8419ED882C99536E003AD5C2 /* FirebaseInAppMessaging-Beta in Frameworks */,
@@ -102,6 +108,7 @@
 				8419ED7A2C99536E003AD5C2 /* FirebaseCrashlytics in Frameworks */,
 				8419ED8C2C99536E003AD5C2 /* FirebaseMLModelDownloader in Frameworks */,
 				8419ED942C99536E003AD5C2 /* FirebaseStorage in Frameworks */,
+				94F91F6C2C9F883E00A63F7A /* _MapboxNavigationTestKit in Frameworks */,
 				8419ED742C99536E003AD5C2 /* FirebaseAppDistribution-Beta in Frameworks */,
 				8419ED782C99536E003AD5C2 /* FirebaseAuthCombine-Community in Frameworks */,
 			);
@@ -129,6 +136,7 @@
 		B2F8F3352C97BB3C00B9618E /* Nomad */ = {
 			isa = PBXGroup;
 			children = (
+				94F91F652C9F875F00A63F7A /* Info.plist */,
 				B2154C6C2C9D01BA00A6F238 /* GoogleService-Info.plist */,
 				B2F8F3362C97BB3C00B9618E /* NomadApp.swift */,
 				B2F8F3462C97BB5500B9618E /* RootView.swift */,
@@ -225,6 +233,9 @@
 				8419ED932C99536E003AD5C2 /* FirebaseStorage */,
 				8419ED952C99536E003AD5C2 /* FirebaseStorageCombine-Community */,
 				8419ED972C99536E003AD5C2 /* FirebaseVertexAI-Preview */,
+				94F91F672C9F883E00A63F7A /* MapboxNavigationCore */,
+				94F91F692C9F883E00A63F7A /* MapboxNavigationUIKit */,
+				94F91F6B2C9F883E00A63F7A /* _MapboxNavigationTestKit */,
 			);
 			productName = Nomad;
 			productReference = B2F8F3332C97BB3C00B9618E /* Nomad.app */;
@@ -257,6 +268,7 @@
 			packageReferences = (
 				B2F8F3652C97BE2E00B9618E /* XCRemoteSwiftPackageReference "ChatGPTSwift" */,
 				8419ED6A2C99536E003AD5C2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				94F91F662C9F883E00A63F7A /* XCRemoteSwiftPackageReference "mapbox-navigation-ios" */,
 			);
 			productRefGroup = B2F8F3342C97BB3C00B9618E /* Products */;
 			projectDirPath = "";
@@ -437,6 +449,7 @@
 				DEVELOPMENT_TEAM = 3U7XP56VTS;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Nomad/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -466,6 +479,7 @@
 				DEVELOPMENT_TEAM = 3U7XP56VTS;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Nomad/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -514,6 +528,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 11.2.0;
+			};
+		};
+		94F91F662C9F883E00A63F7A /* XCRemoteSwiftPackageReference "mapbox-navigation-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/mapbox/mapbox-navigation-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.3.1;
 			};
 		};
 		B2F8F3652C97BE2E00B9618E /* XCRemoteSwiftPackageReference "ChatGPTSwift" */ = {
@@ -641,6 +663,21 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 8419ED6A2C99536E003AD5C2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = "FirebaseVertexAI-Preview";
+		};
+		94F91F672C9F883E00A63F7A /* MapboxNavigationCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 94F91F662C9F883E00A63F7A /* XCRemoteSwiftPackageReference "mapbox-navigation-ios" */;
+			productName = MapboxNavigationCore;
+		};
+		94F91F692C9F883E00A63F7A /* MapboxNavigationUIKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 94F91F662C9F883E00A63F7A /* XCRemoteSwiftPackageReference "mapbox-navigation-ios" */;
+			productName = MapboxNavigationUIKit;
+		};
+		94F91F6B2C9F883E00A63F7A /* _MapboxNavigationTestKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 94F91F662C9F883E00A63F7A /* XCRemoteSwiftPackageReference "mapbox-navigation-ios" */;
+			productName = _MapboxNavigationTestKit;
 		};
 		B2F8F3662C97BE2E00B9618E /* ChatGPTSwift */ = {
 			isa = XCSwiftPackageProductDependency;
