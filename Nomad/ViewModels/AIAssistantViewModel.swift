@@ -12,7 +12,7 @@ class AIAssistantViewModel: ObservableObject {
     
     
     func fetchBusinesses() async {
-        let apiKey = "hpQdyXearQyP-ahpSeW2wDZvn-ljfmsGvN6RTKqo18I6R23ZB3dfbzAnEjvS8tWoPwyH9FFTGifdZ-n_qH80jbRuDbGb0dHu1qEPrLH-vqNq_d6TZdUaC_kZpwvqZnYx"
+        let apiKey = "Use yelp key"
         let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
         let queryItems: [URLQueryItem] = [
