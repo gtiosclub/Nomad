@@ -9,8 +9,8 @@ import Foundation
 
 class User: Identifiable {
     var id: String
-    var name: String
-    var trips: [Trip]
+    private var name: String
+    private var trips: [Trip]
     
     init(id: String, name: String, trips: [Trip] = []) {
         self.id = id

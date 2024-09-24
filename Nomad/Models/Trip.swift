@@ -9,13 +9,13 @@ import Foundation
 
 struct Trip: Identifiable {
     var id: String
-    var stops: [POI]
-    var start_location: POI
-    var end_location: POI
-    var start_date: String
-    var end_date: String
-    var created_date: String
-    var modified_date: String
+    private var stops: [POI]
+    private var start_location: POI
+    private var end_location: POI
+    private var start_date: String
+    private var end_date: String
+    private var created_date: String
+    private var modified_date: String
 
     
     init(start_location: POI, end_location: POI, start_date: String = "", end_date: String = "", stops: [POI] = []) {

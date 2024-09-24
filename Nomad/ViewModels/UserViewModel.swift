@@ -41,7 +41,7 @@ class UserViewModel: ObservableObject {
     }
     
     func getTrips() -> [Trip] {
-        return user?.trips ?? []
+        return user?.getTrips() ?? []
     }
     
     func removeStop(stop: POI) {
