@@ -18,6 +18,25 @@ struct FindStopView: View {
                 Picker("Select a stop type", selection: $selection) {
                     ForEach(stop_types, id: \.self) {
                         Text($0)
+                        
+                        //if selected type is hotel
+                        if (stop_types = "Hotels") {
+                            //show rating
+                            //create rating stars
+                            HStack(spacing: 10) {
+                                ForEach(1...5, id:\.self) { star in
+                                    Image(systemName: star <= currentRating ? "star.fill" : "star")
+                                        .font(.system(size: 30))
+                                    .foregroundColor(.yellow)
+                                    .scaledToFit()
+                                    
+                                    .onTapGesture {
+                                        currentRating = star
+                                    }
+                               
+                                }
+                            }
+                        }
                     }
                 }
                 .pickerStyle(.menu)
