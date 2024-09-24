@@ -28,14 +28,14 @@ class UserViewModel: ObservableObject {
         self.current_trip = Trip(start_location: start, end_location: end)
         return current_trip!
     }
-        
+    
     func addTripToUser(trip: Trip){
         if let user = user {
             user.addTrip(trip: trip)
-            objectWillChange.send() 
+            objectWillChange.send()
         }
     }
-        
+    
     func addStop(stop: POI) {
         current_trip?.addStops(additionalStops: [stop])
     }
@@ -51,5 +51,21 @@ class UserViewModel: ObservableObject {
     func setCurrentTrip(trip: Trip) {
         self.current_trip = trip
     }
+    
+    func setCurrentTrip(by tripID: String) {
+        guard let user = user else {return}
+        
+        if let trip = user.findTrip(id: tripID) {
+            current_trip = trip
+        }
+    }
+    
+    func setTripStartDate(startDate: String) {
+        current_trip?.setStartDate(newDate: startDate)
+    }
+    
+    func setTripEndDate(endDate: String) {
+        current_trip?.setStartDate(newDate: endDate)
+    }
 }
-
+    
