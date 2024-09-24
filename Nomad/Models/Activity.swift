@@ -34,19 +34,19 @@ struct Activity: POI {
         self.rating = newRating
     }
     
-    func getAddress() -> String{
+    func getAddress() -> String {
         return self.address
     }
     
-    func getName() -> String{
+    func getName() -> String {
         return self.name
     }
     
-    func getRating() -> Double{
+    func getRating() -> Double {
         return self.rating ?? 0
     }
     
-    func getWebsite() -> String{
+    func getWebsite() -> String {
         return self.website ?? ""
     }
     
