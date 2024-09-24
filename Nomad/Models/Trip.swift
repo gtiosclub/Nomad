@@ -50,6 +50,16 @@ struct Trip: Identifiable {
         self.updateModifiedDate()
     }
     
+    mutating func setStartDate(newDate: String) {
+        self.start_date = newDate
+        self.updateModifiedDate()
+    }
+    
+    mutating func setEndDate(newDate: String) {
+        self.end_date = newDate
+        self.updateModifiedDate()
+    }
+    
     mutating func addStops(additionalStops: [POI]) {
         self.stops.append(contentsOf: additionalStops)
         self.updateModifiedDate()
