@@ -51,5 +51,31 @@ class UserViewModel: ObservableObject {
     func setCurrentTrip(trip: Trip) {
         self.current_trip = trip
     }
+    
+    func setStartLocation(new_start_location: POI) {
+        if var trip = current_trip {
+            trip.setStartLocation(new_start_location: newStartLocation)
+            
+        }
+        
+        if var user = user, let tripIndex = user.findTrip(id: current_trip?.id) {
+            user.trips[tripIndex].setStartLocation(new_start_location: newStartLocation)
+        }
+                        
+        self.user = user
+    }
+    
+    func setEndLocation(new_end_location: POI) {
+        if var trip = current_trip {
+            trip.setEndLocation(new_end_location: newEndLocation)
+            
+        }
+        
+        if var user = user, let tripIndex = user.findTrip(id: current_trip?.id) {
+            user.trips[tripIndex].setEndLocation(new_end_location: newEndLocation)
+        }
+                        
+        self.user = user
+    }
 }
 

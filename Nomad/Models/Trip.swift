@@ -77,6 +77,12 @@ struct Trip: Identifiable {
                         user.trips[tripIndex].setStartLocation(new_start_location: newStartLocation)
                         
                         self.user = user
+            
+            //            if var user = user {
+            //                if let trips = user.findTrip(id: User(id)
+            //            }
+            
+
     }
 
     func getEndLocation() -> POI {
