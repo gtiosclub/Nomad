@@ -36,16 +36,20 @@ class UserViewModel: ObservableObject {
         }
     }
     
-    func addStop(stop: POI) {
-        current_trip?.addStops(additionalStops: [stop])
-    }
-    
     func getTrips() -> [Trip] {
         return user?.getTrips() ?? []
     }
     
+    func addStop(stop: POI) {
+        current_trip?.addStops(additionalStops: [stop])
+        user?.updateTrip(trip: current_trip.self)
+        self.user = user
+    }
+    
     func removeStop(stop: POI) {
         current_trip?.removeStops(removedStops: [stop])
+        user?.updateTrip(trip: current_trip.self)
+        self.user = user
     }
     
     func setCurrentTrip(trip: Trip) {
@@ -54,32 +58,34 @@ class UserViewModel: ObservableObject {
     
     func setStartLocation(new_start_location: POI) {
         current_trip?.setStartLocation(new_start_location: new_start_location)
-        var trip = user?.findTrip(id: current_trip?.id ?? "")
-        trip?.setStartLocation(new_start_location: new_start_location)
+        user?.updateTrip(trip: current_trip.self)
         self.user = user
     }
     
     func setEndLocation(new_end_location: POI) {
         current_trip?.setEndLocation(new_end_location: new_end_location)
-        var trip = user?.findTrip(id: current_trip?.id ?? "")
-        trip?.setEndLocation(new_end_location: new_end_location)
+        user?.updateTrip(trip: current_trip.self)
         self.user = user
     }
-  
+    
+    func setTripStartDate(startDate: String) {
+        current_trip?.setStartDate(newDate: startDate)
+        user?.updateTrip(trip: current_trip.self)
+        self.user = user
+    }
+    
+    func setTripEndDate(endDate: String) {
+        current_trip?.setStartDate(newDate: endDate)
+        user?.updateTrip(trip: current_trip.self)
+        self.user = user
+    }
+    
     func setCurrentTrip(by tripID: String) {
         guard let user = user else {return}
         
         if let trip = user.findTrip(id: tripID) {
             current_trip = trip
         }
-    }
-    
-    func setTripStartDate(startDate: String) {
-        current_trip?.setStartDate(newDate: startDate)
-    }
-    
-    func setTripEndDate(endDate: String) {
-        current_trip?.setStartDate(newDate: endDate)
     }
 }
     
