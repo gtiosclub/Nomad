@@ -25,11 +25,11 @@ struct MapView: View {
         // TODO: Add local region for coordinates
         Map(interactionModes: MapInteractionModes.all) {
             // Adding the marker for the starting point
-            if let startCoordinate = mapManager.getStartCoordinate() {
+            if let startCoordinate = mapManager.startCoordinate {
                 Marker("Start", coordinate: startCoordinate)
             }
-            if let endCoordinate = mapManager.getEndCoordinate() {
-                Marker("Finish", coordinate: endCoordinate)
+            if let endCoordinate = mapManager.endCoordinate {
+                Marker("End", coordinate: endCoordinate)
 
             }
 

@@ -26,15 +26,11 @@ class MapManager: ObservableObject {
     // Route Data
     @Published var route: Route?
     @Published var legPolylines: [MKPolyline]?
+    @Published var startCoordinate: CLLocationCoordinate2D?
+    @Published var endCoordinate: CLLocationCoordinate2D?
     
     // Route getters
     // TODO: Add getters for start end coords of each leg
-    func getStartCoordinate() -> CLLocationCoordinate2D? {
-        return self.route?.shape?.coordinates.first
-    }
-    func getEndCoordinate() -> CLLocationCoordinate2D? {
-        return self.route?.shape?.coordinates.last
-    }
 
     
     func setupMapbox() async {
@@ -52,61 +48,13 @@ class MapManager: ObservableObject {
                             
         self.route = route
         self.legPolylines = getPolylines(route: mainRoute)
+        self.startCoordinate = self.route?.shape?.coordinates.first
+        self.endCoordinate = self.route?.shape?.coordinates.last
 
-        // Get directions from selected route
-        
-        // Create and configure the request
-        //        let request = MKDirections.Request()
-        //        request.source = MKMapItem(placemark: source)
-        //        request.destination = MKMapItem(placemark: destination)
-        //        // Get the directions based on the request
-        //        Task {
-        //            let directions = MKDirections(request: request)
-        //            let response = try? await directions.calculate()
-        //            route = response?.routes.first
-        //
-        //        }
+
     }
     
     // Routing
-    
-    // Generate MKRoute from Mapbox Route
-    /*
-    private func getMKRoute(route: Route) -> MKRoute {
-        let mkRoute = MKRoute()
-        
-        var coordinates = [CLLocationCoordinate2D]()
-        if let routeShape = route.shape {
-            coordinates = routeShape.coordinates
-        } else { return mkRoute }
-        
-        let polyline = MKPolyline(coordinates: coordinates, count: coordinates.count)
-        mkRoute.setValue(polyline, forKey: "polyline")
-        mkRoute.setValue(route.distance, forKey: "distance")
-        mkRoute.setValue(route.expectedTravelTime, forKey: "expectedTravelTime")
-        
-        
-        var steps = [MKRoute.Step]()
-        for leg in route.legs {
-            for step in leg.steps {
-                let mkRouteStep = MKRoute.Step()
-                mkRouteStep.setValue(step.instructions, forKey: "instructions")
-                mkRouteStep.setValue(step.distance, forKey: "distance")
-                mkRouteStep.setValue(step.expectedTravelTime, forKey: "expectedTravelTime")
-                
-                let stepPolyline = MKPolyline(
-                    coordinates: step.shape?.coordinates ?? [],
-                    count: step.shape?.coordinates.count ?? 0)
-                mkRouteStep.setValue(stepPolyline, forKey: "polyline")
-                
-                steps.append(mkRouteStep)
-            }
-        }
-        mkRoute.setValue(steps, forKey: "steps")
-        
-        return mkRoute
-    }
-    */
     
     // Take a mapbox Route and convert to polylines, each polyline being a leg of the route
     private func getPolylines(route: Route) -> [MKPolyline] {
