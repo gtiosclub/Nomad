@@ -22,20 +22,36 @@ struct MapView: View {
     )
     
     var body: some View {
-        Map {
+        // TODO: Add local region for coordinates
+        Map(interactionModes: MapInteractionModes.all) {
             // Adding the marker for the starting point
-            Marker("Start", coordinate: mapManager.source.coordinate)
-            Marker("Finish", coordinate: mapManager.destination.coordinate)
+            if let startCoordinate = mapManager.getStartCoordinate() {
+                Marker("Start", coordinate: startCoordinate)
+            }
+            if let endCoordinate = mapManager.getEndCoordinate() {
+                Marker("Finish", coordinate: endCoordinate)
+
+            }
+
             
             // Show the route if it is available
-            if let route = mapManager.route {
-                MapPolyline(route)
-                    .stroke(.blue, lineWidth: 5)
+            if let legPolylines = mapManager.legPolylines {
+                ForEach(legPolylines, id:\.self) { polyline in
+                    MapPolyline(polyline)
+                        .stroke(.blue, lineWidth: 5)
+                }
             }
-        }.onAppear() {
-            mapManager.setSource(coord: startingPoint)
-            mapManager.setDestination(coord: destinationCoordinates)
-            mapManager.getDirections()
+
+            
+        }.task {
+            do {
+                await mapManager.setupMapbox()
+                try await mapManager.addWaypoint(to: startingPoint)
+                try await mapManager.addWaypoint(to: destinationCoordinates)
+                mapManager.getDirections()
+            } catch {
+                print("ERrors \(error)")
+            }
         }
     }
 }
