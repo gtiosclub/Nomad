@@ -35,16 +35,3 @@ struct YourApp: App {
     }
   }
 }
-
-
-
-//@main
-//struct NomadApp: App {
-//    @ObservedObject var firebase_vm = FirebaseViewModel()
-//    var body: some Scene {
-//        WindowGroup {
-//            RootView()
-//                .environmentObject(firebase_vm)
-//        }
-//    }
-//}
