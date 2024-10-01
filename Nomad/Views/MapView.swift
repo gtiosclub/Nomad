@@ -28,10 +28,7 @@ struct MapView: View {
             Marker("Finish", coordinate: mapManager.destination.coordinate)
             
             // Show the route if it is available
-            if let route = mapManager.route {
-                MapPolyline(route)
-                    .stroke(.blue, lineWidth: 5)
-            }
+
         }.onAppear() {
             mapManager.setSource(coord: startingPoint)
             mapManager.setDestination(coord: destinationCoordinates)

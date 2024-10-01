@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8F59BFAE2C9A422D006E0D9F /* MapPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F59BFAD2C9A422D006E0D9F /* MapPreviewView.swift */; };
 		B298EB552C98F9DE0078696A /* MapManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B298EB542C98F9DE0078696A /* MapManager.swift */; };
 		B2F8F3372C97BB3C00B9618E /* NomadApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F3362C97BB3C00B9618E /* NomadApp.swift */; };
 		B2F8F33D2C97BB3E00B9618E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2F8F33C2C97BB3E00B9618E /* Assets.xcassets */; };
@@ -25,10 +26,10 @@
 		B2F8F3602C97BD6200B9618E /* FirebaseViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F35F2C97BD6200B9618E /* FirebaseViewModel.swift */; };
 		B2F8F3622C97BD8900B9618E /* AIAssistantViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F3612C97BD8900B9618E /* AIAssistantViewModel.swift */; };
 		B2F8F3642C97BD9B00B9618E /* UserViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F3632C97BD9B00B9618E /* UserViewModel.swift */; };
-		B2F8F3672C97BE2E00B9618E /* ChatGPTSwift in Frameworks */ = {isa = PBXBuildFile; productRef = B2F8F3662C97BE2E00B9618E /* ChatGPTSwift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		8F59BFAD2C9A422D006E0D9F /* MapPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapPreviewView.swift; sourceTree = "<group>"; };
 		B298EB542C98F9DE0078696A /* MapManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapManager.swift; sourceTree = "<group>"; };
 		B2F8F3332C97BB3C00B9618E /* Nomad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Nomad.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2F8F3362C97BB3C00B9618E /* NomadApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NomadApp.swift; sourceTree = "<group>"; };
@@ -55,7 +56,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B2F8F3672C97BE2E00B9618E /* ChatGPTSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -105,6 +105,7 @@
 			children = (
 				B2F8F3492C97BC7700B9618E /* RecapView.swift */,
 				B2F8F34B2C97BC7F00B9618E /* MapView.swift */,
+				8F59BFAD2C9A422D006E0D9F /* MapPreviewView.swift */,
 				B2F8F34D2C97BC8A00B9618E /* AIAssistantView.swift */,
 				B2F8F34F2C97BC9600B9618E /* ItineraryPlanningView.swift */,
 			);
@@ -152,7 +153,6 @@
 			);
 			name = Nomad;
 			packageProductDependencies = (
-				B2F8F3662C97BE2E00B9618E /* ChatGPTSwift */,
 			);
 			productName = Nomad;
 			productReference = B2F8F3332C97BB3C00B9618E /* Nomad.app */;
@@ -183,7 +183,6 @@
 			);
 			mainGroup = B2F8F32A2C97BB3C00B9618E;
 			packageReferences = (
-				B2F8F3652C97BE2E00B9618E /* XCRemoteSwiftPackageReference "ChatGPTSwift" */,
 			);
 			productRefGroup = B2F8F3342C97BB3C00B9618E /* Products */;
 			projectDirPath = "";
@@ -214,6 +213,7 @@
 				B2F8F35D2C97BD3000B9618E /* GasStation.swift in Sources */,
 				B2F8F3592C97BCD400B9618E /* Restaurant.swift in Sources */,
 				B2F8F3602C97BD6200B9618E /* FirebaseViewModel.swift in Sources */,
+				8F59BFAE2C9A422D006E0D9F /* MapPreviewView.swift in Sources */,
 				B2F8F3472C97BB5500B9618E /* RootView.swift in Sources */,
 				B298EB552C98F9DE0078696A /* MapManager.swift in Sources */,
 				B2F8F3572C97BCC400B9618E /* POI.swift in Sources */,
@@ -432,25 +432,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		B2F8F3652C97BE2E00B9618E /* XCRemoteSwiftPackageReference "ChatGPTSwift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/alfianlosari/ChatGPTSwift.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.3.3;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		B2F8F3662C97BE2E00B9618E /* ChatGPTSwift */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = B2F8F3652C97BE2E00B9618E /* XCRemoteSwiftPackageReference "ChatGPTSwift" */;
-			productName = ChatGPTSwift;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B2F8F32B2C97BB3C00B9618E /* Project object */;
 }
