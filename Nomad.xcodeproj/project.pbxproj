@@ -26,6 +26,8 @@
 		B2F8F3622C97BD8900B9618E /* AIAssistantViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F3612C97BD8900B9618E /* AIAssistantViewModel.swift */; };
 		B2F8F3642C97BD9B00B9618E /* UserViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F3632C97BD9B00B9618E /* UserViewModel.swift */; };
 		B2F8F3672C97BE2E00B9618E /* ChatGPTSwift in Frameworks */ = {isa = PBXBuildFile; productRef = B2F8F3662C97BE2E00B9618E /* ChatGPTSwift */; };
+		C49A65502C9CE53400A8B9BA /* MapSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = C49A654F2C9CE53400A8B9BA /* MapSearch.swift */; };
+		C49A65522C9CE6D600A8B9BA /* Test.swift in Sources */ = {isa = PBXBuildFile; fileRef = C49A65512C9CE6D600A8B9BA /* Test.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,6 +50,8 @@
 		B2F8F35F2C97BD6200B9618E /* FirebaseViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseViewModel.swift; sourceTree = "<group>"; };
 		B2F8F3612C97BD8900B9618E /* AIAssistantViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIAssistantViewModel.swift; sourceTree = "<group>"; };
 		B2F8F3632C97BD9B00B9618E /* UserViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserViewModel.swift; sourceTree = "<group>"; };
+		C49A654F2C9CE53400A8B9BA /* MapSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapSearch.swift; sourceTree = "<group>"; };
+		C49A65512C9CE6D600A8B9BA /* Test.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -131,6 +135,8 @@
 				B2F8F3612C97BD8900B9618E /* AIAssistantViewModel.swift */,
 				B298EB542C98F9DE0078696A /* MapManager.swift */,
 				B2F8F3632C97BD9B00B9618E /* UserViewModel.swift */,
+				C49A654F2C9CE53400A8B9BA /* MapSearch.swift */,
+				C49A65512C9CE6D600A8B9BA /* Test.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -217,10 +223,12 @@
 				B2F8F3472C97BB5500B9618E /* RootView.swift in Sources */,
 				B298EB552C98F9DE0078696A /* MapManager.swift in Sources */,
 				B2F8F3572C97BCC400B9618E /* POI.swift in Sources */,
+				C49A65502C9CE53400A8B9BA /* MapSearch.swift in Sources */,
 				B2F8F3502C97BC9600B9618E /* ItineraryPlanningView.swift in Sources */,
 				B2F8F34C2C97BC7F00B9618E /* MapView.swift in Sources */,
 				B2F8F34E2C97BC8A00B9618E /* AIAssistantView.swift in Sources */,
 				B2F8F3552C97BCBB00B9618E /* Trip.swift in Sources */,
+				C49A65522C9CE6D600A8B9BA /* Test.swift in Sources */,
 				B2F8F34A2C97BC7700B9618E /* RecapView.swift in Sources */,
 				B2F8F35B2C97BD2200B9618E /* RestStop.swift in Sources */,
 				B2F8F3372C97BB3C00B9618E /* NomadApp.swift in Sources */,
