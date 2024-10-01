@@ -1,9 +1,10 @@
 //
-//  GeneralLocation.swift
+//  GeneralLocation 3.swift
 //  Nomad
 //
-//  Created by Austin Huguenard on 9/22/24.
+//  Created by Brayden Huguenard on 10/1/24.
 //
+
 
 import Foundation
 
@@ -11,19 +12,14 @@ struct GeneralLocation: POI, Identifiable {
     var id: String
     var address: String
     var name: String
-    
+
     init(address: String, name: String) {
         self.id = UUID().uuidString
         self.address = address
         self.name = name
     }
-    
-    init(from business: Business) {
-        self.id = business.id
-        self.address = business.location.address1 ?? "No address"
-        self.name = business.name
-    }
-    
+
+    // Mutating functions to set properties
     mutating func setAddress(newAddress: String) {
         self.address = newAddress
     }
@@ -31,7 +27,7 @@ struct GeneralLocation: POI, Identifiable {
     mutating func setName(newName: String) {
         self.name = newName
     }
-    
+
     func getAddress() -> String {
         return address
     }
@@ -40,3 +36,7 @@ struct GeneralLocation: POI, Identifiable {
         return name
     }
 }
+
+// Example of using GeneralLocation
+let location = GeneralLocation(address: "123 Main St, Atlanta, GA", name: "Sample Location")
+print("Location: \(location.getName()), Address: \(location.getAddress())")
