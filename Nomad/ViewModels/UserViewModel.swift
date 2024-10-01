@@ -75,7 +75,7 @@ class UserViewModel: ObservableObject {
     }
     
     func setTripEndDate(endDate: String) {
-        current_trip?.setStartDate(newDate: endDate)
+        current_trip?.setEndDate(newDate: endDate)
         user?.updateTrip(trip: current_trip.self)
         self.user = user
     }
