@@ -45,13 +45,13 @@ final class AIUnitTesting: XCTestCase {
 //            }
 //        }
         await print(vm.getChatGPT())
-        expectation.fulfill()
+//        expectation.fulfill()
         
-        await waitForExpectations(timeout: 5) {error in
-                    if let error = error {
-                        print("this function doesn't work")
-                    }
-                }
+//        await waitForExpectations(timeout: 5) {error in
+//            if let error = error {
+//                print("this function doesn't work")
+//            }
+//        }
         
     }
 }
