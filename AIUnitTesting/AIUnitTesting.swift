@@ -34,7 +34,7 @@ final class AIUnitTesting: XCTestCase {
     }
     
     func testChatGPT() async {
-        let expectation = self.expectation(description: "testing ChatGPT API")
+//        let expectation = self.expectation(description: "testing ChatGPT API")
 //        await vm.getChatGPT() { result in
 //            print("Result \(result)")
 //            expectation.fulfill()
@@ -53,5 +53,10 @@ final class AIUnitTesting: XCTestCase {
 //            }
 //        }
         
+    }
+    
+    func testJsonOutput() async {
+        let question = "Only return a JSON Object. What is Euler's Totient? Why is it important?"
+        await print(vm.getJsonOutput(question: question)!)
     }
 }

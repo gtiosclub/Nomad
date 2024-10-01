@@ -10,13 +10,12 @@ import ChatGPTSwift
 
 class AIAssistantViewModel: ObservableObject {
     let openAIAPIKey = ChatGPTAPI(apiKey: "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")
-    let yelpAPIKey = ""
+    let yelpAPIKey = "<PUT API KEY HERE>"
     let jsonResponseFormat = Components.Schemas.CreateChatCompletionRequest.response_formatPayload(_type: .json_object) // ensure that query returns json object
     let gptModel = ChatGPTModel(rawValue: "gpt-4o")
 
     
     func fetchBusinesses() async {
-//        let apiKey = "Use yelp key"
         let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
         let queryItems: [URLQueryItem] = [
@@ -39,20 +38,28 @@ class AIAssistantViewModel: ObservableObject {
     }
   
     func getChatGPT() async -> (String)  {
-//        let apiKey = ChatGPTAPI(apiKey: "*Put api key*")
-        
         let question:String = "where is Atlanta?"
         var result = ""
         do {
             let response = try await openAIAPIKey.sendMessage(
-                text: question,
-                model: gptModel!,
-                responseFormat: jsonResponseFormat)
+                text: question)
             return response
         } catch {
             print(error.localizedDescription)
         }
         return ""
+    }
+    
+    func getJsonOutput(question: String) async -> String? {
+        do {
+            let response = try await openAIAPIKey.sendMessage(
+                text: question,
+//                model: gptModel!
+                responseFormat: jsonResponseFormat)
+            return response
+        } catch {
+            return "Send OpenAI Query Error: \(error.localizedDescription)"
+        }
     }
 }
  
