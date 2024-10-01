@@ -26,28 +26,32 @@ struct FindStopView: View {
                     }
                 }
                 
-                
                 .pickerStyle(.menu)
                 if selection == "Activities" {
-                    VStack {
-                        Text ("Rating: ")
-                        Picker("Select Rating", selection: $rating) {
-                            ForEach(1...5, id: \.self) {rating in
-                                Text("\(rating) stars").tag(rating)
-                            }
+                    Text ("Rating: ")
+                    HStack {
+                        ForEach(1...5, id:\.self) { index in
+                            Image(systemName: index <= rating ? "star.fill": "star")
+                                .foregroundStyle(index <= rating ? .yellow: .gray)
+                                .onTapGesture {
+                                    rating = index
+                                }
                         }
 
                     }
                 }
                 
                 if selection == "Hotels" {
+                    Text ("Rating: ")
                     HStack {
-                        Text("Rating:")
-                        Picker("Select Rating", selection: $rating) {
-                            ForEach(1...5, id: \.self) {rating in
-                                Text("\(rating) stars").tag(rating)
+                        ForEach(1...5, id:\.self) { index in
+                            Image(systemName: index <= rating ? "star.fill": "star")
+                                .foregroundStyle(index <= rating ? .yellow: .gray)
+                                .onTapGesture {
+                                    rating = index
                                     }
                                 }
+
                             }
                         }
                     }
@@ -55,7 +59,7 @@ struct FindStopView: View {
                 }
                 
                 if selection == "Food and Drink" {
-                    HStack{
+                    VStack{
                         
                         //cuisine
                         VStack {
@@ -80,23 +84,25 @@ struct FindStopView: View {
                         }
                         
                         //price selection
-                        VStack {
-                            Text("Price: ")
-                            Picker("Select Price", selection: $price) {
-                                ForEach(1...4, id: \.self) { dollarSign in
-                                    Text(String(repeating: "$", count: dollarSign))
-                                }
+                        Text("Price: ")
+                        HStack {
+                            ForEach(1...4, id:\.self) {index in
+                                Image(systemName: index <= price ? "dollarsign.circle.fill" : "dollarsign.circle").foregroundColor(index <= price ? .yellow: .gray)
+                                    .onTapGesture {
+                                        price = index
+                                    }
                             }
-                            
                         }
                         
                         //rating selection
-                        VStack {
+                        HStack {
                             Text ("Rating: ")
-                            Picker("Select Rating", selection: $rating) {
-                                ForEach(1...5, id: \.self) {rating in
-                                    Text("\(rating) stars").tag(rating)
-                                }
+                            ForEach(1...5, id:\.self) { index in
+                                Image(systemName: index <= rating ? "star.fill": "star")
+                                    .foregroundStyle(index <= rating ? .yellow: .gray)
+                                    .onTapGesture {
+                                        rating = index
+                                    }
                             }
 
                         }
