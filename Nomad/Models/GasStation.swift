@@ -18,4 +18,12 @@ struct GasStation: POI {
     mutating func setName(newName: String) {
         self.name = newName
     }
+    
+    func getAddress() -> String {
+        address
+    }
+    
+    func getName() -> String {
+        name
+    }
 }

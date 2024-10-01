@@ -23,22 +23,22 @@ struct TripView: View {
                 
             Spacer(minLength: 20)
             
-            Text("Your trip from \(vm.current_trip?.start_location.name ?? "") to \(vm.current_trip?.end_location.name ?? "")")
+            Text("Your trip from \(vm.current_trip?.getStartLocation().name ?? "") to \(vm.current_trip?.getEndLocation().name ?? "")")
                 .frame(width: UIScreen.main.bounds.width - 20, alignment: .topLeading)
             
             VStack {
                 HStack {
-                    Text(vm.current_trip?.start_location.name ?? "")
+                    Text(vm.current_trip?.getStartLocation().name ?? "")
                         .frame(alignment: .leading)
                     Spacer()
-                    Text(vm.current_trip?.start_location.address ?? "")
+                    Text(vm.current_trip?.getStartLocation().address ?? "")
                         .frame(alignment: .trailing)
                 }
                 HStack {
-                    Text(vm.current_trip?.end_location.name ?? "")
+                    Text(vm.current_trip?.getEndLocation().name ?? "")
                         .frame(alignment: .leading)
                     Spacer()
-                    Text(vm.current_trip?.end_location.address ?? "")
+                    Text(vm.current_trip?.getEndLocation().address ?? "")
                         .frame(alignment: .trailing)
                 }
             }
@@ -58,7 +58,7 @@ struct TripView: View {
             
             NavigationLink("Add a Stop", destination: { FindStopView(vm: vm)} )
                 
-            ForEach(vm.current_trip?.stops ?? [], id: \.address) { stop in
+            ForEach(vm.current_trip?.getStops() ?? [], id: \.address) { stop in
                 Text("\(stop.name)")
             }
             

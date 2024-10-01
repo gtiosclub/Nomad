@@ -9,8 +9,8 @@ import Foundation
 
 class User: Identifiable {
     var id: String
-    var name: String
-    var trips: [Trip]
+    private var name: String
+    private var trips: [Trip]
     
     init(id: String, name: String, trips: [Trip] = []) {
         self.id = id
@@ -28,6 +28,13 @@ class User: Identifiable {
     
     func findTrip(id: String) -> Trip? {
         return self.trips.first(where: { $0.id == id })
+    }
+    
+    func updateTrip(trip: Trip?) {
+        if trip == nil { return }
+        var index: Int? = self.trips.firstIndex(where: { $0.id == trip?.id })
+        if index == nil { return }
+        self.trips[index!] = trip!
     }
 }
 
