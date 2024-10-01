@@ -11,10 +11,10 @@ struct FindStopView: View {
     @ObservedObject var vm: UserViewModel
     @State var selection: String = "Food and Drink"
     let stop_types = ["Food and Drink", "Activities", "Scenic", "Hotels", "Tours and Landmarks", "Entertainment"]
-    @State private var selectedHotel = Hotel(address: "387 West Peachtree", name: "Hilton")
-    @State private var price: Int = 1
+    @State private var price: Int = 0
+    @State private var rating: Int = 0
     @State private var selectedCuisines: [String] = []
-    let cuisines = ["Chinese", "Italian", "American", "Indian", "American", "Japanese", "Korean"]
+    let cuisines = ["Chinese", "Italian", "Indian", "American", "Japanese", "Korean"]
     
     var body: some View {
         HStack {
@@ -23,52 +23,90 @@ struct FindStopView: View {
                 Picker("Select a stop type", selection: $selection) {
                     ForEach(stop_types, id: \.self) {
                         Text($0)
-                        
-                        
-                        
                     }
                 }
                 
                 
                 .pickerStyle(.menu)
+                if selection == "Activities" {
+                    VStack {
+                        Text ("Rating: ")
+                        Picker("Select Rating", selection: $rating) {
+                            ForEach(1...5, id: \.self) {rating in
+                                Text("\(rating) stars").tag(rating)
+                            }
+                        }
+
+                    }
+                }
                 
                 if selection == "Hotels" {
                     HStack {
                         Text("Rating:")
-                        Picker("Rating", selection: Binding( get: { Int(selectedHotel.getRating() ?? 1) },set: { selectedHotel.setRating(newRating: Double($0)) } )) {
-                            ForEach(1...5, id: \.self) { rating in Text("\(rating)").tag(rating)
+                        Picker("Select Rating", selection: $rating) {
+                            ForEach(1...5, id: \.self) {rating in
+                                Text("\(rating) stars").tag(rating)
+                                    }
+                                }
                             }
                         }
-                        .pickerStyle(.segmented)
                     }
                     .padding()
                 }
                 
                 if selection == "Food and Drink" {
-                ForEach(cuisines, id: \.self) { cuisine in
-                    HStack {
-                        Button(action: {
-                            if selectedCuisines.contains(cuisine) {
-                                selectedCuisines.removeAll { $0 == cuisine }
-                            } else {
-                                selectedCuisines.append(cuisine)
-                            }
-                        }) {
-                            HStack {
-                                Image(systemName:
-                                        selectedCuisines.contains(cuisine) ? "checkmark.square" : "square")
-                                Text(cuisine)
+                    HStack{
+                        
+                        //cuisine
+                        VStack {
+                            Text("Cuisine: ")
+                            ForEach(cuisines, id: \.self) { cuisine in
+                                HStack {
+                                    Button(action: {
+                                        if selectedCuisines.contains(cuisine) {
+                                            selectedCuisines.removeAll { $0 == cuisine }
+                                        } else {
+                                            selectedCuisines.append(cuisine)
+                                        }
+                                    }) {
+                                        HStack {
+                                            Image(systemName:
+                                                    selectedCuisines.contains(cuisine) ? "checkmark.square" : "square")
+                                            Text(cuisine)
+                                            }
+                                        }
+                                    }
+                                }
+                        }
+                        
+                        //price selection
+                        VStack {
+                            Text("Price: ")
+                            Picker("Select Price", selection: $price) {
+                                ForEach(1...4, id: \.self) { dollarSign in
+                                    Text(String(repeating: "$", count: dollarSign))
                                 }
                             }
+                            
                         }
+                        
+                        //rating selection
+                        VStack {
+                            Text ("Rating: ")
+                            Picker("Select Rating", selection: $rating) {
+                                ForEach(1...5, id: \.self) {rating in
+                                    Text("\(rating) stars").tag(rating)
+                                }
+                            }
+
+                        }
+                        
                     }
-                    
-                    
                 }
+        
             }
-        }
+    
     }
-}
 
 
 #Preview {
