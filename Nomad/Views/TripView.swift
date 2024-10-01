@@ -10,8 +10,12 @@ import SwiftUI
 struct TripView: View {
     @ObservedObject var vm: UserViewModel
     @State var trip: Trip?
-    @State var startDate: String = ""
-    @State var endDate: String = ""
+    @State var startDate: Date = Date()
+    @State var endDate: Date = Date()
+    @State var startTime: Date = Date()
+    
+    @State private static var dateformatter = DateFormatter()
+ 
     var body: some View {
         NavigationStack {
             Text("Edit Trip Details")
@@ -45,10 +49,34 @@ struct TripView: View {
             .frame(minWidth: UIScreen.main.bounds.width - 20)
             .padding()
             
+            
             VStack {
-                TextField("Start Date", text: $startDate)
-                TextField("End Date", text: $endDate)
+                DatePicker(
+                    "Start Date",
+                    selection: $startDate,
+                    displayedComponents: [.date]
+                )
+
+                DatePicker(
+                    "End Date",
+                    selection: $endDate,
+                    displayedComponents: [.date]
+                )
+
+
+                HStack {
+                    Spacer()
+                    Button("Save Dates & Time") {
+                        vm.updateStartDate(newStartDate: TripView.dateToString(date: startDate) ?? "")
+                        vm.updateEndDate(newEndDate: TripView.dateToString(date: endDate) ?? "")
+                    }
+                    .padding()
+                    .foregroundColor(.white)
+                    .background(Color.blue)
+                    .cornerRadius(10)
+                }
             }
+            
             .padding()
             
             Spacer(minLength: 200)
@@ -65,8 +93,15 @@ struct TripView: View {
             Spacer()
         }
     }
+    
+    static func dateToString(date: Date) -> String? {
+        dateformatter.dateFormat = "MM-dd-yyyy HH:mm:ss"
+        return dateformatter.string(from: date)
+    }
+
 }
 
 #Preview {
     TripView(vm: .init(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "123 5th Street", name: "Georgia Tech"), end_location: Hotel(address: "387 West Peachtree", name: "Hilton"))])), trip: .init(start_location: Restaurant(address: "123 street", name: "Tiffs", rating: 3.2), end_location: Hotel(address: "387 West Peachtree", name: "Hilton")))
 }
+
