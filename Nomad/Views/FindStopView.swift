@@ -44,10 +44,23 @@ struct FindStopView: View {
                     .padding()
                 }
                 
-                if selection == "Restaurants" {
+                if selection == "Food and Drink" {
+                ForEach(cuisines, id: \.self) { cuisine in
                     HStack {
-                        Text("Rating: ")
-                        
+                        Button(action: {
+                            if selectedCuisines.contains(cuisine) {
+                                selectedCuisines.removeAll { $0 == cuisine }
+                            } else {
+                                selectedCuisines.append(cuisine)
+                            }
+                        }) {
+                            HStack {
+                                Image(systemName:
+                                        selectedCuisines.contains(cuisine) ? "checkmark.square" : "square")
+                                Text(cuisine)
+                                }
+                            }
+                        }
                     }
                     
                     
