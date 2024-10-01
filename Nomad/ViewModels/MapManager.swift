@@ -46,7 +46,7 @@ class MapManager: ObservableObject {
         guard let previewRoutes = currentPreviewRoutes else { return }
         let mainRoute = previewRoutes.mainRoute.route
                             
-        self.route = route
+        self.route = mainRoute
         self.legPolylines = getPolylines(route: mainRoute)
         self.startCoordinate = self.route?.shape?.coordinates.first
         self.endCoordinate = self.route?.shape?.coordinates.last
@@ -96,6 +96,13 @@ class MapManager: ObservableObject {
             waypoints.insert(userWaypoint, at: 0)
         } else {
             waypoints.append(userWaypoint)
+        }
+    }
+    
+    func modifyWaypointsOrdering(newWaypoints: [Waypoint]) async throws {
+        waypoints = newWaypoints
+        if waypoints.count > 1 {
+            try await updateRoutes()
         }
     }
     
