@@ -35,7 +35,7 @@ class AIAssistantViewModel: ObservableObject {
     }
   
     func getChatGPT() async -> (String)  {
-        let apiKey = ChatGPTAPI(apiKey: "*Put api key*")
+        let apiKey = ChatGPTAPI(apiKey: "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")
         
         let question:String = "where is Atlanta?"
         var result = ""
@@ -46,6 +46,50 @@ class AIAssistantViewModel: ObservableObject {
             print(error.localizedDescription)
         }
         return ""
+    }
+    
+    func getGasPrices(stateCode: String) async -> Double? {
+        let headers = [
+            "content-type": "application/json",
+            "authorization": "apikey 3JbglJ61TjhdFiY5XxexiY:7gfIoGKgXleLaCb9S4GOZk"
+        ]
+
+        guard let url = URL(string: "https://api.collectapi.com/gasPrice/stateUsaPrice?state=\(stateCode)") else {
+            return nil // Return nil if URL is invalid
+        }
+
+        var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 10.0)
+        request.httpMethod = "GET"
+        request.allHTTPHeaderFields = headers
+
+        let session = URLSession.shared
+
+        do {
+            let (data, response) = try await session.data(for: request)
+            
+            // Check if the response is HTTP URL response and handle status codes
+            if let httpResponse = response as? HTTPURLResponse {
+                guard (200...299).contains(httpResponse.statusCode) else {
+                    print("HTTP error: \(httpResponse.statusCode)")
+                    return nil // Handle non-success HTTP status codes
+                }
+            }
+            // Convert data to String
+            
+            if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+               let result = json["result"] as? [String: Any],
+               let state = result["state"] as? [String: Any],
+               let gasolinePriceString = state["gasoline"] as? String,
+                let gasolinePrice = Double(gasolinePriceString) {
+                return gasolinePrice // Return the gasoline price
+            } else {
+                print("Error parsing JSON")
+                return nil
+            }
+        } catch {
+            print("Error during data task: \(error)")
+            return nil
+        }
     }
 }
  

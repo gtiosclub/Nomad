@@ -48,10 +48,22 @@ final class AIUnitTesting: XCTestCase {
         expectation.fulfill()
         
         await waitForExpectations(timeout: 5) {error in
-                    if let error = error {
-                        print("this function doesn't work")
-                    }
-                }
+            if let error = error {
+                print("this function doesn't work")
+            }
+        }
         
+    }
+    
+    func testGasPrices() async {
+        let expectation = self.expectation(description: "testing Gas API")
+        await print(vm.getGasPrices(stateCode: "CT"))
+        expectation.fulfill()
+        
+        await waitForExpectations(timeout: 5) {error in
+            if let error = error {
+                print("this function doesn't work")
+            }
+        }
     }
 }
