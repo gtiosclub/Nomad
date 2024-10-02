@@ -8,5 +8,11 @@
 import Foundation
 
 protocol POI {
+    var address: String { get set }
+    var name: String { get set }
     
+    mutating func setAddress(newAddress: String)
+    mutating func setName(newName: String)
+    func getName() -> String
+    func getAddress() -> String
 }
