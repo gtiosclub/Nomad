@@ -98,9 +98,7 @@ class FirebaseViewModel: ObservableObject {
                 return false
             }
             if (!trips.contains(tripID)) {
-                // Append the new countryName to the array
                 trips.append(tripID)
-                // Update the document with the new array
                 try await db.collection("USERS").document(userID).updateData(["trips": trips])
                 return true
                     
