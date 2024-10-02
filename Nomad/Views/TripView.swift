@@ -45,6 +45,16 @@ struct TripView: View {
                     Text(vm.current_trip?.getEndLocation().address ?? "")
                         .frame(alignment: .trailing)
                 }
+                HStack{
+                    Text("Total Time").frame(alignment: .leading)
+                    Spacer()
+                    Text("\(vm.total_time)")
+                }
+                HStack{
+                    Text("Total Distance").frame(alignment: .leading)
+                    Spacer()
+                    Text("\(vm.total_distance)")
+                }
             }
             .frame(minWidth: UIScreen.main.bounds.width - 20)
             .padding()
