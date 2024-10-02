@@ -51,15 +51,5 @@ class UserViewModel: ObservableObject {
     func setCurrentTrip(trip: Trip) {
         self.current_trip = trip
     }
-    
-    func updateStartDate(newStartDate: String) {
-        current_trip?.setStartDate(newDate: newStartDate)
-        objectWillChange.send()
-    }
-
-    func updateEndDate(newEndDate: String) {
-        current_trip?.setEndDate(newDate: newEndDate)
-        objectWillChange.send()
-    }
 }
 
