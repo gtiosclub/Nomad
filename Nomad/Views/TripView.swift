@@ -55,12 +55,6 @@ struct TripView: View {
                         }
                     }
                     .padding()
-                    
-                    VStack {
-                        TextField("Start Date", text: $startDate)
-                        TextField("End Date", text: $endDate)
-                    }
-                    .padding()
 
                     VStack {
                         Button("Save Changes") {

@@ -29,7 +29,7 @@ struct FindStopView: View {
             Text("Filter Stop Type")
                 .font(.headline)
                 .padding(.bottom, 5)
-
+            
             Picker("Select a stop type", selection: $selection) {
                 ForEach(stop_types, id: \.self) {
                     Text($0)
@@ -37,7 +37,55 @@ struct FindStopView: View {
             }
             .pickerStyle(SegmentedPickerStyle())
             .padding()
-
+            
+            VStack {
+                if selection == "Food and Drink" {
+                    VStack {
+                        Text("Cuisine: ")
+                        ForEach(cuisines, id: \.self) { cuisine in
+                            HStack {
+                                Button(action: {
+                                    if selectedCuisines.contains(cuisine) {
+                                        selectedCuisines.removeAll { $0 == cuisine }
+                                    } else {
+                                        selectedCuisines.append(cuisine)
+                                    }
+                                }) {
+                                    HStack {
+                                        Image(systemName:
+                                                selectedCuisines.contains(cuisine) ? "checkmark.square" : "square")
+                                        Text(cuisine)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    Text("Price: ")
+                    HStack {
+                        ForEach(1...4, id:\.self) {index in
+                            Image(systemName: index <= price ? "dollarsign.circle.fill" : "dollarsign.circle").foregroundColor(index <= price ? .yellow: .gray)
+                                .onTapGesture {
+                                    price = index
+                                }
+                        }
+                    }
+                }
+                
+                if selection == "Activities" || selection == "Hotels" || selection == "Food and Drink" {
+                    Text ("Rating: ")
+                    HStack {
+                        ForEach(1...5, id:\.self) { index in
+                            Image(systemName: index <= rating ? "star.fill": "star")
+                                .foregroundStyle(index <= rating ? .yellow: .gray)
+                                .onTapGesture {
+                                    rating = index
+                                }
+                        }
+                    }
+                }
+            }
+            
             Button(action: {
                 isLoading = true
                 hasSearched = true
@@ -85,7 +133,7 @@ struct FindStopView: View {
                 }
             }
             .padding()
-
+            
             if isLoading {
                 ProgressView("Loading...")
                     .padding()
@@ -116,7 +164,7 @@ struct FindStopView: View {
                             Text("Rating: \(String(format: "%.2f", hotel.rating ?? 0.0))")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
-
+                            
                         }
                         .padding(.vertical, 8)
                     }
@@ -128,7 +176,7 @@ struct FindStopView: View {
                             Text("Rating: \(String(format: "%.2f", activity.rating ?? 0.0))")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
-
+                            
                         }
                         .padding(.vertical, 8)
                     }
@@ -150,112 +198,32 @@ struct FindStopView: View {
                         .padding(.top)
                 }
             }
-
-            if selection == "Activities" {
-                Text ("Rating: ")
-                HStack {
-                    ForEach(1...5, id:\.self) { index in
-                        Image(systemName: index <= rating ? "star.fill": "star")
-                            .foregroundStyle(index <= rating ? .yellow: .gray)
-                            .onTapGesture {
-                                rating = index
-                            }
-                    }
-
-                }
-            }
-
-            if selection == "Hotels" {
-                Text ("Rating: ")
-                HStack {
-                    ForEach(1...5, id:\.self) { index in
-                        Image(systemName: index <= rating ? "star.fill": "star")
-                            .foregroundStyle(index <= rating ? .yellow: .gray)
-                            .onTapGesture {
-                                rating = index
-                            }
-                    }
-                    
-                }
-                .padding()
-            }
-
-            if selection == "Food and Drink" {
-                VStack{
-
-                    //cuisine
-                    VStack {
-                        Text("Cuisine: ")
-                        ForEach(cuisines, id: \.self) { cuisine in
-                            HStack {
-                                Button(action: {
-                                    if selectedCuisines.contains(cuisine) {
-                                        selectedCuisines.removeAll { $0 == cuisine }
-                                    } else {
-                                        selectedCuisines.append(cuisine)
-                                    }
-                                }) {
-                                    HStack {
-                                        Image(systemName:
-                                                selectedCuisines.contains(cuisine) ? "checkmark.square" : "square")
-                                        Text(cuisine)
-                                        }
-                                    }
-                                }
-                            }
-                    }
-
-                    //price selection
-                    Text("Price: ")
-                    HStack {
-                        ForEach(1...4, id:\.self) {index in
-                            Image(systemName: index <= price ? "dollarsign.circle.fill" : "dollarsign.circle").foregroundColor(index <= price ? .yellow: .gray)
-                                .onTapGesture {
-                                    price = index
-                                }
-                        }
-                    }
-
-                    //rating selection
-                    HStack {
-                        Text ("Rating: ")
-                        ForEach(1...5, id:\.self) { index in
-                            Image(systemName: index <= rating ? "star.fill": "star")
-                                .foregroundStyle(index <= rating ? .yellow: .gray)
-                                .onTapGesture {
-                                    rating = index
-                                }
-                        }
-
-                    }
-                }
-            }
             
             TextField("Stop Name", text: $stopName)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding(.bottom, 5)
-
+            
             TextField("Stop Address", text: $stopAddress)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding(.bottom, 10)
-
+            
             Button(isEditing ? "Update Stop" : "Add Stop") {
                 let newStop = GeneralLocation(address: stopAddress, name: stopName)
-
+                
                 if isEditing, let stop = selectedStop {
                     vm.current_trip?.removeStops(removedStops: [stop])
                     vm.current_trip?.addStops(additionalStops: [newStop])
                 } else {
                     vm.current_trip?.addStops(additionalStops: [newStop])
                 }
-
+                
                 stopName = ""
                 stopAddress = ""
                 isEditing = false
                 selectedStop = nil
             }
             .padding(.bottom, 10)
-
+            
             List {
                 ForEach(vm.current_trip?.getStops().filter { $0.name.contains(selection) } ?? [], id: \.address) { stop in
                     HStack {
@@ -268,7 +236,7 @@ struct FindStopView: View {
                             isEditing = true
                         }
                         .padding(.leading)
-
+                        
                         Button("Delete") {
                             vm.current_trip?.removeStops(removedStops: [stop])
                         }
@@ -283,11 +251,12 @@ struct FindStopView: View {
                         }
                     }
                 })
-            }       
+            }
         }
         .padding(.horizontal)
         .navigationTitle("Add/Edit Stop")
     }
+}
 
 
 #Preview {

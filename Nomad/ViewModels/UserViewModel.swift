@@ -118,7 +118,9 @@ class UserViewModel: ObservableObject {
             }
             totalDist += await getDistance(fromAddress: stops[stops.count-1].address, toAddress: current_trip.getEndLocation().address)
         }
-        total_distance = totalDist
+        DispatchQueue.main.async {
+            self.total_distance = totalDist
+        }
     }
     
     func getTotalTime() async {
@@ -135,7 +137,9 @@ class UserViewModel: ObservableObject {
             }
             totalTime += await getTime(fromAddress: stops[stops.count-1].address, toAddress: current_trip.getEndLocation().address)
         }
-        total_time = totalTime
+        DispatchQueue.main.async {
+            self.total_time = totalTime
+        }
     }
 
     func getDistance(fromAddress: String, toAddress: String) async -> (Double) {
