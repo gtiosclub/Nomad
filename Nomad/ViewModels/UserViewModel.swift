@@ -79,13 +79,13 @@ class UserViewModel: ObservableObject {
         self.user = user
     }
     
-    func setTripStartDate(startDate: String) {
+    func setStartDate(startDate: String) {
         current_trip?.setStartDate(newDate: startDate)
         user?.updateTrip(trip: current_trip!)
         self.user = user
     }
     
-    func setTripEndDate(endDate: String) {
+    func setEndDate(endDate: String) {
         current_trip?.setEndDate(newDate: endDate)
         user?.updateTrip(trip: current_trip!)
         self.user = user
@@ -211,9 +211,6 @@ class UserViewModel: ObservableObject {
         
         return 0.0
     }
-
-
-}
 
     func fetchPlaces(location: String, stopType: String, rating: Double?, price: Int?, cuisine: String?) async {
         let apiKey = ""

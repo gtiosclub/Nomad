@@ -77,8 +77,8 @@ struct TripView: View {
                 HStack {
                     Spacer()
                     Button("Save Dates & Time") {
-                        vm.updateStartDate(newStartDate: TripView.dateToString(date: startDate) ?? "")
-                        vm.updateEndDate(newEndDate: TripView.dateToString(date: endDate) ?? "")
+                        vm.setStartDate(startDate: TripView.dateToString(date: startDate) ?? "")
+                        vm.setEndDate(endDate: TripView.dateToString(date: endDate) ?? "")
                     }
                     .padding()
                     .foregroundColor(.white)

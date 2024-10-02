@@ -10,18 +10,14 @@ import SwiftUI
 struct FindStopView: View {
     @ObservedObject var vm: UserViewModel
     @State var selection: String = "Food and Drink"
-    @State var selectedCuisine: String = "All"
-    @State var selectedRating: Double? = nil
-    @State var selectedPrice: Int? = nil
     @State private var searchTerm: String = ""
-    
+    @State private var price: Int = 0
+    @State private var rating: Int = 0
+    @State private var selectedCuisines: [String] = []
     @State private var isLoading: Bool = false
     @State private var hasSearched: Bool = false
     
     let stop_types = ["Food and Drink", "Activities", "Scenic", "Hotels", "Tours and Landmarks", "Entertainment"]
-    @State private var price: Int = 0
-    @State private var rating: Int = 0
-    @State private var selectedCuisines: [String] = []
     let cuisines = ["Chinese", "Italian", "Indian", "American", "Japanese", "Korean"]
     
     var body: some View {
@@ -38,67 +34,6 @@ struct FindStopView: View {
             }
             .pickerStyle(SegmentedPickerStyle())
             .padding()
-
-            if selection == "Food and Drink" {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Cuisine")
-                        .font(.headline)
-                    Picker("Cuisine", selection: $selectedCuisine) {
-                        Text("All").tag("All")
-                        Text("Italian").tag("Italian")
-                        Text("Chinese").tag("Chinese")
-                        Text("Mexican").tag("Mexican")
-                        Text("American").tag("American")
-                        Text("Barbecue").tag("Barbecue")
-                    }
-                    .pickerStyle(MenuPickerStyle())
-                    .padding(.horizontal)
-                }
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Rating")
-                        .font(.headline)
-                    Picker("Rating", selection: $selectedRating) {
-                        Text("Any").tag(nil as Double?)
-                        Text("⭐️ 1").tag(1.0)
-                        Text("⭐️⭐️ 2").tag(2.0)
-                        Text("⭐️⭐️⭐️ 3").tag(3.0)
-                        Text("⭐️⭐️⭐️⭐️ 4").tag(4.0)
-                        Text("⭐️⭐️⭐️⭐️⭐️ 5").tag(5.0)
-                    }
-                    .pickerStyle(MenuPickerStyle())
-                    .padding(.horizontal)
-                }
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Price")
-                        .font(.headline)
-                    Picker("Price", selection: $selectedPrice) {
-                        Text("Any").tag(nil as Int?)
-                        Text("$").tag(1)
-                        Text("$$").tag(2)
-                        Text("$$$").tag(3)
-                        Text("$$$$").tag(4)
-                    }
-                    .pickerStyle(MenuPickerStyle())
-                    .padding(.horizontal)
-                }
-            } else {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Rating")
-                        .font(.headline)
-                    Picker("Rating", selection: $selectedRating) {
-                        Text("Any").tag(nil as Double?)
-                        Text("⭐️ 1").tag(1.0)
-                        Text("⭐️⭐️ 2").tag(2.0)
-                        Text("⭐️⭐️⭐️ 3").tag(3.0)
-                        Text("⭐️⭐️⭐️⭐️ 4").tag(4.0)
-                        Text("⭐️⭐️⭐️⭐️⭐️ 5").tag(5.0)
-                    }
-                    .pickerStyle(MenuPickerStyle())
-                    .padding(.horizontal)
-                }
-            }
 
             Button(action: {
                 isLoading = true
@@ -127,9 +62,9 @@ struct FindStopView: View {
                         await vm.fetchPlaces(
                             location: "177 North Avenue NW, Atlanta, GA 30332",
                             stopType: searchTerm,
-                            rating: selectedRating,
-                            price: selectedPrice,
-                            cuisine: selectedCuisine
+                            rating: Double(rating),
+                            price: price,
+                            cuisine: selectedCuisines.joined(separator: ",")
                         )
                     }
                     isLoading = false
@@ -235,11 +170,9 @@ struct FindStopView: View {
                             .foregroundStyle(index <= rating ? .yellow: .gray)
                             .onTapGesture {
                                 rating = index
-                                }
                             }
-
-                        }
                     }
+                    
                 }
                 .padding()
             }
@@ -299,6 +232,7 @@ struct FindStopView: View {
         }
         .padding(.horizontal)
     }
+}
 
 
 #Preview {
