@@ -32,7 +32,7 @@ class User: Identifiable {
     
     func updateTrip(trip: Trip?) {
         if trip == nil { return }
-        var index: Int? = self.trips.firstIndex(where: { $0.id == trip?.id })
+        let index: Int? = self.trips.firstIndex(where: { $0.id == trip?.id })
         if index == nil { return }
         self.trips[index!] = trip!
     }
