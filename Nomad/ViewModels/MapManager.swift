@@ -25,6 +25,7 @@ class MapManager: ObservableObject {
     
     // Route Data
     @Published var route: Route?
+    @Published var routeSteps: [[Step]]?
     @Published var legPolylines: [MKPolyline]?
     @Published var startCoordinate: CLLocationCoordinate2D?
     @Published var endCoordinate: CLLocationCoordinate2D?
@@ -47,9 +48,11 @@ class MapManager: ObservableObject {
         let mainRoute = previewRoutes.mainRoute.route
                             
         self.route = mainRoute
-        self.legPolylines = getPolylines(route: mainRoute)
-        self.startCoordinate = self.route?.shape?.coordinates.first
-        self.endCoordinate = self.route?.shape?.coordinates.last
+        self.routeSteps = getSteps(route: mainRoute)
+        
+        self.legPolylines = getPolylines(route: self.routeSteps!)
+        self.startCoordinate = self.routeSteps?.first?.first?.startCoordinate
+        self.endCoordinate = self.routeSteps?.last?.last?.endCoordinate
 
 
     }
@@ -57,22 +60,37 @@ class MapManager: ObservableObject {
     // Routing
     
     // Take a mapbox Route and convert to polylines, each polyline being a leg of the route
-    private func getPolylines(route: Route) -> [MKPolyline] {
+    private func getPolylines(route: [[Step]]) -> [MKPolyline] {
         var legs = [MKPolyline]()
         
-        for leg in route.legs {
+        for leg in route {
             var stepCoordinates = [CLLocationCoordinate2D]()
-            for step in leg.steps {
-//                let startCoordinate = step.shape?.coordinates.first
-//                let endCoordinate = step.shape?.coordinates.last
-                
-                if let coordinates = step.shape?.coordinates {
-                    stepCoordinates += coordinates
+            for step in leg {
+                if let startCoordinate = step.startCoordinate {
+                    stepCoordinates.append(startCoordinate)
                 }
             }
+            if let lastCoordinate = leg.last?.endCoordinate {
+                stepCoordinates.append(lastCoordinate)
+            }
+            print(stepCoordinates)
             legs.append(MKPolyline(coordinates: stepCoordinates, count: stepCoordinates.count))
+            
         }
         
+        return legs
+    }
+    
+    // Generate legs with Step structs
+    private func getSteps(route: Route) -> [[Step]] {
+        var legs = [[Step]]()
+        for leg in route.legs {
+            var steps = [Step]()
+            for step in leg.steps {
+                steps.append(Step(step: step))
+            }
+            legs.append(steps)
+        }
         return legs
     }
     
