@@ -1,24 +1,19 @@
 //
-//  Restaurant.swift
+//  GeneralLocation.swift
 //  Nomad
 //
-//  Created by Nicholas Candello on 9/15/24.
+//  Created by Austin Huguenard on 9/22/24.
 //
 
 import Foundation
 
-struct Restaurant: POI {
+struct GeneralLocation: POI {
     var address: String
     var name: String
-    var rating: Double?
-    var cuisine: String?
-    var price: Int?
-    var website: String?
     
-    init(address: String, name: String, rating: Double? = nil) {
+    init(address: String, name: String) {
         self.address = address
         self.name = name
-        self.rating = rating
     }
     
     mutating func setAddress(newAddress: String) {
@@ -27,5 +22,13 @@ struct Restaurant: POI {
     
     mutating func setName(newName: String) {
         self.name = newName
+    }
+    
+    func getAddress() -> String {
+        return address
+    }
+    
+    func getName() -> String {
+        return name
     }
 }

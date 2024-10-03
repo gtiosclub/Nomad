@@ -1,6 +1,10 @@
 # Nomad
 Fall 2024 Project
 
+Tech Leads: Nick Candello, Rik Roy
+
+Senior Developers: Austin Huguenard, Datta Kansal, Shaunak Karnik
+
 # Design Info
 Figma Link: https://www.figma.com/design/VVrrXAWspLEOhcyuR1ehLV/General-Meeting-Mockup?node-id=2058-9&node-type=canvas&t=FXT8dot8J4nS2Bi5-0
 

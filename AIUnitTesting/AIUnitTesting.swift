@@ -46,4 +46,16 @@ final class AIUnitTesting: XCTestCase {
         let query = "What are some restuarants in Atlanta that are near the Atlanta Aquarium?"
         await print(vm.getRestaurants(query: query)!)
     }
+    
+    func testGasPrices() async {
+        let expectation = self.expectation(description: "testing Gas API")
+        await print(vm.getGasPrices(stateCode: "CT"))
+        expectation.fulfill()
+        
+        await waitForExpectations(timeout: 5) {error in
+            if let error = error {
+                print("this function doesn't work")
+            }
+        }
+    }
 }
