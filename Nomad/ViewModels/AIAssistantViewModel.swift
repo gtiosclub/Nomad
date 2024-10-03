@@ -50,11 +50,32 @@ class AIAssistantViewModel: ObservableObject {
         return ""
     }
     
-    func getJsonOutput(question: String) async -> String? {
+    func getJsonOutput(query: String) async -> String? {
         do {
             let response = try await openAIAPIKey.sendMessage(
-                text: question,
-//                model: gptModel!
+                text: "Only return a JSON Object" + query,
+                model: gptModel!,
+                responseFormat: jsonResponseFormat)
+            return response
+        } catch {
+            return "Send OpenAI Query Error: \(error.localizedDescription)"
+        }
+    }
+    
+    func getRestaurants(query: String) async -> String? {
+        do {
+            let response = try await openAIAPIKey.sendMessage(
+                text: """
+                    I will give you a question/statement. From this statement, extract the location type and distance I am looking for and put it in this JSON format:
+                    {
+                    locationType: <Restaurant/GasStation/Hotel/RestStop/Point of Interest/Activity>
+                    distance: <Int>
+                    location: <String>
+                    }
+                    
+                    Here is the statement: \(query)
+                """,
+                model: gptModel!,
                 responseFormat: jsonResponseFormat)
             return response
         } catch {
@@ -62,4 +83,3 @@ class AIAssistantViewModel: ObservableObject {
         }
     }
 }
- 

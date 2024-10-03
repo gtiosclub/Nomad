@@ -56,7 +56,12 @@ final class AIUnitTesting: XCTestCase {
     }
     
     func testJsonOutput() async {
-        let question = "Only return a JSON Object. What is Euler's Totient? Why is it important?"
-        await print(vm.getJsonOutput(question: question)!)
+        let query = "What are the seven wonders of the world?"
+        await print(vm.getJsonOutput(query: query)!)
+    }
+    
+    func testGetRestaurantsInSpecificFormat() async {
+        let query = "What are some restuarants in Atlanta that are near the Atlanta Aquarium?"
+        await print(vm.getRestaurants(query: query)!)
     }
 }
