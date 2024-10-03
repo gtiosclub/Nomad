@@ -9,7 +9,7 @@ import Foundation
 import ChatGPTSwift
 
 class AIAssistantViewModel: ObservableObject {
-    let openAIAPIKey = ChatGPTAPI(apiKey: "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")
+    let openAIAPIKey = ChatGPTAPI(apiKey: "<PUT API KEY HERE>")
     let yelpAPIKey = "<PUT API KEY HERE>"
     let jsonResponseFormat = Components.Schemas.CreateChatCompletionRequest.response_formatPayload(_type: .json_object) // ensure that query returns json object
     let gptModel = ChatGPTModel(rawValue: "gpt-4o")
