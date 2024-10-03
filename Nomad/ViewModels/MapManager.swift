@@ -8,6 +8,7 @@
 import Foundation
 import MapKit
 import CoreLocation
+import _MapKit_SwiftUI
 
 class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
@@ -19,6 +20,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var source = MKPlacemark(coordinate: CLLocationCoordinate2D())
     @Published var destination =  MKPlacemark(coordinate: CLLocationCoordinate2D())
     @Published var motion = Motion()
+    @Published var region = MKCoordinateRegion()
     
     // Map State/Settings
     @Published var mapPosition: MapCameraPosition = .userLocation(fallback: .camera(MapCamera(centerCoordinate: CLLocationCoordinate2D(latitude: .zero, longitude: .zero), distance: 0)))
@@ -35,16 +37,23 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     // Continuously update user location
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        if let location = locations.last {
-            DispatchQueue.main.async {
-                self.motion.coordinate = location.coordinate
-                self.motion.altitude = location.altitude
-                self.motion.speed = location.speed
-                self.motion.direction = location.course
-                print(self.motion.toString())
+            if let location = locations.last {
+                DispatchQueue.main.async {
+                    self.userLocation = location.coordinate // Update user location
+                    self.motion.coordinate = location.coordinate
+                    self.motion.altitude = location.altitude
+                    self.motion.speed = location.speed
+                    self.motion.direction = location.course
+                    print(self.motion.toString())
+                    
+                    // Update the region for the map
+                    self.region = MKCoordinateRegion(
+                        center: location.coordinate,
+                        span: .init(latitudeDelta: 0.01, longitudeDelta: 0.01)
+                    )
+                }
             }
         }
-    }
     
     
     // Handle location access errors
