@@ -88,6 +88,30 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    func addTripToUser(userID: String, tripID: String) async -> Bool {
+        let db = Firestore.firestore()
+        let docRef = db.collection("USERS").document(userID)
+        do {
+            let document = try await docRef.getDocument()
+            guard var trips = document.data()?["trips"] as? [String] else {
+                print("Document does not exist or 'completedCountries' is not an array.")
+                return false
+            }
+            if (!trips.contains(tripID)) {
+                trips.append(tripID)
+                try await db.collection("USERS").document(userID).updateData(["trips": trips])
+                return true
+                    
+            } else {
+                print("Trip already in user trip list")
+                return false;
+            }
+        } catch {
+            print(error)
+            return false
+        }
+    }
+
     private func parseFirebaseError(_ error: Error) -> String {
         let errorCode = (error as NSError).code
         switch errorCode {
