@@ -10,6 +10,7 @@ import MapKit
 @available(iOS 17.0, *)
 struct MapView: View {
     @ObservedObject var mapManager = MapManager()
+    @State var selectedAddress = ""
     
     private let startingPoint = CLLocationCoordinate2D(
         latitude: 40.83657722488077,
@@ -54,6 +55,8 @@ struct MapView: View {
                     }
                 }
                 Spacer()
+                LocationSearchBox(selectedAddress: $selectedAddress)
+                    .padding()
             }
         }
     }
