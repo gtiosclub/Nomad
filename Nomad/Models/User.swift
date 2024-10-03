@@ -7,12 +7,27 @@
 
 import Foundation
 
-struct User: Identifiable {
+class User: Identifiable {
     var id: String
+    var name: String
     var trips: [Trip]
     
-    mutating func addTrip(trip: Trip){
+    init(id: String, name: String, trips: [Trip] = []) {
+        self.id = id
+        self.name = name
+        self.trips = trips
+    }
+    
+    func addTrip(trip: Trip) {
         self.trips.append(trip)
+    }
+    
+    func getTrips() -> [Trip] {
+        return self.trips
+    }
+    
+    func findTrip(id: String) -> Trip? {
+        return self.trips.first(where: { $0.id == id })
     }
 }
 
