@@ -8,7 +8,6 @@
 import Foundation
 import MapKit
 import CoreLocation
-import Combine
 
 class UserViewModel: ObservableObject {
     @Published var user: User?
