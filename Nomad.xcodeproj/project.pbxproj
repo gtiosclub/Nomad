@@ -7,12 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		B298EB552C98F9DE0078696A /* MapManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B298EB542C98F9DE0078696A /* MapManager.swift */; };
 		48974B842C9A438B0057B073 /* Activity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B832C9A43880057B073 /* Activity.swift */; };
 		48974B862C9A44A30057B073 /* Hotel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B852C9A449F0057B073 /* Hotel.swift */; };
 		48974B8B2C9F72700057B073 /* TripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B8A2C9F72700057B073 /* TripView.swift */; };
 		48974B8D2CA0A3CB0057B073 /* FindStopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B8C2CA0A3CB0057B073 /* FindStopView.swift */; };
 		48974B8F2CA0A6130057B073 /* GeneralLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B8E2CA0A6130057B073 /* GeneralLocation.swift */; };
+		66443CD72CADDB77000D3F12 /* RoutePlanListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66443CD62CADDB77000D3F12 /* RoutePlanListView.swift */; };
 		8419ED6C2C99536E003AD5C2 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED6B2C99536E003AD5C2 /* FirebaseAnalytics */; };
 		8419ED6E2C99536E003AD5C2 /* FirebaseAnalyticsOnDeviceConversion in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED6D2C99536E003AD5C2 /* FirebaseAnalyticsOnDeviceConversion */; };
 		8419ED702C99536E003AD5C2 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED6F2C99536E003AD5C2 /* FirebaseAnalyticsWithoutAdIdSupport */; };
@@ -37,6 +37,7 @@
 		8419ED962C99536E003AD5C2 /* FirebaseStorageCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED952C99536E003AD5C2 /* FirebaseStorageCombine-Community */; };
 		8419ED982C99536E003AD5C2 /* FirebaseVertexAI-Preview in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED972C99536E003AD5C2 /* FirebaseVertexAI-Preview */; };
 		B2154C6D2C9D01BA00A6F238 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B2154C6C2C9D01BA00A6F238 /* GoogleService-Info.plist */; };
+		B298EB552C98F9DE0078696A /* MapManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B298EB542C98F9DE0078696A /* MapManager.swift */; };
 		B2F8F3372C97BB3C00B9618E /* NomadApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F3362C97BB3C00B9618E /* NomadApp.swift */; };
 		B2F8F33D2C97BB3E00B9618E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2F8F33C2C97BB3E00B9618E /* Assets.xcassets */; };
 		B2F8F3402C97BB3E00B9618E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2F8F33F2C97BB3E00B9618E /* Preview Assets.xcassets */; };
@@ -70,13 +71,14 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		B298EB542C98F9DE0078696A /* MapManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapManager.swift; sourceTree = "<group>"; };
 		48974B832C9A43880057B073 /* Activity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Activity.swift; sourceTree = "<group>"; };
 		48974B852C9A449F0057B073 /* Hotel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hotel.swift; sourceTree = "<group>"; };
 		48974B8A2C9F72700057B073 /* TripView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripView.swift; sourceTree = "<group>"; };
 		48974B8C2CA0A3CB0057B073 /* FindStopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindStopView.swift; sourceTree = "<group>"; };
 		48974B8E2CA0A6130057B073 /* GeneralLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralLocation.swift; sourceTree = "<group>"; };
+		66443CD62CADDB77000D3F12 /* RoutePlanListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePlanListView.swift; sourceTree = "<group>"; };
 		B2154C6C2C9D01BA00A6F238 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		B298EB542C98F9DE0078696A /* MapManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapManager.swift; sourceTree = "<group>"; };
 		B2F8F3332C97BB3C00B9618E /* Nomad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Nomad.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2F8F3362C97BB3C00B9618E /* NomadApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NomadApp.swift; sourceTree = "<group>"; };
 		B2F8F33C2C97BB3E00B9618E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -95,9 +97,9 @@
 		B2F8F35F2C97BD6200B9618E /* FirebaseViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseViewModel.swift; sourceTree = "<group>"; };
 		B2F8F3612C97BD8900B9618E /* AIAssistantViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIAssistantViewModel.swift; sourceTree = "<group>"; };
 		B2F8F3632C97BD9B00B9618E /* UserViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserViewModel.swift; sourceTree = "<group>"; };
+		B35B621F2C9A444700AB215E /* AIUnitTesting.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AIUnitTesting.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C49A654F2C9CE53400A8B9BA /* MapSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapSearch.swift; sourceTree = "<group>"; };
 		C49A65512C9CE6D600A8B9BA /* Test.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test.swift; sourceTree = "<group>"; };
-		B35B621F2C9A444700AB215E /* AIUnitTesting.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AIUnitTesting.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -196,6 +198,7 @@
 				B2F8F34F2C97BC9600B9618E /* ItineraryPlanningView.swift */,
 				48974B8A2C9F72700057B073 /* TripView.swift */,
 				48974B8C2CA0A3CB0057B073 /* FindStopView.swift */,
+				66443CD62CADDB77000D3F12 /* RoutePlanListView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -384,6 +387,7 @@
 				B2F8F34A2C97BC7700B9618E /* RecapView.swift in Sources */,
 				B2F8F35B2C97BD2200B9618E /* RestStop.swift in Sources */,
 				B2F8F3372C97BB3C00B9618E /* NomadApp.swift in Sources */,
+				66443CD72CADDB77000D3F12 /* RoutePlanListView.swift in Sources */,
 				B2F8F3532C97BCAB00B9618E /* User.swift in Sources */,
 				48974B862C9A44A30057B073 /* Hotel.swift in Sources */,
 				B2F8F3642C97BD9B00B9618E /* UserViewModel.swift in Sources */,
