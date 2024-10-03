@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		48974B842C9A438B0057B073 /* Activity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B832C9A43880057B073 /* Activity.swift */; };
 		48974B862C9A44A30057B073 /* Hotel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B852C9A449F0057B073 /* Hotel.swift */; };
+		599F66172C9CE4F90025A8F8 /* Motion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 599F66162C9CE4F90025A8F8 /* Motion.swift */; };
 		48974B8B2C9F72700057B073 /* TripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B8A2C9F72700057B073 /* TripView.swift */; };
 		48974B8D2CA0A3CB0057B073 /* FindStopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B8C2CA0A3CB0057B073 /* FindStopView.swift */; };
 		48974B8F2CA0A6130057B073 /* GeneralLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B8E2CA0A6130057B073 /* GeneralLocation.swift */; };
@@ -36,6 +37,11 @@
 		8419ED962C99536E003AD5C2 /* FirebaseStorageCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED952C99536E003AD5C2 /* FirebaseStorageCombine-Community */; };
 		8419ED982C99536E003AD5C2 /* FirebaseVertexAI-Preview in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED972C99536E003AD5C2 /* FirebaseVertexAI-Preview */; };
 		B2154C6D2C9D01BA00A6F238 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B2154C6C2C9D01BA00A6F238 /* GoogleService-Info.plist */; };
+		B2154CD02C9E2DF400A6F238 /* CompassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2154CCF2C9E2DF400A6F238 /* CompassView.swift */; };
+		B2154CD22C9E319C00A6F238 /* RecenterMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2154CD12C9E319C00A6F238 /* RecenterMapView.swift */; };
+		B2154CD42C9E333700A6F238 /* ChangeMapTypeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2154CD32C9E333700A6F238 /* ChangeMapTypeView.swift */; };
+		B25A5C6E2CAE27C6001FC87E /* MapPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B25A5C6D2CAE27C1001FC87E /* MapPreviewView.swift */; };
+		B298EB552C98F9DE0078696A /* MapManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B298EB542C98F9DE0078696A /* MapManager.swift */; };
 		B2F8F3372C97BB3C00B9618E /* NomadApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F3362C97BB3C00B9618E /* NomadApp.swift */; };
 		B2F8F33D2C97BB3E00B9618E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2F8F33C2C97BB3E00B9618E /* Assets.xcassets */; };
 		B2F8F3402C97BB3E00B9618E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2F8F33F2C97BB3E00B9618E /* Preview Assets.xcassets */; };
@@ -69,10 +75,17 @@
 /* Begin PBXFileReference section */
 		48974B832C9A43880057B073 /* Activity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Activity.swift; sourceTree = "<group>"; };
 		48974B852C9A449F0057B073 /* Hotel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hotel.swift; sourceTree = "<group>"; };
+		599F66162C9CE4F90025A8F8 /* Motion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Motion.swift; sourceTree = "<group>"; };
 		48974B8A2C9F72700057B073 /* TripView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripView.swift; sourceTree = "<group>"; };
 		48974B8C2CA0A3CB0057B073 /* FindStopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindStopView.swift; sourceTree = "<group>"; };
 		48974B8E2CA0A6130057B073 /* GeneralLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralLocation.swift; sourceTree = "<group>"; };
 		B2154C6C2C9D01BA00A6F238 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		B2154C6F2C9D02C900A6F238 /* MapManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapManager.swift; sourceTree = "<group>"; };
+		B2154CCF2C9E2DF400A6F238 /* CompassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompassView.swift; sourceTree = "<group>"; };
+		B2154CD12C9E319C00A6F238 /* RecenterMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecenterMapView.swift; sourceTree = "<group>"; };
+		B2154CD32C9E333700A6F238 /* ChangeMapTypeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangeMapTypeView.swift; sourceTree = "<group>"; };
+		B25A5C6D2CAE27C1001FC87E /* MapPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapPreviewView.swift; sourceTree = "<group>"; };
+		B298EB542C98F9DE0078696A /* MapManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapManager.swift; sourceTree = "<group>"; };
 		B2F8F3332C97BB3C00B9618E /* Nomad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Nomad.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2F8F3362C97BB3C00B9618E /* NomadApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NomadApp.swift; sourceTree = "<group>"; };
 		B2F8F33C2C97BB3E00B9618E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -140,6 +153,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B2154CCE2C9E2DE500A6F238 /* MapButtons */ = {
+			isa = PBXGroup;
+			children = (
+				B2154CCF2C9E2DF400A6F238 /* CompassView.swift */,
+				B2154CD12C9E319C00A6F238 /* RecenterMapView.swift */,
+				B2154CD32C9E333700A6F238 /* ChangeMapTypeView.swift */,
+			);
+			path = MapButtons;
+			sourceTree = "<group>";
+		};
 		B2F8F32A2C97BB3C00B9618E = {
 			isa = PBXGroup;
 			children = (
@@ -186,8 +209,10 @@
 			children = (
 				B2F8F3492C97BC7700B9618E /* RecapView.swift */,
 				B2F8F34B2C97BC7F00B9618E /* MapView.swift */,
+				B25A5C6D2CAE27C1001FC87E /* MapPreviewView.swift */,
 				B2F8F34D2C97BC8A00B9618E /* AIAssistantView.swift */,
 				B2F8F34F2C97BC9600B9618E /* ItineraryPlanningView.swift */,
+				B2154CCE2C9E2DE500A6F238 /* MapButtons */,
 				48974B8A2C9F72700057B073 /* TripView.swift */,
 				48974B8C2CA0A3CB0057B073 /* FindStopView.swift */,
 			);
@@ -205,6 +230,7 @@
 				B2F8F3582C97BCD400B9618E /* Restaurant.swift */,
 				B2F8F35A2C97BD2200B9618E /* RestStop.swift */,
 				B2F8F35C2C97BD3000B9618E /* GasStation.swift */,
+				599F66162C9CE4F90025A8F8 /* Motion.swift */,
 				48974B8E2CA0A6130057B073 /* GeneralLocation.swift */,
 			);
 			path = Models;
@@ -214,7 +240,9 @@
 			isa = PBXGroup;
 			children = (
 				B2F8F35F2C97BD6200B9618E /* FirebaseViewModel.swift */,
+				B2154C6F2C9D02C900A6F238 /* MapManager.swift */,
 				B2F8F3612C97BD8900B9618E /* AIAssistantViewModel.swift */,
+				B298EB542C98F9DE0078696A /* MapManager.swift */,
 				B2F8F3632C97BD9B00B9618E /* UserViewModel.swift */,
 			);
 			path = ViewModels;
@@ -356,17 +384,23 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				599F66172C9CE4F90025A8F8 /* Motion.swift in Sources */,
+				B2154CD02C9E2DF400A6F238 /* CompassView.swift in Sources */,
+				B2154CD22C9E319C00A6F238 /* RecenterMapView.swift in Sources */,
 				B2F8F35D2C97BD3000B9618E /* GasStation.swift in Sources */,
 				B2F8F3592C97BCD400B9618E /* Restaurant.swift in Sources */,
 				48974B8D2CA0A3CB0057B073 /* FindStopView.swift in Sources */,
 				B2F8F3602C97BD6200B9618E /* FirebaseViewModel.swift in Sources */,
 				B2F8F3472C97BB5500B9618E /* RootView.swift in Sources */,
+				B298EB552C98F9DE0078696A /* MapManager.swift in Sources */,
 				B2F8F3572C97BCC400B9618E /* POI.swift in Sources */,
 				B2F8F3502C97BC9600B9618E /* ItineraryPlanningView.swift in Sources */,
 				48974B8F2CA0A6130057B073 /* GeneralLocation.swift in Sources */,
 				48974B842C9A438B0057B073 /* Activity.swift in Sources */,
+				B2154CD42C9E333700A6F238 /* ChangeMapTypeView.swift in Sources */,
 				B2F8F34C2C97BC7F00B9618E /* MapView.swift in Sources */,
 				B2F8F34E2C97BC8A00B9618E /* AIAssistantView.swift in Sources */,
+				B25A5C6E2CAE27C6001FC87E /* MapPreviewView.swift in Sources */,
 				48974B8B2C9F72700057B073 /* TripView.swift in Sources */,
 				B2F8F3552C97BCBB00B9618E /* Trip.swift in Sources */,
 				B2F8F34A2C97BC7700B9618E /* RecapView.swift in Sources */,
@@ -524,9 +558,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Nomad/Preview Content\"";
-				DEVELOPMENT_TEAM = 3U7XP56VTS;
+				DEVELOPMENT_TEAM = 422P875XS4;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -537,7 +572,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.nicholascandello.Nomad;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rudraamin.Nomad;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -553,9 +588,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Nomad/Preview Content\"";
-				DEVELOPMENT_TEAM = 3U7XP56VTS;
+				DEVELOPMENT_TEAM = 422P875XS4;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -566,7 +602,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.nicholascandello.Nomad;
+				PRODUCT_BUNDLE_IDENTIFIER = com.rudraamin.Nomad;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
