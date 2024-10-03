@@ -51,7 +51,7 @@ class AIAssistantViewModel: ObservableObject {
     func getGasPrices(stateCode: String) async -> Double? {
         let headers = [
             "content-type": "application/json",
-            "authorization": "apikey 3JbglJ61TjhdFiY5XxexiY:7gfIoGKgXleLaCb9S4GOZk"
+            "authorization": "*Gas Prices API*"
         ]
 
         guard let url = URL(string: "https://api.collectapi.com/gasPrice/stateUsaPrice?state=\(stateCode)") else {
