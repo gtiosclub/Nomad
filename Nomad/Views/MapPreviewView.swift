@@ -42,9 +42,7 @@ struct MapPreviewView: View {
                 }
             }
             Button(action: {
-                manager.setSource(coord: startingCoordinates)
-                manager.setDestination(coord: endCoordinates)
-                manager.getDirections()
+                manager.getDirections(from: startingCoordinates, to: endCoordinates, via: stopMarkers)
             }) {
                 Text("Get Directions")
                     .padding()
@@ -54,6 +52,7 @@ struct MapPreviewView: View {
             }
         }
     }
+    
     func calculateRegion(for coordinates: [CLLocationCoordinate2D]) -> MKCoordinateRegion {
             let minLatitude = coordinates.map { $0.latitude }.min() ?? 0.0
             let maxLatitude = coordinates.map { $0.latitude }.max() ?? 0.0
@@ -77,5 +76,5 @@ struct MapPreviewView: View {
     MapPreviewView(
         startingCoordinates: CLLocationCoordinate2D(latitude: 33.7488, longitude: -84.3877),
         endCoordinates: CLLocationCoordinate2D(latitude: 41.8781, longitude: -87.6298),
-        stopMarkers: [CLLocationCoordinate2D(latitude: 36.8781, longitude: -87.6298)])
+        stopMarkers: [CLLocationCoordinate2D(latitude: 36.8781, longitude: -87.6298),CLLocationCoordinate2D(latitude: 37.8781, longitude: -88.6298), CLLocationCoordinate2D(latitude: 38.8781, longitude: -89.6298)])
 }

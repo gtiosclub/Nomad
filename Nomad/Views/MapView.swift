@@ -23,20 +23,15 @@ struct MapView: View {
     
     var body: some View {
         Map {
-            // Adding the marker for the starting point
             Marker("Start", coordinate: mapManager.source.coordinate)
             Marker("Finish", coordinate: mapManager.destination.coordinate)
-            
-            // Show the route if it is available
-
         }.onAppear() {
             mapManager.setSource(coord: startingPoint)
             mapManager.setDestination(coord: destinationCoordinates)
-            mapManager.getDirections()
+            mapManager.getDirections(from: startingPoint, to: destinationCoordinates, via: [])
         }
     }
 }
-
 
 #Preview {
     MapView()
