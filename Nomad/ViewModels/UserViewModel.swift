@@ -94,6 +94,11 @@ class UserViewModel: ObservableObject {
         self.user = user
     }
     
+    func setStartTime(startTime: String) {
+        current_trip?.setStartTime(newTime: startTime)
+        user?.updateTrip(trip: current_trip!)
+        self.user = user
+    }
     func setCurrentTrip(by tripID: String) {
         guard let user = user else { return }
         

@@ -101,12 +101,20 @@ struct TripView: View {
                         selection: $startDate,
                         displayedComponents: [.date]
                     )
+                    
+                    DatePicker(
+                            "Start Time",
+                            selection: $startTime,
+                            displayedComponents: [.hourAndMinute]
+                    )
+                    
 
                     DatePicker(
                         "End Date",
                         selection: $endDate,
                         displayedComponents: [.date]
                     )
+                    
 
 
                     HStack {
@@ -114,6 +122,8 @@ struct TripView: View {
                         Button("Save Dates & Time") {
                             vm.setStartDate(startDate: TripView.dateToString(date: startDate) ?? "")
                             vm.setEndDate(endDate: TripView.dateToString(date: endDate) ?? "")
+                            vm.setStartTime(startTime: TripView.timeToString(date: startTime) ?? "")
+                            
                         }
                         .padding()
                         .foregroundColor(.white)
@@ -140,6 +150,11 @@ struct TripView: View {
     
     static func dateToString(date: Date) -> String? {
         dateformatter.dateFormat = "MM-dd-yyyy HH:mm:ss"
+        return dateformatter.string(from: date)
+    }
+    
+    static func timeToString(date: Date) -> String? {
+        dateformatter.dateFormat = "HH:mm a"
         return dateformatter.string(from: date)
     }
 
