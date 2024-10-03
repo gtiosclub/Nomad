@@ -21,7 +21,6 @@ struct MapView: View {
         longitude: 14.263364
     )
     
-    
     var body: some View {
         ZStack {
             // All views within Map
