@@ -11,6 +11,7 @@ import ChatGPTSwift
 class AIAssistantViewModel: ObservableObject {
     let openAIAPIKey = ChatGPTAPI(apiKey: "<PUT API KEY HERE>")
     let yelpAPIKey = "<PUT API KEY HERE>"
+    let gasPricesAPIKey = "<PUT GAS KEY HERE>"
     let jsonResponseFormat = Components.Schemas.CreateChatCompletionRequest.response_formatPayload(_type: .json_object) // ensure that query returns json object
     let gptModel = ChatGPTModel(rawValue: "gpt-4o")
 
@@ -86,7 +87,7 @@ class AIAssistantViewModel: ObservableObject {
     func getGasPrices(stateCode: String) async -> Double? {
         let headers = [
             "content-type": "application/json",
-            "authorization": "*Gas Prices API*"
+            "authorization": gasPricesAPIKey
         ]
 
         guard let url = URL(string: "https://api.collectapi.com/gasPrice/stateUsaPrice?state=\(stateCode)") else {
