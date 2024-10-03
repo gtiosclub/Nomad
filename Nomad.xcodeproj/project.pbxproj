@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3AC04BBB2CAF5A560097CC5C /* SampleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AC04BBA2CAF5A4F0097CC5C /* SampleView.swift */; };
 		48974B842C9A438B0057B073 /* Activity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B832C9A43880057B073 /* Activity.swift */; };
 		48974B862C9A44A30057B073 /* Hotel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B852C9A449F0057B073 /* Hotel.swift */; };
 		48974B8B2C9F72700057B073 /* TripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B8A2C9F72700057B073 /* TripView.swift */; };
@@ -75,6 +76,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		3AC04BBA2CAF5A4F0097CC5C /* SampleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleView.swift; sourceTree = "<group>"; };
 		48974B832C9A43880057B073 /* Activity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Activity.swift; sourceTree = "<group>"; };
 		48974B852C9A449F0057B073 /* Hotel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hotel.swift; sourceTree = "<group>"; };
 		48974B8A2C9F72700057B073 /* TripView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripView.swift; sourceTree = "<group>"; };
@@ -191,6 +193,7 @@
 				B2154C6C2C9D01BA00A6F238 /* GoogleService-Info.plist */,
 				B2F8F3362C97BB3C00B9618E /* NomadApp.swift */,
 				B2F8F3462C97BB5500B9618E /* RootView.swift */,
+				3AC04BBA2CAF5A4F0097CC5C /* SampleView.swift */,
 				B2F8F3482C97BC6400B9618E /* Views */,
 				B2F8F3512C97BC9900B9618E /* Models */,
 				B2F8F35E2C97BD4B00B9618E /* ViewModels */,
@@ -411,6 +414,7 @@
 				48974B8B2C9F72700057B073 /* TripView.swift in Sources */,
 				B2F8F3552C97BCBB00B9618E /* Trip.swift in Sources */,
 				C49A65522C9CE6D600A8B9BA /* LocationSearchBox.swift in Sources */,
+				3AC04BBB2CAF5A560097CC5C /* SampleView.swift in Sources */,
 				B2F8F34A2C97BC7700B9618E /* RecapView.swift in Sources */,
 				B2F8F35B2C97BD2200B9618E /* RestStop.swift in Sources */,
 				B2F8F3372C97BB3C00B9618E /* NomadApp.swift in Sources */,

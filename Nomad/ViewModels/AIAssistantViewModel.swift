@@ -93,3 +93,10 @@ class AIAssistantViewModel: ObservableObject {
     }
 }
  
+// Note: this is for text to speech functionality
+// func speak(text: String) {
+//   let utterance = AVSpeechUtterance(string: text)
+//    utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
+//   utterance.rate = 0.5
+
+//   speechSynthesizer.speak(utterance)
