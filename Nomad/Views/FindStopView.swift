@@ -18,13 +18,15 @@ struct FindStopView: View {
     @State private var hasSearched: Bool = false
     @State private var stopName: String = ""
     @State private var stopAddress: String = ""
-    @State private var selectedStop: POI?
+    @State private var selectedStop: (any POI)?
     @State private var isEditing: Bool = false
     
     let stop_types = ["Food and Drink", "Activities", "Scenic", "Hotels", "Tours and Landmarks", "Entertainment"]
     let cuisines = ["Chinese", "Italian", "Indian", "American", "Japanese", "Korean"]
     
     var body: some View {
+        RoutePrevieView(vm: vm)
+        
         VStack(alignment: .leading) {
             Text("Filter Stop Type")
                 .font(.headline)
