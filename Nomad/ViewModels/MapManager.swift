@@ -5,15 +5,30 @@
 //  Created by Nicholas Candello on 9/16/24.
 //
 
-import CoreLocation
 import Foundation
 import MapKit
+import CoreLocation
+import SwiftUI
 
 import MapboxNavigationCore
 import MapboxDirections
 
-// TODO: Update public methods from Mapbox params to MapKit params
-class MapManager: ObservableObject {
+class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+    
+    private var locationManager = CLLocationManager()
+    
+    // Route Data
+    @Published var userLocation: CLLocationCoordinate2D?
+    @Published var route: MKRoute? = nil
+    @Published var source = MKPlacemark(coordinate: CLLocationCoordinate2D())
+    @Published var destination =  MKPlacemark(coordinate: CLLocationCoordinate2D())
+    @Published var motion = Motion()
+    @Published var region = MKCoordinateRegion()
+    
+    // Map State/Settings
+    @Published var mapPosition: MapCameraPosition = .userLocation(fallback: .camera(MapCamera(centerCoordinate: CLLocationCoordinate2D(latitude: .zero, longitude: .zero), distance: 0)))
+    @Published var bearing: Double = 0.0
+    @Published var mapType: MapTypes = .defaultMap
     
     @Published private(set) var isInActiveNavigation: Bool = false
     @Published private(set) var currentPreviewRoutes: NavigationRoutes?
@@ -30,11 +45,144 @@ class MapManager: ObservableObject {
     @Published var startCoordinate: CLLocationCoordinate2D?
     @Published var endCoordinate: CLLocationCoordinate2D?
     
-    // Route getters
-    // TODO: Add getters for start end coords of each leg
-
+    override init() {
+        super.init()
+        self.locationManager.delegate = self
+        self.locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation
+        self.locationManager.requestWhenInUseAuthorization()
+        self.locationManager.startUpdatingLocation()
+    }
     
-    func setupMapbox() async {
+    // Continuously update user location
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+            if let location = locations.last {
+                DispatchQueue.main.async {
+                    self.userLocation = location.coordinate // Update user location
+                    self.motion.coordinate = location.coordinate
+                    self.motion.altitude = location.altitude
+                    self.motion.speed = location.speed
+                    self.motion.direction = location.course
+                    print(self.motion.toString())
+                    
+                    // Update the region for the map
+                    self.region = MKCoordinateRegion(
+                        center: location.coordinate,
+                        span: .init(latitudeDelta: 0.01, longitudeDelta: 0.01)
+                    )
+                }
+            }
+        }
+    
+    
+    // Handle location access errors
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print("Failed to find user's location: \(error.localizedDescription)")
+    }
+    
+    // Source Setters
+    func setSource(coord: CLLocationCoordinate2D) {
+        self.source = MKPlacemark(coordinate: coord)
+    }
+    func setSource(placemark: MKPlacemark) {
+        self.source = placemark
+    }
+    // Destination Setters
+    func setDestination(coord: CLLocationCoordinate2D) {
+        self.destination = MKPlacemark(coordinate: coord)
+    }
+    func setDestination(placemark: MKPlacemark) {
+        self.destination = placemark
+    }
+    
+    // Directions
+    func getDirections() {
+        self.route = nil
+        
+        // Check if there is a selected result
+        
+        // Create and configure the request
+        let request = MKDirections.Request()
+        request.source = MKMapItem(placemark: source)
+        request.destination = MKMapItem(placemark: destination)
+        // Get the directions based on the request
+        Task {
+            let directions = MKDirections(request: request)
+            if let response = try? await directions.calculate() {
+                DispatchQueue.main.async {
+                    self.route = response.routes.first
+                }
+            }
+        }
+    }
+  
+  // Convert CLLocationCoordinate2D to MapPoint
+    // TODO: Update MapPoint name
+    private func toMapPoint(coordinates: CLLocationCoordinate2D) -> MapPoint {
+        return MapPoint(name: "", coordinate: coordinates)
+    }
+    
+    // Update generated route based on changes to waypoints
+    private func updateRoutes() async throws {
+        if let provider = await core?.routingProvider() {
+            let routeOptions = NavigationRouteOptions(
+                waypoints: waypoints,
+                profileIdentifier: profileIdentifier
+            )
+            
+            
+            switch await provider.calculateRoutes(options: routeOptions).result {
+            case .success(let previewRoutes):
+                currentPreviewRoutes = previewRoutes
+            case.failure(let e):
+                print(e)
+            }
+            
+            // Create MKRoute for each leg
+            //
+            
+            let previewRoutes = try await provider.calculateRoutes(options: routeOptions).value
+//            
+            currentPreviewRoutes = previewRoutes
+        }
+    }
+    
+    // Make an alternative route the main route
+    func selectAlternativeRoute(_ alternativeRoute: AlternativeRoute) async {
+        if let previewRoutes = currentPreviewRoutes {
+            currentPreviewRoutes = await previewRoutes.selecting(alternativeRoute: alternativeRoute)
+        }
+    }
+  
+  // Add current location as waypoint to route
+    func addCurrentLocationWaypoint(currentLocation: CLLocation, isFirst: Bool) async throws {
+        var userWaypoint = Waypoint(location: currentLocation)
+        if currentLocation.course >= 0 {
+            userWaypoint.heading = currentLocation.course
+            userWaypoint.headingAccuracy = 90
+        }
+        if isFirst {
+            waypoints.insert(userWaypoint, at: 0)
+        } else {
+            waypoints.append(userWaypoint)
+        }
+    }
+    
+    func modifyWaypointsOrdering(newWaypoints: [Waypoint]) async throws {
+        waypoints = newWaypoints
+        if waypoints.count > 1 {
+            try await updateRoutes()
+        }
+    }
+    
+    // Remove waypoint on route
+    func removeWayPoint(waypoint: Waypoint) async throws {
+        if let index = waypoints.firstIndex(of: waypoint) {
+            waypoints.remove(at: index)
+        }
+        try await updateRoutes()
+    }
+  
+  func setupMapbox() async {
         let config = CoreConfig(credentials: .init())
         let navigatorProvider = MapboxNavigationProvider(coreConfig: config)
         self.core = await navigatorProvider.mapboxNavigation
@@ -103,73 +251,4 @@ class MapManager: ObservableObject {
         }
     }
     
-    // Add current location as waypoint to route
-    func addCurrentLocationWaypoint(currentLocation: CLLocation, isFirst: Bool) async throws {
-        var userWaypoint = Waypoint(location: currentLocation)
-        if currentLocation.course >= 0 {
-            userWaypoint.heading = currentLocation.course
-            userWaypoint.headingAccuracy = 90
-        }
-        if isFirst {
-            waypoints.insert(userWaypoint, at: 0)
-        } else {
-            waypoints.append(userWaypoint)
-        }
-    }
-    
-    func modifyWaypointsOrdering(newWaypoints: [Waypoint]) async throws {
-        waypoints = newWaypoints
-        if waypoints.count > 1 {
-            try await updateRoutes()
-        }
-    }
-    
-    // Remove waypoint on route
-    func removeWayPoint(waypoint: Waypoint) async throws {
-        if let index = waypoints.firstIndex(of: waypoint) {
-            waypoints.remove(at: index)
-        }
-        try await updateRoutes()
-    }
-    
-    // Convert CLLocationCoordinate2D to MapPoint
-    // TODO: Update MapPoint name
-    private func toMapPoint(coordinates: CLLocationCoordinate2D) -> MapPoint {
-        return MapPoint(name: "", coordinate: coordinates)
-    }
-    
-    // Update generated route based on changes to waypoints
-    private func updateRoutes() async throws {
-        if let provider = await core?.routingProvider() {
-            let routeOptions = NavigationRouteOptions(
-                waypoints: waypoints,
-                profileIdentifier: profileIdentifier
-            )
-            
-            
-            switch await provider.calculateRoutes(options: routeOptions).result {
-            case .success(let previewRoutes):
-                currentPreviewRoutes = previewRoutes
-            case.failure(let e):
-                print(e)
-            }
-            
-            // Create MKRoute for each leg
-            //
-            
-            let previewRoutes = try await provider.calculateRoutes(options: routeOptions).value
-//            
-            currentPreviewRoutes = previewRoutes
-        }
-    }
-    
-    // Make an alternative route the main route
-    func selectAlternativeRoute(_ alternativeRoute: AlternativeRoute) async {
-        if let previewRoutes = currentPreviewRoutes {
-            currentPreviewRoutes = await previewRoutes.selecting(alternativeRoute: alternativeRoute)
-        }
-    }
-    
-    
 }
-

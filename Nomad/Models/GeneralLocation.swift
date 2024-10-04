@@ -1,19 +1,27 @@
 //
-//  RestStop.swift
+//  GeneralLocation.swift
 //  Nomad
 //
-//  Created by Nicholas Candello on 9/15/24.
+//  Created by Austin Huguenard on 9/22/24.
 //
 
 import Foundation
 
-struct RestStop: POI {
+struct GeneralLocation: POI, Identifiable {
+    var id: String
     var address: String
     var name: String
     
     init(address: String, name: String) {
+        self.id = UUID().uuidString
         self.address = address
         self.name = name
+    }
+    
+    init(from business: Business) {
+        self.id = business.id
+        self.address = business.location.address1 ?? "No address"
+        self.name = business.name
     }
     
     mutating func setAddress(newAddress: String) {
@@ -32,4 +40,3 @@ struct RestStop: POI {
         return name
     }
 }
-
