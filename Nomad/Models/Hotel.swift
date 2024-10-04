@@ -32,6 +32,8 @@ struct Hotel: POI, Identifiable {
         self.name = business.name
         self.rating = business.rating
         self.website = business.url
+        self.latitude = business.coordinates.latitude
+        self.longitude = business.coordinates.longitude
     }
     
     static func == (lhs: Hotel, rhs: Hotel) -> Bool {

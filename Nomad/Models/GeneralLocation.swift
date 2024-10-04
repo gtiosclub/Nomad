@@ -26,6 +26,8 @@ struct GeneralLocation: POI, Identifiable {
         self.id = business.id
         self.address = business.location.address1 ?? "No address"
         self.name = business.name
+        self.latitude = business.coordinates.latitude
+        self.longitude = business.coordinates.longitude
     }
     
     static func == (lhs: GeneralLocation, rhs: GeneralLocation) -> Bool {

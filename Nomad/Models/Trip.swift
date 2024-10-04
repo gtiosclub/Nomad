@@ -31,6 +31,18 @@ struct Trip: Identifiable, Equatable {
         self.start_time = start_time
     }
     
+    init(id: String, start_location: any POI, end_location: any POI, start_date: String, end_date: String, stops: [any POI], start_time: String, created_date: String, modified_date: String) {
+        self.stops = stops
+        self.start_location = start_location
+        self.end_location = end_location
+        self.start_date = start_date
+        self.end_date = end_date
+        self.id = id
+        self.created_date = created_date
+        self.modified_date = modified_date
+        self.start_time = start_time
+    }
+    
     static func == (lhs: Trip, rhs: Trip) -> Bool {
         return lhs.id == rhs.id && lhs.modified_date == rhs.modified_date
     }

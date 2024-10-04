@@ -274,7 +274,7 @@ class UserViewModel: ObservableObject {
     }
 
     func fetchPlaces(location: String, stopType: String, rating: Double?, price: Int?, cuisine: String?) async {
-        let apiKey = ""
+        let apiKey = "hpQdyXearQyP-ahpSeW2wDZvn-ljfmsGvN6RTKqo18I6R23ZB3dfbzAnEjvS8tWoPwyH9FFTGifdZ-n_qH80jbRuDbGb0dHu1qEPrLH-vqNq_d6TZdUaC_kZpwvqZnYx"
         let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
         guard let currentTrip = current_trip else { return }
         let startLocation = currentTrip.getStartLocation()
@@ -309,7 +309,7 @@ class UserViewModel: ObservableObject {
             let (data, _) = try await URLSession.shared.data(for: request)
             let decoder = JSONDecoder()
             let response = try decoder.decode(YelpResponse.self, from: data)
-
+            
             DispatchQueue.main.async {
                 switch stopType {
                 case "Restaurants":
@@ -358,6 +358,7 @@ struct YelpResponse: Codable {
 struct Business: Codable {
     let id: String
     let name: String
+    let coordinates: Coordinates
     let location: Location
     let rating: Double?
     let categories: [Category]
@@ -367,6 +368,11 @@ struct Business: Codable {
 
 struct Location: Codable {
     let address1: String?
+}
+
+struct Coordinates: Codable {
+    let latitude: Double
+    let longitude: Double
 }
 
 struct Category: Codable {
