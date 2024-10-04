@@ -38,6 +38,8 @@ struct Restaurant: POI, Identifiable {
         self.cuisine = business.categories.first?.title
         self.price = business.price?.count
         self.website = business.url
+        self.latitude = business.coordinates.latitude
+        self.longitude = business.coordinates.longitude
     }
     
     static func == (lhs: Restaurant, rhs: Restaurant) -> Bool {
