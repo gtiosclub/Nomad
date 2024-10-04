@@ -34,7 +34,6 @@ class FirebaseViewModel: ObservableObject {
                 return
             }
             
-            let db = Firestore.firestore()
             db.collection("USERS").document(user.uid).setData([
                 "email": email
             ]) { error in
@@ -62,7 +61,6 @@ class FirebaseViewModel: ObservableObject {
             }
             
             if authResult?.user != nil {
-                let db = Firestore.firestore()
                 db.collection("USERS").document((authResult?.user.uid)!).getDocument { (document, error) in
                     if let document = document, document.exists {
                         if let age = document.data()?["age"] as? Int {
@@ -89,7 +87,6 @@ class FirebaseViewModel: ObservableObject {
     }
     
     func addTripToUser(userID: String, tripID: String) async -> Bool {
-        let db = Firestore.firestore()
         let docRef = db.collection("USERS").document(userID)
         do {
             let document = try await docRef.getDocument()
@@ -114,7 +111,7 @@ class FirebaseViewModel: ObservableObject {
     
     func modifyStartLocationAndDate(tripID: String, startLocName: String, startLocAddress: String, modifiedDate: String) async -> Bool {
         do {
-            try await db.collection("TRIPS").document(tripID).updateData(["start_location_address" : startLocAddress, "start_location_name" : startLocName, "modified_data" : modifiedDate])
+            try await db.collection("TRIPS").document(tripID).updateData(["start_location_address" : startLocAddress, "start_location_name" : startLocName, "modified_date" : modifiedDate])
             return true
         } catch {
             print(error)
@@ -124,7 +121,7 @@ class FirebaseViewModel: ObservableObject {
 
     func modifyEndLocationAndDate(tripID: String, endLocName: String, endLocAddress: String, modifiedDate: String) async -> Bool {
         do {
-            try await db.collection("TRIPS").document(tripID).updateData(["end_location_address" : endLocAddress, "end_location_name" : endLocName, "modified_data_2" : modifiedDate])
+            try await db.collection("TRIPS").document(tripID).updateData(["end_location_address" : endLocAddress, "end_location_name" : endLocName, "modified_date" : modifiedDate])
             return true
         } catch {
             print(error)
