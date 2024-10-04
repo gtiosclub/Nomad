@@ -8,6 +8,7 @@
 import Foundation
 import MapKit
 import CoreLocation
+import Combine
 
 class UserViewModel: ObservableObject {
     @Published var user: User?
@@ -18,6 +19,8 @@ class UserViewModel: ObservableObject {
     @Published var hotels: [Hotel] = []
     @Published var activities: [Activity] = []
     @Published var generalLocations: [GeneralLocation] = []
+    @Published var distances: [Double] = []
+    @Published var times: [Double] = []
     
     init(user: User? = nil) {
         self.user = user
@@ -91,6 +94,11 @@ class UserViewModel: ObservableObject {
         self.user = user
     }
     
+    func setStartTime(startTime: String) {
+        current_trip?.setStartTime(newTime: startTime)
+        user?.updateTrip(trip: current_trip!)
+        self.user = user
+    }
     func setCurrentTrip(by tripID: String) {
         guard let user = user else { return }
         
@@ -215,6 +223,55 @@ class UserViewModel: ObservableObject {
         
         return 0.0
     }
+    
+    func calculateLegInfo() async {
+        distances.removeAll()
+        times.removeAll()
+        
+        guard let currentTrip = current_trip else { return }
+        let stops = currentTrip.getStops()
+
+        let startLocation = currentTrip.getStartLocation()
+        let startAddress = startLocation.address
+        let endLocation = currentTrip.getEndLocation()
+        let endAddress = endLocation.address
+
+        if !stops.isEmpty {
+            let firstStopAddress = stops[0].address
+            
+            let estimatedTimeToFirstStop = await getTime(fromAddress: startAddress, toAddress: firstStopAddress)
+            times.append(estimatedTimeToFirstStop / 60)
+
+            let estimatedDistanceToFirstStop = await getDistance(fromAddress: startAddress, toAddress: firstStopAddress)
+            distances.append(estimatedDistanceToFirstStop * 0.000621371)
+        } else {
+            let estimatedTimeToEnd = await getTime(fromAddress: startAddress, toAddress: endAddress)
+            times.append(estimatedTimeToEnd / 60)
+
+            let estimatedDistanceToEnd = await getDistance(fromAddress: startAddress, toAddress: endAddress)
+            distances.append(estimatedDistanceToEnd * 0.000621371)
+        }
+
+        for i in 0..<stops.count - 1 {
+            let startLocationAddress = stops[i].address
+            let endLocationAddress = stops[i + 1].address
+            
+            let estimatedTime = await getTime(fromAddress: startLocationAddress, toAddress: endLocationAddress)
+            times.append(estimatedTime / 60)
+            
+            let distance = await getDistance(fromAddress: startLocationAddress, toAddress: endLocationAddress)
+            distances.append(distance * 0.000621371)
+        }
+
+        if let lastStop = stops.last {
+            let lastStopAddress = lastStop.address
+            let estimatedTimeToEnd = await getTime(fromAddress: lastStopAddress, toAddress: endAddress)
+            times.append(estimatedTimeToEnd / 60)
+
+            let estimatedDistanceToEnd = await getDistance(fromAddress: lastStopAddress, toAddress: endAddress)
+            distances.append(estimatedDistanceToEnd * 0.000621371)
+        }
+    }
 
     func fetchPlaces(location: String, stopType: String, rating: Double?, price: Int?, cuisine: String?) async {
         let apiKey = ""
@@ -314,4 +371,9 @@ struct Location: Codable {
 
 struct Category: Codable {
     let title: String
+}
+
+struct RouteLeg {
+    let distance: Double
+    let time: Double
 }

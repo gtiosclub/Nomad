@@ -16,9 +16,10 @@ struct Trip: Identifiable, Equatable {
     private var end_date: String
     private var created_date: String
     private var modified_date: String
+    private var start_time: String
 
     
-    init(start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = []) {
+    init(start_location: POI, end_location: POI, start_date: String = "", end_date: String = "", stops: [POI] = [], start_time: String = "8:00 AM") {
         self.stops = stops
         self.start_location = start_location
         self.end_location = end_location
@@ -27,6 +28,7 @@ struct Trip: Identifiable, Equatable {
         self.id = UUID().uuidString
         self.created_date = Trip.getCurrentDateTime()
         self.modified_date = self.created_date
+        self.start_time = start_time
     }
     
     static func == (lhs: Trip, rhs: Trip) -> Bool {
@@ -64,7 +66,12 @@ struct Trip: Identifiable, Equatable {
         self.updateModifiedDate()
     }
     
-    mutating func addStops(additionalStops: [any POI]) {
+    mutating func setStartTime(newTime: String) {
+        self.start_time = newTime
+        self.updateModifiedDate()
+    }
+    
+    mutating func addStops(additionalStops: [POI]) {
         self.stops.append(contentsOf: additionalStops)
         self.updateModifiedDate()
     }
@@ -94,6 +101,10 @@ struct Trip: Identifiable, Equatable {
 
     func getEndDate() -> String? {
         return end_date
+    }
+    
+    func getStartTime() -> String? {
+        return start_time
     }
 
     func duplicate() -> Trip {
