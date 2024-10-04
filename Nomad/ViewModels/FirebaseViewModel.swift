@@ -13,6 +13,7 @@ import SwiftUI
 
 class FirebaseViewModel: ObservableObject {
     let auth = Auth.auth()
+    let db = Firestore.firestore()
     @Published var errorText: String? = nil
     @Published var isLoading: Bool = false
 
@@ -34,7 +35,6 @@ class FirebaseViewModel: ObservableObject {
                 return
             }
             
-            let db = Firestore.firestore()
             db.collection("USERS").document(user.uid).setData([
                 "email": email
             ]) { error in
@@ -62,7 +62,6 @@ class FirebaseViewModel: ObservableObject {
             }
             
             if authResult?.user != nil {
-                let db = Firestore.firestore()
                 db.collection("USERS").document((authResult?.user.uid)!).getDocument { (document, error) in
                     if let document = document, document.exists {
                         if let age = document.data()?["age"] as? Int {
@@ -89,7 +88,6 @@ class FirebaseViewModel: ObservableObject {
     }
     
     func addTripToUser(userID: String, tripID: String) async -> Bool {
-        let db = Firestore.firestore()
         let docRef = db.collection("USERS").document(userID)
         do {
             let document = try await docRef.getDocument()
@@ -111,6 +109,21 @@ class FirebaseViewModel: ObservableObject {
             return false
         }
     }
+    
+    func getAPIKeys() async throws -> [String: String] {
+        var apimap: [String: String] = [:]
+        
+        let getdocs = try await db.collection("API_KEYS").getDocuments()
+        
+        for doc in getdocs.documents {
+            if let key = doc.data()["key"] as? String {
+                apimap[doc.documentID] = key
+            }
+        }
+        
+        return apimap
+    }
+
 
     private func parseFirebaseError(_ error: Error) -> String {
         let errorCode = (error as NSError).code
