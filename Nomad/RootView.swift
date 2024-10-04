@@ -8,14 +8,27 @@
 import SwiftUI
 
 struct RootView: View {
+    @State var selectedTab = 2
+    
     var body: some View {
-        NavigationStack {
-            Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-            
-            NavigationLink { ItineraryPlanningView(vm: UserViewModel(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "123 5th Street", name: "Georgia Tech"), end_location: Hotel(address: "387 West Peachtree", name: "Hilton"))])))
-            } label: {
-                Text("Plan Itinerary!")
-            }
+        TabView(selection: $selectedTab) {
+            MapView()
+                .tabItem {
+                    Label("Navigate", systemImage: "map.fill")
+                }
+                .tag(1)
+
+            ItineraryPlanningView(vm: UserViewModel(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "123 5th Street", name: "Georgia Tech"), end_location: Hotel(address: "387 West Peachtree", name: "Hilton"))])))
+                .tabItem {
+                    Label("Plan", systemImage: "pencil")
+                }
+                .tag(2)
+
+            RecapView()
+                .tabItem {
+                    Label("Recaps", systemImage: "play.square.stack")
+                }
+                .tag(3)
         }
     }
 }

@@ -48,7 +48,8 @@ struct ItineraryPlanningView: View {
                         start_location: Restaurant(address: inputAddressStart, name: inputNameStart, rating: 3.2),
                         end_location: Hotel(address: inputAddressEnd, name: inputNameEnd)
                     )
-                    let trip = vm.createTrip(start: newTrip.start_location, end: newTrip.end_location)
+
+                    let trip = vm.createTrip(start: newTrip.getStartLocation(), end: newTrip.getEndLocation())
                     vm.addTripToUser(trip: trip)
                     inputNameEnd = ""
                     inputNameStart = ""
@@ -66,17 +67,15 @@ struct ItineraryPlanningView: View {
                     .padding()
                 ) {
                     ForEach(vm.getTrips(), id: \.id) { trip in
-                        NavigationLink(trip.start_location.name + " to " + trip.end_location.name, destination: {TripView(vm: vm, trip: trip)})
+                        NavigationLink(trip.getStartLocation().name + " to " + trip.getEndLocation().name, destination: {TripView(vm: vm, trip: trip)})
                     }
                 }
-                
                 Spacer()
-                
             }
         }
     }
 }
 
 #Preview {
-    ItineraryPlanningView(vm: .init(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "123 5th Street", name: "Georgia Tech"), end_location: Hotel(address: "387 West Peachtree", name: "Hilton"))])))
+    ItineraryPlanningView(vm: .init(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "177 North Avenue NW, Atlanta, GA 30332", name: "Georgia Tech"), end_location: Hotel(address: "387 West Peachtree", name: "Hilton"))])))
 }
