@@ -26,6 +26,8 @@ struct Restaurant: POI, Identifiable {
         self.cuisine = cuisine
         self.price = price
         self.website = website
+        self.latitude = latitude
+        self.longitude = longitude
     }
 
     init(from business: Business) {

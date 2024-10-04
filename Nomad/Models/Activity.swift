@@ -22,6 +22,8 @@ struct Activity: POI, Identifiable {
         self.name = name
         self.rating = rating
         self.website = website
+        self.latitude = latitude
+        self.longitude = longitude
     }
 
     init(from business: Business) {
