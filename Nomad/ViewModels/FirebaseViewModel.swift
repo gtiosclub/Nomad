@@ -62,7 +62,6 @@ class FirebaseViewModel: ObservableObject {
             }
             
             if authResult?.user != nil {
-                let db = Firestore.firestore()
                 db.collection("USERS").document((authResult?.user.uid)!).getDocument { (document, error) in
                     if let document = document, document.exists {
                         if let age = document.data()?["age"] as? Int {
