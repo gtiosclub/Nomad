@@ -19,7 +19,7 @@ struct Trip: Identifiable, Equatable {
     private var start_time: String
 
     
-    init(start_location: POI, end_location: POI, start_date: String = "", end_date: String = "", stops: [POI] = [], start_time: String = "8:00 AM") {
+    init(start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM") {
         self.stops = stops
         self.start_location = start_location
         self.end_location = end_location
@@ -71,7 +71,7 @@ struct Trip: Identifiable, Equatable {
         self.updateModifiedDate()
     }
     
-    mutating func addStops(additionalStops: [POI]) {
+    mutating func addStops(additionalStops: [any POI]) {
         self.stops.append(contentsOf: additionalStops)
         self.updateModifiedDate()
     }

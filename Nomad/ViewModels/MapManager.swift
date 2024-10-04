@@ -99,7 +99,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 //    }
     
     func getDirections(from start: CLLocationCoordinate2D, to end: CLLocationCoordinate2D, via stops: [CLLocationCoordinate2D]) {
-        var allCoordinates = [start] + stops + [end]
+        let allCoordinates = [start] + stops + [end]
         
         var polylines: [MKPolyline] = []
         

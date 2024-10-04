@@ -18,6 +18,8 @@ struct GeneralLocation: POI, Identifiable {
         self.id = UUID().uuidString
         self.address = address
         self.name = name
+        self.latitude = latitude
+        self.longitude = longitude
     }
     
     init(from business: Business) {

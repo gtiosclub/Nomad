@@ -16,6 +16,8 @@ struct RestStop: POI {
     init(address: String, name: String, latitude: Double? = nil, longitude: Double? = nil) {
         self.address = address
         self.name = name
+        self.latitude = latitude
+        self.longitude = longitude
     }
     
     static func == (lhs: RestStop, rhs: RestStop) -> Bool {
