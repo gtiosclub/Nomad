@@ -15,7 +15,7 @@ class FirebaseViewModel: ObservableObject {
     let auth = Auth.auth()
     @Published var errorText: String? = nil
     @Published var isLoading: Bool = false
-
+    
     func firebase_email_password_sign_up(email: String, password: String, completion: @escaping (Bool) -> Void) {
         isLoading = true
         auth.createUser(withEmail: email, password: password) { [weak self] authResult, error in
@@ -101,7 +101,7 @@ class FirebaseViewModel: ObservableObject {
                 trips.append(tripID)
                 try await db.collection("USERS").document(userID).updateData(["trips": trips])
                 return true
-                    
+                
             } else {
                 print("Trip already in user trip list")
                 return false;
@@ -111,7 +111,28 @@ class FirebaseViewModel: ObservableObject {
             return false
         }
     }
+    
+    func modifyStartLocationAndDate(tripID: String, startLocName: String, startLocAddress: String, modifiedDate: String) async -> Bool {
+        do {
+            try await db.collection("TRIPS").document(tripID).updateData(["start_location_address" : startLocAddress, "start_location_name" : startLocName, "modified_data" : modifiedDate])
+            return true
+        } catch {
+            print(error)
+            return false
+        }
+    }
 
+    func modifyEndLocationAndDate(tripID: String, endLocName: String, endLocAddress: String, modifiedDate: String) async -> Bool {
+        do {
+            try await db.collection("TRIPS").document(tripID).updateData(["end_location_address" : endLocAddress, "end_location_name" : endLocName, "modified_data_2" : modifiedDate])
+            return true
+        } catch {
+            print(error)
+            return false
+        }
+    }
+
+    
     private func parseFirebaseError(_ error: Error) -> String {
         let errorCode = (error as NSError).code
         switch errorCode {
