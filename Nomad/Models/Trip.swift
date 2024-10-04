@@ -7,18 +7,18 @@
 
 import Foundation
 
-struct Trip: Identifiable {
+struct Trip: Identifiable, Equatable {
     var id: String
-    private var stops: [POI]
-    private var start_location: POI
-    private var end_location: POI
+    private var stops: [any POI]
+    private var start_location: any POI
+    private var end_location: any POI
     private var start_date: String
     private var end_date: String
     private var created_date: String
     private var modified_date: String
 
     
-    init(start_location: POI, end_location: POI, start_date: String = "", end_date: String = "", stops: [POI] = []) {
+    init(start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = []) {
         self.stops = stops
         self.start_location = start_location
         self.end_location = end_location
@@ -27,6 +27,10 @@ struct Trip: Identifiable {
         self.id = UUID().uuidString
         self.created_date = Trip.getCurrentDateTime()
         self.modified_date = self.created_date
+    }
+    
+    static func == (lhs: Trip, rhs: Trip) -> Bool {
+        return lhs.id == rhs.id && lhs.modified_date == rhs.modified_date
     }
     
     mutating func updateModifiedDate() {
@@ -40,12 +44,12 @@ struct Trip: Identifiable {
         return dateFormatter.string(from: currentDate)
     }
     
-    mutating func setStartLocation(new_start_location: POI) {
+    mutating func setStartLocation(new_start_location: any POI) {
         self.start_location = new_start_location
         self.updateModifiedDate()
     }
     
-    mutating func setEndLocation(new_end_location: POI) {
+    mutating func setEndLocation(new_end_location: any POI) {
         self.end_location = new_end_location
         self.updateModifiedDate()
     }
@@ -60,27 +64,27 @@ struct Trip: Identifiable {
         self.updateModifiedDate()
     }
     
-    mutating func addStops(additionalStops: [POI]) {
+    mutating func addStops(additionalStops: [any POI]) {
         self.stops.append(contentsOf: additionalStops)
         self.updateModifiedDate()
     }
     
-    mutating func removeStops(removedStops: [POI]) {
+    mutating func removeStops(removedStops: [any POI]) {
         self.stops.removeAll { stop in
             removedStops.contains(where: { $0.name == stop.name })
         }
         self.updateModifiedDate()
     }
     
-    func getStops() -> [POI] {
+    func getStops() -> [any POI] {
         return stops
     }
 
-    func getStartLocation() -> POI {
+    func getStartLocation() -> any POI {
         return start_location
     }
 
-    func getEndLocation() -> POI {
+    func getEndLocation() -> any POI {
         return end_location
     }
 

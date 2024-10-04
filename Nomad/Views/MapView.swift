@@ -36,11 +36,11 @@ struct MapView: View {
                         .stroke(.blue, lineWidth: 5)
                 }
             }.mapStyle(getMapStyle())
-            .onAppear() {
-                mapManager.setSource(coord: startingPoint)
-                mapManager.setDestination(coord: destinationCoordinates)
-                mapManager.getDirections()
-            }
+//            .onAppear() {
+//                mapManager.setSource(coord: startingPoint)
+//                mapManager.setDestination(coord: destinationCoordinates)
+//                mapManager.getDirections()
+//            }
             // All Map HUD
             VStack {
                 HStack {
