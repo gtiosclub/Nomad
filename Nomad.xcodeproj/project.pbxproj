@@ -64,6 +64,8 @@
 		B2F8F3672C97BE2E00B9618E /* ChatGPTSwift in Frameworks */ = {isa = PBXBuildFile; productRef = B2F8F3662C97BE2E00B9618E /* ChatGPTSwift */; };
 		C49A65502C9CE53400A8B9BA /* MapSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = C49A654F2C9CE53400A8B9BA /* MapSearch.swift */; };
 		C49A65522C9CE6D600A8B9BA /* LocationSearchBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = C49A65512C9CE6D600A8B9BA /* LocationSearchBox.swift */; };
+		E90E9AB82CAF5C1F00A7C4FA /* SpeechRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90E9AB72CAF5C1400A7C4FA /* SpeechRecognizer.swift */; };
+		E90E9ABA2CAF5C7000A7C4FA /* VoiceInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90E9AB92CAF5C6900A7C4FA /* VoiceInput.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -115,9 +117,12 @@
 		C49A654F2C9CE53400A8B9BA /* MapSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapSearch.swift; sourceTree = "<group>"; };
 		C49A65512C9CE6D600A8B9BA /* Test.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test.swift; sourceTree = "<group>"; };
 		C49A65512C9CE6D600A8B9BA /* LocationSearchBox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSearchBox.swift; sourceTree = "<group>"; };
+		E90E9AB72CAF5C1400A7C4FA /* SpeechRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognizer.swift; sourceTree = "<group>"; };
+		E90E9AB92CAF5C6900A7C4FA /* VoiceInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceInput.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		84FC27152CAC741D008C8339 /* Onboarding */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Onboarding; sourceTree = "<group>"; };
 		B35B62202C9A444700AB215E /* AIUnitTesting */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = AIUnitTesting; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
@@ -217,6 +222,7 @@
 		B2F8F3482C97BC6400B9618E /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				84FC27152CAC741D008C8339 /* Onboarding */,
 				B2F8F3492C97BC7700B9618E /* RecapView.swift */,
 				B2F8F34B2C97BC7F00B9618E /* MapView.swift */,
 				B25A5C6D2CAE27C1001FC87E /* MapPreviewView.swift */,
@@ -234,6 +240,8 @@
 		B2F8F3512C97BC9900B9618E /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				E90E9AB92CAF5C6900A7C4FA /* VoiceInput.swift */,
+				E90E9AB72CAF5C1400A7C4FA /* SpeechRecognizer.swift */,
 				48974B852C9A449F0057B073 /* Hotel.swift */,
 				48974B832C9A43880057B073 /* Activity.swift */,
 				B2F8F3522C97BCAB00B9618E /* User.swift */,
@@ -276,6 +284,9 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				84FC27152CAC741D008C8339 /* Onboarding */,
 			);
 			name = Nomad;
 			packageProductDependencies = (
@@ -407,6 +418,7 @@
 				B2F8F3602C97BD6200B9618E /* FirebaseViewModel.swift in Sources */,
 				B2F8F3472C97BB5500B9618E /* RootView.swift in Sources */,
 				B298EB552C98F9DE0078696A /* MapManager.swift in Sources */,
+				E90E9ABA2CAF5C7000A7C4FA /* VoiceInput.swift in Sources */,
 				B2F8F3572C97BCC400B9618E /* POI.swift in Sources */,
 				C49A65502C9CE53400A8B9BA /* MapSearch.swift in Sources */,
 				B2F8F3502C97BC9600B9618E /* ItineraryPlanningView.swift in Sources */,
@@ -427,6 +439,7 @@
 				B2F8F3532C97BCAB00B9618E /* User.swift in Sources */,
 				48974B862C9A44A30057B073 /* Hotel.swift in Sources */,
 				B2F8F3642C97BD9B00B9618E /* UserViewModel.swift in Sources */,
+				E90E9AB82CAF5C1F00A7C4FA /* SpeechRecognizer.swift in Sources */,
 				B2F8F3622C97BD8900B9618E /* AIAssistantViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
