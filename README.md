@@ -31,3 +31,4 @@ Here is a quick summary of how the structure of the map and navigation scheme wi
 
 ## Generating Routes
 - You can generate a route by adding **Waypoint**s using *addWaypoint* in the view model. There are other functions to modify or remove waypoints, also. Once you add/update/remove a waypoint, a route is automatically generated/regenerated.
+- Adding waypoints is currently done by entering locations in the *LocationSearchBox* at the bottom of *MapView* and clicking the blue icon to the right.
