@@ -167,6 +167,36 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         return steps
     }
     
+    /// ROUTE PROGRESS FUNCTION
+    
+    func getFutureLocation(time: TimeInterval) async -> CLLocationCoordinate2D {
+        if let routeProgress = await self.core?.navigation().currentRouteProgress?.routeProgress {
+            if routeProgress.durationRemaining <= time {
+                return self.mapMarkers.last?.coordinate ?? CLLocationCoordinate2D()
+            }
+            
+            var currTime = 0.0
+            var currStep = routeProgress.currentLegProgress.currentStep
+            var remainingSteps = routeProgress.currentLegProgress.remainingSteps
+            var remainingLegs = routeProgress.remainingLegs
+            
+            while currTime < time {
+                if remainingSteps.isEmpty && !remainingLegs.isEmpty {
+                    let newLeg = remainingLegs.removeFirst()
+                    remainingSteps = newLeg.steps
+                }
+                
+                currStep = remainingSteps.removeFirst()
+                currTime += currStep.typicalTravelTime ?? currStep.expectedTravelTime
+            }
+            
+            return currStep.shape?.coordinates.last ?? CLLocationCoordinate2D()
+        }
+        
+        return CLLocationCoordinate2D()
+    }
+    
+    
     /// WAYPOINT CRUD SECTION
     private var waypoints: [Waypoint] = []
     private var core: MapboxNavigation? = nil
