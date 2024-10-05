@@ -22,16 +22,12 @@ When claiming an issue, assign yourself as a contributor and create a branch wit
 Here is a quick summary of how the structure of the map and navigation scheme will operate, and how you should interact with it. 
 
 ## Models
-- **NomadRoute**
-  This is the custom data type we will use for our routes. This is where all information related to a route is stored, including the information for each **Step** of the route.
-- **Step** (defined within NomadRoute.swift)
-  This type defines a single step of a route (i.e. "Turn right in 0.5 miles at Techwood Pkwy). You can find the shape of the step (MKPolyline), descriptions of the instruction, or exit numbers here.
+- **NomadRoute**: This is the custom data type we will use for our routes. This is where all information related to a route is stored, including the information for each **Step** of the route.
+- **Step** (defined within NomadRoute.swift): This type defines a single step of a route (i.e. "Turn right in 0.5 miles at Techwood Pkwy). You can find the shape of the step (MKPolyline), descriptions of the instruction, or exit numbers here.
 
 ## Adding/Removing View Components to the Map
-- **Markers**
-  You should always add/remove a marker from the map using the *showMarker* and *removeMarker* functions in the view model. You can customize the title of the marker, location, and icon displayed with it.
-- **Polylines**
-  You should always add/remove a polyline from the map using the *showPolyline* and *removePolyline* functions in the view model. The input to these functions is a **Step**, since polylines are always displayed after route generation.
+- **Markers**: You should always add/remove a marker from the map using the *showMarker* and *removeMarker* functions in the view model. You can customize the title of the marker, location, and icon displayed with it.
+- **Polylines**: You should always add/remove a polyline from the map using the *showPolyline* and *removePolyline* functions in the view model. The input to these functions is a **Step**, since polylines are always displayed after route generation.
 
 ## Generating Routes
 - You can generate a route by adding **Waypoint**s using *addWaypoint* in the view model. There are other functions to modify or remove waypoints, also. Once you add/update/remove a waypoint, a route is automatically generated/regenerated.
