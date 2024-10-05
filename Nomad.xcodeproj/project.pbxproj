@@ -36,12 +36,15 @@
 		8419ED942C99536E003AD5C2 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED932C99536E003AD5C2 /* FirebaseStorage */; };
 		8419ED962C99536E003AD5C2 /* FirebaseStorageCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED952C99536E003AD5C2 /* FirebaseStorageCombine-Community */; };
 		8419ED982C99536E003AD5C2 /* FirebaseVertexAI-Preview in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED972C99536E003AD5C2 /* FirebaseVertexAI-Preview */; };
+		944E9E9B2CACBBEE0032FD34 /* Step.swift in Sources */ = {isa = PBXBuildFile; fileRef = 944E9E9A2CACBBEC0032FD34 /* Step.swift */; };
+		947F53C22CA0F59F00238C4F /* MapboxNavigationCore in Frameworks */ = {isa = PBXBuildFile; productRef = 947F53C12CA0F59F00238C4F /* MapboxNavigationCore */; };
 		B2154C6D2C9D01BA00A6F238 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B2154C6C2C9D01BA00A6F238 /* GoogleService-Info.plist */; };
+		B2154C702C9D02C900A6F238 /* MapManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2154C6F2C9D02C900A6F238 /* MapManager.swift */; };
 		B2154CD02C9E2DF400A6F238 /* CompassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2154CCF2C9E2DF400A6F238 /* CompassView.swift */; };
 		B2154CD22C9E319C00A6F238 /* RecenterMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2154CD12C9E319C00A6F238 /* RecenterMapView.swift */; };
 		B2154CD42C9E333700A6F238 /* ChangeMapTypeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2154CD32C9E333700A6F238 /* ChangeMapTypeView.swift */; };
 		B25A5C6E2CAE27C6001FC87E /* MapPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B25A5C6D2CAE27C1001FC87E /* MapPreviewView.swift */; };
-		B298EB552C98F9DE0078696A /* MapManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B298EB542C98F9DE0078696A /* MapManager.swift */; };
+		B29D04012CB0B48B00524D8B /* MapMarker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B29D04002CB0B48700524D8B /* MapMarker.swift */; };
 		B2F8F3372C97BB3C00B9618E /* NomadApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F3362C97BB3C00B9618E /* NomadApp.swift */; };
 		B2F8F33D2C97BB3E00B9618E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2F8F33C2C97BB3E00B9618E /* Assets.xcassets */; };
 		B2F8F3402C97BB3E00B9618E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2F8F33F2C97BB3E00B9618E /* Preview Assets.xcassets */; };
@@ -81,13 +84,16 @@
 		48974B8C2CA0A3CB0057B073 /* FindStopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindStopView.swift; sourceTree = "<group>"; };
 		48974B8E2CA0A6130057B073 /* GeneralLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralLocation.swift; sourceTree = "<group>"; };
 		599F66162C9CE4F90025A8F8 /* Motion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Motion.swift; sourceTree = "<group>"; };
+		944E9E9A2CACBBEC0032FD34 /* Step.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Step.swift; sourceTree = "<group>"; };
+		9455F54A2C9F99F0006D03D6 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		94F91F652C9F875F00A63F7A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B2154C6C2C9D01BA00A6F238 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B2154C6F2C9D02C900A6F238 /* MapManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapManager.swift; sourceTree = "<group>"; };
 		B2154CCF2C9E2DF400A6F238 /* CompassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompassView.swift; sourceTree = "<group>"; };
 		B2154CD12C9E319C00A6F238 /* RecenterMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecenterMapView.swift; sourceTree = "<group>"; };
 		B2154CD32C9E333700A6F238 /* ChangeMapTypeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangeMapTypeView.swift; sourceTree = "<group>"; };
 		B25A5C6D2CAE27C1001FC87E /* MapPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapPreviewView.swift; sourceTree = "<group>"; };
-		B298EB542C98F9DE0078696A /* MapManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapManager.swift; sourceTree = "<group>"; };
+		B29D04002CB0B48700524D8B /* MapMarker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapMarker.swift; sourceTree = "<group>"; };
 		B2F8F3332C97BB3C00B9618E /* Nomad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Nomad.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2F8F3362C97BB3C00B9618E /* NomadApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NomadApp.swift; sourceTree = "<group>"; };
 		B2F8F33C2C97BB3E00B9618E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -128,6 +134,7 @@
 				8419ED922C99536E003AD5C2 /* FirebaseRemoteConfig in Frameworks */,
 				8419ED7C2C99536E003AD5C2 /* FirebaseDatabase in Frameworks */,
 				8419ED7E2C99536E003AD5C2 /* FirebaseDynamicLinks in Frameworks */,
+				947F53C22CA0F59F00238C4F /* MapboxNavigationCore in Frameworks */,
 				8419ED6C2C99536E003AD5C2 /* FirebaseAnalytics in Frameworks */,
 				8419ED6E2C99536E003AD5C2 /* FirebaseAnalyticsOnDeviceConversion in Frameworks */,
 				B2F8F3672C97BE2E00B9618E /* ChatGPTSwift in Frameworks */,
@@ -157,6 +164,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9455F5492C9F99F0006D03D6 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				9455F54A2C9F99F0006D03D6 /* XCTest.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		B2154CCE2C9E2DE500A6F238 /* MapButtons */ = {
 			isa = PBXGroup;
 			children = (
@@ -172,6 +187,7 @@
 			children = (
 				B2F8F3352C97BB3C00B9618E /* Nomad */,
 				B35B62202C9A444700AB215E /* AIUnitTesting */,
+				9455F5492C9F99F0006D03D6 /* Frameworks */,
 				B2F8F3342C97BB3C00B9618E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -188,6 +204,7 @@
 		B2F8F3352C97BB3C00B9618E /* Nomad */ = {
 			isa = PBXGroup;
 			children = (
+				94F91F652C9F875F00A63F7A /* Info.plist */,
 				B2154C6C2C9D01BA00A6F238 /* GoogleService-Info.plist */,
 				B2F8F3362C97BB3C00B9618E /* NomadApp.swift */,
 				B2F8F3462C97BB5500B9618E /* RootView.swift */,
@@ -228,6 +245,8 @@
 			children = (
 				48974B852C9A449F0057B073 /* Hotel.swift */,
 				48974B832C9A43880057B073 /* Activity.swift */,
+				B29D04002CB0B48700524D8B /* MapMarker.swift */,
+				944E9E9A2CACBBEC0032FD34 /* Step.swift */,
 				B2F8F3522C97BCAB00B9618E /* User.swift */,
 				B2F8F3542C97BCBB00B9618E /* Trip.swift */,
 				B2F8F3562C97BCC400B9618E /* POI.swift */,
@@ -246,7 +265,6 @@
 				B2F8F35F2C97BD6200B9618E /* FirebaseViewModel.swift */,
 				B2154C6F2C9D02C900A6F238 /* MapManager.swift */,
 				B2F8F3612C97BD8900B9618E /* AIAssistantViewModel.swift */,
-				B298EB542C98F9DE0078696A /* MapManager.swift */,
 				B2F8F3632C97BD9B00B9618E /* UserViewModel.swift */,
 				C49A654F2C9CE53400A8B9BA /* MapSearch.swift */,
 				C49A65512C9CE6D600A8B9BA /* LocationSearchBox.swift */,
@@ -295,6 +313,7 @@
 				8419ED932C99536E003AD5C2 /* FirebaseStorage */,
 				8419ED952C99536E003AD5C2 /* FirebaseStorageCombine-Community */,
 				8419ED972C99536E003AD5C2 /* FirebaseVertexAI-Preview */,
+				947F53C12CA0F59F00238C4F /* MapboxNavigationCore */,
 			);
 			productName = Nomad;
 			productReference = B2F8F3332C97BB3C00B9618E /* Nomad.app */;
@@ -354,6 +373,7 @@
 			packageReferences = (
 				B2F8F3652C97BE2E00B9618E /* XCRemoteSwiftPackageReference "ChatGPTSwift" */,
 				8419ED6A2C99536E003AD5C2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				947F53C02CA0F59F00238C4F /* XCRemoteSwiftPackageReference "mapbox-navigation-ios" */,
 			);
 			productRefGroup = B2F8F3342C97BB3C00B9618E /* Products */;
 			projectDirPath = "";
@@ -396,9 +416,10 @@
 				B2F8F35D2C97BD3000B9618E /* GasStation.swift in Sources */,
 				B2F8F3592C97BCD400B9618E /* Restaurant.swift in Sources */,
 				48974B8D2CA0A3CB0057B073 /* FindStopView.swift in Sources */,
+				944E9E9B2CACBBEE0032FD34 /* Step.swift in Sources */,
 				B2F8F3602C97BD6200B9618E /* FirebaseViewModel.swift in Sources */,
 				B2F8F3472C97BB5500B9618E /* RootView.swift in Sources */,
-				B298EB552C98F9DE0078696A /* MapManager.swift in Sources */,
+				B2154C702C9D02C900A6F238 /* MapManager.swift in Sources */,
 				B2F8F3572C97BCC400B9618E /* POI.swift in Sources */,
 				C49A65502C9CE53400A8B9BA /* MapSearch.swift in Sources */,
 				B2F8F3502C97BC9600B9618E /* ItineraryPlanningView.swift in Sources */,
@@ -409,6 +430,7 @@
 				B2F8F34E2C97BC8A00B9618E /* AIAssistantView.swift in Sources */,
 				B25A5C6E2CAE27C6001FC87E /* MapPreviewView.swift in Sources */,
 				48974B8B2C9F72700057B073 /* TripView.swift in Sources */,
+				B29D04012CB0B48B00524D8B /* MapMarker.swift in Sources */,
 				B2F8F3552C97BCBB00B9618E /* Trip.swift in Sources */,
 				C49A65522C9CE6D600A8B9BA /* LocationSearchBox.swift in Sources */,
 				B2F8F34A2C97BC7700B9618E /* RecapView.swift in Sources */,
@@ -569,6 +591,7 @@
 				DEVELOPMENT_TEAM = 3U7XP56VTS;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Nomad/Info.plist;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -579,6 +602,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				"LD_RUNPATH_SEARCH_PATHS[arch=*]" = "@loader_path/Frameworks";
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.nicholascandello.Nomad;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -599,6 +623,7 @@
 				DEVELOPMENT_TEAM = 3U7XP56VTS;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Nomad/Info.plist;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -693,6 +718,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 11.2.0;
+			};
+		};
+		947F53C02CA0F59F00238C4F /* XCRemoteSwiftPackageReference "mapbox-navigation-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/mapbox/mapbox-navigation-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.3.1;
 			};
 		};
 		B2F8F3652C97BE2E00B9618E /* XCRemoteSwiftPackageReference "ChatGPTSwift" */ = {
@@ -820,6 +853,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 8419ED6A2C99536E003AD5C2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = "FirebaseVertexAI-Preview";
+		};
+		947F53C12CA0F59F00238C4F /* MapboxNavigationCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 947F53C02CA0F59F00238C4F /* XCRemoteSwiftPackageReference "mapbox-navigation-ios" */;
+			productName = MapboxNavigationCore;
 		};
 		B2F8F3662C97BE2E00B9618E /* ChatGPTSwift */ = {
 			isa = XCSwiftPackageProductDependency;
