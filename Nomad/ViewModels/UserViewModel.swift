@@ -268,8 +268,8 @@ class UserViewModel: ObservableObject {
         }
     }
 
-    func fetchPlaces(location: String, stopType: String, rating: Double?, price: Int?, cuisine: String?) async {
-        let apiKey = ""
+    func fetchPlaces(location: String, stopType: String, rating: Double?, price: Int?, cuisine: String?, isOpen: Bool) async {
+        let apiKey = "hpQdyXearQyP-ahpSeW2wDZvn-ljfmsGvN6RTKqo18I6R23ZB3dfbzAnEjvS8tWoPwyH9FFTGifdZ-n_qH80jbRuDbGb0dHu1qEPrLH-vqNq_d6TZdUaC_kZpwvqZnYx"
         let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
         guard let currentTrip = current_trip else { return }
         let startLocation = currentTrip.getStartLocation()
@@ -314,10 +314,7 @@ class UserViewModel: ObservableObject {
                 case "Activities":
                     self.activities = response.businesses.map { Activity(from: $0) }
                 default:
-                    for business in response.businesses {
-                        let generalLocation = GeneralLocation(address: business.location.address1 ?? "No address", name: business.name)
-                        self.generalLocations.append(generalLocation)
-                    }
+                    self.generalLocations = response.businesses.map { GeneralLocation(from: $0) }
                 }
             }
             print("Response Data: \(String(data: data, encoding: .utf8) ?? "No data")")
@@ -325,6 +322,7 @@ class UserViewModel: ObservableObject {
             print("Error fetching data: \(error.localizedDescription)")
         }
     }
+
     
     func getCategoryForStopType(stopType: String) -> String {
         switch stopType {
@@ -358,6 +356,8 @@ struct Business: Codable {
     let categories: [Category]
     let price: String?
     let url: String?
+    let image_url: String?
+    let isOpen: Bool?
 }
 
 struct Location: Codable {

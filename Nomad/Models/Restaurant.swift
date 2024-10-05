@@ -15,6 +15,10 @@ struct Restaurant: POI, Identifiable {
     var cuisine: String?
     var price: Int?
     var website: String?
+    var imageUrl: String?
+    var open_time: String?
+    var close_time: String?
+    var isOpen: Bool?
 
     init(address: String, name: String, rating: Double? = nil, cuisine: String? = nil, price: Int? = nil, website: String? = nil) {
         self.id = UUID().uuidString
@@ -34,6 +38,8 @@ struct Restaurant: POI, Identifiable {
         self.cuisine = business.categories.first?.title
         self.price = business.price?.count
         self.website = business.url
+        self.imageUrl = business.image_url
+        self.isOpen = business.isOpen
     }
 
     mutating func setAddress(newAddress: String) {

@@ -13,6 +13,7 @@ struct Activity: POI, Identifiable {
     var name: String
     var rating: Double?
     var website: String?
+    var imageUrl: String?
 
     init(address: String, name: String, rating: Double? = nil, website: String? = nil) {
         self.id = UUID().uuidString
@@ -28,6 +29,7 @@ struct Activity: POI, Identifiable {
         self.name = business.name
         self.rating = business.rating
         self.website = business.url
+        self.imageUrl = business.image_url
     }
 
     mutating func setAddress(newAddress: String) {

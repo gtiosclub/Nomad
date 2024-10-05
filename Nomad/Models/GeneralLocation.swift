@@ -11,6 +11,7 @@ struct GeneralLocation: POI, Identifiable {
     var id: String
     var address: String
     var name: String
+    var imageUrl: String?
     
     init(address: String, name: String) {
         self.id = UUID().uuidString
@@ -22,6 +23,7 @@ struct GeneralLocation: POI, Identifiable {
         self.id = business.id
         self.address = business.location.address1 ?? "No address"
         self.name = business.name
+        self.imageUrl = business.image_url
     }
     
     mutating func setAddress(newAddress: String) {
