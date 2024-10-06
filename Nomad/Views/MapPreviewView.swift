@@ -8,38 +8,44 @@ import MapKit
 import SwiftUI
 @available(iOS 17.0, *)
 struct MapPreviewView: View {
-    @ObservedObject var manager = MapManager()
+    private var route: NomadRoute
     @State private var mapType: MKMapType = .standard
-    @State private var selectedResult: MKMapItem?
-    
-    let startingCoordinates : CLLocationCoordinate2D
-    let endCoordinates : CLLocationCoordinate2D
     @State private var stopMarkers : [CLLocationCoordinate2D]
-    var region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 33.7488, longitude: -84.3877), span: MKCoordinateSpan(latitudeDelta: 5, longitudeDelta: 5))
-    let polyline: MKPolyline
-    init(startingCoordinates: CLLocationCoordinate2D, endCoordinates: CLLocationCoordinate2D, stopMarkers: [CLLocationCoordinate2D] = [], polyline: MKPolyline) {
-        self.startingCoordinates = startingCoordinates
-        self.endCoordinates = endCoordinates
-        self.stopMarkers = stopMarkers
-        self.region = MapPreviewView.calculateRegion(for: [startingCoordinates, endCoordinates])
-        self.polyline = polyline
+    private var region: MKCoordinateRegion = MKCoordinateRegion()
+    var polylines: [MKPolyline]
+    init(route: NomadRoute, stopMarkers: [CLLocationCoordinate2D]?) {
+        self.route = route
+        self.stopMarkers = stopMarkers ?? []
+        self.polylines = route.getRoutePolyline()
+        self.region = self.calculateRegion()
     }
     
     var body: some View {
         VStack{
             ZStack {
-                Map(selection: $selectedResult) {
-                    Marker("Start", coordinate: self.startingCoordinates)
-                    Marker("End", coordinate: self.endCoordinates)
+                Map(initialPosition: MapCameraPosition.region(region)) {
+                    Marker("Start", coordinate: getStartCoord())
+                    Marker("End", coordinate: getEndCoord())
                     
                     ForEach(stopMarkers, id: \.latitude) { stop in
                         Marker("Stop", coordinate: stop)
+                    }
+                    
+                    ForEach(polylines, id: \.self) { polyline in
+                        MapPolyline(polyline)
                     }
                 }
             }
         }
     }
-    static func calculateRegion(for coordinates: [CLLocationCoordinate2D]) -> MKCoordinateRegion {
+    func getStartCoord() -> CLLocationCoordinate2D {
+        return  route.steps[0].startCoordinate ?? CLLocationCoordinate2D(latitude: 0.0, longitude: 0.0)
+    }
+    func getEndCoord() -> CLLocationCoordinate2D {
+        return  route.steps[0].startCoordinate ?? CLLocationCoordinate2D(latitude: 0.0, longitude: 0.0)
+    }
+    func calculateRegion() -> MKCoordinateRegion {
+        let coordinates = [getStartCoord(), getEndCoord()]
             let minLatitude = coordinates.map { $0.latitude }.min() ?? 0.0
             let maxLatitude = coordinates.map { $0.latitude }.max() ?? 0.0
             let minLongitude = coordinates.map { $0.longitude }.min() ?? 0.0
@@ -56,10 +62,4 @@ struct MapPreviewView: View {
             
             return MKCoordinateRegion(center: center, span: span)
         }
-}
-#Preview {
-    MapPreviewView(
-        startingCoordinates: CLLocationCoordinate2D(latitude: 33.7488, longitude: -84.3877),
-        endCoordinates: CLLocationCoordinate2D(latitude: 41.8781, longitude: -87.6298),
-        stopMarkers: [CLLocationCoordinate2D(latitude: 36.8781, longitude: -87.6298)], polyline: MKPolyline())
 }

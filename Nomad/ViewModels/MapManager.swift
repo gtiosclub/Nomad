@@ -96,9 +96,11 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     // MAPBOX FUNCTIONS
     func setupMapbox() async {
-        let config = CoreConfig(credentials: .init())
-        let navigatorProvider = MapboxNavigationProvider(coreConfig: config)
-        self.core = await navigatorProvider.mapboxNavigation
+        if self.core == nil {
+            let config = CoreConfig(credentials: .init())
+            let navigatorProvider = MapboxNavigationProvider(coreConfig: config)
+            self.core = await navigatorProvider.mapboxNavigation
+        }
     }
     
     
@@ -213,3 +215,10 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
 }
+//
+//  Untitled.swift
+//  Nomad
+//
+//  Created by Nicholas Candello on 10/6/24.
+//
+
