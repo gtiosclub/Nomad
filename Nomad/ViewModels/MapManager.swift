@@ -20,6 +20,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     // Data populated on MapView
     @Published var mapMarkers: [MapMarker] = []
     @Published var mapPolylines: [MKPolyline] = []
+
     
     // Map State/Settings
     @Published var mapPosition: MapCameraPosition = .userLocation(fallback: .camera(MapCamera(centerCoordinate: CLLocationCoordinate2D(latitude: .zero, longitude: .zero), distance: 0)))
@@ -178,6 +179,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         if waypoints.count > 1 {
             try await updateRoutes()
         }
+
     }
     // Add current location as waypoint to route
     func addCurrentLocationWaypoint(currentLocation: CLLocation, isFirst: Bool) async throws {

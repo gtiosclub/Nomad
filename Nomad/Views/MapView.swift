@@ -34,6 +34,7 @@ struct MapView: View {
                 
                 
             }.mapStyle(getMapStyle())
+          
             // All Map HUD
             VStack {
                 HStack {

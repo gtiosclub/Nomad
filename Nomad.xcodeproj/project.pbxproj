@@ -12,7 +12,10 @@
 		48974B8B2C9F72700057B073 /* TripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B8A2C9F72700057B073 /* TripView.swift */; };
 		48974B8D2CA0A3CB0057B073 /* FindStopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B8C2CA0A3CB0057B073 /* FindStopView.swift */; };
 		48974B8F2CA0A6130057B073 /* GeneralLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B8E2CA0A6130057B073 /* GeneralLocation.swift */; };
+		48974BA12CB04B420057B073 /* RoutePreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974BA02CB04B420057B073 /* RoutePreviewView.swift */; };
+		48974BAD2CB089800057B073 /* RoutePreviewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974BAC2CB089800057B073 /* RoutePreviewManager.swift */; };
 		599F66172C9CE4F90025A8F8 /* Motion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 599F66162C9CE4F90025A8F8 /* Motion.swift */; };
+		66443CD72CADDB77000D3F12 /* RoutePlanListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66443CD62CADDB77000D3F12 /* RoutePlanListView.swift */; };
 		8419ED6C2C99536E003AD5C2 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED6B2C99536E003AD5C2 /* FirebaseAnalytics */; };
 		8419ED6E2C99536E003AD5C2 /* FirebaseAnalyticsOnDeviceConversion in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED6D2C99536E003AD5C2 /* FirebaseAnalyticsOnDeviceConversion */; };
 		8419ED702C99536E003AD5C2 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED6F2C99536E003AD5C2 /* FirebaseAnalyticsWithoutAdIdSupport */; };
@@ -65,6 +68,8 @@
 		B2F8F3672C97BE2E00B9618E /* ChatGPTSwift in Frameworks */ = {isa = PBXBuildFile; productRef = B2F8F3662C97BE2E00B9618E /* ChatGPTSwift */; };
 		C49A65502C9CE53400A8B9BA /* MapSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = C49A654F2C9CE53400A8B9BA /* MapSearch.swift */; };
 		C49A65522C9CE6D600A8B9BA /* LocationSearchBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = C49A65512C9CE6D600A8B9BA /* LocationSearchBox.swift */; };
+		E90E9AB82CAF5C1F00A7C4FA /* SpeechRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90E9AB72CAF5C1400A7C4FA /* SpeechRecognizer.swift */; };
+		E90E9ABA2CAF5C7000A7C4FA /* VoiceInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90E9AB92CAF5C6900A7C4FA /* VoiceInput.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -83,10 +88,13 @@
 		48974B8A2C9F72700057B073 /* TripView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripView.swift; sourceTree = "<group>"; };
 		48974B8C2CA0A3CB0057B073 /* FindStopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindStopView.swift; sourceTree = "<group>"; };
 		48974B8E2CA0A6130057B073 /* GeneralLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralLocation.swift; sourceTree = "<group>"; };
+		48974BA02CB04B420057B073 /* RoutePreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePreviewView.swift; sourceTree = "<group>"; };
+		48974BAC2CB089800057B073 /* RoutePreviewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePreviewManager.swift; sourceTree = "<group>"; };
 		599F66162C9CE4F90025A8F8 /* Motion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Motion.swift; sourceTree = "<group>"; };
 		944E9E9A2CACBBEC0032FD34 /* Step.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Step.swift; sourceTree = "<group>"; };
 		9455F54A2C9F99F0006D03D6 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		94F91F652C9F875F00A63F7A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		66443CD62CADDB77000D3F12 /* RoutePlanListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePlanListView.swift; sourceTree = "<group>"; };
 		B2154C6C2C9D01BA00A6F238 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B2154C6F2C9D02C900A6F238 /* MapManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapManager.swift; sourceTree = "<group>"; };
 		B2154CCF2C9E2DF400A6F238 /* CompassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompassView.swift; sourceTree = "<group>"; };
@@ -115,9 +123,12 @@
 		B35B621F2C9A444700AB215E /* AIUnitTesting.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AIUnitTesting.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C49A654F2C9CE53400A8B9BA /* MapSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapSearch.swift; sourceTree = "<group>"; };
 		C49A65512C9CE6D600A8B9BA /* LocationSearchBox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSearchBox.swift; sourceTree = "<group>"; };
+		E90E9AB72CAF5C1400A7C4FA /* SpeechRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognizer.swift; sourceTree = "<group>"; };
+		E90E9AB92CAF5C6900A7C4FA /* VoiceInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceInput.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		84FC27152CAC741D008C8339 /* Onboarding */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Onboarding; sourceTree = "<group>"; };
 		B35B62202C9A444700AB215E /* AIUnitTesting */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = AIUnitTesting; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
@@ -228,6 +239,7 @@
 		B2F8F3482C97BC6400B9618E /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				84FC27152CAC741D008C8339 /* Onboarding */,
 				B2F8F3492C97BC7700B9618E /* RecapView.swift */,
 				B2F8F34B2C97BC7F00B9618E /* MapView.swift */,
 				B25A5C6D2CAE27C1001FC87E /* MapPreviewView.swift */,
@@ -236,6 +248,8 @@
 				B2154CCE2C9E2DE500A6F238 /* MapButtons */,
 				48974B8A2C9F72700057B073 /* TripView.swift */,
 				48974B8C2CA0A3CB0057B073 /* FindStopView.swift */,
+				48974BA02CB04B420057B073 /* RoutePreviewView.swift */,
+				66443CD62CADDB77000D3F12 /* RoutePlanListView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -243,6 +257,8 @@
 		B2F8F3512C97BC9900B9618E /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				E90E9AB92CAF5C6900A7C4FA /* VoiceInput.swift */,
+				E90E9AB72CAF5C1400A7C4FA /* SpeechRecognizer.swift */,
 				48974B852C9A449F0057B073 /* Hotel.swift */,
 				48974B832C9A43880057B073 /* Activity.swift */,
 				B29D04002CB0B48700524D8B /* MapMarker.swift */,
@@ -268,6 +284,7 @@
 				B2F8F3632C97BD9B00B9618E /* UserViewModel.swift */,
 				C49A654F2C9CE53400A8B9BA /* MapSearch.swift */,
 				C49A65512C9CE6D600A8B9BA /* LocationSearchBox.swift */,
+				48974BAC2CB089800057B073 /* RoutePreviewManager.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -286,6 +303,9 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				84FC27152CAC741D008C8339 /* Onboarding */,
 			);
 			name = Nomad;
 			packageProductDependencies = (
@@ -419,7 +439,9 @@
 				944E9E9B2CACBBEE0032FD34 /* Step.swift in Sources */,
 				B2F8F3602C97BD6200B9618E /* FirebaseViewModel.swift in Sources */,
 				B2F8F3472C97BB5500B9618E /* RootView.swift in Sources */,
-				B2154C702C9D02C900A6F238 /* MapManager.swift in Sources */,
+				B298EB552C98F9DE0078696A /* MapManager.swift in Sources */,
+				E90E9ABA2CAF5C7000A7C4FA /* VoiceInput.swift in Sources */,
+				48974BAD2CB089800057B073 /* RoutePreviewManager.swift in Sources */,
 				B2F8F3572C97BCC400B9618E /* POI.swift in Sources */,
 				C49A65502C9CE53400A8B9BA /* MapSearch.swift in Sources */,
 				B2F8F3502C97BC9600B9618E /* ItineraryPlanningView.swift in Sources */,
@@ -429,6 +451,7 @@
 				B2F8F34C2C97BC7F00B9618E /* MapView.swift in Sources */,
 				B2F8F34E2C97BC8A00B9618E /* AIAssistantView.swift in Sources */,
 				B25A5C6E2CAE27C6001FC87E /* MapPreviewView.swift in Sources */,
+				48974BA12CB04B420057B073 /* RoutePreviewView.swift in Sources */,
 				48974B8B2C9F72700057B073 /* TripView.swift in Sources */,
 				B29D04012CB0B48B00524D8B /* MapMarker.swift in Sources */,
 				B2F8F3552C97BCBB00B9618E /* Trip.swift in Sources */,
@@ -436,9 +459,11 @@
 				B2F8F34A2C97BC7700B9618E /* RecapView.swift in Sources */,
 				B2F8F35B2C97BD2200B9618E /* RestStop.swift in Sources */,
 				B2F8F3372C97BB3C00B9618E /* NomadApp.swift in Sources */,
+				66443CD72CADDB77000D3F12 /* RoutePlanListView.swift in Sources */,
 				B2F8F3532C97BCAB00B9618E /* User.swift in Sources */,
 				48974B862C9A44A30057B073 /* Hotel.swift in Sources */,
 				B2F8F3642C97BD9B00B9618E /* UserViewModel.swift in Sources */,
+				E90E9AB82CAF5C1F00A7C4FA /* SpeechRecognizer.swift in Sources */,
 				B2F8F3622C97BD8900B9618E /* AIAssistantViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
