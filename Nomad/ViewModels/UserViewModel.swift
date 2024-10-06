@@ -276,7 +276,7 @@ class UserViewModel: ObservableObject {
         }
     }
 
-    func fetchPlaces(location: String, stopType: String, rating: Double?, price: Int?, cuisine: String?, isOpen: Bool) async {
+    func fetchPlaces(location: String, stopType: String, rating: Double?, price: Int?, cuisine: String?) async {
         let apiKey = "hpQdyXearQyP-ahpSeW2wDZvn-ljfmsGvN6RTKqo18I6R23ZB3dfbzAnEjvS8tWoPwyH9FFTGifdZ-n_qH80jbRuDbGb0dHu1qEPrLH-vqNq_d6TZdUaC_kZpwvqZnYx"
         let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
         guard let currentTrip = current_trip else { return }
@@ -294,10 +294,6 @@ class UserViewModel: ObservableObject {
             queryItems.append(URLQueryItem(name: "price", value: String(price)))
         }
 
-        if let rating = rating {
-            queryItems.append(URLQueryItem(name: "rating", value: String(rating)))
-        }
-
         if let cuisine = cuisine, cuisine != "All" && !cuisine.isEmpty {
             queryItems.append(URLQueryItem(name: "categories", value: cuisine))
         }
@@ -313,16 +309,21 @@ class UserViewModel: ObservableObject {
             let decoder = JSONDecoder()
             let response = try decoder.decode(YelpResponse.self, from: data)
             
+            let filteredBusinesses = response.businesses.filter { business in
+                        guard let businessRating = business.rating else { return false }
+                        return rating == nil || businessRating >= rating!
+                    }
+            
             DispatchQueue.main.async {
                 switch stopType {
-                case "Restaurants":
-                    self.restaurants = response.businesses.map { Restaurant(from: $0) }
+                case "Dining":
+                    self.restaurants = filteredBusinesses.map { Restaurant(from: $0) }
                 case "Hotels":
-                    self.hotels = response.businesses.map { Hotel(from: $0) }
+                    self.hotels = filteredBusinesses.map { Hotel(from: $0) }
                 case "Activities":
-                    self.activities = response.businesses.map { Activity(from: $0) }
+                    self.activities = filteredBusinesses.map { Activity(from: $0) }
                 default:
-                    self.generalLocations = response.businesses.map { GeneralLocation(from: $0) }
+                    self.generalLocations = filteredBusinesses.map { GeneralLocation(from: $0) }
                 }
             }
             print("Response Data: \(String(data: data, encoding: .utf8) ?? "No data")")
@@ -334,7 +335,7 @@ class UserViewModel: ObservableObject {
     
     func getCategoryForStopType(stopType: String) -> String {
         switch stopType {
-        case "Food":
+        case "Dining":
             return "restaurants"
         case "Activities":
             return "activities"
@@ -366,11 +367,11 @@ struct Business: Codable {
     let price: String?
     let url: String?
     let image_url: String?
-    let isOpen: Bool?
 }
 
 struct Location: Codable {
     let address1: String?
+    let city: String?
 }
 
 struct Coordinates: Codable {

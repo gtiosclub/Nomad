@@ -132,7 +132,7 @@ struct FindStopView: View {
                                     
                                     VStack(alignment: .leading, spacing: 16) {
                                         VStack(alignment: .leading) {
-                                            Text("Minimum Price:")
+                                            Text("Maximum Price:")
                                                 .font(.subheadline)
                                                 .bold()
                                             
@@ -205,8 +205,7 @@ struct FindStopView: View {
                                     stopType: selection,
                                     rating: Double(rating),
                                     price: price,
-                                    cuisine: selectedCuisines.joined(separator: ","),
-                                    isOpen: true
+                                    cuisine: selectedCuisines.joined(separator: ",")
                                 )
                             }
                             isLoading = false
@@ -239,7 +238,7 @@ struct FindStopView: View {
                                             ZStack {
                                                 Circle()
                                                     .fill(Color.white)
-                                                    .frame(width: 40, height: 40)
+                                                    .frame(width: 24, height: 24)
                                                     .overlay(
                                                         Circle()
                                                             .stroke(Color.gray, lineWidth: 1)
@@ -254,49 +253,58 @@ struct FindStopView: View {
                                         AsyncImage(url: URL(string: restaurant.imageUrl ?? "")) { image in
                                             image
                                                 .resizable()
-                                                .scaledToFill()
-                                                .frame(width: 250, height: 250)
+                                                .frame(width: 70, height: 70)
                                                 .cornerRadius(10)
                                                 .clipped()
                                         } placeholder: {
                                             ProgressView()
-                                                .frame(width: 250, height: 250)
+                                                .frame(width: 70, height: 70)
                                         }
                                         
-                                        VStack(alignment: .leading, spacing: 6) {
+                                        VStack(alignment: .leading, spacing: 0) {
                                             Text(restaurant.name)
                                                 .font(.headline)
                                                 .lineLimit(1)
-                                            HStack {
+                                            HStack(spacing: 1) {
                                                 Text(restaurant.cuisine ?? "")
                                                     .font(.system(size: 16))
                                                     .foregroundColor(.secondary)
                                                 
+                                                if let city = restaurant.city {
+                                                    Text(" • \(city) • ")
+                                                        .font(.system(size: 16))
+                                                        .foregroundColor(.secondary)
+                                                }
+                                                
                                                 if let price = restaurant.price {
-                                                    Text(" • ")
                                                     Text(String(repeating: "$", count: price))
                                                         .font(.system(size: 16))
                                                         .foregroundColor(.secondary)
                                                 }
                                             }
-                                            Text("Open")
                                             if let rating = restaurant.rating {
-                                                Text("Rating: \(String(format: "%.2f", rating))")
-                                                    .font(.subheadline)
-                                                    .foregroundColor(.secondary)
+                                                HStack(spacing: 1) {
+                                                    Text("\(String(format: "%.1f", rating))")
+                                                        .font(.subheadline)
+                                                        .foregroundColor(.secondary)
+                                                    Image(systemName: "star")
+                                                        .resizable()
+                                                        .frame(width: 14, height: 14)
+                                                        .foregroundColor(.secondary)
+                                                }
                                             } else {
-                                                Text("Rating: N/A")
+                                                Text("N/A")
                                                     .font(.subheadline)
                                                     .foregroundColor(.secondary)
                                             }
                                         }
                                         .padding(.vertical, 12)
+                                        Spacer()
                                     }
-                                    .padding(12)
-                                    .frame(height: 250)
+                                    .padding(2)
+                                    .frame(minHeight: 50)
                                     .background(Color.white)
                                     .cornerRadius(12)
-                                    .shadow(radius: 4)
                                 }
                             } else if selection == "Hotels", !vm.hotels.isEmpty {
                                 ForEach(vm.hotels) { hotel in
@@ -322,11 +330,11 @@ struct FindStopView: View {
                                             image
                                                 .resizable()
                                                 .scaledToFill()
-                                                .frame(width: 50, height: 50)
+                                                .frame(width: 70, height: 70)
                                                 .cornerRadius(8)
                                         } placeholder: {
                                             ProgressView()
-                                                .frame(width: 50, height: 50)
+                                                .frame(width: 70, height:70)
                                         }
                                         
                                         VStack(alignment: .leading, spacing: 4) {
@@ -334,16 +342,33 @@ struct FindStopView: View {
                                                 .font(.headline)
                                             Text(hotel.address)
                                                 .font(.subheadline)
-                                            Text("Rating: \(String(format: "%.2f", hotel.rating ?? 0.0))")
-                                                .font(.subheadline)
-                                                .foregroundColor(.secondary)
+                                            if let rating = hotel.rating {
+                                                HStack(spacing: 1) {
+                                                    Text("\(String(format: "%.1f", rating))")
+                                                        .font(.subheadline)
+                                                        .foregroundColor(.secondary)
+                                                    Image(systemName: "star")
+                                                        .resizable()
+                                                        .frame(width: 14, height: 14)
+                                                        .foregroundColor(.secondary)
+                                                }
+                                            } else {
+                                                Text("N/A")
+                                                    .font(.subheadline)
+                                                    .foregroundColor(.secondary)
+                                            }
                                         }
                                         .padding(.vertical, 8)
+                                        Spacer()
                                     }
+                                    .padding(2)
+                                    .frame(minHeight: 50)
+                                    .background(Color.white)
+                                    .cornerRadius(12)
                                 }
                             } else if selection == "Activities", !vm.activities.isEmpty {
                                 ForEach(vm.activities) { activity in
-                                    HStack {
+                                    HStack() {
                                         Button(action: {
                                             vm.addStop(stop: activity)
                                         }) {
@@ -375,12 +400,29 @@ struct FindStopView: View {
                                         VStack(alignment: .leading, spacing: 4) {
                                             Text(activity.name)
                                                 .font(.headline)
-                                            Text("Rating: \(String(format: "%.2f", activity.rating ?? 0.0))")
-                                                .font(.subheadline)
-                                                .foregroundColor(.secondary)
+                                            if let rating = activity.rating {
+                                                HStack(spacing: 1) {
+                                                    Text("\(String(format: "%.1f", rating))")
+                                                        .font(.subheadline)
+                                                        .foregroundColor(.secondary)
+                                                    Image(systemName: "star")
+                                                        .resizable()
+                                                        .frame(width: 14, height: 14)
+                                                        .foregroundColor(.secondary)
+                                                }
+                                            } else {
+                                                Text("N/A")
+                                                    .font(.subheadline)
+                                                    .foregroundColor(.secondary)
+                                            }
                                         }
                                         .padding(.vertical, 8)
+                                        Spacer()
                                     }
+                                    .padding(2)
+                                    .frame(minHeight: 50)
+                                    .background(Color.white)
+                                    .cornerRadius(12)
                                 }
                             } else if !vm.generalLocations.isEmpty {
                                 ForEach(vm.generalLocations) { generalLocation in
@@ -406,11 +448,11 @@ struct FindStopView: View {
                                             image
                                                 .resizable()
                                                 .scaledToFill()
-                                                .frame(width: 50, height: 50)
+                                                .frame(width: 70, height: 70)
                                                 .cornerRadius(8)
                                         } placeholder: {
                                             ProgressView()
-                                                .frame(width: 50, height: 50)
+                                                .frame(width: 70, height: 70)
                                         }
                                         
                                         VStack(alignment: .leading, spacing: 4) {
@@ -418,7 +460,12 @@ struct FindStopView: View {
                                                 .font(.headline)
                                         }
                                         .padding(.vertical, 8)
+                                        Spacer()
                                     }
+                                    .padding(2)
+                                    .frame(minHeight: 50)
+                                    .background(Color.white)
+                                    .cornerRadius(12)
                                 }
                             } else if hasSearched {
                                 Text("No results found.")

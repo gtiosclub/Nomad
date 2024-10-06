@@ -16,7 +16,6 @@
 		48974BAD2CB089800057B073 /* RoutePreviewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974BAC2CB089800057B073 /* RoutePreviewManager.swift */; };
 		599F66172C9CE4F90025A8F8 /* Motion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 599F66162C9CE4F90025A8F8 /* Motion.swift */; };
 		66443CD72CADDB77000D3F12 /* RoutePlanListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66443CD62CADDB77000D3F12 /* RoutePlanListView.swift */; };
-		66443CDD2CB0C8CE000D3F12 /* Testing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66443CDC2CB0C8CE000D3F12 /* Testing.swift */; };
 		8419ED6C2C99536E003AD5C2 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED6B2C99536E003AD5C2 /* FirebaseAnalytics */; };
 		8419ED6E2C99536E003AD5C2 /* FirebaseAnalyticsOnDeviceConversion in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED6D2C99536E003AD5C2 /* FirebaseAnalyticsOnDeviceConversion */; };
 		8419ED702C99536E003AD5C2 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED6F2C99536E003AD5C2 /* FirebaseAnalyticsWithoutAdIdSupport */; };
@@ -88,10 +87,6 @@
 		48974B8E2CA0A6130057B073 /* GeneralLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralLocation.swift; sourceTree = "<group>"; };
 		48974BA02CB04B420057B073 /* RoutePreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePreviewView.swift; sourceTree = "<group>"; };
 		48974BAC2CB089800057B073 /* RoutePreviewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePreviewManager.swift; sourceTree = "<group>"; };
-		599F66162C9CE4F90025A8F8 /* Motion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Motion.swift; sourceTree = "<group>"; };
-		66443CD62CADDB77000D3F12 /* RoutePlanListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePlanListView.swift; sourceTree = "<group>"; };
-		66443CDC2CB0C8CE000D3F12 /* Testing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Testing.swift; sourceTree = "<group>"; };
-		B2154C6C2C9D01BA00A6F238 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		599F66162C9CE4F90025A8F8 /* Motion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Motion.swift; sourceTree = "<group>"; };
 		66443CD62CADDB77000D3F12 /* RoutePlanListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePlanListView.swift; sourceTree = "<group>"; };
 		B2154C6C2C9D01BA00A6F238 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
@@ -238,7 +233,6 @@
 				48974B8C2CA0A3CB0057B073 /* FindStopView.swift */,
 				48974BA02CB04B420057B073 /* RoutePreviewView.swift */,
 				66443CD62CADDB77000D3F12 /* RoutePlanListView.swift */,
-				66443CDC2CB0C8CE000D3F12 /* Testing.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -434,7 +428,6 @@
 				48974B842C9A438B0057B073 /* Activity.swift in Sources */,
 				B2154CD42C9E333700A6F238 /* ChangeMapTypeView.swift in Sources */,
 				B2F8F34C2C97BC7F00B9618E /* MapView.swift in Sources */,
-				66443CDD2CB0C8CE000D3F12 /* Testing.swift in Sources */,
 				B2F8F34E2C97BC8A00B9618E /* AIAssistantView.swift in Sources */,
 				B25A5C6E2CAE27C6001FC87E /* MapPreviewView.swift in Sources */,
 				48974BA12CB04B420057B073 /* RoutePreviewView.swift in Sources */,
