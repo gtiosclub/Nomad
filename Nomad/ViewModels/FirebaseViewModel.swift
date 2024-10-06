@@ -119,6 +119,17 @@ class FirebaseViewModel: ObservableObject {
             return false
         }
     }
+
+    func modifyEndDate(userID: String, tripID: String, newEndDate: String, modifiedDate: String) async -> Bool {
+        do {
+            try await db.collection("TRIPS").document(tripID).updateData(["endDate" : newEndDate, "modified_date" : modifiedDate])
+            return true
+        } catch {
+            print(error)
+            return false
+        }
+    }
+    
     func getAPIKeys() async throws -> [String: String] {
         var apimap: [String: String] = [:]
         
