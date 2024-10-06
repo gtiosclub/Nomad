@@ -351,6 +351,39 @@ class UserViewModel: ObservableObject {
             return "restaurants"
         }
     }
+    
+    func getCurrentCity() async -> String? {
+        let locationManager = CLLocationManager()
+        guard let userLocation = locationManager.location else {
+            return nil
+        }
+        
+        let geoCoder = CLGeocoder()
+        do {
+            if let placemark = try await geoCoder.reverseGeocodeLocation(userLocation).first {
+                return placemark.locality
+            }
+        } catch {
+            print("Error during reverse geocoding: \(error)")
+        }
+        
+        return nil
+    }
+    
+    func getCoordinates(for address: String) async -> (latitude: Double, longitude: Double)? {
+        let geoCoder = CLGeocoder()
+        
+        do {
+            if let placemark = try await geoCoder.geocodeAddressString(address).first,
+               let location = placemark.location {
+                return (location.coordinate.latitude, location.coordinate.longitude)
+            }
+        } catch {
+            print("Error during geocoding: \(error)")
+        }
+        
+        return nil
+    }
 }
 
 struct YelpResponse: Codable {
