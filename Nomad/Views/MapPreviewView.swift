@@ -16,12 +16,13 @@ struct MapPreviewView: View {
     let endCoordinates : CLLocationCoordinate2D
     @State private var stopMarkers : [CLLocationCoordinate2D]
     var region = MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 33.7488, longitude: -84.3877), span: MKCoordinateSpan(latitudeDelta: 5, longitudeDelta: 5))
-    
-    init(startingCoordinates: CLLocationCoordinate2D, endCoordinates: CLLocationCoordinate2D, stopMarkers: [CLLocationCoordinate2D] = []) {
+    let polyline: MKPolyline
+    init(startingCoordinates: CLLocationCoordinate2D, endCoordinates: CLLocationCoordinate2D, stopMarkers: [CLLocationCoordinate2D] = [], polyline: MKPolyline) {
         self.startingCoordinates = startingCoordinates
         self.endCoordinates = endCoordinates
         self.stopMarkers = stopMarkers
-        self.region = calculateRegion(for: [startingCoordinates, endCoordinates])
+        self.region = MapPreviewView.calculateRegion(for: [startingCoordinates, endCoordinates])
+        self.polyline = polyline
     }
     
     var body: some View {
@@ -30,29 +31,15 @@ struct MapPreviewView: View {
                 Map(selection: $selectedResult) {
                     Marker("Start", coordinate: self.startingCoordinates)
                     Marker("End", coordinate: self.endCoordinates)
-                    if let route = manager.route {
-                        MapPolyline(route)
-                            .stroke(.blue, lineWidth: 5)
-                    }
+                    
                     ForEach(stopMarkers, id: \.latitude) { stop in
                         Marker("Stop", coordinate: stop)
                     }
                 }
             }
-//            Button(action: {
-//                manager.setSource(coord: startingCoordinates)
-//                manager.setDestination(coord: endCoordinates)
-//                manager.getDirections()
-//            }) {
-//                Text("Get Directions")
-//                    .padding()
-//                    .background(Color.blue)
-//                    .foregroundColor(.white)
-//                    .cornerRadius(8)
-//            }
         }
     }
-    func calculateRegion(for coordinates: [CLLocationCoordinate2D]) -> MKCoordinateRegion {
+    static func calculateRegion(for coordinates: [CLLocationCoordinate2D]) -> MKCoordinateRegion {
             let minLatitude = coordinates.map { $0.latitude }.min() ?? 0.0
             let maxLatitude = coordinates.map { $0.latitude }.max() ?? 0.0
             let minLongitude = coordinates.map { $0.longitude }.min() ?? 0.0
@@ -74,5 +61,5 @@ struct MapPreviewView: View {
     MapPreviewView(
         startingCoordinates: CLLocationCoordinate2D(latitude: 33.7488, longitude: -84.3877),
         endCoordinates: CLLocationCoordinate2D(latitude: 41.8781, longitude: -87.6298),
-        stopMarkers: [CLLocationCoordinate2D(latitude: 36.8781, longitude: -87.6298)])
+        stopMarkers: [CLLocationCoordinate2D(latitude: 36.8781, longitude: -87.6298)], polyline: MKPolyline())
 }

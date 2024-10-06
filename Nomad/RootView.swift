@@ -14,7 +14,7 @@ struct RootView: View {
         TabView(selection: $selectedTab) {
             MapView()
                 .tabItem {
-                    Label("Navigate", systemImage: "map.fill")
+                    Label("Navigation", systemImage: "map.fill")
                 }
                 .tag(1)
 
