@@ -109,7 +109,33 @@ class FirebaseViewModel: ObservableObject {
             return false
         }
     }
-    
+
+    func modifyStartDate(userID: String, tripID: String, newStartDate: String) async -> Bool {
+    let db = Firestore.firestore()
+    let tripRef = db.collection("USERS").document(userID).collection("TRIPS").document(tripID)
+
+    do {
+        let document = try await tripRef.getDocument()
+        if document.exists {
+            if document.data()?["startDate"] != nil {
+                try await tripRef.updateData(["startDate": newStartDate])
+                print("Start date updated.")
+            } else {
+                try await tripRef.setData(["startDate": newStartDate], merge: true)
+                print("Start date added.")
+            }
+            return true
+        } else {
+            print("Trip document does not exist.")
+            self.errorText = "Trip not found."
+            return false
+        }
+    } catch {
+        print("Error modifying start date: \(error.localizedDescription)")
+        self.errorText = error.localizedDescription
+        return false
+    }
+}
     func getAPIKeys() async throws -> [String: String] {
         var apimap: [String: String] = [:]
         
