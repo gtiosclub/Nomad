@@ -17,7 +17,9 @@ class User: Identifiable {
         self.name = name
         self.trips = trips
     }
-    
+    func getName() -> String {
+        return self.name
+    }
     func addTrip(trip: Trip) {
         self.trips.append(trip)
     }

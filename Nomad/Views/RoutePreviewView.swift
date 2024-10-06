@@ -9,7 +9,7 @@ import MapKit
 import SwiftUI
 @available(iOS 17.0, *)
 
-struct RoutePrevieView: View {
+struct RoutePreviewView: View {
     @StateObject var manager = RoutePreviewManager()
     @State private var mapType: MKMapType = .standard
     var trip: Trip
@@ -77,5 +77,5 @@ struct RoutePrevieView: View {
 }
 
 #Preview {
-    RoutePrevieView(trip: Trip(start_location: Restaurant(address: "848 Spring Street Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "1000 Peachtree Street Atlanta GA 30308", name: "The Ritz-Carlton", latitude: -84.383168, longitude: 33.781489), start_date: "10-05-2024", end_date: "10-05-2024"))
+    RoutePreviewView(trip: Trip(start_location: Restaurant(address: "848 Spring Street Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "1000 Peachtree Street Atlanta GA 30308", name: "The Ritz-Carlton", latitude: -84.383168, longitude: 33.781489), start_date: "10-05-2024", end_date: "10-05-2024"))
 }
