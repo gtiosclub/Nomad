@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Hotel: POI, Identifiable {
+struct Hotel: POI, Identifiable, Ratable {
     var id: String
     var address: String
     var name: String
@@ -48,7 +48,7 @@ struct Hotel: POI, Identifiable {
         self.name = newName
     }
     
-    mutating func setRating(newRating: Double?) {
+    mutating func setRating(newRating: Double) {
         self.rating = newRating
     }
     

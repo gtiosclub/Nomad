@@ -14,6 +14,7 @@
 		48974B8F2CA0A6130057B073 /* GeneralLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B8E2CA0A6130057B073 /* GeneralLocation.swift */; };
 		48974BA12CB04B420057B073 /* RoutePreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974BA02CB04B420057B073 /* RoutePreviewView.swift */; };
 		48974BAD2CB089800057B073 /* RoutePreviewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974BAC2CB089800057B073 /* RoutePreviewManager.swift */; };
+		48974BAF2CB30AAF0057B073 /* EnhancedRoutePlanListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974BAE2CB30AAF0057B073 /* EnhancedRoutePlanListView.swift */; };
 		599F66172C9CE4F90025A8F8 /* Motion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 599F66162C9CE4F90025A8F8 /* Motion.swift */; };
 		66443CD72CADDB77000D3F12 /* RoutePlanListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66443CD62CADDB77000D3F12 /* RoutePlanListView.swift */; };
 		8419ED6C2C99536E003AD5C2 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED6B2C99536E003AD5C2 /* FirebaseAnalytics */; };
@@ -87,6 +88,7 @@
 		48974B8E2CA0A6130057B073 /* GeneralLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralLocation.swift; sourceTree = "<group>"; };
 		48974BA02CB04B420057B073 /* RoutePreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePreviewView.swift; sourceTree = "<group>"; };
 		48974BAC2CB089800057B073 /* RoutePreviewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePreviewManager.swift; sourceTree = "<group>"; };
+		48974BAE2CB30AAF0057B073 /* EnhancedRoutePlanListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnhancedRoutePlanListView.swift; sourceTree = "<group>"; };
 		599F66162C9CE4F90025A8F8 /* Motion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Motion.swift; sourceTree = "<group>"; };
 		66443CD62CADDB77000D3F12 /* RoutePlanListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePlanListView.swift; sourceTree = "<group>"; };
 		B2154C6C2C9D01BA00A6F238 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
@@ -233,6 +235,7 @@
 				48974B8C2CA0A3CB0057B073 /* FindStopView.swift */,
 				48974BA02CB04B420057B073 /* RoutePreviewView.swift */,
 				66443CD62CADDB77000D3F12 /* RoutePlanListView.swift */,
+				48974BAE2CB30AAF0057B073 /* EnhancedRoutePlanListView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -415,6 +418,7 @@
 				B2154CD22C9E319C00A6F238 /* RecenterMapView.swift in Sources */,
 				B2F8F35D2C97BD3000B9618E /* GasStation.swift in Sources */,
 				B2F8F3592C97BCD400B9618E /* Restaurant.swift in Sources */,
+				48974BAF2CB30AAF0057B073 /* EnhancedRoutePlanListView.swift in Sources */,
 				48974B8D2CA0A3CB0057B073 /* FindStopView.swift in Sources */,
 				B2F8F3602C97BD6200B9618E /* FirebaseViewModel.swift in Sources */,
 				B2F8F3472C97BB5500B9618E /* RootView.swift in Sources */,

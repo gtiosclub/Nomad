@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Activity: POI, Identifiable {
+struct Activity: POI, Identifiable, Ratable {
     var id: String
     var address: String
     var name: String
@@ -52,7 +52,7 @@ struct Activity: POI, Identifiable {
         self.website = newWebsite
     }
 
-    mutating func setRating(newRating: Double?) {
+    mutating func setRating(newRating: Double) {
         self.rating = newRating
     }
     

@@ -30,10 +30,10 @@ struct RoutePlanListView: View {
             }
         }
         .padding(.horizontal, 25)
-        .padding(.vertical, 25)
+        .padding(.vertical, 15)
         .padding(.leading, 0)
         .padding(.trailing, 40)
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: UIScreen.main.bounds.width - 40)
         .background(Color.white)
         .cornerRadius(10)
         .shadow(radius: 5)
@@ -51,7 +51,8 @@ struct RoutePlanListView: View {
                     .font(.caption)
                     .foregroundColor(.gray)
                     .frame(width: 50, alignment: .trailing)
-                    .padding(.top, isLast ? -40 : -75)
+                    .padding(.bottom, 15)
+                    .padding(.top, isLast ? -15 : -30)
             } else {
                 Spacer().frame(width: 50)
             }
@@ -61,17 +62,17 @@ struct RoutePlanListView: View {
                 if !isLast {
                     Rectangle()
                         .fill(Color.gray)
-                        .frame(width: 1, height: 60)
-                        .padding(.leading, 5)
+                        .frame(width: 1, height: 20)
+                        .padding(.leading, 0)
                 }
             }
-            .padding(.leading, 5)
+            .padding(.leading, 15)
 
             Text(locationName)
                 .font(.headline)
                 .foregroundColor(.primary)
                 .padding(.leading, 5)
-                .padding(.top, isLast ? -6 : -40)
+                .padding(.top, isLast ? -5 : -20)
         }
         .padding(.vertical, 0)
     }

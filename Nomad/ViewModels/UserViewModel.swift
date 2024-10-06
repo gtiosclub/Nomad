@@ -24,6 +24,9 @@ class UserViewModel: ObservableObject {
     
     init(user: User? = nil) {
         self.user = user
+        if let trip = user?.getTrips()[0] {
+            current_trip = trip
+        }
     }
     
     func setUser(user: User) {

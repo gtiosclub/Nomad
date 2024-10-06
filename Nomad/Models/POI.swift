@@ -23,3 +23,10 @@ protocol POI: Equatable {
     func getLatitude() -> Double?
     func getLongitude() -> Double?
 }
+
+protocol Ratable {
+    var rating: Double? { get set }
+    
+    mutating func setRating(newRating: Double)
+    func getRating() -> Double
+}
