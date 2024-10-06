@@ -112,7 +112,7 @@ class FirebaseViewModel: ObservableObject {
 
     func modifyStartDate(userID: String, tripID: String, newStartDate: String, modifiedDate: String) async -> Bool {
         do {
-            try await db.collection("TRIPS").document(tripID).updateData(["startDate" : newStartDate, "modified_date" : modifiedDate])
+            try await db.collection("TRIPS").document(tripID).updateData(["start_date" : newStartDate, "modified_date" : modifiedDate])
             return true
         } catch {
             print(error)
@@ -122,7 +122,7 @@ class FirebaseViewModel: ObservableObject {
 
     func modifyEndDate(userID: String, tripID: String, newEndDate: String, modifiedDate: String) async -> Bool {
         do {
-            try await db.collection("TRIPS").document(tripID).updateData(["endDate" : newEndDate, "modified_date" : modifiedDate])
+            try await db.collection("TRIPS").document(tripID).updateData(["end_date" : newEndDate, "modified_date" : modifiedDate])
             return true
         } catch {
             print(error)
