@@ -1,47 +1,39 @@
 //
-//  Restaurant.swift
+//  Hotel.swift
 //  Nomad
 //
-//  Created by Nicholas Candello on 9/15/24.
+//  Created by Austin Huguenard on 9/17/24.
 //
 
 import Foundation
 
-struct Restaurant: POI, Identifiable {
+struct Hotel: POI, Identifiable {
     var id: String
     var address: String
     var name: String
     var rating: Double?
-    var cuisine: String?
-    var price: Int?
     var website: String?
     var imageUrl: String?
-    var open_time: String?
-    var close_time: String?
     var longitude: Double?
     var latitude: Double?
     var city: String?
 
-    init(address: String, name: String, rating: Double? = nil, cuisine: String? = nil, price: Int? = nil, website: String? = nil, latitude: Double? = nil, longitude: Double? = nil, city: String? = nil) {
+    init(address: String, name: String, rating: Double? = nil, website: String? = nil, latitude: Double? = nil, longitude: Double? = nil, city: String? = nil) {
         self.id = UUID().uuidString
         self.address = address
         self.name = name
         self.rating = rating
-        self.cuisine = cuisine
-        self.price = price
         self.website = website
         self.latitude = latitude
         self.longitude = longitude
         self.city = city
     }
-
+    
     init(from business: Business) {
         self.id = business.id
         self.address = business.location.address1 ?? "No address"
         self.name = business.name
         self.rating = business.rating
-        self.cuisine = business.categories.first?.title
-        self.price = business.price?.count
         self.website = business.url
         self.imageUrl = business.image_url
         self.latitude = business.coordinates.latitude
@@ -49,10 +41,10 @@ struct Restaurant: POI, Identifiable {
         self.city = business.location.city
     }
     
-    static func == (lhs: Restaurant, rhs: Restaurant) -> Bool {
+    static func == (lhs: Hotel, rhs: Hotel) -> Bool {
         return lhs.name == rhs.name && lhs.address == rhs.address
     }
-
+    
     mutating func setAddress(newAddress: String) {
         self.address = newAddress
     }
@@ -61,19 +53,11 @@ struct Restaurant: POI, Identifiable {
         self.name = newName
     }
     
-    mutating func setRating(newRating: Double) {
+    mutating func setRating(newRating: Double?) {
         self.rating = newRating
     }
     
-    mutating func setCuisine(newCuisine: String) {
-        self.cuisine = newCuisine
-    }
-    
-    mutating func setPrice(newPrice: Int) {
-        self.price = newPrice
-    }
-    
-    mutating func setWebsite(newWebsite: String) {
+    mutating func setWebsite(newWebsite: String?) {
         self.website = newWebsite
     }
     
@@ -90,27 +74,19 @@ struct Restaurant: POI, Identifiable {
     }
 
     func getAddress() -> String {
-        return address
+        return self.address
     }
     
     func getName() -> String {
-        return name
+        return self.name
     }
     
     func getRating() -> Double {
-        return rating ?? 0
-    }
-    
-    func getCuisine() -> String {
-        return cuisine ?? ""
-    }
-    
-    func getPrice() -> Int {
-        return price ?? 0
+        return self.rating ?? 0
     }
     
     func getWebsite() -> String {
-        return website ?? ""
+        return self.website ?? ""
     }
     
     func getLongitude() -> Double? {
@@ -125,3 +101,4 @@ struct Restaurant: POI, Identifiable {
         return city
     }
 }
+
