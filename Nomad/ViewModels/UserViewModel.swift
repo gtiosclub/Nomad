@@ -34,7 +34,7 @@ class UserViewModel: ObservableObject {
         self.user = User(id: UUID().uuidString, name: name)
     }
     
-    func createTrip(start: POI, end: POI) -> Trip {
+    func createTrip(start: any POI, end: any POI) -> Trip {
         self.current_trip = Trip(start_location: start, end_location: end)
         return current_trip!
     }
@@ -50,13 +50,13 @@ class UserViewModel: ObservableObject {
         return user?.getTrips() ?? []
     }
     
-    func addStop(stop: POI) {
+    func addStop(stop: any POI) {
         current_trip?.addStops(additionalStops: [stop])
         user?.updateTrip(trip: current_trip!)
         self.user = user
     }
     
-    func removeStop(stop: POI) {
+    func removeStop(stop: any POI) {
         current_trip?.removeStops(removedStops: [stop])
         user?.updateTrip(trip: current_trip!)
         self.user = user
@@ -70,13 +70,13 @@ class UserViewModel: ObservableObject {
         }
     }
     
-    func setStartLocation(new_start_location: POI) {
+    func setStartLocation(new_start_location: any POI) {
         current_trip?.setStartLocation(new_start_location: new_start_location)
         user?.updateTrip(trip: current_trip!)
         self.user = user
     }
     
-    func setEndLocation(new_end_location: POI) {
+    func setEndLocation(new_end_location: any POI) {
         current_trip?.setEndLocation(new_end_location: new_end_location)
         user?.updateTrip(trip: current_trip!)
         self.user = user
@@ -94,6 +94,11 @@ class UserViewModel: ObservableObject {
         self.user = user
     }
     
+    func setStartTime(startTime: String) {
+        current_trip?.setStartTime(newTime: startTime)
+        user?.updateTrip(trip: current_trip!)
+        self.user = user
+    }
     func setCurrentTrip(by tripID: String) {
         guard let user = user else { return }
         
@@ -304,7 +309,7 @@ class UserViewModel: ObservableObject {
             let (data, _) = try await URLSession.shared.data(for: request)
             let decoder = JSONDecoder()
             let response = try decoder.decode(YelpResponse.self, from: data)
-
+            
             DispatchQueue.main.async {
                 switch stopType {
                 case "Restaurants":
@@ -351,6 +356,7 @@ struct YelpResponse: Codable {
 struct Business: Codable {
     let id: String
     let name: String
+    let coordinates: Coordinates
     let location: Location
     let rating: Double?
     let categories: [Category]
@@ -362,6 +368,11 @@ struct Business: Codable {
 
 struct Location: Codable {
     let address1: String?
+}
+
+struct Coordinates: Codable {
+    let latitude: Double
+    let longitude: Double
 }
 
 struct Category: Codable {

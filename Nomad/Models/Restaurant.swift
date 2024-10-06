@@ -19,8 +19,10 @@ struct Restaurant: POI, Identifiable {
     var open_time: String?
     var close_time: String?
     var isOpen: Bool?
+    var longitude: Double?
+    var latitude: Double?
 
-    init(address: String, name: String, rating: Double? = nil, cuisine: String? = nil, price: Int? = nil, website: String? = nil) {
+    init(address: String, name: String, rating: Double? = nil, cuisine: String? = nil, price: Int? = nil, website: String? = nil, latitude: Double? = nil, longitude: Double? = nil) {
         self.id = UUID().uuidString
         self.address = address
         self.name = name
@@ -28,6 +30,8 @@ struct Restaurant: POI, Identifiable {
         self.cuisine = cuisine
         self.price = price
         self.website = website
+        self.latitude = latitude
+        self.longitude = longitude
     }
 
     init(from business: Business) {
@@ -40,6 +44,12 @@ struct Restaurant: POI, Identifiable {
         self.website = business.url
         self.imageUrl = business.image_url
         self.isOpen = business.isOpen
+        self.latitude = business.coordinates.latitude
+        self.longitude = business.coordinates.longitude
+    }
+    
+    static func == (lhs: Restaurant, rhs: Restaurant) -> Bool {
+        return lhs.name == rhs.name && lhs.address == rhs.address
     }
 
     mutating func setAddress(newAddress: String) {
@@ -65,6 +75,14 @@ struct Restaurant: POI, Identifiable {
     mutating func setWebsite(newWebsite: String) {
         self.website = newWebsite
     }
+    
+    mutating func setLongitude(newLongitude: Double) {
+        self.longitude = newLongitude
+    }
+    
+    mutating func setLatitude(newLatitude: Double) {
+        self.latitude = newLatitude
+    }
 
     func getAddress() -> String {
         return address
@@ -88,5 +106,13 @@ struct Restaurant: POI, Identifiable {
     
     func getWebsite() -> String {
         return website ?? ""
+    }
+    
+    func getLongitude() -> Double? {
+        return longitude
+    }
+    
+    func getLatitude() -> Double? {
+        return latitude
     }
 }
