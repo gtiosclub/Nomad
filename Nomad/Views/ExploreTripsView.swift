@@ -9,65 +9,99 @@ import SwiftUI
 
 struct ExploreTripsView: View {
     let user = User(id: "1", name: "John Howard")
+    @State var communityTrips: [Trip] = []
+    
     var body: some View {
-        ScrollView {
-            
-            VStack (alignment: .leading) {
-                HStack {
-                    
-                    Image(systemName: "mappin.and.ellipse")
-                    Text("Los Angeles, CA")
-                    Spacer()
-                    
-                }
-                .padding(.horizontal)
-                HStack {
-                    Text("Plan your next trip, John!")
-                        .bold()
-                        .font(.system(size: 20))
-                        .padding(.horizontal)
-                        .padding(.top, 10)
-                    Spacer()
-                    
-                    //profile picture
-                    ZStack {
-                        Ellipse()
-                            .fill(Color.gray)
-                            .frame(width: 50, height: 50)
-                        Text(user.getName().prefix(1))
-                            .foregroundColor(.white)
-                            .font(.system(size: 30, weight: .bold))
-                    }
-                    .padding(.trailing)
-                }
+        NavigationView {
+            ScrollView {
                 
-                //itineraries
-                VStack(alignment: .leading) {
-
-                    SectionHeaderView(title: "My itineraries")
-                    HStack {
-                        TripGridView(tripName: "Scenic California Mountain Route", tags:["4-6 hours","pet-friendly","scenic"])
-                        TripGridView(tripName: "Johnson Family Spring Retreat", tags: ["0-1 hours", "family-friendly"])
-                    }
-                   
-                    SectionHeaderView(title: "Previous Itineraries")
-                    HStack {
-                        TripGridView(tripName: "Scenic California Mountain Route", tags:["4-6 hours","pet-friendly","scenic"])
-                        TripGridView(tripName: "Lorum ipsum Pebble Beach, CA", tags: ["0-1 hours", "family-friendly"])
-                    }
-                    
-                    SectionHeaderView(title: "Community Favourites")
+                VStack (alignment: .leading) {
                     HStack {
                         
+                        Image(systemName: "mappin.and.ellipse")
+                        Text("Los Angeles, CA")
+                        Spacer()
+                        
                     }
-                   
+                    .padding(.horizontal)
+                    HStack {
+                        Text("Plan your next trip, John!")
+                            .bold()
+                            .font(.system(size: 20))
+                            .padding(.horizontal)
+                            .padding(.top, 10)
+                        Spacer()
+                        
+                        //profile picture
+                        ZStack {
+                            Ellipse()
+                                .fill(Color.gray)
+                                .frame(width: 50, height: 50)
+                            Text(user.getName().prefix(1))
+                                .foregroundColor(.white)
+                                .font(.system(size: 30, weight: .bold))
+                        }
+                        .padding(.trailing)
+                    }
+                    
+                    //itineraries
+                    VStack(alignment: .leading) {
+                        
+                        SectionHeaderView(title: "My itineraries")
+                        HStack {
+                            TripGridView(tripName: "Scenic California Mountain Route", tags:["4-6 hours","pet-friendly","scenic"])
+                            TripGridView(tripName: "Johnson Family Spring Retreat", tags: ["0-1 hours", "family-friendly"])
+                        }
+                        
+                        SectionHeaderView(title: "Previous Itineraries")
+                        HStack {
+                            TripGridView(tripName: "Scenic California Mountain Route", tags:["4-6 hours","pet-friendly","scenic"])
+                            TripGridView(tripName: "Lorum ipsum Pebble Beach, CA", tags: ["0-1 hours", "family-friendly"])
+                        }
+                        
+                        SectionHeaderView(title: "Community Favourites")
+                        HStack {
+                            TripGridView(tripName: "Scenic California Mountain Route", tags:["4-6 hours","pet-friendly","scenic"])
+                            TripGridView(tripName: "Lorum ipsum Pebble Beach, CA", tags: ["0-1 hours", "family-friendly"])
+                        }
+                        
+                        
+                    }
+                  
+                    
+                    
+                    
                 }
-                
             }
         }
+        HStack {
+            VStack {
+                Image(systemName: "map.fill")
+                Text("Navigate")
+
+            }
+            Spacer()
+            VStack {
+                Image(systemName: "pencil")
+                Text("Plan")
+            }
+            Spacer()
+            VStack {
+                Image(systemName: "play.square")
+                Text("Recap")
+            }
+        }
+        .padding()
+        
     }
 }
-
+//func getCommunityTrips() {
+//    let tripsData = [
+//        Trip(id: "1", name: "Griffith Observatory", tags: ["2-3 hours", "La La Land"]),
+//        Trip(id: "2", name: "Mountain Explorer", tags: ["3-5 hours", "hiking", "scenic"])]
+//                    
+//
+//}
 struct SectionHeaderView: View {
     var title: String
     var body: some View {
