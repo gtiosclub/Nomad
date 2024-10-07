@@ -10,9 +10,20 @@ import MapboxDirections
 
 struct NomadRoute {
     let id = UUID()
-    var route: Route
+    var route: Route?
     var steps: [Step]
+    
+    // returns an array of polylines for each step of the route.
+    func getRoutePolyline() -> [MKPolyline] {
+        var polylines: [MKPolyline] = []
+        
+        for step in steps {
+            polylines.append(step.routeShape)
+        }
+        return polylines
+    }
 }
+
 struct Step {
     let id = UUID()
     
@@ -45,6 +56,14 @@ struct Step {
         } else {
             self.exit = nil
         }
+    }
+    
+    init() {
+        self.startCoordinate = CLLocationCoordinate2D(latitude: 33.7501, longitude: 84.3885)
+        self.endCoordinate = CLLocationCoordinate2D(latitude: 32.7501, longitude: 83.3885)
+        self.routeShape = Step.convertToMKPolyline([startCoordinate!, endCoordinate!])
+        self.direction = Direction(distance: 100, instructions: "Turn right in 100 miles", expectedTravelTime: TimeInterval(5000))
+        self.exit = Exit(destinations: ["Atlanta", "New York"], exitCodes: ["78", "79"], exitNames: ["Georgia Ave.","Peachtree St."])
     }
     
     static func convertToMKPolyline(_ coords: [LocationCoordinate2D]) -> MKPolyline {

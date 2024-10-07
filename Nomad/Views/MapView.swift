@@ -11,6 +11,7 @@ import MapKit
 struct MapView: View {
     @ObservedObject var mapManager = MapManager()
     
+    @State private var mapboxSetUp: Bool = false
     
     var body: some View {
         ZStack {
@@ -34,6 +35,7 @@ struct MapView: View {
                 
                 
             }.mapStyle(getMapStyle())
+          
             // All Map HUD
             VStack {
                 HStack {
@@ -56,7 +58,10 @@ struct MapView: View {
                     .padding()
             }
         }.task {
-            await mapManager.setupMapbox()
+            if !mapboxSetUp {
+                self.mapboxSetUp = true
+                await mapManager.setupMapbox()
+            }
         }
     }
     
