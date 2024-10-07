@@ -95,9 +95,11 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     // MAPBOX FUNCTIONS
     func setupMapbox() async {
-        let config = CoreConfig(credentials: .init())
-        let navigatorProvider = MapboxNavigationProvider(coreConfig: config)
-        self.core = await navigatorProvider.mapboxNavigation
+        if self.core == nil {
+            let config = CoreConfig(credentials: .init())
+            let navigatorProvider = MapboxNavigationProvider(coreConfig: config)
+            self.core = await navigatorProvider.mapboxNavigation
+        }
     }
     
     
@@ -109,7 +111,6 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         // Check if there is a selected result'
         guard let previewRoutes = currentPreviewRoutes else { return }
         let mainRoute = previewRoutes.mainRoute.route
-        print(mainRoute.legs.count)
                         
         let routeSteps = getSteps(route: mainRoute)
         let newRoute = NomadRoute(route: mainRoute, steps: routeSteps)
@@ -167,36 +168,6 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         return steps
     }
     
-    /// ROUTE PROGRESS FUNCTION
-    
-    func getFutureLocation(time: TimeInterval) async -> CLLocationCoordinate2D {
-        if let routeProgress = await self.core?.navigation().currentRouteProgress?.routeProgress {
-            if routeProgress.durationRemaining <= time {
-                return self.mapMarkers.last?.coordinate ?? CLLocationCoordinate2D()
-            }
-            
-            var currTime = 0.0
-            var currStep = routeProgress.currentLegProgress.currentStep
-            var remainingSteps = routeProgress.currentLegProgress.remainingSteps
-            var remainingLegs = routeProgress.remainingLegs
-            
-            while currTime < time {
-                if remainingSteps.isEmpty && !remainingLegs.isEmpty {
-                    let newLeg = remainingLegs.removeFirst()
-                    remainingSteps = newLeg.steps
-                }
-                
-                currStep = remainingSteps.removeFirst()
-                currTime += currStep.typicalTravelTime ?? currStep.expectedTravelTime
-            }
-            
-            return currStep.shape?.coordinates.last ?? CLLocationCoordinate2D()
-        }
-        
-        return CLLocationCoordinate2D()
-    }
-    
-    
     /// WAYPOINT CRUD SECTION
     private var waypoints: [Waypoint] = []
     private var core: MapboxNavigation? = nil
@@ -238,6 +209,46 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     // TODO: Update MapPoint name
     private func toMapPoint(coordinates: CLLocationCoordinate2D) -> MapPoint {
         return MapPoint(name: "", coordinate: coordinates)
+    }
+    
+    // Route progress function
+    func getFutureLocation(time: TimeInterval) async throws -> CLLocationCoordinate2D {
+        var routeProgress: RouteProgress
+        
+        if let rp = await self.core?.navigation().currentRouteProgress?.routeProgress {
+            routeProgress = rp
+            if routeProgress.durationRemaining <= time {
+                return self.mapMarkers.last?.coordinate ?? CLLocationCoordinate2D()
+            }
+        } else { // Creating a RouteProgress if this function called for a route that hasn't been started
+            getDirections()
+            if let currRoutes = self.currentPreviewRoutes {
+                routeProgress = RouteProgress(navigationRoutes: currRoutes, waypoints: self.waypoints)
+                // A newly-generated RouteProgress has no expected travel time in it
+                if currRoutes.mainRoute.route.expectedTravelTime <= time {
+                    return self.mapMarkers.last?.coordinate ?? CLLocationCoordinate2D()
+                }
+            } else {
+                throw("Cannot get future location with no routes")
+            }
+        }
+        
+        var currTime = 0.0
+        var currStep = routeProgress.currentLegProgress.currentStep
+        var remainingSteps = routeProgress.currentLegProgress.remainingSteps
+        var remainingLegs = routeProgress.remainingLegs
+        
+        while currTime < time {
+            if remainingSteps.isEmpty && !remainingLegs.isEmpty {
+                let newLeg = remainingLegs.removeFirst()
+                remainingSteps = newLeg.steps
+            }
+            
+            currStep = remainingSteps.removeFirst()
+            currTime += currStep.typicalTravelTime ?? currStep.expectedTravelTime
+        }
+        
+        return currStep.shape?.coordinates.last ?? CLLocationCoordinate2D()
     }
     
 }
