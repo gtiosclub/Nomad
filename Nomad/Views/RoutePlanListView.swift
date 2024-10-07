@@ -62,7 +62,6 @@ struct RoutePlanListView: View {
                     Rectangle()
                         .fill(Color.gray)
                         .frame(width: 1, height: 60)
-                        .padding(.leading, 5)
                 }
             }
             .padding(.leading, 5)

@@ -14,6 +14,7 @@ struct DetailRecapView: View {
     @State private var selectedDay = 1
     @State var selectedItems: [PhotosPickerItem] = []
     @State var recapImages: [Image] = []
+    @ObservedObject var vm: UserViewModel
     
     var body: some View {
         ScrollView {
@@ -69,17 +70,15 @@ struct DetailRecapView: View {
                     }
                 }.padding(.bottom, 40)
                 HStack {
-                    Text("Here are the places you stopped:")
+                    Text("Here are the places you stopped!")
                         .font(.system(size: 18, weight: .semibold))
                         .padding(.bottom, 10)
                     Spacer()
                 }
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(.gray, lineWidth: 1)
-                    .frame(width: .infinity, height: 400)
-                    .padding(.bottom, 20)
+                RoutePlanListView(vm: vm)
+                    .padding(.bottom, 30)
                 HStack {
-                    Text("Visual road maps:")
+                    Text("Here's how you moved around")
                         .font(.system(size: 18, weight: .semibold))
                     Spacer()
                 }
@@ -105,5 +104,5 @@ struct DetailRecapView: View {
 }
 
 #Preview {
-    DetailRecapView(title: "California")
+    DetailRecapView(title: "California", vm: .init(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "177 North Avenue NW, Atlanta, GA 30332", name: "Georgia Tech"), end_location: Hotel(address: "387 West Peachtree", name: "Hilton"), stops: [Restaurant(address: "85 5th St. NW Atlanta, GA 30308", name: "Moes"), GeneralLocation(address: "630 10th St NW, Atlanta, GA 30318", name: "QuikTrip")])])))
 }

@@ -8,6 +8,16 @@
 import SwiftUI
 
 struct RecapView: View {
+//    var home: any POI
+//    var stop1: any POI
+//    var stop2: any POI
+//    var end: any POI
+//    
+//    
+//    var trips: [Trip]
+//
+    @ObservedObject var vm: UserViewModel
+    
     var cards: [CardView] = [CardView(title: "Scenic California Mountain Route", attributes: ["4-6 Hours", "Pet-friendly"]), CardView(title: "Johnson Family Spring Retreat", attributes: ["0-1 Hours", "Scenic"]), CardView(title: "Scenic California Mountain Route", attributes: ["4-6 Hours", "Pet-friendly"])]
     
     var body: some View {
@@ -19,11 +29,18 @@ struct RecapView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 let columns = [GridItem(.flexible(), spacing: 20), GridItem(.flexible(), spacing: 10)]
                 LazyVGrid(columns: columns, spacing: 20) {
-                    ForEach(cards) { card in
+//                    ForEach(cards) { card in
+//                        NavigationLink {
+//                            DetailRecapView(title: card.title)
+//                        } label: {
+//                            card
+//                        }.buttonStyle(PlainButtonStyle())
+//                    }
+                    ForEach(vm.getTrips()) { trip in
                         NavigationLink {
-                            DetailRecapView(title: card.title)
+                            DetailRecapView(title: trip.getStartLocation().getName() + " to " + trip.getEndLocation().getName(), vm: vm)
                         } label: {
-                            card
+                            CardView(title: trip.getStartLocation().getName() + " to " + trip.getEndLocation().getName(), attributes: ["4-6 Hours", "Pet-friendly"])
                         }.buttonStyle(PlainButtonStyle())
                     }
                 }
@@ -65,6 +82,6 @@ struct CardView: View, Identifiable {
 }
 
 #Preview {
-    RecapView()
+    RecapView(vm: .init(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "177 North Avenue NW, Atlanta, GA 30332", name: "Georgia Tech"), end_location: Hotel(address: "387 West Peachtree", name: "Hilton"), stops: [Restaurant(address: "85 5th St. NW Atlanta, GA 30308", name: "Moes"), GeneralLocation(address: "630 10th St NW, Atlanta, GA 30318", name: "QuikTrip")])])))
 }
 
