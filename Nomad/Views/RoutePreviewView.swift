@@ -35,7 +35,7 @@ struct RoutePreviewView: View {
                         Marker("\(stop.getName())", coordinate: stop_coord)
                     }
                 }
-                .onChange(of: trip) {
+                .onChange(of: trip, initial: true) { oldTrip, newTrip in
                     print("change to trip, updating map")
                     let start_coord = self.trip?.getRoute()?.getStartLocation() ?? CLLocationCoordinate2D()
                     let end_coord = self.trip?.getRoute()?.getEndLocation() ?? CLLocationCoordinate2D()
@@ -67,5 +67,5 @@ struct RoutePreviewView: View {
 }
 
 #Preview {
-    RoutePreviewView(mapManager: MapManager(), trip: Binding.constant(Trip(start_location: Restaurant(address: "848 Spring Street Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "1000 Peachtree Street Atlanta GA 30308", name: "The Ritz-Carlton", latitude: -84.383168, longitude: 33.781489), start_date: "10-05-2024", end_date: "10-05-2024")))
+    RoutePreviewView(mapManager: MapManager(), trip: Trip(start_location: Restaurant(address: "848 Spring Street, Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "1000 Peachtree Street, Atlanta GA 30308", name: "The Ritz-Carlton", latitude: -84.383168, longitude: 33.781489), start_date: "10-05-2024", end_date: "10-05-2024"))
 }

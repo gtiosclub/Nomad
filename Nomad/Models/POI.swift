@@ -27,3 +27,11 @@ protocol POI: Equatable {
     mutating func setCity(newCity: String)
     func getCity() -> String?
 }
+
+protocol Ratable {
+    var rating: Double? { get set }
+    
+    mutating func setRating(newRating: Double)
+    func getRating() -> Double
+}
+
