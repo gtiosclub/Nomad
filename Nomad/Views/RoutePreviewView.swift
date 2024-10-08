@@ -12,6 +12,7 @@ import SwiftUI
 struct RoutePreviewView: View {
     @ObservedObject var mapManager: MapManager
     @Binding var trip: Trip?
+
     @State var region: MKCoordinateRegion = MKCoordinateRegion()
     
     init(mapManager: MapManager, trip: Binding<Trip?>) {
