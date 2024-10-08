@@ -12,11 +12,11 @@ struct MapPreviewView: View {
     @State private var mapType: MKMapType = .standard
     @State private var stopMarkers : [CLLocationCoordinate2D]
     private var region: MKCoordinateRegion = MKCoordinateRegion()
-    var polylines: [MKPolyline]
+    var polyline: MKPolyline
     init(route: NomadRoute, stopMarkers: [CLLocationCoordinate2D]?) {
         self.route = route
         self.stopMarkers = stopMarkers ?? []
-        self.polylines = route.getRoutePolyline()
+        self.polyline = route.getRoutePolyline()
         self.region = self.calculateRegion()
     }
     
@@ -31,9 +31,7 @@ struct MapPreviewView: View {
                         Marker("Stop", coordinate: stop)
                     }
                     
-                    ForEach(polylines, id: \.self) { polyline in
-                        MapPolyline(polyline)
-                    }
+                    MapPolyline(polyline)
                 }
             }
         }

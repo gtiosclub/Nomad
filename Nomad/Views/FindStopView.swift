@@ -6,8 +6,10 @@
 //
 
 import SwiftUI
+import CoreLocation
 
 struct FindStopView: View {
+    @ObservedObject var mapManager: MapManager
     @ObservedObject var vm: UserViewModel
     @State var selection: String = "Dining"
     @State private var searchTerm: String = ""
@@ -32,7 +34,7 @@ struct FindStopView: View {
                         .font(.headline)
                         .padding(.bottom, 5)
                     
-                    RoutePreviewView(trip: vm.current_trip!)
+                    RoutePreviewView(mapManager: mapManager, trip: $vm.current_trip)
                         .frame(minHeight: 250.0)
                     
                 }
@@ -536,12 +538,40 @@ struct FindStopView: View {
                 }
                 .padding(.top, 20)
             }
-            .padding(.horizontal)
+        }.onAppear() {
+            Task {
+                await updateTripRoute()
+            }
+        }
+    }
+    func addStop(stop: any POI) async {
+        vm.current_trip?.addStops(additionalStops: [stop])
+        await self.updateTripRoute()
+    }
+    
+    func removeStop(stop: any POI) async {
+        vm.current_trip?.removeStops(removedStops: [stop])
+        await self.updateTripRoute()
+    }
+    
+    func updateTripRoute() async {
+        guard let start_loc = vm.current_trip?.getStartLocation() else { return }
+        guard let end_loc = vm.current_trip?.getEndLocation() else { return }
+        guard let all_stops = vm.current_trip?.getStops() else { return }
+        
+        var all_pois: [any POI] = []
+        all_pois.append(start_loc)
+        all_pois.append(contentsOf: all_stops)
+        all_pois.append(end_loc)
+        
+        if let newRoutes = await mapManager.generateRoute(pois: all_pois) {
+            
+            vm.setTripRoute(route: newRoutes[0])
         }
     }
 }
 
 
 #Preview {
-    FindStopView(vm: .init(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: [Trip(start_location: Restaurant(address: "848 Spring Street Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)])])))
+    FindStopView(mapManager: MapManager(), vm: .init(user: User(id: "89379", name: "Austin", trips: [Trip(start_location: GeneralLocation(address: "177 North Avenue NW, Atlanta, GA 30332", name: "Georgia Tech"), end_location: Hotel(address: "387 West Peachtree", name: "Hilton"))])))
 }

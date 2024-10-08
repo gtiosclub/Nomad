@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ItineraryPlanningView: View {
+    @ObservedObject var mapManager: MapManager
     @State var inputAddressStart: String = ""
     @State var inputAddressEnd: String = ""
     @State var inputNameStart: String = ""
@@ -48,16 +49,17 @@ struct ItineraryPlanningView: View {
                         start_location: Restaurant(address: inputAddressStart, name: inputNameStart, rating: 3.2),
                         end_location: Hotel(address: inputAddressEnd, name: inputNameEnd)
                     )
-
-                    let trip = vm.createTrip(start: newTrip.getStartLocation(), end: newTrip.getEndLocation())
-                    vm.addTripToUser(trip: trip)
-                    inputNameEnd = ""
-                    inputNameStart = ""
-                    inputAddressEnd = ""
-                    inputAddressStart = ""
-                    editTrip = true
+                    Task {
+                        let trip = await vm.createTrip(start: newTrip.getStartLocation(), end: newTrip.getEndLocation())
+                        vm.addTripToUser(trip: trip)
+                        inputNameEnd = ""
+                        inputNameStart = ""
+                        inputAddressEnd = ""
+                        inputAddressStart = ""
+                        editTrip = true
+                    }
                 }
-                .navigationDestination(isPresented: $editTrip, destination: {TripView(vm: vm, trip: vm.current_trip)})
+                .navigationDestination(isPresented: $editTrip, destination: {TripView(mapManager: mapManager, vm: vm, trip: vm.current_trip)})
                 
                 Spacer()
                 
@@ -67,7 +69,7 @@ struct ItineraryPlanningView: View {
                     .padding()
                 ) {
                     ForEach(vm.getTrips(), id: \.id) { trip in
-                        NavigationLink(trip.getStartLocation().name + " to " + trip.getEndLocation().name, destination: {TripView(vm: vm, trip: trip)})
+                        NavigationLink(trip.getStartLocation().name + " to " + trip.getEndLocation().name, destination: {TripView(mapManager: mapManager, vm: vm, trip: trip)})
                     }
                 }
                 Spacer()
@@ -77,5 +79,5 @@ struct ItineraryPlanningView: View {
 }
 
 #Preview {
-    ItineraryPlanningView(vm: .init(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "177 North Avenue NW, Atlanta, GA 30332", name: "Georgia Tech"), end_location: Hotel(address: "387 West Peachtree", name: "Hilton"))])))
+    ItineraryPlanningView(mapManager: MapManager(), vm: .init(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "177 North Avenue NW, Atlanta, GA 30332", name: "Georgia Tech"), end_location: Hotel(address: "387 West Peachtree", name: "Hilton"))])))
 }

@@ -9,16 +9,18 @@ import SwiftUI
 
 struct RootView: View {
     @State var selectedTab = 2
+    @ObservedObject var mapManager = MapManager()
+    @State private var mapboxSetUp: Bool = false
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            MapView()
+            MapView(mapManager: mapManager)
                 .tabItem {
                     Label("Navigation", systemImage: "map.fill")
                 }
                 .tag(1)
 
-            ItineraryPlanningView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: [Trip(start_location: Restaurant(address: "848 Spring Street Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)])])))
+            ItineraryPlanningView(mapManager: mapManager, vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: [Trip(start_location: Restaurant(address: "848 Spring Street Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)])])))
                 .tabItem {
                     Label("Plan", systemImage: "pencil")
                 }
@@ -29,7 +31,13 @@ struct RootView: View {
                     Label("Recaps", systemImage: "play.square.stack")
                 }
                 .tag(3)
-        }
+        }.environmentObject(mapManager)
+            .task {
+                if !mapboxSetUp {
+                    self.mapboxSetUp = true
+                    await mapManager.setupMapbox()
+                }
+            }
     }
 }
 
