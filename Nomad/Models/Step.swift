@@ -14,13 +14,23 @@ struct NomadRoute {
     var steps: [Step]
     
     // returns an array of polylines for each step of the route.
-    func getRoutePolyline() -> [MKPolyline] {
-        var polylines: [MKPolyline] = []
-        
-        for step in steps {
-            polylines.append(step.routeShape)
+    func getRoutePolyline() -> MKPolyline {
+        var all_coords = [CLLocationCoordinate2D]()
+        if let shape = route?.shape?.coordinates {
+            for coord in shape {
+                all_coords.append(CLLocationCoordinate2D(latitude: coord.latitude, longitude: coord.longitude))
+            }
         }
-        return polylines
+        let polyline = MKPolyline(coordinates: all_coords, count: all_coords.count)
+        return polyline
+    }
+    
+    func getStartLocation() -> CLLocationCoordinate2D? {
+        return steps[0].startCoordinate
+    }
+    
+    func getEndLocation() -> CLLocationCoordinate2D? {
+        steps[steps.count - 1].endCoordinate
     }
 }
 
@@ -48,7 +58,7 @@ struct Step {
     
     init(step: RouteStep) {
         self.startCoordinate = step.shape?.coordinates.first
-        self.endCoordinate = step.shape?.coordinates.first
+        self.endCoordinate = step.shape?.coordinates.last
         self.routeShape = Step.convertToMKPolyline(step.shape?.coordinates ?? [])
         self.direction = Direction(distance: step.distance, instructions: step.instructions, expectedTravelTime: step.expectedTravelTime)
         if step.destinations != nil || step.exitCodes != nil || step.exitNames != nil {

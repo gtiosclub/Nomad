@@ -75,7 +75,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                     self.motion.altitude = location.altitude
                     self.motion.speed = location.speed
                     self.motion.direction = location.course
-                    print(self.motion.toString())
+                    // print(self.motion.toString())
                     
                     // Update the region for the map
                     self.region = MKCoordinateRegion(
@@ -100,12 +100,76 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             let config = CoreConfig(credentials: .init())
             let navigatorProvider = MapboxNavigationProvider(coreConfig: config)
             self.core = await navigatorProvider.mapboxNavigation
+            print("mapbox setup")
         }
     }
     
-    
     /// ROUTE GENERATION FUNCTIONS
     private var profileIdentifier: ProfileIdentifier = .automobileAvoidingTraffic
+
+    public func generateRoute(pois: [any POI]) async -> [NomadRoute]? {
+        let coords = pois.map { poi in
+            CLLocationCoordinate2D(latitude: poi.latitude!, longitude: poi.longitude!)
+        }
+        return await generateRoute(stop_coords: coords)
+    }
+    // generate routes for navigation (index 0 is main route, others are alternates)
+    public func generateRoute(stop_coords: [CLLocationCoordinate2D]) async -> [NomadRoute]? {
+        var nomadRoutes = [NomadRoute]() // return variable
+        var tripWaypoints: [Waypoint] = []
+        for coord in stop_coords {
+            let mapPoint = toMapPoint(coordinates: coord)
+            tripWaypoints.append(Waypoint(coordinate: mapPoint.coordinate, name: mapPoint.name))
+        }
+        
+        print("update routes 2")
+        var navRoutes: NavigationRoutes?
+        if let provider = await core?.routingProvider() {
+            let routeOptions = NavigationRouteOptions(
+                waypoints: tripWaypoints,
+                profileIdentifier: profileIdentifier
+            )
+            
+            switch await provider.calculateRoutes(options: routeOptions).result {
+            case .success(let previewRoutes):
+                navRoutes = previewRoutes
+            case.failure(let e):
+                print(e)
+            }
+            
+            // Create MKRoute for each leg
+            // inefficient API calls (combine these two sections
+            
+            do {
+                let previewRoutes = try await provider.calculateRoutes(options: routeOptions).value
+                navRoutes = previewRoutes
+            } catch {
+                print(error.localizedDescription)
+            }
+            
+            // Check if there is a selected result'
+            guard let previewRoutes = navRoutes else { return nil }
+            let mainRoute = previewRoutes.mainRoute.route
+                            
+            let mainRouteSteps = getSteps(route: mainRoute)
+            let mainNomadRoute = NomadRoute(route: mainRoute, steps: mainRouteSteps)
+            nomadRoutes.append(mainNomadRoute)
+            
+            let alternativeRoutes = previewRoutes.alternativeRoutes
+            for alt_route in alternativeRoutes {
+                let route = alt_route.route
+                                
+                let routeSteps = getSteps(route: route)
+                let nomadRoute = NomadRoute(route: route, steps: routeSteps)
+                nomadRoutes.append(nomadRoute)
+            }
+            return nomadRoutes
+            
+        } else {
+            print("error: no routing provider")
+        }
+        return nil
+    }
 
     func getDirections() {
         
@@ -161,7 +225,9 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     // Generate legs with Step structs
     private func getSteps(route: Route) -> [Step] {
         var steps = [Step]()
+        print("Legs \(route.legs.count)")
         for leg in route.legs {
+            print("Steps \(leg.steps.count)")
             for step in leg.steps {
                 steps.append(Step(step: step))
             }
@@ -254,10 +320,3 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
 }
-//
-//  Untitled.swift
-//  Nomad
-//
-//  Created by Nicholas Candello on 10/6/24.
-//
-

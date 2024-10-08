@@ -9,6 +9,7 @@ import Foundation
 
 struct Trip: Identifiable, Equatable {
     var id: String
+    private var route: NomadRoute?
     private var stops: [any POI]
     private var start_location: any POI
     private var end_location: any POI
@@ -19,7 +20,8 @@ struct Trip: Identifiable, Equatable {
     private var start_time: String
 
     
-    init(start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM") {
+    init(route: NomadRoute? = nil, start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM") {
+        self.route = route
         self.stops = stops
         self.start_location = start_location
         self.end_location = end_location
@@ -109,5 +111,13 @@ struct Trip: Identifiable, Equatable {
 
     func duplicate() -> Trip {
         return Trip(start_location: start_location, end_location: end_location, start_date: start_date, end_date: end_date, stops: stops)
+    }
+    
+    mutating func setRoute(route: NomadRoute) {
+        self.route = route
+    }
+    
+    func getRoute() -> NomadRoute? {
+        return route
     }
 }
