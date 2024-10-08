@@ -136,6 +136,29 @@ class FirebaseViewModel: ObservableObject {
             return false
         }
     }
+  
+      
+    func createTrip(tripID: String, startLocationAddress: String, endLocationAddress: String,
+                    startLocationName: String, endLocationName: String, createdDate: String, modifiedDate: String) async -> Bool {
+        let tripDoc = db.collection("TRIPS")
+        
+        let tripData: [String: Any] = [
+            "created_date": createdDate,
+            "modified_date": modifiedDate,
+            "end_location_address": endLocationAddress,
+            "end_location_name": endLocationName,
+            "start_location_address": startLocationAddress,
+            "start_location_name": startLocationName,
+        ]
+        
+        do {
+            try await tripDoc.document(tripID).setData(tripData)
+            return true
+        } catch {
+            print(error)
+            return false
+        }
+    }
  
     
     func getAllTrips(userID: String) async -> [Trip] {
@@ -287,4 +310,5 @@ class FirebaseViewModel: ObservableObject {
         }
         return apimap
     }
+
 }
