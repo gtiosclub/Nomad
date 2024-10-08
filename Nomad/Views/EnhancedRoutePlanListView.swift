@@ -51,7 +51,7 @@ struct EnhancedRoutePlanListView: View {
                 if !isLast {
                     Rectangle()
                         .fill(Color.gray)
-                        .frame(width: 1, height: 50)
+                        .frame(width: 1, height: 80)
                         .padding(.leading, 0)
                 }
             }
@@ -59,19 +59,27 @@ struct EnhancedRoutePlanListView: View {
             
             VStack {
                 if let time = time {
-                    Text("\(time, specifier: "%.0f") MIN")
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                        .frame(width: 50, alignment: .trailing)
-                        .padding(.bottom, 15)
+                    HStack {
+                        Text("\(time, specifier: "%.0f") MIN")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                            .frame(width: 50, alignment: .trailing)
+                            .padding(.bottom, 15)
+                        
+                        Spacer()
+                    }
                 }
                 
                 VStack {
-                    Text(location.getName())
-                        .font(.headline)
-                        .foregroundColor(.primary)
-                        .padding(.leading, 5)
-                        .frame(alignment: .leading)
+                    HStack {
+                        Text(location.getName())
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                            .padding(.leading, 5)
+                            .frame(alignment: .leading)
+                        
+                        Spacer()
+                    }
                     
                     HStack {
                         if location is Restaurant {
@@ -81,13 +89,22 @@ struct EnhancedRoutePlanListView: View {
                             }
                         }
                         
+                        if let city = location.getCity() {
+                            Text(city)
+                                .foregroundStyle(.secondary)
+                        }
+                        
                         if location is Ratable {
                             if let ratableLocation = location as? Ratable {
                                 Text(ratableLocation.getRating().description)
                                     .foregroundStyle(.secondary)
                             }
                         }
+                        
+                        
+                        Spacer()
                     }
+                    .padding(.leading, 5)
                 }
             }
         }
@@ -98,8 +115,8 @@ struct EnhancedRoutePlanListView: View {
 #Preview {
     let trip = Trip(
         start_location: GeneralLocation(address: "177 North Avenue NW, Atlanta, GA 30332", name: "Georgia Tech"),
-        end_location: Hotel(address: "387 West Peachtree", name: "Hilton"),
-        stops: [Restaurant(address: "85 5th St. NW Atlanta, GA 30308", name: "Moes", rating: 4.0, cuisine: "Mexican"), GeneralLocation(address: "630 10th St NW, Atlanta, GA 30318", name: "QuikTrip")]
+        end_location: Hotel(address: "387 West Peachtree", name: "Hilton", city: "Atlanta"),
+        stops: [Restaurant(address: "85 5th St. NW Atlanta, GA 30308", name: "Moes", rating: 4.0, cuisine: "Mexican", city: "Atlanta"), GeneralLocation(address: "630 10th St NW, Atlanta, GA 30318", name: "QuikTrip")]
     )
 
     let user = User(id: "89379", name: "Austin", trips: [trip])

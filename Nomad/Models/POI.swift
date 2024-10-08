@@ -34,3 +34,4 @@ protocol Ratable {
     mutating func setRating(newRating: Double)
     func getRating() -> Double
 }
+
