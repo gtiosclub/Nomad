@@ -10,37 +10,32 @@ import MapKit
 @available(iOS 17.0, *)
 struct MapView: View {
     @ObservedObject var mapManager = MapManager()
-    @State var selectedAddress = ""
     
-    private let startingPoint = CLLocationCoordinate2D(
-        latitude: 40.83657722488077,
-        longitude: 14.306896671048852
-    )
-    
-    private let destinationCoordinates = CLLocationCoordinate2D(
-        latitude: 40.849761,
-        longitude: 14.263364
-    )
+    @State private var mapboxSetUp: Bool = false
     
     var body: some View {
         ZStack {
             // All views within Map
-            Map(position: $mapManager.mapPosition) {
-                // Adding the marker for the starting point
-                Marker("Start", coordinate: mapManager.source.coordinate)
-                Marker("Finish", coordinate: mapManager.destination.coordinate)
+            Map(position: $mapManager.mapPosition, interactionModes: MapInteractionModes.all) {
+                // Adding markers for the start and finish points
+                if let userLocation = mapManager.userLocation {
+                    Marker("Your Location", coordinate: userLocation)
+                }
                 
-                // Show the route if it is available
-                if let route = mapManager.route {
-                    MapPolyline(route)
+                //show all markers
+                ForEach(mapManager.mapMarkers) { marker in
+                    Marker(marker.title, systemImage: marker.icon.image_path, coordinate: marker.coordinate)
+                }
+                // show all polylines
+                ForEach(mapManager.mapPolylines, id:\.self) { polyline in
+                    MapPolyline(polyline)
                         .stroke(.blue, lineWidth: 5)
                 }
+            
+                
+                
             }.mapStyle(getMapStyle())
-            .onAppear() {
-                mapManager.setSource(coord: startingPoint)
-                mapManager.setDestination(coord: destinationCoordinates)
-                mapManager.getDirections()
-            }
+          
             // All Map HUD
             VStack {
                 HStack {
@@ -48,27 +43,37 @@ struct MapView: View {
                     VStack {
                         CompassView(bearing: $mapManager.bearing)
                             .frame(width: 50, height: 50)
-                        RecenterMapView(recenterMap: {})
-                            .frame(width: 50, height: 50)
+                        RecenterMapView(recenterMap: {
+                            if let userLocation = mapManager.userLocation {
+                                mapManager.mapPosition = .camera(MapCamera(centerCoordinate: userLocation, distance: 5000, heading: 0, pitch: 0))
+                            }
+                        })
+                        .frame(width: 50, height: 50)
                         ChangeMapTypeButtonView(selectedMapType: $mapManager.mapType)
                             .frame(width: 50, height: 50)
                     }
                 }
                 Spacer()
-                LocationSearchBox(selectedAddress: $selectedAddress)
+                LocationSearchBox(mapManager: mapManager)
                     .padding()
+            }
+        }.task {
+            if !mapboxSetUp {
+                self.mapboxSetUp = true
+                await mapManager.setupMapbox()
             }
         }
     }
+    
     func getMapStyle() -> MapStyle {
         switch mapManager.mapType {
-            case .defaultMap:
+        case .defaultMap:
             return .standard
-            case .satellite:
+        case .satellite:
             return .imagery
-            case .terrain:
+        case .terrain:
             return .hybrid
-            }
+        }
     }
 }
 

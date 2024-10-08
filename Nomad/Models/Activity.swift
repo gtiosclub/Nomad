@@ -13,13 +13,20 @@ struct Activity: POI, Identifiable {
     var name: String
     var rating: Double?
     var website: String?
+    var imageUrl: String?
+    var longitude: Double?
+    var latitude: Double?
+    var city: String?
 
-    init(address: String, name: String, rating: Double? = nil, website: String? = nil) {
+    init(address: String, name: String, rating: Double? = nil, website: String? = nil, latitude: Double? = nil, longitude: Double? = nil, city: String? = nil) {
         self.id = UUID().uuidString
         self.address = address
         self.name = name
         self.rating = rating
         self.website = website
+        self.latitude = latitude
+        self.longitude = longitude
+        self.city = city
     }
 
     init(from business: Business) {
@@ -28,6 +35,14 @@ struct Activity: POI, Identifiable {
         self.name = business.name
         self.rating = business.rating
         self.website = business.url
+        self.imageUrl = business.image_url
+        self.latitude = business.coordinates.latitude
+        self.longitude = business.coordinates.longitude
+        self.city = business.location.city
+    }
+    
+    static func == (lhs: Activity, rhs: Activity) -> Bool {
+        return lhs.name == rhs.name && lhs.address == rhs.address
     }
 
     mutating func setAddress(newAddress: String) {
@@ -45,6 +60,18 @@ struct Activity: POI, Identifiable {
     mutating func setRating(newRating: Double?) {
         self.rating = newRating
     }
+    
+    mutating func setLongitude(newLongitude: Double) {
+        self.longitude = newLongitude
+    }
+    
+    mutating func setLatitude(newLatitude: Double) {
+        self.latitude = newLatitude
+    }
+    
+    mutating func setCity(newCity: String) {
+        self.city = newCity
+    }
 
     func getAddress() -> String {
         return self.address
@@ -60,5 +87,17 @@ struct Activity: POI, Identifiable {
 
     func getWebsite() -> String {
         return self.website ?? ""
+    }
+    
+    func getLongitude() -> Double? {
+        return longitude
+    }
+    
+    func getLatitude() -> Double? {
+        return latitude
+    }
+    
+    func getCity() -> String? {
+        return city
     }
 }
