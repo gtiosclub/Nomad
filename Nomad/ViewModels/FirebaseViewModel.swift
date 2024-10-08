@@ -16,7 +16,7 @@ class FirebaseViewModel: ObservableObject {
     let db = Firestore.firestore()
     @Published var errorText: String? = nil
     @Published var isLoading: Bool = false
-
+    
     func firebase_email_password_sign_up(email: String, password: String, completion: @escaping (Bool) -> Void) {
         isLoading = true
         auth.createUser(withEmail: email, password: password) { [weak self] authResult, error in
@@ -87,46 +87,22 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
-    private func parseFirebaseError(_ error: Error) -> String {
-        let errorCode = (error as NSError).code
-        switch errorCode {
-        case AuthErrorCode.invalidEmail.rawValue:
-            return "Invalid email address."
-        case AuthErrorCode.emailAlreadyInUse.rawValue:
-            return "The email address is already in use."
-        case AuthErrorCode.weakPassword.rawValue:
-            return "The password is too weak. Please use a stronger password."
-        case AuthErrorCode.wrongPassword.rawValue:
-            return "Incorrect password. Please try again."
-        case AuthErrorCode.userNotFound.rawValue:
-            return "No account found with this email."
-        default:
-            return error.localizedDescription
-        }
-    }
-    
-    /*-------------------------------------------------------------------------------------------------*/
-    
-    
-    /*
-     ------------------------------------------------------------------------------------------------
-     Trips firebase
-     -----------------------------------------------------------------------------------------------
-     */
-    
     func addTripToUser(userID: String, tripID: String) async -> Bool {
-        let docRef = db.collection("USERS").document(userID)
+        let userDocRef = db.collection("USERS").document(userID)
+        let tripDocRef = db.collection("TRIPS").document(tripID)
         do {
-            let document = try await docRef.getDocument()
+            let document = try await userDocRef.getDocument()
             guard var trips = document.data()?["trips"] as? [String] else {
                 print("Document does not exist or 'completedCountries' is not an array.")
                 return false
             }
             if (!trips.contains(tripID)) {
                 trips.append(tripID)
-                try await db.collection("USERS").document(userID).updateData(["trips": trips])
+                try await userDocRef.updateData(["trips": trips])
+                
+                try await tripDocRef.setData([:])
                 return true
-                    
+                
             } else {
                 print("Trip already in user trip list")
                 return false;
@@ -136,7 +112,28 @@ class FirebaseViewModel: ObservableObject {
             return false
         }
     }
- 
+    
+    
+    func modifyStartLocationAndDate(tripID: String, startLocName: String, startLocAddress: String, modifiedDate: String) async -> Bool {
+        do {
+            try await db.collection("TRIPS").document(tripID).updateData(["start_location_address" : startLocAddress, "start_location_name" : startLocName, "modified_date" : modifiedDate])
+            return true
+        } catch {
+            print(error)
+            return false
+        }
+    }
+
+    func modifyEndLocationAndDate(tripID: String, endLocName: String, endLocAddress: String, modifiedDate: String) async -> Bool {
+        do {
+            try await db.collection("TRIPS").document(tripID).updateData(["end_location_address" : endLocAddress, "end_location_name" : endLocName, "modified_date" : modifiedDate])
+            return true
+        } catch {
+            print(error)
+            return false
+        }
+    }
+  
     
     func getAllTrips(userID: String) async -> [Trip] {
         var trips: [Trip] = []
@@ -234,58 +231,23 @@ class FirebaseViewModel: ObservableObject {
         return trips
     }
 
-                                                
-    private func getPOI(name: String, address: String, type: String, needLatAndLong: Bool, longitude: Double?, latitude: Double?) -> any POI {
-        switch type {
-        case "Restaurant":
-            if needLatAndLong {
-                return Restaurant(address: address, name: name, latitude: latitude, longitude: longitude)
-            } else {
-                return Restaurant(address: address, name: name)
-            }
-            
-        case "RestStop":
-            if needLatAndLong {
-                return RestStop(address: address, name: name, latitude: latitude, longitude: longitude)
-            } else {
-                return RestStop(address: address, name: name)
-            }
-            
-        case "GasStation":
-            if needLatAndLong {
-                return GasStation(name: name, address: address, longitude: longitude, latitude: latitude)
-            } else {
-                return GasStation(name: name, address: address)
-            }
-            
-        case "GeneralLocation":
-            if needLatAndLong {
-                return GeneralLocation(address: address, name: name, latitude: latitude, longitude: longitude)
-            } else {
-                return GeneralLocation(address: address, name: name)
-            }
-            
+
+    
+    private func parseFirebaseError(_ error: Error) -> String {
+        let errorCode = (error as NSError).code
+        switch errorCode {
+        case AuthErrorCode.invalidEmail.rawValue:
+            return "Invalid email address."
+        case AuthErrorCode.emailAlreadyInUse.rawValue:
+            return "The email address is already in use."
+        case AuthErrorCode.weakPassword.rawValue:
+            return "The password is too weak. Please use a stronger password."
+        case AuthErrorCode.wrongPassword.rawValue:
+            return "Incorrect password. Please try again."
+        case AuthErrorCode.userNotFound.rawValue:
+            return "No account found with this email."
         default:
-            if needLatAndLong {
-                return GeneralLocation(address: address, name: name, latitude: latitude, longitude: longitude)
-            } else {
-                return GeneralLocation(address: address, name: name)
-            }
-            
+            return error.localizedDescription
         }
-    }
-
-    /*-------------------------------------------------------------------------------------------------*/
-
-    func getAPIKeys() async throws -> [String: String] {
-        var apimap: [String: String] = [:]
-        
-        let getdocs = try await db.collection("API_KEYS").getDocuments()
-        for doc in getdocs.documents {
-            if let key = doc.data()["key"] as? String {
-                apimap[doc.documentID] = key
-            }
-        }
-        return apimap
     }
 }

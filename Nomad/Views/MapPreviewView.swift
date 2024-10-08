@@ -39,17 +39,17 @@ struct MapPreviewView: View {
                     }
                 }
             }
-//            Button(action: {
-//                manager.setSource(coord: startingCoordinates)
-//                manager.setDestination(coord: endCoordinates)
-//                manager.getDirections()
-//            }) {
-//                Text("Get Directions")
-//                    .padding()
-//                    .background(Color.blue)
-//                    .foregroundColor(.white)
-//                    .cornerRadius(8)
-//            }
+            Button(action: {
+                manager.setSource(coord: startingCoordinates)
+                manager.setDestination(coord: endCoordinates)
+                manager.getDirections()
+            }) {
+                Text("Get Directions")
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
+            }
         }
     }
     func calculateRegion(for coordinates: [CLLocationCoordinate2D]) -> MKCoordinateRegion {

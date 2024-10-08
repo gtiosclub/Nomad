@@ -11,10 +11,9 @@ import ChatGPTSwift
 class AIAssistantViewModel: ObservableObject {
     let openAIAPIKey = ChatGPTAPI(apiKey: "<PUT API KEY HERE>")
     let yelpAPIKey = "<PUT API KEY HERE>"
-    let gasPricesAPIKey = "<PUT GAS KEY HERE>"
     let jsonResponseFormat = Components.Schemas.CreateChatCompletionRequest.response_formatPayload(_type: .json_object) // ensure that query returns json object
     let gptModel = ChatGPTModel(rawValue: "gpt-4o")
-    
+
     
     func fetchBusinesses() async {
         let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
@@ -37,7 +36,7 @@ class AIAssistantViewModel: ObservableObject {
             print("Error fetching data: \(error.localizedDescription)")
         }
     }
-    
+  
     func getChatGPT() async -> (String)  {
         let question:String = "where is Atlanta?"
         var result = ""
@@ -83,23 +82,23 @@ class AIAssistantViewModel: ObservableObject {
             return "Send OpenAI Query Error: \(error.localizedDescription)"
         }
     }
-    
+  
     func getGasPrices(stateCode: String) async -> Double? {
         let headers = [
             "content-type": "application/json",
-            "authorization": gasPricesAPIKey
+            "authorization": "*Gas Prices API*"
         ]
-        
+
         guard let url = URL(string: "https://api.collectapi.com/gasPrice/stateUsaPrice?state=\(stateCode)") else {
             return nil // Return nil if URL is invalid
         }
-        
+
         var request = URLRequest(url: url, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 10.0)
         request.httpMethod = "GET"
         request.allHTTPHeaderFields = headers
-        
+
         let session = URLSession.shared
-        
+
         do {
             let (data, response) = try await session.data(for: request)
             
@@ -116,7 +115,7 @@ class AIAssistantViewModel: ObservableObject {
                let result = json["result"] as? [String: Any],
                let state = result["state"] as? [String: Any],
                let gasolinePriceString = state["gasoline"] as? String,
-               let gasolinePrice = Double(gasolinePriceString) {
+                let gasolinePrice = Double(gasolinePriceString) {
                 return gasolinePrice // Return the gasoline price
             } else {
                 print("Error parsing JSON")
@@ -127,14 +126,4 @@ class AIAssistantViewModel: ObservableObject {
             return nil
         }
     }
-    
-    
-    // Note: this is for text to speech functionality
-    // func speak(text: String) {
-    //   let utterance = AVSpeechUtterance(string: text)
-    //    utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
-    //   utterance.rate = 0.5
-    
-    //   speechSynthesizer.speak(utterance)
-    //}
 }
