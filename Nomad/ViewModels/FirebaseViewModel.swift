@@ -13,7 +13,7 @@ import SwiftUI
 
 class FirebaseViewModel: ObservableObject {
     let auth = Auth.auth()
-    let db = Firestore.firestore()
+      let db = Firestore.firestore()
     @Published var errorText: String? = nil
     @Published var isLoading: Bool = false
 
@@ -86,7 +86,7 @@ class FirebaseViewModel: ObservableObject {
             
         }
     }
-    
+      
     private func parseFirebaseError(_ error: Error) -> String {
         let errorCode = (error as NSError).code
         switch errorCode {
@@ -104,7 +104,7 @@ class FirebaseViewModel: ObservableObject {
             return error.localizedDescription
         }
     }
-    
+
     /*-------------------------------------------------------------------------------------------------*/
     
     
@@ -126,7 +126,7 @@ class FirebaseViewModel: ObservableObject {
                 trips.append(tripID)
                 try await db.collection("USERS").document(userID).updateData(["trips": trips])
                 return true
-                    
+                
             } else {
                 print("Trip already in user trip list")
                 return false;
@@ -136,6 +136,27 @@ class FirebaseViewModel: ObservableObject {
             return false
         }
     }
+    
+    func modifyStartLocationAndDate(tripID: String, startLocName: String, startLocAddress: String, modifiedDate: String) async -> Bool {
+        do {
+            try await db.collection("TRIPS").document(tripID).updateData(["start_location_address" : startLocAddress, "start_location_name" : startLocName, "modified_date" : modifiedDate])
+            return true
+        } catch {
+            print(error)
+            return false
+        }
+    }
+
+    func modifyEndLocationAndDate(tripID: String, endLocName: String, endLocAddress: String, modifiedDate: String) async -> Bool {
+        do {
+            try await db.collection("TRIPS").document(tripID).updateData(["end_location_address" : endLocAddress, "end_location_name" : endLocName, "modified_date" : modifiedDate])
+            return true
+        } catch {
+            print(error)
+            return false
+        }
+    }
+
   
       
     func createTrip(tripID: String, startLocationAddress: String, endLocationAddress: String,
