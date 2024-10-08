@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct TripView: View {
+    @ObservedObject var mapManager: MapManager
     @ObservedObject var vm: UserViewModel
     @State var trip: Trip?    
     @State private var startLocationName: String = ""
@@ -69,7 +70,7 @@ struct TripView: View {
                     Text("Stops")
                         .font(.headline)
                     
-                    NavigationLink("Add a Stop", destination: { FindStopView(vm: vm)} )
+                    NavigationLink("Add a Stop", destination: { FindStopView(mapManager: mapManager, vm: vm)} )
                     
                     ForEach(vm.current_trip?.getStops() ?? [], id: \.address) { stop in
                         Text("\(stop.name)")
@@ -138,7 +139,7 @@ struct TripView: View {
             Text("Stops")
                 .font(.headline)
             
-            NavigationLink("Add a Stop", destination: { FindStopView(vm: vm)} )
+            NavigationLink("Add a Stop", destination: { FindStopView(mapManager: mapManager, vm: vm)} )
             
             ForEach(vm.current_trip?.getStops() ?? [], id: \.address) { stop in
                 Text("\(stop.name)")
@@ -161,6 +162,6 @@ struct TripView: View {
 }
 
 #Preview {
-    TripView(vm: .init(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "123 5th Street", name: "Georgia Tech"), end_location: Hotel(address: "387 West Peachtree, Atlanta", name: "Hilton"))])), trip: .init(start_location: Restaurant(address: "123 street", name: "Tiffs", rating: 3.2), end_location: Hotel(address: "387 West Peachtree, Atlanta", name: "Hilton")))
+    TripView(mapManager: MapManager(), vm: .init(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "123 5th Street", name: "Georgia Tech"), end_location: Hotel(address: "387 West Peachtree, Atlanta", name: "Hilton"))])), trip: .init(start_location: Restaurant(address: "123 street", name: "Tiffs", rating: 3.2), end_location: Hotel(address: "387 West Peachtree, Atlanta", name: "Hilton")))
 }
 

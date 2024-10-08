@@ -11,6 +11,7 @@ import CoreLocation
 import Combine
 
 class UserViewModel: ObservableObject {
+    @Published var mapManager = MapManager()
     @Published var user: User?
     @Published var current_trip: Trip?
     @Published var total_distance: Double = 0
@@ -40,8 +41,9 @@ class UserViewModel: ObservableObject {
         self.user = User(id: UUID().uuidString, name: name)
     }
     
-    func createTrip(start: any POI, end: any POI) -> Trip {
+    func createTrip(start: any POI, end: any POI) async -> Trip {
         self.current_trip = Trip(start_location: start, end_location: end)
+        await updateRoute()
         return current_trip!
     }
     
@@ -129,6 +131,23 @@ class UserViewModel: ObservableObject {
         self.user = user
     }
     
+    func updateRoute() async {
+        if let trip = current_trip {
+            var pois = [trip.getStartLocation()]
+            pois.append(contentsOf: trip.getStops())
+            pois.append(trip.getEndLocation())
+            if let routes = await mapManager.generateRoute(pois: pois) {
+                self.current_trip?.setRoute(route: routes[0]) // set main route
+            }
+        }
+    }
+    
+    func setTripRoute(route: NomadRoute) {
+        current_trip?.setRoute(route: route)
+        user?.updateTrip(trip: current_trip!)
+        self.user = user
+    }
+
     func setCurrentTrip(by tripID: String) {
         guard let user = user else { return }
         

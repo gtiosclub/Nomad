@@ -6,8 +6,10 @@
 //
 
 import SwiftUI
+import CoreLocation
 
 struct FindStopView: View {
+    @ObservedObject var mapManager: MapManager
     @ObservedObject var vm: UserViewModel
     @State var selection: String = "Dining"
     @State private var searchTerm: String = ""
@@ -31,9 +33,9 @@ struct FindStopView: View {
                     Text("Let's Plan Your New Trip")
                         .font(.headline)
                         .padding(.bottom, 5)
-                    
+                  
                     if let trip = vm.current_trip {
-                        RoutePreviewView(trip: trip)
+                        RoutePreviewView(mapManager: mapManager, trip: trip)
                             .frame(minHeight: 250.0)
                     } else {
                         Text("No current trip available")
@@ -491,7 +493,7 @@ struct FindStopView: View {
                     //                    TextField("Stop Address", text: $stopAddress)
                     //                        .textFieldStyle(RoundedBorderTextFieldStyle())
                     //                        .padding(.bottom, 10)
-                    
+
                     //                    Button(isEditing ? "Update Stop" : "Add Stop") {
                     //                        let newStop = GeneralLocation(address: stopAddress, name: stopName)
                     //
@@ -540,6 +542,37 @@ struct FindStopView: View {
                 }
                 .padding(.top, 20)
             }
+        }.onAppear() {
+            Task {
+                await updateTripRoute()
+            }
+        }
+    }
+    
+    func removeStop(stop: any POI) async {
+        vm.current_trip?.removeStops(removedStops: [stop])
+        await self.updateTripRoute()
+    }
+    
+    func replaceStop(oldStop: any POI, newStop: any POI) async {
+        vm.current_trip?.removeStops(removedStops: [oldStop])
+        vm.current_trip?.addStops(additionalStops: [newStop])
+        await self.updateTripRoute()
+    }
+    
+    func updateTripRoute() async {
+        guard let start_loc = vm.current_trip?.getStartLocation() else { return }
+        guard let end_loc = vm.current_trip?.getEndLocation() else { return }
+        guard let all_stops = vm.current_trip?.getStops() else { return }
+        
+        var all_pois: [any POI] = []
+        all_pois.append(start_loc)
+        all_pois.append(contentsOf: all_stops)
+        all_pois.append(end_loc)
+        
+        if let newRoutes = await mapManager.generateRoute(pois: all_pois) {
+            
+            vm.setTripRoute(route: newRoutes[0])
             .padding(.horizontal)
             .onAppear() {
                 print(vm.current_trip!)
@@ -550,11 +583,12 @@ struct FindStopView: View {
     func addStop(_ stop: any POI) {
         Task {
             await vm.addStop(stop: stop)
+            await self.updateTripRoute()
         }
     }
 }
 
 
 #Preview {
-    FindStopView(vm: .init(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: [Trip(start_location: Restaurant(address: "848 Spring Street, Atlanta, GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)])])))
+    FindStopView(mapManager: MapManager(), vm: .init(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: [Trip(start_location: Restaurant(address: "848 Spring Street, Atlanta, GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)])])))
 }

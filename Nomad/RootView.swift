@@ -9,6 +9,9 @@ import SwiftUI
 
 struct RootView: View {
     @State var selectedTab = 2
+    @ObservedObject var mapManager = MapManager()
+    @State private var mapboxSetUp: Bool = false
+  
     var community_trips = [
         Trip(start_location: Activity(address: "555 Favorite Rd", name: "Home", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "666 Favorite Ave", name: "Favorite Hotel 1", latitude: 34.0522, longitude: -118.2437, city: "Redwood"), name: "Scenic California Mountain Route"),
         Trip(start_location: Restaurant(address: "777 Favorite Rd", name: "Lorum ipsum Pebble Beach", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "888 Favorite Ave", name: "Favorite Hotel 2", latitude: 34.0522, longitude: -118.2437, city: "San Francisco"), name: "LA to SF")
@@ -27,13 +30,13 @@ struct RootView: View {
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            MapView()
+            MapView(mapManager: mapManager)
                 .tabItem {
-                    Label("Navigate", systemImage: "map.fill")
+                    Label("Navigation", systemImage: "map.fill")
                 }
                 .tag(1)
 
-            ExploreTripsView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: my_trips)), trips: my_trips, previousTrips: previous_trips, communityTrips: community_trips)
+            ExploreTripsView(mapManager: mapManager, vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: my_trips)), trips: my_trips, previousTrips: previous_trips, communityTrips: community_trips)
                 .tabItem {
                     Label("Plan", systemImage: "pencil")
                 }
@@ -44,7 +47,13 @@ struct RootView: View {
                     Label("Recaps", systemImage: "play.square.stack")
                 }
                 .tag(3)
-        }
+        }.environmentObject(mapManager)
+            .task {
+                if !mapboxSetUp {
+                    self.mapboxSetUp = true
+                    await mapManager.setupMapbox()
+                }
+            }
     }
 }
 
