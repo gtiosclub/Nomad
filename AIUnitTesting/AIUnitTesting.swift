@@ -58,13 +58,7 @@ final class AIUnitTesting: XCTestCase {
 //            }
 //        }
     }
-    
-    
-    
-    
-    
-    
-    
+        
     func testYelpLocationInitialization() async {
         let location = AIAssistantViewModel.LocationInfo(locationType: "Restaurant", distance: 1200, location: "123 Main St")
         XCTAssertEqual(location.locationType, "Restaurant")
