@@ -209,6 +209,7 @@ class FirebaseViewModel: ObservableObject {
                         }
                     }
                     
+                    
                     let newTrip = Trip(
                         id: tripID,
                         start_location: start_POI,
