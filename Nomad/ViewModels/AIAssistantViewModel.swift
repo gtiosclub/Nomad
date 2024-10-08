@@ -40,7 +40,6 @@ class AIAssistantViewModel: ObservableObject {
     
     func getChatGPT() async -> (String)  {
         let question:String = "where is Atlanta?"
-        var result = ""
         do {
             let response = try await openAIAPIKey.sendMessage(
                 text: question)
@@ -63,7 +62,7 @@ class AIAssistantViewModel: ObservableObject {
         }
     }
     
-    func getRestaurants(query: String) async -> String? {
+    func queryChatGPT(query: String) async -> String? {
         do {
             let response = try await openAIAPIKey.sendMessage(
                 text: """
@@ -127,7 +126,63 @@ class AIAssistantViewModel: ObservableObject {
             return nil
         }
     }
+        
+    // Helper function that will take in a JSON formatted String and turn it into an accessible Swift Data Structure
+    func convertStringToStruct(jsonString: String) -> LocationInfo? {
+        let jsonData = jsonString.data(using: .utf8)! // Convert the string to Data
+        
+        do {
+            // Decode the JSON data into a YelpLocation instance
+            let decoder = JSONDecoder()
+            let location = try decoder.decode(LocationInfo.self, from: jsonData)
+            return location
+        } catch {
+            print("Error decoding JSON: \(error)")
+            return LocationInfo(locationType: "", distance: -1, location: "")
+        }
+    }
     
+    struct LocationInfo: Codable, Equatable {
+        let locationType: String
+        let distance: Int
+        let location: String
+    }
+    
+    func fetchSpecificBusinesses(locationType: String, distance: Int, location: String) async -> String? {
+        let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
+        var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
+        let queryItems: [URLQueryItem] = [
+            URLQueryItem(name: "location", value: location),
+            URLQueryItem(name: "term", value: locationType),
+            URLQueryItem(name: "radius", value: "\(distance * 1609)"), //Because the parameter takes in meters, we convert miles to meters (1 mile = 1608.34 meters)
+            URLQueryItem(name: "limit", value: "2"),
+        ]
+        components.queryItems = components.queryItems.map { $0 + queryItems } ?? queryItems
+        var request = URLRequest(url: components.url!)
+        request.httpMethod = "GET"
+        request.timeoutInterval = 10
+        request.addValue("Bearer \(yelpAPIKey)", forHTTPHeaderField: "Authorization")
+        do {
+            let (data, _) = try await URLSession.shared.data(for: request)
+            return String(decoding: data, as: UTF8.self)
+        } catch {
+            return "Error fetching data: \(error.localizedDescription)"
+        }
+    }
+    
+    
+    func queryYelp(jsonString: String) async -> String? {
+        guard let locationInfo = convertStringToStruct(jsonString: jsonString) else {
+            return "Error: Unable to parse JSON String"
+        }
+        let locationType = locationInfo.locationType
+        let distance = locationInfo.distance
+        let location = locationInfo.location
+        guard let businessInformation = await fetchSpecificBusinesses(locationType: locationType, distance: distance, location: location) else {
+            return "Error: Unable to access YELP API"
+        }
+        return businessInformation
+    }
     
     // Note: this is for text to speech functionality
     // func speak(text: String) {

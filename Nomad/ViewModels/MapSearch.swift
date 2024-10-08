@@ -34,6 +34,7 @@ class MapSearch : NSObject, ObservableObject {
                 //handle error
             }, receiveValue: { (results) in
                 self.locationResults = results.filter { $0.subtitle.contains("United States") } // This parses the subtitle to show only results that have United States as the country. You could change this text to be Germany or Brazil and only show results from those countries.
+                self.objectWillChange.send()
             })
             .store(in: &cancellables)
     }
