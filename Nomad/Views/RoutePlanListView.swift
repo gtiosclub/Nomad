@@ -80,9 +80,9 @@ struct RoutePlanListView: View {
 
 #Preview {
     let trip = Trip(
-        start_location: GeneralLocation(address: "177 North Avenue NW, Atlanta, GA 30332", name: "Georgia Tech"),
-        end_location: Hotel(address: "387 West Peachtree, Atlanta", name: "Hilton"),
-        stops: [Restaurant(address: "85 5th St. NW, Atlanta, GA 30308", name: "Moes"), GeneralLocation(address: "630 10th St NW, Atlanta, GA 30318", name: "QuikTrip")]
+        start_location: GeneralLocation(address: "177 North Avenue NW, Atlanta, GA 30332", name: "Georgia Tech", latitude: 0.0, longitude: 0.0),
+        end_location: Hotel(address: "387 West Peachtree, Atlanta", name: "Hilton", latitude: 0.0, longitude: 0.0),
+        stops: [Restaurant(address: "85 5th St. NW, Atlanta, GA 30308", name: "Moes", latitude: 0.0, longitude: 0.0), GeneralLocation(address: "630 10th St NW, Atlanta, GA 30318", name: "QuikTrip", latitude: 0.0, longitude: 0.0)]
     )
 
     let user = User(id: "89379", name: "Austin", trips: [trip])

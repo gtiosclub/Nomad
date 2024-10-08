@@ -59,14 +59,14 @@ struct TripView: View {
                 .padding()
 
                 VStack {
-                    Button("Save Changes") {
-                        if trip != nil {
-                            vm.setStartLocation(new_start_location: GeneralLocation(address: startLocationAddress, name: startLocationName))
-                            vm.setEndLocation(new_end_location: GeneralLocation(address: endLocationAddress, name: endLocationName))
-                        }
-                    }
-                    .padding()
-                    .padding()
+//                    Button("Save Changes") {
+//                        if trip != nil {
+//                            vm.setStartLocation(new_start_location: GeneralLocation(address: startLocationAddress, name: startLocationName))
+//                            vm.setEndLocation(new_end_location: GeneralLocation(address: endLocationAddress, name: endLocationName))
+//                        }
+//                    }
+//                    .padding()
+//                    .padding()
 
                     Text("Stops")
                         .font(.headline)
@@ -102,14 +102,14 @@ struct TripView: View {
                 .padding()
                 
                 VStack {
-                    Button("Save Changes") {
-                        if trip != nil {
-                            vm.setStartLocation(new_start_location: GeneralLocation(address: startLocationAddress, name: startLocationName))
-                            vm.setEndLocation(new_end_location: GeneralLocation(address: endLocationAddress, name: endLocationName))
-                        }
-                    }
-                    .padding()
-                    .padding()
+//                    Button("Save Changes") {
+//                        if trip != nil {
+//                            vm.setStartLocation(new_start_location: GeneralLocation(address: startLocationAddress, name: startLocationName))
+//                            vm.setEndLocation(new_end_location: GeneralLocation(address: endLocationAddress, name: endLocationName))
+//                        }
+//                    }
+//                    .padding()
+//                    .padding()
                     
                     Text("Stops")
                         .font(.headline)
@@ -216,6 +216,6 @@ struct TripView: View {
 }
 
 #Preview {
-    TripView(mapManager: MapManager(), vm: .init(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "123 5th Street", name: "Georgia Tech"), end_location: Hotel(address: "387 West Peachtree, Atlanta", name: "Hilton"))])), trip: .init(start_location: Restaurant(address: "123 street", name: "Tiffs", rating: 3.2), end_location: Hotel(address: "387 West Peachtree, Atlanta", name: "Hilton")))
+    TripView(mapManager: MapManager(), vm: .init(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "123 5th Street, Atlanta, GA", name: "Georgia Tech", latitude: 33.777048, longitude: -84.391808), end_location: Hotel(address: "387 West Peachtree, Atlanta, GA", name: "Hilton", latitude: 33.763814, longitude: -84.387338))])), trip: Trip(start_location: GeneralLocation(address: "123 5th Street, Atlanta, GA", name: "Georgia Tech", latitude: 33.777048, longitude: -84.391808), end_location: Hotel(address: "387 West Peachtree, Atlanta, GA", name: "Hilton", latitude: 33.763814, longitude: -84.387338)))
 }
 

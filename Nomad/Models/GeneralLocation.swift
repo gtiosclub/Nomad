@@ -16,7 +16,7 @@ struct GeneralLocation: POI, Identifiable {
     var latitude: Double
     var city: String?
     
-    init(address: String, name: String, latitude: Double = 0.0, longitude: Double = 0.0, city: String? = nil) {
+    init(address: String, name: String, latitude: Double, longitude: Double, city: String? = nil) {
         self.id = UUID().uuidString
         self.address = address
         self.name = name
