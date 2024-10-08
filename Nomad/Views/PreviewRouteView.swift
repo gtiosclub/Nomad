@@ -102,7 +102,6 @@ struct PreviewRouteView: View {
                         RadioButton(text: "Private", isSelected: $isPublic, value: false)
                     }
                 }
-                .padding()
                 
                 HStack {
                     NavigationLink(destination: TripView(mapManager: mapManager, vm: vm)) {

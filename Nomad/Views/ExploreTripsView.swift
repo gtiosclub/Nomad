@@ -59,7 +59,7 @@ struct ExploreTripsView: View {
                         
                         // Itineraries
                         VStack(alignment: .leading) {
-                            SectionHeaderView(title: "My itineraries")
+                            SectionHeaderView(title: "My Itineraries")
                                 .padding(.horizontal)
                             
                             ScrollView(.horizontal) {
@@ -94,7 +94,7 @@ struct ExploreTripsView: View {
                             }
                             .padding(.horizontal)
                             
-                            SectionHeaderView(title: "Community Favourites")
+                            SectionHeaderView(title: "Community Favorites")
                                 .padding(.top, 5)
                                 .padding(.horizontal)
                             
@@ -168,6 +168,7 @@ struct ExploreTripsView: View {
                     .multilineTextAlignment(.center)
                     .frame(width: 120)
                     .font(.system(size: 14))
+                    .foregroundStyle(.black)
             }
             .padding(.vertical, 5)
         }
