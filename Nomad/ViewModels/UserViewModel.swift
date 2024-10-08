@@ -62,13 +62,13 @@ class UserViewModel: ObservableObject {
         if let trip = current_trip {
             print(trip.getStartLocation().getAddress())
             print(stop.getAddress())
-            let start_coordinates = CLLocationCoordinate2D(latitude: trip.getStartLocation().getLatitude()!, longitude: trip.getStartLocation().getLongitude()!)
-            let stop_coordinates = CLLocationCoordinate2D(latitude: stop.getLatitude()!, longitude: stop.getLongitude()!)
+            let start_coordinates = CLLocationCoordinate2D(latitude: trip.getStartLocation().getLatitude(), longitude: trip.getStartLocation().getLongitude())
+            let stop_coordinates = CLLocationCoordinate2D(latitude: stop.getLatitude(), longitude: stop.getLongitude())
             let from_start = await getDistanceCoordinates(from: start_coordinates, to: stop_coordinates)
             var from_stops: [Double] = []
             for current_stop in trip.getStops() {
                 print(current_stop.getAddress())
-                let current_stop_coordinates = CLLocationCoordinate2D(latitude: current_stop.getLatitude()!, longitude: current_stop.getLongitude()!)
+                let current_stop_coordinates = CLLocationCoordinate2D(latitude: current_stop.getLatitude(), longitude: current_stop.getLongitude())
                 from_stops.append(await getDistanceCoordinates(from: current_stop_coordinates, to: stop_coordinates))
             }
             print(from_start)
