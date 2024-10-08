@@ -21,11 +21,14 @@ class UserViewModel: ObservableObject {
     @Published var generalLocations: [GeneralLocation] = []
     @Published var distances: [Double] = []
     @Published var times: [Double] = []
+    @Published var currentCity: String?
     
     init(user: User? = nil) {
         self.user = user
-        if let trip = user?.getTrips()[0] {
-            current_trip = trip
+        if user?.getTrips().count ?? 0 >= 1 {
+            if let trip = user?.getTrips()[0] {
+                current_trip = trip
+            }
         }
     }
     
@@ -393,22 +396,22 @@ class UserViewModel: ObservableObject {
         }
     }
     
-    func getCurrentCity() async -> String? {
+    func getCurrentCity() async {
         let locationManager = CLLocationManager()
         guard let userLocation = locationManager.location else {
-            return nil
+            return
         }
         
         let geoCoder = CLGeocoder()
         do {
             if let placemark = try await geoCoder.reverseGeocodeLocation(userLocation).first {
-                return placemark.locality
+                currentCity = placemark.locality!
             }
         } catch {
             print("Error during reverse geocoding: \(error)")
         }
         
-        return nil
+        return
     }
     
     func getCoordinates(for address: String) async -> (latitude: Double, longitude: Double)? {

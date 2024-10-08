@@ -18,9 +18,10 @@ struct Trip: Identifiable, Equatable, Observable {
     private var modified_date: String
     private var start_time: String
     private var coverImageURL: String
+    private var name: String
 
     
-    init(start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM") {
+    init(start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM", name: String = "") {
         self.stops = stops
         self.start_location = start_location
         self.end_location = end_location
@@ -31,6 +32,7 @@ struct Trip: Identifiable, Equatable, Observable {
         self.modified_date = self.created_date
         self.start_time = start_time
         self.coverImageURL = ""
+        self.name = name
         Trip.getCityImage(location: end_location) { [self] imageURL in
             var mutableTrip = self
             mutableTrip.setCoverImageURL(newURL: imageURL)
@@ -155,6 +157,10 @@ struct Trip: Identifiable, Equatable, Observable {
         self.updateModifiedDate()
     }
     
+    mutating func setName(newName: String) {
+        self.name = newName
+    }
+    
     func getStops() -> [any POI] {
         return stops
     }
@@ -183,7 +189,11 @@ struct Trip: Identifiable, Equatable, Observable {
         return Trip(start_location: start_location, end_location: end_location, start_date: start_date, end_date: end_date, stops: stops)
     }
     
-    func getCoverImage() -> String {
+    func getCoverImageURL() -> String {
         coverImageURL
+    }
+    
+    func getName() -> String {
+        name
     }
 }
