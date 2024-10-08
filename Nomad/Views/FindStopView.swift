@@ -31,10 +31,10 @@ struct FindStopView: View {
                     Text("Let's Plan Your New Trip")
                         .font(.headline)
                         .padding(.bottom, 5)
-                    
-                    RoutePreviewView(trip: vm.current_trip!)
-                        .frame(minHeight: 250.0)
-                    
+                    if let trip = vm.current_trip {
+                        RoutePreviewView(trip: trip)
+                            .frame(minHeight: 250.0)
+                    }
                 }
                     
                 VStack(alignment: .leading, spacing: 15) {
@@ -233,7 +233,7 @@ struct FindStopView: View {
                                 ForEach(vm.restaurants) { restaurant in
                                     HStack {
                                         Button(action: {
-                                            vm.addStop(stop: restaurant)
+                                            addStop(restaurant)
                                         }) {
                                             ZStack {
                                                 Circle()
@@ -310,7 +310,7 @@ struct FindStopView: View {
                                 ForEach(vm.hotels) { hotel in
                                     HStack {
                                         Button(action: {
-                                            vm.addStop(stop: hotel)
+                                            addStop(hotel)
                                         }) {
                                             ZStack {
                                                 Circle()
@@ -370,7 +370,7 @@ struct FindStopView: View {
                                 ForEach(vm.activities) { activity in
                                     HStack() {
                                         Button(action: {
-                                            vm.addStop(stop: activity)
+                                            addStop(activity)
                                         }) {
                                             ZStack {
                                                 Circle()
@@ -428,7 +428,7 @@ struct FindStopView: View {
                                 ForEach(vm.generalLocations) { generalLocation in
                                     HStack {
                                         Button(action: {
-                                            vm.addStop(stop: generalLocation)
+                                            addStop(generalLocation)
                                         }) {
                                             ZStack {
                                                 Circle()
@@ -480,63 +480,69 @@ struct FindStopView: View {
                     }
                     .frame(height: 300)
                     
-                    TextField("Stop Name", text: $stopName)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .padding(.bottom, 5)
+//                    TextField("Stop Name", text: $stopName)
+//                        .textFieldStyle(RoundedBorderTextFieldStyle())
+//                        .padding(.bottom, 5)
+//                    
+//                    TextField("Stop Address", text: $stopAddress)
+//                        .textFieldStyle(RoundedBorderTextFieldStyle())
+//                        .padding(.bottom, 10)
                     
-                    TextField("Stop Address", text: $stopAddress)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .padding(.bottom, 10)
+//                    Button(isEditing ? "Update Stop" : "Add Stop") {
+//                        let newStop = GeneralLocation(address: stopAddress, name: stopName)
+//                        
+//                        if isEditing, let stop = selectedStop {
+//                            vm.current_trip?.removeStops(removedStops: [stop])
+//                            vm.current_trip?.addStops(additionalStops: [newStop])
+//                        } else {
+//                            vm.current_trip?.addStops(additionalStops: [newStop])
+//                        }
+//                        
+//                        stopName = ""
+//                        stopAddress = ""
+//                        isEditing = false
+//                        selectedStop = nil
+//                    }
+//                    .padding(.bottom, 10)
                     
-                    Button(isEditing ? "Update Stop" : "Add Stop") {
-                        let newStop = GeneralLocation(address: stopAddress, name: stopName)
-                        
-                        if isEditing, let stop = selectedStop {
-                            vm.current_trip?.removeStops(removedStops: [stop])
-                            vm.current_trip?.addStops(additionalStops: [newStop])
-                        } else {
-                            vm.current_trip?.addStops(additionalStops: [newStop])
-                        }
-                        
-                        stopName = ""
-                        stopAddress = ""
-                        isEditing = false
-                        selectedStop = nil
-                    }
-                    .padding(.bottom, 10)
-                    
-                    List {
-                        ForEach(vm.current_trip?.getStops().filter { $0.name.contains(selection) } ?? [], id: \.address) { stop in
-                            HStack {
-                                Text("\(stop.name) - \(stop.address)")
-                                Spacer()
-                                Button("Edit") {
-                                    stopName = stop.name
-                                    stopAddress = stop.address
-                                    selectedStop = stop
-                                    isEditing = true
-                                }
-                                .padding(.leading)
-                                
-                                Button("Delete") {
-                                    vm.current_trip?.removeStops(removedStops: [stop])
-                                }
-                                .foregroundColor(.red)
-                            }
-                        }
-                        .onDelete(perform: { indexSet in
-                            if let index = indexSet.first {
-                                let stopToDelete = vm.current_trip?.getStops().filter { $0.name.contains(selection) }[index]
-                                if let stopToDelete = stopToDelete {
-                                    vm.current_trip?.removeStops(removedStops: [stopToDelete])
-                                }
-                            }
-                        })
-                    }
+//                    List {
+//                        ForEach(vm.current_trip?.getStops().filter { $0.name.contains(selection) } ?? [], id: \.address) { stop in
+//                            HStack {
+//                                Text("\(stop.name) - \(stop.address)")
+//                                Spacer()
+//                                Button("Edit") {
+//                                    stopName = stop.name
+//                                    stopAddress = stop.address
+//                                    selectedStop = stop
+//                                    isEditing = true
+//                                }
+//                                .padding(.leading)
+//                                
+//                                Button("Delete") {
+//                                    vm.current_trip?.removeStops(removedStops: [stop])
+//                                }
+//                                .foregroundColor(.red)
+//                            }
+//                        }
+//                        .onDelete(perform: { indexSet in
+//                            if let index = indexSet.first {
+//                                let stopToDelete = vm.current_trip?.getStops().filter { $0.name.contains(selection) }[index]
+//                                if let stopToDelete = stopToDelete {
+//                                    vm.current_trip?.removeStops(removedStops: [stopToDelete])
+//                                }
+//                            }
+//                        })
+//                    }
                 }
                 .padding(.top, 20)
             }
             .padding(.horizontal)
+        }
+    }
+    
+    func addStop(_ stop: any POI) {
+        Task {
+            await vm.addStop(stop: stop)
         }
     }
 }

@@ -34,7 +34,7 @@ struct RoutePreviewView: View {
                         Marker("\(stop.getName())", coordinate: stop_coord)
                     }
                 }
-                .onAppear() {
+                .onChange(of: trip, initial: true) { oldTrip, newTrip in
                     print("change to trip, updating map")
                     let start_coord = CLLocationCoordinate2D(latitude: trip.getStartLocation().getLatitude()!, longitude: trip.getStartLocation().getLongitude()!)
                     let end_coord = CLLocationCoordinate2D(latitude: trip.getEndLocation().getLatitude()!, longitude: trip.getEndLocation().getLongitude()!)
@@ -52,6 +52,9 @@ struct RoutePreviewView: View {
                     manager.region = calculateRegion(for: [start_coord, end_coord])
                     self.region = manager.region
                 }
+//                .onAppear() {
+//                    
+//                }
             }
         }
     }

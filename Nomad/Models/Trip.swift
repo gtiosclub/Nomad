@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Trip: Identifiable, Equatable {
+struct Trip: Identifiable, Equatable, Observable {
     var id: String
     private var stops: [any POI]
     private var start_location: any POI
@@ -73,6 +73,11 @@ struct Trip: Identifiable, Equatable {
     
     mutating func addStops(additionalStops: [any POI]) {
         self.stops.append(contentsOf: additionalStops)
+        self.updateModifiedDate()
+    }
+    
+    mutating func addStopAtIndex(newStop: any POI, index: Int) {
+        self.stops.insert(newStop, at: index)
         self.updateModifiedDate()
     }
     

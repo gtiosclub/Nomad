@@ -53,10 +53,33 @@ class UserViewModel: ObservableObject {
         return user?.getTrips() ?? []
     }
     
-    func addStop(stop: any POI) {
-        current_trip?.addStops(additionalStops: [stop])
-        user?.updateTrip(trip: current_trip!)
-        self.user = user
+    func addStop(stop: any POI) async {
+        if let trip = current_trip {
+            print(trip.getStartLocation().getAddress())
+            print(stop.getAddress())
+            let start_coordinates = CLLocationCoordinate2D(latitude: trip.getStartLocation().getLatitude()!, longitude: trip.getStartLocation().getLongitude()!)
+            let stop_coordinates = CLLocationCoordinate2D(latitude: stop.getLatitude()!, longitude: stop.getLongitude()!)
+            let from_start = await getDistanceCoordinates(from: start_coordinates, to: stop_coordinates)
+            var from_stops: [Double] = []
+            for current_stop in trip.getStops() {
+                print(current_stop.getAddress())
+                let current_stop_coordinates = CLLocationCoordinate2D(latitude: current_stop.getLatitude()!, longitude: current_stop.getLongitude()!)
+                from_stops.append(await getDistanceCoordinates(from: current_stop_coordinates, to: stop_coordinates))
+            }
+            print(from_start)
+            print(from_stops)
+            let min_stop_distance = from_stops.min() ?? 10000000
+            if min_stop_distance < from_start {
+                let index = from_stops.firstIndex(of: min_stop_distance)!
+                current_trip?.addStopAtIndex(newStop: stop, index: index + 1)
+                user?.updateTrip(trip: current_trip!)
+                self.user = user
+            } else {
+                current_trip?.addStopAtIndex(newStop: stop, index: 0)
+                user?.updateTrip(trip: current_trip!)
+                self.user = user
+            }
+        }
     }
     
     func removeStop(stop: any POI) {
@@ -102,6 +125,7 @@ class UserViewModel: ObservableObject {
         user?.updateTrip(trip: current_trip!)
         self.user = user
     }
+    
     func setCurrentTrip(by tripID: String) {
         guard let user = user else { return }
         
@@ -177,6 +201,23 @@ class UserViewModel: ObservableObject {
         let request = MKDirections.Request()
         request.source = MKMapItem(placemark: fromPlacemark)
         request.destination = MKMapItem(placemark: toPlacemark)
+        request.transportType = .automobile
+        
+        let directions = MKDirections(request: request)
+        do {
+            let response = try await directions.calculate()
+            return response.routes.first?.distance ?? 0.0
+        } catch {
+            print("Error: \(error)")
+        }
+        
+        return 0.0
+    }
+    
+    func getDistanceCoordinates(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) async -> (Double) {
+        let request = MKDirections.Request()
+        request.source = MKMapItem(placemark: MKPlacemark(coordinate: from))
+        request.destination = MKMapItem(placemark: MKPlacemark(coordinate: to))
         request.transportType = .automobile
         
         let directions = MKDirections(request: request)
