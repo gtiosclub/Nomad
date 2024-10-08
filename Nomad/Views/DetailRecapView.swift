@@ -9,18 +9,19 @@ import SwiftUI
 import PhotosUI
 
 struct DetailRecapView: View {
-    let title: String
-    
     @State private var selectedDay = 1
     @State var selectedItems: [PhotosPickerItem] = []
     @State var recapImages: [Image] = []
+    @ObservedObject var vm: UserViewModel
+    @State var trip: Trip
+    @State private var totalDist: Double = 0.0
     
     var body: some View {
         ScrollView {
             VStack {
                 HStack {
                     VStack (alignment: .leading){
-                        Text(title)
+                        Text((vm.current_trip?.getStartLocation().getName())! + " to " + (vm.current_trip?.getEndLocation().getName())!)
                             .font(.system(size: 18, weight: .semibold))
                             .padding(.bottom, 15)
                         PhotosPicker(selection: $selectedItems,
@@ -40,7 +41,7 @@ struct DetailRecapView: View {
                             .padding(.bottom, 10)
                         HStack {
                             Image(systemName: "mappin")
-                            Text("Los Angeles, CA")
+                            Text((vm.current_trip?.getEndLocation().getName())!)
                         }.padding(.bottom, 10)
                     }
                     Spacer()
@@ -51,7 +52,7 @@ struct DetailRecapView: View {
                             .foregroundColor(.gray.opacity(0.5))
                             .frame(width: 155, height: 87)
                         VStack {
-                            Text("428")
+                            Text(String(vm.total_distance))
                                 .font(.system(size: 30))
                             Text("miles traveled")
                         }
@@ -62,24 +63,22 @@ struct DetailRecapView: View {
                             .foregroundColor(.gray.opacity(0.5))
                             .frame(width: 155, height: 87)
                         VStack {
-                            Text("51")
+                            Text(String(vm.total_time))
                                 .font(.system(size: 30))
                             Text("hours spent")
                         }
                     }
                 }.padding(.bottom, 40)
                 HStack {
-                    Text("Here are the places you stopped:")
+                    Text("Here are the places you stopped!")
                         .font(.system(size: 18, weight: .semibold))
                         .padding(.bottom, 10)
                     Spacer()
                 }
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(.gray, lineWidth: 1)
-                    .frame(width: .infinity, height: 400)
-                    .padding(.bottom, 20)
+                RoutePlanListView(vm: vm)
+                    .padding(.bottom, 30)
                 HStack {
-                    Text("Visual road maps:")
+                    Text("Here's how you moved around")
                         .font(.system(size: 18, weight: .semibold))
                     Spacer()
                 }
@@ -100,10 +99,16 @@ struct DetailRecapView: View {
                 
             }.padding(.horizontal, 30)
                 .padding(.bottom, 30)
+        }.onAppear{
+            Task {
+                await vm.getTotalDistance()
+                await vm.getTotalTime()
+            }
+            vm.setCurrentTrip(trip: trip)
         }
     }
 }
 
 #Preview {
-    DetailRecapView(title: "California")
+    DetailRecapView(vm: .init(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "177 North Avenue NW, Atlanta, GA 30332", name: "Georgia Tech"), end_location: Hotel(address: "387 West Peachtree", name: "Hilton"), stops: [Restaurant(address: "85 5th St. NW Atlanta, GA 30308", name: "Moes"), GeneralLocation(address: "630 10th St NW, Atlanta, GA 30318", name: "QuikTrip")])])), trip: Trip(start_location: GeneralLocation(address: "177 North Avenue NW, Atlanta, GA 30332", name: "Georgia Tech"), end_location: Hotel(address: "387 West Peachtree", name: "Hilton"), stops: [Restaurant(address: "85 5th St. NW Atlanta, GA 30308", name: "Moes"), GeneralLocation(address: "630 10th St NW, Atlanta, GA 30318", name: "QuikTrip")]))
 }
