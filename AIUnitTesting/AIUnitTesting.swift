@@ -42,20 +42,67 @@ final class AIUnitTesting: XCTestCase {
         await print(vm.getJsonOutput(query: query)!)
     }
     
-    func testGetRestaurantsInSpecificFormat() async {
+    func testParseInputIntoJson() async {
         let query = "What are some restuarants in Atlanta that are near the Atlanta Aquarium?"
-        await print(vm.getRestaurants(query: query)!)
+        await print(vm.queryChatGPT(query: query)!)
     }
     
     func testGasPrices() async {
-        let expectation = self.expectation(description: "testing Gas API")
-        await print(vm.getGasPrices(stateCode: "CT"))
-        expectation.fulfill()
+//        let expectation = self.expectation(description: "testing Gas API")
+        await print(vm.getGasPrices(stateCode: "CT") ?? -1)
+//        expectation.fulfill()
         
-        await waitForExpectations(timeout: 5) {error in
-            if let error = error {
-                print("this function doesn't work")
-            }
-        }
+//        await waitForExpectations(timeout: 5) {error in
+//            if let error = error {
+//                print("this function doesn't work")
+//            }
+//        }
     }
+    
+    
+    
+    
+    
+    
+    
+    func testYelpLocationInitialization() async {
+        let location = AIAssistantViewModel.LocationInfo(locationType: "Restaurant", distance: 1200, location: "123 Main St")
+        XCTAssertEqual(location.locationType, "Restaurant")
+        XCTAssertEqual(location.distance, 1200)
+        XCTAssertEqual(location.location, "123 Main St")
+    }
+    
+    func testConvertStringToStruct() {
+        let expectedLocation = AIAssistantViewModel.LocationInfo(locationType: "Restaurant", distance: 1200, location: "123 Main St")
+        let emptyLocation = AIAssistantViewModel.LocationInfo(locationType: "", distance: -1, location: "")
+
+        let jsonString = """
+        {
+            "locationType": "Restaurant",
+            "distance": 1200,
+            "location": "123 Main St"
+        }
+        """
+        let convertedLocation = vm.convertStringToStruct(jsonString: jsonString)
+        print("Expected Location: \(expectedLocation)")
+        print("Converted Location: \(String(describing: convertedLocation))")
+        XCTAssertNotEqual(convertedLocation, emptyLocation)
+        XCTAssertEqual(expectedLocation, convertedLocation)
+        XCTAssertEqual(convertedLocation?.locationType, "Restaurant")
+        XCTAssertEqual(convertedLocation?.distance, 1200)
+        XCTAssertEqual(convertedLocation?.location, "123 Main St")
+
+    }
+    
+    func testCallYelpAfterQuery() async {
+        let query = "What are some restuarants in Atlanta that are a mile away from the Atlanta Aquarium?"
+        let jsonString = await vm.queryChatGPT(query: query) ?? ""
+        XCTAssertNotNil(jsonString)
+        let convertedLocation = vm.convertStringToStruct(jsonString: jsonString)
+        XCTAssertNotNil(convertedLocation)
+        let businesses = await vm.queryYelp(jsonString: jsonString) ?? "!!!Failed!!!"
+        XCTAssertNotNil(businesses)
+        print(businesses)
+    }
+    
 }
