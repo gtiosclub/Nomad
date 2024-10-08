@@ -10,7 +10,7 @@ Figma Link: https://www.figma.com/design/VVrrXAWspLEOhcyuR1ehLV/General-Meeting-
 
 # Subteams
 - Navigation: Jaehun, Karen, Rudra, Aryan, Ira, Vignesh
-- Itinerary Planning: Neel, Brayden, Lingchen, Amber, Dahyun
+- Itinerary Planning: Neel, Brayden, Ling, Amber, Dahyun
 - AI Assistant: Ganden, Connor, Yingqi, Ethan
 - Recap: Angela, Daira, Nithyaa
 - Firebase: Shlok, Alec, Vidhi
