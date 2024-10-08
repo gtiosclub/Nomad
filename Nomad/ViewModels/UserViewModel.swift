@@ -11,6 +11,7 @@ import CoreLocation
 import Combine
 
 class UserViewModel: ObservableObject {
+    @Published var mapManager = MapManager()
     @Published var user: User?
     @Published var current_trip: Trip?
     @Published var total_distance: Double = 0
@@ -24,6 +25,9 @@ class UserViewModel: ObservableObject {
     
     init(user: User? = nil) {
         self.user = user
+        if let trip = user?.getTrips()[0] {
+            current_trip = trip
+        }
     }
     
     func setUser(user: User) {
@@ -34,8 +38,9 @@ class UserViewModel: ObservableObject {
         self.user = User(id: UUID().uuidString, name: name)
     }
     
-    func createTrip(start: any POI, end: any POI) -> Trip {
+    func createTrip(start: any POI, end: any POI) async -> Trip {
         self.current_trip = Trip(start_location: start, end_location: end)
+        await updateRoute()
         return current_trip!
     }
     
@@ -99,6 +104,24 @@ class UserViewModel: ObservableObject {
         user?.updateTrip(trip: current_trip!)
         self.user = user
     }
+    
+    func updateRoute() async {
+        if let trip = current_trip {
+            var pois = [trip.getStartLocation()]
+            pois.append(contentsOf: trip.getStops())
+            pois.append(trip.getEndLocation())
+            if let routes = await mapManager.generateRoute(pois: pois) {
+                self.current_trip?.setRoute(route: routes[0]) // set main route
+            }
+        }
+    }
+    
+    func setTripRoute(route: NomadRoute) {
+        current_trip?.setRoute(route: route)
+        user?.updateTrip(trip: current_trip!)
+        self.user = user
+    }
+    
     func setCurrentTrip(by tripID: String) {
         guard let user = user else { return }
         
@@ -274,7 +297,7 @@ class UserViewModel: ObservableObject {
     }
 
     func fetchPlaces(location: String, stopType: String, rating: Double?, price: Int?, cuisine: String?) async {
-        let apiKey = ""
+        let apiKey = "hpQdyXearQyP-ahpSeW2wDZvn-ljfmsGvN6RTKqo18I6R23ZB3dfbzAnEjvS8tWoPwyH9FFTGifdZ-n_qH80jbRuDbGb0dHu1qEPrLH-vqNq_d6TZdUaC_kZpwvqZnYx"
         let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
         guard let currentTrip = current_trip else { return }
         let startLocation = currentTrip.getStartLocation()
@@ -291,10 +314,6 @@ class UserViewModel: ObservableObject {
             queryItems.append(URLQueryItem(name: "price", value: String(price)))
         }
 
-        if let rating = rating {
-            queryItems.append(URLQueryItem(name: "rating", value: String(rating)))
-        }
-
         if let cuisine = cuisine, cuisine != "All" && !cuisine.isEmpty {
             queryItems.append(URLQueryItem(name: "categories", value: cuisine))
         }
@@ -309,20 +328,22 @@ class UserViewModel: ObservableObject {
             let (data, _) = try await URLSession.shared.data(for: request)
             let decoder = JSONDecoder()
             let response = try decoder.decode(YelpResponse.self, from: data)
-
+            
+            let filteredBusinesses = response.businesses.filter { business in
+                        guard let businessRating = business.rating else { return false }
+                        return rating == nil || businessRating >= rating!
+                    }
+            
             DispatchQueue.main.async {
                 switch stopType {
-                case "Restaurants":
-                    self.restaurants = response.businesses.map { Restaurant(from: $0) }
+                case "Dining":
+                    self.restaurants = filteredBusinesses.map { Restaurant(from: $0) }
                 case "Hotels":
-                    self.hotels = response.businesses.map { Hotel(from: $0) }
+                    self.hotels = filteredBusinesses.map { Hotel(from: $0) }
                 case "Activities":
-                    self.activities = response.businesses.map { Activity(from: $0) }
+                    self.activities = filteredBusinesses.map { Activity(from: $0) }
                 default:
-                    for business in response.businesses {
-                        let generalLocation = GeneralLocation(address: business.location.address1 ?? "No address", name: business.name)
-                        self.generalLocations.append(generalLocation)
-                    }
+                    self.generalLocations = filteredBusinesses.map { GeneralLocation(from: $0) }
                 }
             }
             print("Response Data: \(String(data: data, encoding: .utf8) ?? "No data")")
@@ -330,10 +351,11 @@ class UserViewModel: ObservableObject {
             print("Error fetching data: \(error.localizedDescription)")
         }
     }
+
     
     func getCategoryForStopType(stopType: String) -> String {
         switch stopType {
-        case "Food":
+        case "Dining":
             return "restaurants"
         case "Activities":
             return "activities"
@@ -349,6 +371,39 @@ class UserViewModel: ObservableObject {
             return "restaurants"
         }
     }
+    
+    func getCurrentCity() async -> String? {
+        let locationManager = CLLocationManager()
+        guard let userLocation = locationManager.location else {
+            return nil
+        }
+        
+        let geoCoder = CLGeocoder()
+        do {
+            if let placemark = try await geoCoder.reverseGeocodeLocation(userLocation).first {
+                return placemark.locality
+            }
+        } catch {
+            print("Error during reverse geocoding: \(error)")
+        }
+        
+        return nil
+    }
+    
+    func getCoordinates(for address: String) async -> (latitude: Double, longitude: Double)? {
+        let geoCoder = CLGeocoder()
+        
+        do {
+            if let placemark = try await geoCoder.geocodeAddressString(address).first,
+               let location = placemark.location {
+                return (location.coordinate.latitude, location.coordinate.longitude)
+            }
+        } catch {
+            print("Error during geocoding: \(error)")
+        }
+        
+        return nil
+    }
 }
 
 struct YelpResponse: Codable {
@@ -358,15 +413,23 @@ struct YelpResponse: Codable {
 struct Business: Codable {
     let id: String
     let name: String
+    let coordinates: Coordinates
     let location: Location
     let rating: Double?
     let categories: [Category]
     let price: String?
     let url: String?
+    let image_url: String?
 }
 
 struct Location: Codable {
     let address1: String?
+    let city: String?
+}
+
+struct Coordinates: Codable {
+    let latitude: Double
+    let longitude: Double
 }
 
 struct Category: Codable {

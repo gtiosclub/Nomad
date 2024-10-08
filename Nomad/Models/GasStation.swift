@@ -12,6 +12,7 @@ struct GasStation: POI {
     var address: String
     var longitude: Double?
     var latitude: Double?
+    var city: String?
     
     static func == (lhs: GasStation, rhs: GasStation) -> Bool {
         return lhs.name == rhs.name && lhs.address == rhs.address
@@ -33,6 +34,10 @@ struct GasStation: POI {
         self.latitude = newLatitude
     }
     
+    mutating func setCity(newCity: String) {
+        self.city = newCity
+    }
+    
     func getAddress() -> String {
         address
     }
@@ -47,5 +52,9 @@ struct GasStation: POI {
     
     func getLatitude() -> Double? {
         return latitude
+    }
+    
+    func getCity() -> String? {
+        return city
     }
 }

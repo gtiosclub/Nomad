@@ -9,10 +9,8 @@ import MapKit
 
 @available(iOS 17.0, *)
 struct MapView: View {
-    @ObservedObject var mapManager = MapManager()
-    
-    @State private var mapboxSetUp: Bool = false
-    
+    @ObservedObject var mapManager: MapManager
+        
     var body: some View {
         ZStack {
             // All views within Map
@@ -57,11 +55,6 @@ struct MapView: View {
                 LocationSearchBox(mapManager: mapManager)
                     .padding()
             }
-        }.task {
-            if !mapboxSetUp {
-                self.mapboxSetUp = true
-                await mapManager.setupMapbox()
-            }
         }
     }
     
@@ -79,5 +72,5 @@ struct MapView: View {
 
 
 #Preview {
-    MapView()
+    MapView(mapManager: MapManager())
 }

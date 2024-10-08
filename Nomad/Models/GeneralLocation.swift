@@ -11,21 +11,28 @@ struct GeneralLocation: POI, Identifiable {
     var id: String
     var address: String
     var name: String
+    var imageUrl: String?
     var longitude: Double?
     var latitude: Double?
+    var city: String?
     
-    init(address: String, name: String, latitude: Double? = nil, longitude: Double? = nil) {
+    init(address: String, name: String, latitude: Double? = nil, longitude: Double? = nil, city: String? = nil) {
         self.id = UUID().uuidString
         self.address = address
         self.name = name
         self.latitude = latitude
         self.longitude = longitude
+        self.city = city
     }
     
     init(from business: Business) {
         self.id = business.id
         self.address = business.location.address1 ?? "No address"
         self.name = business.name
+        self.imageUrl = business.image_url
+        self.latitude = business.coordinates.latitude
+        self.longitude = business.coordinates.longitude
+        self.city = business.location.city
     }
     
     static func == (lhs: GeneralLocation, rhs: GeneralLocation) -> Bool {
@@ -48,6 +55,10 @@ struct GeneralLocation: POI, Identifiable {
         self.latitude = newLatitude
     }
     
+    mutating func setCity(newCity: String) {
+        self.city = newCity
+    }
+    
     func getAddress() -> String {
         return address
     }
@@ -62,5 +73,9 @@ struct GeneralLocation: POI, Identifiable {
     
     func getLatitude() -> Double? {
         return latitude
+    }
+    
+    func getCity() -> String? {
+        return city
     }
 }
