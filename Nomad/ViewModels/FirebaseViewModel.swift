@@ -115,7 +115,8 @@ class FirebaseViewModel: ObservableObject {
      */
     
     func addTripToUser(userID: String, tripID: String) async -> Bool {
-        let docRef = db.collection("USERS").document(userID)
+        let userDocRef = db.collection("USERS").document(userID)
+        let tripDocRef = db.collection("TRIPS").document(tripID)
         do {
             let document = try await docRef.getDocument()
             guard var trips = document.data()?["trips"] as? [String] else {
@@ -124,7 +125,9 @@ class FirebaseViewModel: ObservableObject {
             }
             if (!trips.contains(tripID)) {
                 trips.append(tripID)
-                try await db.collection("USERS").document(userID).updateData(["trips": trips])
+                try await userDocRef.updateData(["trips": trips])
+                
+                try await tripDocRef.setData([:])
                 return true
                 
             } else {
@@ -136,6 +139,7 @@ class FirebaseViewModel: ObservableObject {
             return false
         }
     }
+    
     
     func modifyStartLocationAndDate(tripID: String, startLocName: String, startLocAddress: String, modifiedDate: String) async -> Bool {
         do {
@@ -158,28 +162,6 @@ class FirebaseViewModel: ObservableObject {
     }
 
   
-      
-    func createTrip(tripID: String, startLocationAddress: String, endLocationAddress: String,
-                    startLocationName: String, endLocationName: String, createdDate: String, modifiedDate: String) async -> Bool {
-        let tripDoc = db.collection("TRIPS")
-        
-        let tripData: [String: Any] = [
-            "created_date": createdDate,
-            "modified_date": modifiedDate,
-            "end_location_address": endLocationAddress,
-            "end_location_name": endLocationName,
-            "start_location_address": startLocationAddress,
-            "start_location_name": startLocationName,
-        ]
-        
-        do {
-            try await tripDoc.document(tripID).setData(tripData)
-            return true
-        } catch {
-            print(error)
-            return false
-        }
-    }
  
     
     func getAllTrips(userID: String) async -> [Trip] {
