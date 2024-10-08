@@ -573,10 +573,6 @@ struct FindStopView: View {
         if let newRoutes = await mapManager.generateRoute(pois: all_pois) {
             
             vm.setTripRoute(route: newRoutes[0])
-            .padding(.horizontal)
-            .onAppear() {
-                print(vm.current_trip!)
-            }
         }
     }
     

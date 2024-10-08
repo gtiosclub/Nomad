@@ -11,34 +11,34 @@ import SwiftUI
 
 struct RoutePreviewView: View {
     @ObservedObject var mapManager: MapManager
-    @Binding var trip: Trip?
+    var trip: Trip
 
     @State var region: MKCoordinateRegion = MKCoordinateRegion()
     
-    init(mapManager: MapManager, trip: Binding<Trip?>) {
+    init(mapManager: MapManager, trip: Trip) {
         self.mapManager = mapManager
-        self._trip = trip
+        self.trip = trip
     }
     
     var body: some View {
         VStack {
             ZStack {
                 Map(initialPosition: .automatic) {
-                    Marker("Start", coordinate: self.trip?.getRoute()?.getStartLocation() ?? CLLocationCoordinate2D())
-                    Marker("End", coordinate: self.trip?.getRoute()?.getEndLocation() ?? CLLocationCoordinate2D())
-                    if let polyline = self.trip?.getRoute()?.getRoutePolyline() {
+                    Marker("Start", coordinate: self.trip.getRoute()?.getStartLocation() ?? CLLocationCoordinate2D())
+                    Marker("End", coordinate: self.trip.getRoute()?.getEndLocation() ?? CLLocationCoordinate2D())
+                    if let polyline = self.trip.getRoute()?.getRoutePolyline() {
                             MapPolyline(polyline)
                                 .stroke(.blue, lineWidth: 5)
                     }
-                    ForEach(self.trip?.getStops() ?? [], id: \.latitude) { stop in
+                    ForEach(self.trip.getStops() ?? [], id: \.latitude) { stop in
                         let stop_coord = CLLocationCoordinate2D(latitude: stop.getLatitude()!, longitude: stop.getLongitude()!)
                         Marker("\(stop.getName())", coordinate: stop_coord)
                     }
                 }
                 .onChange(of: trip, initial: true) { oldTrip, newTrip in
                     print("change to trip, updating map")
-                    let start_coord = self.trip?.getRoute()?.getStartLocation() ?? CLLocationCoordinate2D()
-                    let end_coord = self.trip?.getRoute()?.getEndLocation() ?? CLLocationCoordinate2D()
+                    let start_coord = self.trip.getRoute()?.getStartLocation() ?? CLLocationCoordinate2D()
+                    let end_coord = self.trip.getRoute()?.getEndLocation() ?? CLLocationCoordinate2D()
                     
                     self.region = calculateRegion(for: [start_coord, end_coord])
                 }
