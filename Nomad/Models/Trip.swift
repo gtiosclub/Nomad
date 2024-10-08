@@ -21,7 +21,7 @@ struct Trip: Identifiable, Equatable, Observable {
     private var coverImageURL: String
     private var name: String
 
-    init(route: NomadRoute? = nil, start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM", name: String = "") {
+    init(route: NomadRoute? = nil, start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM", name: String = "", coverImageURL: String = "") {
         self.route = route
         self.stops = stops
         self.start_location = start_location
@@ -34,9 +34,12 @@ struct Trip: Identifiable, Equatable, Observable {
         self.start_time = start_time
         self.coverImageURL = ""
         self.name = name
-        Trip.getCityImage(location: end_location) { [self] imageURL in
-            var mutableTrip = self
-            mutableTrip.setCoverImageURL(newURL: imageURL)
+        self.coverImageURL = coverImageURL
+        if coverImageURL.isEmpty {
+            Trip.getCityImage(location: end_location) { [self] imageURL in
+                var mutableTrip = self
+                mutableTrip.setCoverImageURL(newURL: imageURL)
+            }
         }
     }
     
@@ -55,7 +58,7 @@ struct Trip: Identifiable, Equatable, Observable {
             }
         }
         
-        let url = URL(string: "https://pixabay.com/api/?key=46410552-0c1561d54d98701d038092a47&q=\(search_city)-city-scenic&image_type=photo")!
+        let url = URL(string: "https://pixabay.com/api/?key=46410552-0c1561d54d98701d038092a47&q=\(search_city)-city-GA-scenic&image_type=photo")!
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"

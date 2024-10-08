@@ -14,6 +14,7 @@ struct PreviewRouteView: View {
     @ObservedObject var vm: UserViewModel
     @State private var tripTitle: String = ""
     @State private var isPublic: Bool = true
+    var trip: Trip
     
     var body: some View {
         ScrollView {
@@ -101,7 +102,6 @@ struct PreviewRouteView: View {
                         RadioButton(text: "Private", isSelected: $isPublic, value: false)
                     }
                 }
-                .padding()
                 
                 HStack {
                     NavigationLink(destination: TripView(mapManager: mapManager, vm: vm)) {
@@ -125,6 +125,9 @@ struct PreviewRouteView: View {
                 }
                 .padding(.horizontal)
             }
+        }
+        .onAppear {
+            vm.setCurrentTrip(trip: trip)
         }
     }
     
@@ -163,5 +166,7 @@ struct PreviewRouteView: View {
         Trip(start_location: Restaurant(address: "848 Spring Street Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090),
                 end_location: Hotel(address: "201 8th Ave S Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947),
                 start_date: "10-05-2024", end_date: "10-05-2024", stops: [])
-    ])))
+    ])), trip: Trip(start_location: Restaurant(address: "848 Spring Street Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090),
+                    end_location: Hotel(address: "201 8th Ave S Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947),
+                    start_date: "10-05-2024", end_date: "10-05-2024", stops: []))
 }
