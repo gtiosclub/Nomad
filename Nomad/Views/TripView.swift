@@ -31,13 +31,14 @@ struct TripView: View {
                             startLocationAddress = vm.current_trip?.getStartLocation().address ?? ""
                             endLocationName = vm.current_trip?.getEndLocation().name ?? ""
                             endLocationAddress = vm.current_trip?.getEndLocation().address ?? ""
+                            startDate = TripView.stringToDate(dateString: (vm.current_trip?.getStartDate())!) ?? Date()
+                            endDate  = TripView.stringToDate(dateString: (vm.current_trip?.getEndDate())!) ?? Date()
+                            startTime = TripView.stringToTime(timeString: (vm.current_trip?.getStartTime())!) ?? Date()
                         }
                     
                     Spacer(minLength: 20)
-                    
-                    Text("Your trip from \(vm.current_trip?.getStartLocation().name ?? "") to \(vm.current_trip?.getEndLocation().name ?? "")")
+                    Text("Your trip from  \(vm.current_trip?.getStartLocation().name ?? "") to \(vm.current_trip?.getEndLocation().name ?? "")")
                         .frame(width: UIScreen.main.bounds.width - 20, alignment: .topLeading)
-                    
                     VStack {
                         HStack {
                             TextField("Start Location Name", text: $startLocationName)
@@ -157,10 +158,20 @@ struct TripView: View {
         dateformatter.dateFormat = "HH:mm a"
         return dateformatter.string(from: date)
     }
+    
+    static func stringToDate(dateString: String) -> Date? {
+        dateformatter.dateFormat = "MM-dd-yyyy HH:mm:ss"
+        return dateformatter.date(from: dateString)
+    }
+
+    static func stringToTime(timeString: String) -> Date? {
+        dateformatter.dateFormat = "HH:mm a"
+        return dateformatter.date(from: timeString)
+    }
 
 }
 
 #Preview {
-    TripView(vm: .init(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "123 5th Street", name: "Georgia Tech"), end_location: Hotel(address: "387 West Peachtree", name: "Hilton"))])), trip: .init(start_location: Restaurant(address: "123 street", name: "Tiffs", rating: 3.2), end_location: Hotel(address: "387 West Peachtree", name: "Hilton")))
+    TripView(vm: .init(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "177 North Avenue NW, Atlanta, GA 30332", name: "Georgia Tech"), end_location: Hotel(address: "387 West Peachtree", name: "Hilton"), start_date: "10-07-2024 22:42:59", end_date: "10-07-2024 22:42:59", stops: [], start_time: "10:45 PM")])), trip: .init(start_location: Restaurant(address: "123 street", name: "Tiffs", rating: 3.2), end_location: Hotel(address: "387 West Peachtree", name: "Hilton"), start_date: "10-07-2024 22:42:59", end_date: "10-07-2024 22:42:59", stops: [], start_time: "10:45 PM"))
 }
 

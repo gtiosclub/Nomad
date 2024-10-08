@@ -34,8 +34,8 @@ class UserViewModel: ObservableObject {
         self.user = User(id: UUID().uuidString, name: name)
     }
     
-    func createTrip(start: any POI, end: any POI) -> Trip {
-        self.current_trip = Trip(start_location: start, end_location: end)
+    func createTrip(start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM") -> Trip {
+        self.current_trip = Trip(start_location: start_location, end_location: end_location, start_date: start_date, end_date: end_date, stops: stops, start_time: start_time)
         return current_trip!
     }
     
@@ -273,9 +273,6 @@ class UserViewModel: ObservableObject {
         }
     }
 
-
-}
-    }
 
     func fetchPlaces(location: String, stopType: String, rating: Double?, price: Int?, cuisine: String?) async {
         let apiKey = ""
