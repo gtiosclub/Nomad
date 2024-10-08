@@ -10,6 +10,7 @@ import MapKit
 
 @available(iOS 17.0, *)
 struct PreviewRouteView: View {
+    @ObservedObject var mapManager: MapManager
     @ObservedObject var vm: UserViewModel
     @State private var tripTitle: String = ""
     @State private var isPublic: Bool = true
@@ -25,7 +26,7 @@ struct PreviewRouteView: View {
                     .padding(.top)
                 
                 if let trip = vm.current_trip {
-                    RoutePreviewView(trip: trip)
+                    RoutePreviewView(mapManager: mapManager, trip: trip)
                         .frame(height: 300)
                 } else {
                     Rectangle()
@@ -103,7 +104,7 @@ struct PreviewRouteView: View {
                 .padding()
                 
                 HStack {
-                    NavigationLink(destination: TripView(vm: vm)) {
+                    NavigationLink(destination: TripView(mapManager: mapManager, vm: vm)) {
                         Button("Edit Route") {
                             
                         }
@@ -158,7 +159,7 @@ struct PreviewRouteView: View {
 }
 
 #Preview {
-    PreviewRouteView(vm: .init(user: User(id: "sampleUserID", name: "Sample User", trips: [
+    PreviewRouteView(mapManager: .init(), vm: .init(user: User(id: "sampleUserID", name: "Sample User", trips: [
         Trip(start_location: Restaurant(address: "848 Spring Street Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090),
                 end_location: Hotel(address: "201 8th Ave S Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947),
                 start_date: "10-05-2024", end_date: "10-05-2024", stops: [])

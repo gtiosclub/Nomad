@@ -8,12 +8,12 @@
 import SwiftUI
 
 struct ExploreTripsView: View {
+    @ObservedObject var mapManager: MapManager
     @ObservedObject var vm: UserViewModel
     @State private var currentCity: String? = nil
     var trips: [Trip]
     var previousTrips: [Trip]
     var communityTrips: [Trip]
-    
     
     var body: some View {
         NavigationView {
@@ -152,6 +152,6 @@ struct ExploreTripsView: View {
             Trip(start_location: Restaurant(address: "777 Favorite Rd", name: "Lorum ipsum Pebble Beach", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "888 Favorite Ave", name: "Favorite Hotel 2", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), name: "LA to SF")
         ]
         
-        ExploreTripsView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")), trips: trips, previousTrips: previousTrips, communityTrips: communityTrips)
+        ExploreTripsView(mapManager: .init(), vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")), trips: trips, previousTrips: previousTrips, communityTrips: communityTrips)
     }
 
