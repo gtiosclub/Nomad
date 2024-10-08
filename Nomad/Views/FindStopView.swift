@@ -6,8 +6,10 @@
 //
 
 import SwiftUI
+import CoreLocation
 
 struct FindStopView: View {
+    @ObservedObject var mapManager: MapManager
     @ObservedObject var vm: UserViewModel
     @State var selection: String = "Food and Drink"
     @State private var searchTerm: String = ""
@@ -27,12 +29,12 @@ struct FindStopView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading) {                    
+                VStack(alignment: .leading) {
                     Text("Let's Plan Your New Trip")
                         .font(.headline)
                         .padding(.bottom, 5)
                     
-                    RoutePrevieView(trip: vm.current_trip!)
+                    RoutePreviewView(mapManager: mapManager, trip: $vm.current_trip)
                         .frame(minHeight: 250.0)
                     
                     Text("Filter Stop Type")
@@ -264,11 +266,40 @@ struct FindStopView: View {
                 }
                 .padding(.top, 20)
             }
+        }.onAppear() {
+            Task {
+                await updateTripRoute()
+            }
+        }
+    }
+    func addStop(stop: any POI) async {
+        vm.current_trip?.addStops(additionalStops: [stop])
+        await self.updateTripRoute()
+    }
+    
+    func removeStop(stop: any POI) async {
+        vm.current_trip?.removeStops(removedStops: [stop])
+        await self.updateTripRoute()
+    }
+    
+    func updateTripRoute() async {
+        guard let start_loc = vm.current_trip?.getStartLocation() else { return }
+        guard let end_loc = vm.current_trip?.getEndLocation() else { return }
+        guard let all_stops = vm.current_trip?.getStops() else { return }
+        
+        var all_pois: [any POI] = []
+        all_pois.append(start_loc)
+        all_pois.append(contentsOf: all_stops)
+        all_pois.append(end_loc)
+        
+        if let newRoutes = await mapManager.generateRoute(pois: all_pois) {
+            
+            vm.setTripRoute(route: newRoutes[0])
         }
     }
 }
 
 
 #Preview {
-    FindStopView(vm: .init(user: User(id: "89379", name: "Austin", trips: [Trip(start_location: GeneralLocation(address: "177 North Avenue NW, Atlanta, GA 30332", name: "Georgia Tech"), end_location: Hotel(address: "387 West Peachtree", name: "Hilton"))])))
+    FindStopView(mapManager: MapManager(), vm: .init(user: User(id: "89379", name: "Austin", trips: [Trip(start_location: GeneralLocation(address: "177 North Avenue NW, Atlanta, GA 30332", name: "Georgia Tech"), end_location: Hotel(address: "387 West Peachtree", name: "Hilton"))])))
 }
