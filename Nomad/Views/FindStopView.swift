@@ -36,29 +36,29 @@ struct FindStopView: View {
                             .frame(minHeight: 250.0)
                     }
                 }
-                    
+                
                 VStack(alignment: .leading, spacing: 15) {
-                        HStack {
-                            ZStack {
-                                Circle()
-                                    .fill(Color.white)
-                                    .frame(width: 24, height: 24)
-                                    .overlay {
-                                        Circle()
-                                            .stroke(Color.gray, lineWidth: 1)
-                                    }
-                                
-                                Text("3")
-                                    .font(.system(size: 16))
-                                    .foregroundColor(.gray)
-                            }
+                    HStack {
+                        ZStack {
+                            Circle()
+                                .fill(Color.white)
+                                .frame(width: 24, height: 24)
+                                .overlay {
+                                    Circle()
+                                        .stroke(Color.gray, lineWidth: 1)
+                                }
                             
-                            Text("Explore Stops")
-                                .font(.headline)
-                                .padding(.bottom, 5)
-                                .offset(x: 12, y: 3)
+                            Text("3")
+                                .font(.system(size: 16))
+                                .foregroundColor(.gray)
                         }
-                                    
+                        
+                        Text("Explore Stops")
+                            .font(.headline)
+                            .padding(.bottom, 5)
+                            .offset(x: 12, y: 3)
+                    }
+                    
                     VStack(spacing: 8) {
                         HStack {
                             ForEach(stop_types.prefix(4), id: \.self) { option in
@@ -97,9 +97,9 @@ struct FindStopView: View {
                         }
                     }
                     .padding(5)
-                                    
+                    
                     Divider()
-                                    
+                    
                     VStack(alignment: .leading, spacing: 16) {
                         
                         if selection == "Dining" {
@@ -193,7 +193,7 @@ struct FindStopView: View {
                         }
                     }
                     .padding(.horizontal)
-                                    
+                    
                     Button(action: {
                         isLoading = true
                         hasSearched = true
@@ -480,63 +480,66 @@ struct FindStopView: View {
                     }
                     .frame(height: 300)
                     
-//                    TextField("Stop Name", text: $stopName)
-//                        .textFieldStyle(RoundedBorderTextFieldStyle())
-//                        .padding(.bottom, 5)
-//                    
-//                    TextField("Stop Address", text: $stopAddress)
-//                        .textFieldStyle(RoundedBorderTextFieldStyle())
-//                        .padding(.bottom, 10)
+                    //                    TextField("Stop Name", text: $stopName)
+                    //                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                    //                        .padding(.bottom, 5)
+                    //
+                    //                    TextField("Stop Address", text: $stopAddress)
+                    //                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                    //                        .padding(.bottom, 10)
                     
-//                    Button(isEditing ? "Update Stop" : "Add Stop") {
-//                        let newStop = GeneralLocation(address: stopAddress, name: stopName)
-//                        
-//                        if isEditing, let stop = selectedStop {
-//                            vm.current_trip?.removeStops(removedStops: [stop])
-//                            vm.current_trip?.addStops(additionalStops: [newStop])
-//                        } else {
-//                            vm.current_trip?.addStops(additionalStops: [newStop])
-//                        }
-//                        
-//                        stopName = ""
-//                        stopAddress = ""
-//                        isEditing = false
-//                        selectedStop = nil
-//                    }
-//                    .padding(.bottom, 10)
+                    //                    Button(isEditing ? "Update Stop" : "Add Stop") {
+                    //                        let newStop = GeneralLocation(address: stopAddress, name: stopName)
+                    //
+                    //                        if isEditing, let stop = selectedStop {
+                    //                            vm.current_trip?.removeStops(removedStops: [stop])
+                    //                            vm.current_trip?.addStops(additionalStops: [newStop])
+                    //                        } else {
+                    //                            vm.current_trip?.addStops(additionalStops: [newStop])
+                    //                        }
+                    //
+                    //                        stopName = ""
+                    //                        stopAddress = ""
+                    //                        isEditing = false
+                    //                        selectedStop = nil
+                    //                    }
+                    //                    .padding(.bottom, 10)
                     
-//                    List {
-//                        ForEach(vm.current_trip?.getStops().filter { $0.name.contains(selection) } ?? [], id: \.address) { stop in
-//                            HStack {
-//                                Text("\(stop.name) - \(stop.address)")
-//                                Spacer()
-//                                Button("Edit") {
-//                                    stopName = stop.name
-//                                    stopAddress = stop.address
-//                                    selectedStop = stop
-//                                    isEditing = true
-//                                }
-//                                .padding(.leading)
-//                                
-//                                Button("Delete") {
-//                                    vm.current_trip?.removeStops(removedStops: [stop])
-//                                }
-//                                .foregroundColor(.red)
-//                            }
-//                        }
-//                        .onDelete(perform: { indexSet in
-//                            if let index = indexSet.first {
-//                                let stopToDelete = vm.current_trip?.getStops().filter { $0.name.contains(selection) }[index]
-//                                if let stopToDelete = stopToDelete {
-//                                    vm.current_trip?.removeStops(removedStops: [stopToDelete])
-//                                }
-//                            }
-//                        })
-//                    }
+                    //                    List {
+                    //                        ForEach(vm.current_trip?.getStops().filter { $0.name.contains(selection) } ?? [], id: \.address) { stop in
+                    //                            HStack {
+                    //                                Text("\(stop.name) - \(stop.address)")
+                    //                                Spacer()
+                    //                                Button("Edit") {
+                    //                                    stopName = stop.name
+                    //                                    stopAddress = stop.address
+                    //                                    selectedStop = stop
+                    //                                    isEditing = true
+                    //                                }
+                    //                                .padding(.leading)
+                    //
+                    //                                Button("Delete") {
+                    //                                    vm.current_trip?.removeStops(removedStops: [stop])
+                    //                                }
+                    //                                .foregroundColor(.red)
+                    //                            }
+                    //                        }
+                    //                        .onDelete(perform: { indexSet in
+                    //                            if let index = indexSet.first {
+                    //                                let stopToDelete = vm.current_trip?.getStops().filter { $0.name.contains(selection) }[index]
+                    //                                if let stopToDelete = stopToDelete {
+                    //                                    vm.current_trip?.removeStops(removedStops: [stopToDelete])
+                    //                                }
+                    //                            }
+                    //                        })
+                    //                    }
                 }
                 .padding(.top, 20)
             }
             .padding(.horizontal)
+            .onAppear() {
+                print(vm.current_trip!)
+            }
         }
     }
     
@@ -549,5 +552,5 @@ struct FindStopView: View {
 
 
 #Preview {
-    FindStopView(vm: .init(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: [Trip(start_location: Restaurant(address: "848 Spring Street Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)])])))
+    FindStopView(vm: .init(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: [Trip(start_location: Restaurant(address: "848 Spring Street, Atlanta, GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)])])))
 }

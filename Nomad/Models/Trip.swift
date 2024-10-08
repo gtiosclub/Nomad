@@ -17,6 +17,7 @@ struct Trip: Identifiable, Equatable, Observable {
     private var created_date: String
     private var modified_date: String
     private var start_time: String
+    private var coverImageURL: String
 
     
     init(start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM") {
@@ -29,6 +30,68 @@ struct Trip: Identifiable, Equatable, Observable {
         self.created_date = Trip.getCurrentDateTime()
         self.modified_date = self.created_date
         self.start_time = start_time
+        self.coverImageURL = ""
+        Trip.getCityImage(location: end_location) { [self] imageURL in
+            var mutableTrip = self
+            mutableTrip.setCoverImageURL(newURL: imageURL)
+        }
+    }
+    
+    mutating func setCoverImageURL(newURL: String) {
+        self.coverImageURL = newURL
+    }
+    
+    static func getCityImage(location: any POI, completion: @escaping (String) -> Void) {
+        var search_city: String = ""
+        if let city = location.getCity() {
+            search_city = city
+        } else {
+            let location_split = location.getAddress().split(separator: ",")
+            if location_split.count > 1 {
+                search_city = location_split[1].description
+            }
+        }
+        
+        let url = URL(string: "https://pixabay.com/api/?key=46410552-0c1561d54d98701d038092a47&q=\(search_city)-city-scenic&image_type=photo")!
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.timeoutInterval = 10
+        
+        struct PixabayResponse: Codable {
+            let hits: [PixabayPhoto]
+        }
+
+        struct PixabayPhoto: Codable {
+            let id: Int
+            let webformatURL: String
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Error fetching data: \(error.localizedDescription)")
+                completion("")
+                return
+            }
+            
+            guard let data = data else {
+                print("No data returned")
+                completion("")
+                return
+            }
+                                    
+            do {
+                let pixabayResponse = try JSONDecoder().decode(PixabayResponse.self, from: data)
+                let hits = pixabayResponse.hits
+                let firstImageURL = hits.first?.webformatURL ?? ""
+                print("Found image for \(search_city): \(firstImageURL)")
+                DispatchQueue.main.async {
+                    completion(firstImageURL)
+                }
+            } catch {
+                print("Failed to decode JSON: \(error)")
+            }
+        }.resume()
     }
     
     static func == (lhs: Trip, rhs: Trip) -> Bool {
@@ -54,6 +117,10 @@ struct Trip: Identifiable, Equatable, Observable {
     mutating func setEndLocation(new_end_location: any POI) {
         self.end_location = new_end_location
         self.updateModifiedDate()
+        Trip.getCityImage(location: new_end_location) { [self] imageURL in
+            var mutableTrip = self
+            mutableTrip.setCoverImageURL(newURL: imageURL)
+        }
     }
     
     mutating func setStartDate(newDate: String) {
