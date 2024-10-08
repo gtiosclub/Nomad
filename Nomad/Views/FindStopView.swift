@@ -235,7 +235,9 @@ struct FindStopView: View {
                                 ForEach(vm.restaurants) { restaurant in
                                     HStack {
                                         Button(action: {
-                                            vm.addStop(stop: restaurant)
+                                            Task {
+                                                await addStop(stop: restaurant)
+                                            }
                                         }) {
                                             ZStack {
                                                 Circle()
@@ -312,7 +314,9 @@ struct FindStopView: View {
                                 ForEach(vm.hotels) { hotel in
                                     HStack {
                                         Button(action: {
-                                            vm.addStop(stop: hotel)
+                                            Task {
+                                                await addStop(stop: hotel)
+                                            }
                                         }) {
                                             ZStack {
                                                 Circle()
@@ -372,7 +376,9 @@ struct FindStopView: View {
                                 ForEach(vm.activities) { activity in
                                     HStack() {
                                         Button(action: {
-                                            vm.addStop(stop: activity)
+                                            Task {
+                                                await addStop(stop: activity)
+                                            }
                                         }) {
                                             ZStack {
                                                 Circle()
@@ -430,7 +436,9 @@ struct FindStopView: View {
                                 ForEach(vm.generalLocations) { generalLocation in
                                     HStack {
                                         Button(action: {
-                                            vm.addStop(stop: generalLocation)
+                                            Task {
+                                                await addStop(stop: generalLocation)
+                                            }
                                         }) {
                                             ZStack {
                                                 Circle()
@@ -493,11 +501,12 @@ struct FindStopView: View {
                     Button(isEditing ? "Update Stop" : "Add Stop") {
                         let newStop = GeneralLocation(address: stopAddress, name: stopName)
                         
-                        if isEditing, let stop = selectedStop {
-                            vm.current_trip?.removeStops(removedStops: [stop])
-                            vm.current_trip?.addStops(additionalStops: [newStop])
-                        } else {
-                            vm.current_trip?.addStops(additionalStops: [newStop])
+                        Task {
+                            if isEditing, let stop = selectedStop {
+                                await replaceStop(oldStop: stop, newStop: newStop)
+                            } else {
+                                await addStop(stop: newStop)
+                            }
                         }
                         
                         stopName = ""
@@ -551,6 +560,12 @@ struct FindStopView: View {
     
     func removeStop(stop: any POI) async {
         vm.current_trip?.removeStops(removedStops: [stop])
+        await self.updateTripRoute()
+    }
+    
+    func replaceStop(oldStop: any POI, newStop: any POI) async {
+        vm.current_trip?.removeStops(removedStops: [oldStop])
+        vm.current_trip?.addStops(additionalStops: [newStop])
         await self.updateTripRoute()
     }
     
