@@ -14,7 +14,6 @@ private var silenceTimer: Timer?
 //private var shouldTranscribe = true
 
 
-
 /// A helper for transcribing speech to text using SFSpeechRecognizer and AVAudioEngine.
 actor SpeechRecognizer: ObservableObject {
     enum RecognizerError: Error {
