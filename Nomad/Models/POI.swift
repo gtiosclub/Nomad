@@ -12,6 +12,7 @@ protocol POI: Equatable {
     var name: String { get set }
     var latitude: Double? { get set }
     var longitude: Double? { get set }
+    var city: String? { get set }
     
     mutating func setAddress(newAddress: String)
     mutating func setName(newName: String)
@@ -22,4 +23,15 @@ protocol POI: Equatable {
     mutating func setLongitude(newLongitude: Double)
     func getLatitude() -> Double?
     func getLongitude() -> Double?
+    
+    mutating func setCity(newCity: String)
+    func getCity() -> String?
 }
+
+protocol Ratable {
+    var rating: Double? { get set }
+    
+    mutating func setRating(newRating: Double)
+    func getRating() -> Double
+}
+

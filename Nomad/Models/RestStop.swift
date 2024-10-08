@@ -12,10 +12,14 @@ struct RestStop: POI {
     var name: String
     var longitude: Double?
     var latitude: Double?
+    var city: String?
     
-    init(address: String, name: String, latitude: Double? = nil, longitude: Double? = nil) {
+    init(address: String, name: String, latitude: Double? = nil, longitude: Double? = nil, city: String? = nil) {
         self.address = address
         self.name = name
+        self.latitude = latitude
+        self.longitude = longitude
+        self.city = city
     }
     
     static func == (lhs: RestStop, rhs: RestStop) -> Bool {
@@ -38,6 +42,10 @@ struct RestStop: POI {
         self.latitude = newLatitude
     }
     
+    mutating func setCity(newCity: String) {
+        self.city = newCity
+    }
+    
     func getAddress() -> String {
         return address
     }
@@ -52,6 +60,10 @@ struct RestStop: POI {
     
     func getLatitude() -> Double? {
         return latitude
+    }
+    
+    func getCity() -> String? {
+        return city
     }
 }
 

@@ -11,6 +11,7 @@ import CoreLocation
 import MapKit
 
 struct LocationSearchBox: View {
+    @ObservedObject var mapManager: MapManager
     @StateObject private var mapSearch = MapSearch()
     // Form Variables
     
@@ -19,41 +20,71 @@ struct LocationSearchBox: View {
     @State private var btnHover = false
     @State private var isBtnActive = false
     
-    @Binding var selectedAddress: String
+    @State var selectedAddress: String = ""
+    @State var selectedCoord: CLLocation?
     
     
     // Main UI
     
     var body: some View {
         
-        VStack {
-            TextField("Enter Location Here", text: $mapSearch.searchTerm)
-                .focused($isFocused)
-                .padding()
-                .background(.white)
-                .cornerRadius(10)
-                .padding(.horizontal, 10)
-            
-            // Show auto-complete results
-            if !mapSearch.searchTerm.isEmpty && mapSearch.searchTerm != self.selectedAddress {
-                List {
-                    ForEach(mapSearch.locationResults, id: \.self) { location in
-                        Button {
-                            reverseGeo(location: location)
-                        } label: {
-                            VStack(alignment: .leading) {
-                                Text(location.title)
-                                    .foregroundColor(Color.black)
-                                Text(location.subtitle)
-                                    .font(.system(.caption))
-                                    .foregroundColor(Color.black)
+        HStack {
+            VStack {
+                TextField("Enter Location Here", text: $mapSearch.searchTerm)
+                    .focused($isFocused)
+                    .padding()
+                    .background(.white)
+                    .cornerRadius(10)
+                    .padding(.horizontal, 10)
+                
+                // Show auto-complete results
+                if !mapSearch.searchTerm.isEmpty && mapSearch.searchTerm != self.selectedAddress {
+                    List {
+                        ForEach(mapSearch.locationResults, id: \.self) { location in
+                            Button {
+                                reverseGeo(location: location)
+                            } label: {
+                                VStack(alignment: .leading) {
+                                    Text(location.title)
+                                        .foregroundColor(Color.black)
+                                    Text(location.subtitle)
+                                        .font(.system(.caption))
+                                        .foregroundColor(Color.black)
+                                }
+                            }
+                        }
+                    }
+                    
+                }
+                
+            }
+            Button {
+                // add mapmarker
+                if let lat = selectedCoord?.coordinate.latitude {
+                    if let long = selectedCoord?.coordinate.longitude {
+                        let markerTitle = "Marker \(mapManager.mapMarkers.count + 1)"
+                        let coord = CLLocationCoordinate2D(latitude: lat, longitude: long)
+                        mapManager.showMarker(markerTitle, coordinate: coord, icon: nil)
+                        
+                        Task {
+                            do {
+                                try await mapManager.addWaypoint(to: coord)
+                                print("waypoint added")
+                            } catch {
+                                print("could not add waypoint")
                             }
                         }
                     }
                 }
+            } label: {
+                Image(systemName: "arrow.down.left")
+                    .foregroundStyle(.white)
+                    .padding()
+                    .background(Color.blue)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
                 
             }
-            
+
         }
     }
     func reverseGeo(location: MKLocalSearchCompletion) {
@@ -67,6 +98,7 @@ struct LocationSearchBox: View {
             
             if let c = coordinateK {
                 let location = CLLocation(latitude: c.latitude, longitude: c.longitude)
+                self.selectedCoord = location
                 CLGeocoder().reverseGeocodeLocation(location) { placemarks, error in
                     
                     guard let placemark = placemarks?.first else {
@@ -87,12 +119,6 @@ struct LocationSearchBox: View {
     }
 } // End Struct
 
-struct Test_Previews: PreviewProvider {
-    static var previews: some View {
-        LocationSearchBox(selectedAddress: Binding.constant(""))
-    }
-}
-
 #Preview {
-    LocationSearchBox(selectedAddress: Binding.constant(""))
+    LocationSearchBox(mapManager: MapManager())
 }

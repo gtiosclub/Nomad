@@ -10,7 +10,7 @@ import CoreLocation
 import MapKit
 
 struct ItineraryPlanningView: View {
-    @State var isClicked: Bool = false
+    @ObservedObject var mapManager: MapManager
     @State var inputAddressStart: String = ""
     @State var inputAddressEnd: String = ""
     @State var inputNameStart: String = ""
@@ -26,6 +26,7 @@ struct ItineraryPlanningView: View {
     @State private static var dateformatter = DateFormatter()
     @ObservedObject var vm: UserViewModel
     @ObservedObject var mapSearch = MapSearch()
+    @State var isClicked: Bool = false
     
     enum completion{
         case null, start, end
@@ -127,7 +128,6 @@ struct ItineraryPlanningView: View {
                         inputNameEnd = "End Location"
                     }
                     
-
                     let trip = vm.createTrip(start_location: GeneralLocation(address: inputAddressStart, name: inputNameStart, latitude: startLatitude, longitude: startLongitude), end_location: GeneralLocation(address: inputAddressEnd, name: inputNameEnd, latitude: endLatitude, longitude: endLongitude), start_date: ItineraryPlanningView.dateToString(date: startDate), end_date: ItineraryPlanningView.dateToString(date: endDate), stops: [], start_time: ItineraryPlanningView.timeToString(date: startTime))
                     vm.addTripToUser(trip: trip)
                     inputNameEnd = ""
@@ -245,5 +245,5 @@ struct ItineraryPlanningView: View {
 }
 
 #Preview {
-    ItineraryPlanningView(vm: .init(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "177 North Avenue NW, Atlanta, GA 30332", name: "Georgia Tech"), end_location: Hotel(address: "387 West Peachtree", name: "Hilton"), start_date: "10-07-2024 22:42:59", end_date: "10-07-2024 22:42:59", stops: [], start_time: "10:45 PM")])), mapSearch: .init())
+    ItineraryPlanningView(mapManager: MapManager(), vm: .init(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "177 North Avenue NW, Atlanta, GA 30332", name: "Georgia Tech"), end_location: Hotel(address: "387 West Peachtree, Atlanta", name: "Hilton"))])))
 }
