@@ -279,7 +279,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         return MapPoint(name: "", coordinate: coordinates)
     }
     
-    // Route progress function
+    // Route progress functions
     func getFutureLocation(time: TimeInterval) async throws -> CLLocationCoordinate2D {
         var routeProgress: RouteProgress
         
@@ -317,6 +317,20 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
         
         return currStep.shape?.coordinates.last ?? CLLocationCoordinate2D()
+    }
+    
+    func getFutureLocation(time: TimeInterval, route: NomadRoute) -> CLLocationCoordinate2D? {
+        
+        var currTime = 0.0
+        var currStepIndex = 0
+        
+        while currTime < time && currStepIndex < route.steps.count - 1 {
+            let step = route.steps[currStepIndex]
+            currTime += step.direction.expectedTravelTime
+            currStepIndex += 1
+        }
+        
+        return route.steps[currStepIndex].endCoordinate
     }
     
 }
