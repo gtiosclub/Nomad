@@ -182,4 +182,8 @@ struct Trip: Identifiable, Equatable, Observable {
     func duplicate() -> Trip {
         return Trip(start_location: start_location, end_location: end_location, start_date: start_date, end_date: end_date, stops: stops)
     }
+    
+    func getCoverImage() -> String {
+        coverImageURL
+    }
 }
