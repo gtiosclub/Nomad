@@ -127,9 +127,11 @@ struct ItineraryPlanningView: View {
                     if(inputAddressEnd.contains(inputNameEnd)){
                         inputNameEnd = "End Location"
                     }
+                    Task {
+                        let trip = await vm.createTrip(start_location: GeneralLocation(address: inputAddressStart, name: inputNameStart, latitude: startLatitude, longitude: startLongitude), end_location: GeneralLocation(address: inputAddressEnd, name: inputNameEnd, latitude: endLatitude, longitude: endLongitude), start_date: ItineraryPlanningView.dateToString(date: startDate), end_date: ItineraryPlanningView.dateToString(date: endDate), stops: [], start_time: ItineraryPlanningView.timeToString(date: startTime))
+                        vm.addTripToUser(trip: trip)
+                    }
                     
-                    let trip = vm.createTrip(start_location: GeneralLocation(address: inputAddressStart, name: inputNameStart, latitude: startLatitude, longitude: startLongitude), end_location: GeneralLocation(address: inputAddressEnd, name: inputNameEnd, latitude: endLatitude, longitude: endLongitude), start_date: ItineraryPlanningView.dateToString(date: startDate), end_date: ItineraryPlanningView.dateToString(date: endDate), stops: [], start_time: ItineraryPlanningView.timeToString(date: startTime))
-                    vm.addTripToUser(trip: trip)
                     inputNameEnd = ""
                     inputNameStart = ""
                     inputAddressEnd = ""
@@ -152,7 +154,7 @@ struct ItineraryPlanningView: View {
                         .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
                 }
                 .padding(.horizontal, 50)
-                .navigationDestination(isPresented: $editTrip, destination: {TripView(vm: vm, trip: vm.current_trip)})
+                .navigationDestination(isPresented: $editTrip, destination: {TripView(mapManager: mapManager, vm: vm, trip: vm.current_trip)})
                 
                 Spacer()
                 

@@ -71,7 +71,7 @@ struct TripView: View {
                     Text("Stops")
                         .font(.headline)
 
-                    NavigationLink("Add a Stop", destination: { FindStopView(vm: vm)} )
+                    NavigationLink("Add a Stop", destination: { FindStopView(mapManager: mapManager, vm: vm)} )
 
                     ForEach(vm.current_trip?.getStops() ?? [], id: \.address) { stop in
                         Text("\(stop.name)")
