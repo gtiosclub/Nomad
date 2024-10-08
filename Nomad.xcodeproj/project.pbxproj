@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		391165FA2CB53542004B8695 /* PreviewRouteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 391165F92CB53542004B8695 /* PreviewRouteView.swift */; };
 		48974B842C9A438B0057B073 /* Activity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B832C9A43880057B073 /* Activity.swift */; };
 		48974B862C9A44A30057B073 /* Hotel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B852C9A449F0057B073 /* Hotel.swift */; };
 		48974B8B2C9F72700057B073 /* TripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B8A2C9F72700057B073 /* TripView.swift */; };
@@ -82,6 +83,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		391165F92CB53542004B8695 /* PreviewRouteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewRouteView.swift; sourceTree = "<group>"; };
 		48974B832C9A43880057B073 /* Activity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Activity.swift; sourceTree = "<group>"; };
 		48974B852C9A449F0057B073 /* Hotel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hotel.swift; sourceTree = "<group>"; };
 		48974B8A2C9F72700057B073 /* TripView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripView.swift; sourceTree = "<group>"; };
@@ -236,6 +238,7 @@
 				48974B8A2C9F72700057B073 /* TripView.swift */,
 				48974B8C2CA0A3CB0057B073 /* FindStopView.swift */,
 				6B3E9F672CAF60A100C24BDB /* ExploreTripsView.swift */,
+				391165F92CB53542004B8695 /* PreviewRouteView.swift */,
 				48974BA02CB04B420057B073 /* RoutePreviewView.swift */,
 				66443CD62CADDB77000D3F12 /* RoutePlanListView.swift */,
 				48974BAE2CB30AAF0057B073 /* EnhancedRoutePlanListView.swift */,
@@ -449,6 +452,7 @@
 				B2F8F3532C97BCAB00B9618E /* User.swift in Sources */,
 				48974B862C9A44A30057B073 /* Hotel.swift in Sources */,
 				B2F8F3642C97BD9B00B9618E /* UserViewModel.swift in Sources */,
+				391165FA2CB53542004B8695 /* PreviewRouteView.swift in Sources */,
 				E90E9AB82CAF5C1F00A7C4FA /* SpeechRecognizer.swift in Sources */,
 				B2F8F3622C97BD8900B9618E /* AIAssistantViewModel.swift in Sources */,
 			);

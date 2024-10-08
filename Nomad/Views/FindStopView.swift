@@ -31,9 +31,13 @@ struct FindStopView: View {
                     Text("Let's Plan Your New Trip")
                         .font(.headline)
                         .padding(.bottom, 5)
+                    
                     if let trip = vm.current_trip {
                         RoutePreviewView(trip: trip)
                             .frame(minHeight: 250.0)
+                    } else {
+                        Text("No current trip available")
+                            .foregroundColor(.red)
                     }
                 }
                 
