@@ -99,4 +99,11 @@ final class AIUnitTesting: XCTestCase {
         print(businesses)
     }
     
+    func testAPIKeys() async {
+        let newVm = AIAssistantViewModel()
+//        print("Gas key \(newVm.gasPricesAPIKey)")
+//        print("OpenAI key \(newVm.openAIAPIKey)")
+//        print("Yelp key \(newVm.yelpAPIKey)")
+    }
+    
 }

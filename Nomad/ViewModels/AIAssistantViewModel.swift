@@ -16,6 +16,18 @@ class AIAssistantViewModel: ObservableObject {
     let gptModel = ChatGPTModel(rawValue: "gpt-4o")
     let FirebaseVM: FirebaseViewModel = FirebaseViewModel()
     
+    let initialConditionSentence:String = """
+    I have a Trip with properties
+        stops: [POI]
+        start_location: POI
+        end_location: POI
+        start_date: String
+        end_date: String
+
+    Keep asking me questions until you have information to fill out the Trip. Do not mention the actual variable names.
+
+    """
+    
     init() {
         Task {
             do {
@@ -29,7 +41,7 @@ class AIAssistantViewModel: ObservableObject {
                     self.yelpAPIKey = yelpKey
                 }
 
-                if let gasKey = apimap["GAS"] {
+                if let gasKey = apimap["GASPRICES"] {
                     self.gasPricesAPIKey = gasKey
                 }
             } catch {

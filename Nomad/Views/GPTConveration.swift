@@ -9,24 +9,7 @@ import SwiftUI
 import ChatGPTSwift
 
 
-let initialConditionSentence:String = """
-with given Trip object, i got
-var id: String
-    private var stops: [POI]
-    private var start_location: POI
-    private var end_location: POI
-    private var start_date: String
-    private var end_date: String
 
-where POI is another object contains
-
- var address: String { get set }
-    var name: String { get set }
-
-keep asking me questions in a conversation way (back and forth, you asking me, i give you answer, and you ask me for the next question, and so on) so that i am able to fill out the Trip object variables and the POI. 
-
-Do not ask the id, modified date, created date.
-"""
 
 var isOnceGPT = true;
 

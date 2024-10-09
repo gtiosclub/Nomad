@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		3FA9834F2CB5F6880024E6A6 /* GPTConveration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FA9834E2CB5F67B0024E6A6 /* GPTConveration.swift */; };
 		391165FA2CB53542004B8695 /* PreviewRouteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 391165F92CB53542004B8695 /* PreviewRouteView.swift */; };
 		48974B842C9A438B0057B073 /* Activity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B832C9A43880057B073 /* Activity.swift */; };
 		48974B862C9A44A30057B073 /* Hotel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B852C9A449F0057B073 /* Hotel.swift */; };
@@ -15,7 +14,6 @@
 		48974B8D2CA0A3CB0057B073 /* FindStopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B8C2CA0A3CB0057B073 /* FindStopView.swift */; };
 		48974B8F2CA0A6130057B073 /* GeneralLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B8E2CA0A6130057B073 /* GeneralLocation.swift */; };
 		48974BA12CB04B420057B073 /* RoutePreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974BA02CB04B420057B073 /* RoutePreviewView.swift */; };
-		48974BAD2CB089800057B073 /* RoutePreviewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974BAC2CB089800057B073 /* RoutePreviewManager.swift */; };
 		48974BAF2CB30AAF0057B073 /* EnhancedRoutePlanListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974BAE2CB30AAF0057B073 /* EnhancedRoutePlanListView.swift */; };
 		599F66172C9CE4F90025A8F8 /* Motion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 599F66162C9CE4F90025A8F8 /* Motion.swift */; };
 		66443CD72CADDB77000D3F12 /* RoutePlanListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66443CD62CADDB77000D3F12 /* RoutePlanListView.swift */; };
@@ -88,7 +86,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		3FA9834E2CB5F67B0024E6A6 /* GPTConveration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GPTConveration.swift; sourceTree = "<group>"; };
 		391165F92CB53542004B8695 /* PreviewRouteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewRouteView.swift; sourceTree = "<group>"; };
 		48974B832C9A43880057B073 /* Activity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Activity.swift; sourceTree = "<group>"; };
 		48974B852C9A449F0057B073 /* Hotel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hotel.swift; sourceTree = "<group>"; };
@@ -96,14 +93,13 @@
 		48974B8C2CA0A3CB0057B073 /* FindStopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindStopView.swift; sourceTree = "<group>"; };
 		48974B8E2CA0A6130057B073 /* GeneralLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralLocation.swift; sourceTree = "<group>"; };
 		48974BA02CB04B420057B073 /* RoutePreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePreviewView.swift; sourceTree = "<group>"; };
-		48974BAC2CB089800057B073 /* RoutePreviewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePreviewManager.swift; sourceTree = "<group>"; };
 		48974BAE2CB30AAF0057B073 /* EnhancedRoutePlanListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnhancedRoutePlanListView.swift; sourceTree = "<group>"; };
 		599F66162C9CE4F90025A8F8 /* Motion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Motion.swift; sourceTree = "<group>"; };
 		66443CD62CADDB77000D3F12 /* RoutePlanListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePlanListView.swift; sourceTree = "<group>"; };
+		6B3E9F672CAF60A100C24BDB /* ExploreTripsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreTripsView.swift; sourceTree = "<group>"; };
 		944E9E9A2CACBBEC0032FD34 /* Step.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Step.swift; sourceTree = "<group>"; };
 		9455F54A2C9F99F0006D03D6 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		94F91F652C9F875F00A63F7A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		6B3E9F672CAF60A100C24BDB /* ExploreTripsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreTripsView.swift; sourceTree = "<group>"; };
 		B2154C6C2C9D01BA00A6F238 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B2154CCF2C9E2DF400A6F238 /* CompassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompassView.swift; sourceTree = "<group>"; };
 		B2154CD12C9E319C00A6F238 /* RecenterMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecenterMapView.swift; sourceTree = "<group>"; };
@@ -248,7 +244,6 @@
 		B2F8F3482C97BC6400B9618E /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				3FA9834E2CB5F67B0024E6A6 /* GPTConveration.swift */,
 				84FC27152CAC741D008C8339 /* Onboarding */,
 				B2F8F3492C97BC7700B9618E /* RecapView.swift */,
 				B2F8F34B2C97BC7F00B9618E /* MapView.swift */,
@@ -453,8 +448,7 @@
 				B2F8F3602C97BD6200B9618E /* FirebaseViewModel.swift in Sources */,
 				6B3E9F682CAF60A100C24BDB /* ExploreTripsView.swift in Sources */,
 				B2F8F3472C97BB5500B9618E /* RootView.swift in Sources */,
-				3FA9834F2CB5F6880024E6A6 /* GPTConveration.swift in Sources */,
-				B298EB552C98F9DE0078696A /* MapManager.swift in Sources */,
+				B298EB552C98F9DE0078696A /* (null) in Sources */,
 				B298EB552C98F9DE0078696A /* (null) in Sources */,
 				E90E9ABA2CAF5C7000A7C4FA /* VoiceInput.swift in Sources */,
 				B2F8F3572C97BCC400B9618E /* POI.swift in Sources */,
