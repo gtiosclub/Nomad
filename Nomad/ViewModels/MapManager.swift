@@ -21,6 +21,8 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var destination =  MKPlacemark(coordinate: CLLocationCoordinate2D())
     @Published var motion = Motion()
     @Published var region = MKCoordinateRegion()
+    @Published var navigating = false
+    @Published var movingMap = false
     
     // Map State/Settings
     @Published var mapPosition: MapCameraPosition = .userLocation(fallback: .camera(MapCamera(centerCoordinate: CLLocationCoordinate2D(latitude: .zero, longitude: .zero), distance: 0)))
@@ -45,6 +47,13 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                     self.motion.speed = location.speed
                     self.motion.direction = location.course
                     print(self.motion.toString())
+                    
+                    if let userLocation = self.userLocation {
+                        if (!self.movingMap) {
+                            self.mapPosition = .camera(MapCamera(centerCoordinate: userLocation, distance: self.navigating ? 1000 : 5000, heading: (self.navigating ? self.motion.direction : 0) ?? 0, pitch: self.navigating ? 80 : 0))
+                        }
+                    }
+
                     
                     // Update the region for the map
                     self.region = MKCoordinateRegion(
