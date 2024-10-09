@@ -89,14 +89,42 @@ final class AIUnitTesting: XCTestCase {
     }
     
     func testCallYelpAfterQuery() async {
-        let query = "What are some restuarants in Atlanta that are a mile away from the Atlanta Aquarium?"
+        let query = "What are some restuarants in Atlanta that are a mile away from the Georgia Institute of Technology?"
+
         let jsonString = await vm.queryChatGPT(query: query) ?? ""
         XCTAssertNotNil(jsonString)
-        let convertedLocation = vm.convertStringToStruct(jsonString: jsonString)
-        XCTAssertNotNil(convertedLocation)
-        let businesses = await vm.queryYelp(jsonString: jsonString) ?? "!!!Failed!!!"
+        let businesses = await vm.queryYelpWithjSONString(jsonString: jsonString) ?? "!!!Failed!!!"
         XCTAssertNotNil(businesses)
         print(businesses)
     }
+    
+    func testConverseAndGetInfoFromYelp() async {
+        let query = "What are some restuarants in New York City that are two miles away from The Empire State Building?"
+        let businesses = await vm.converseAndGetInfoFromYelp(query: query) ?? ""
+        XCTAssertNotNil(businesses)
+        print("Test Converse And Get Info From Yelp: \(businesses)")
+    }
+    
+    func testParsingYelpRestaurantIntoModel() async {
+        let yelpData = """
+        
+            {"businesses": [{"id": "GJxFtnTqTiokFedNrW9iDQ", "alias": "atlanta-breakfast-club-atlanta", "name": "Atlanta Breakfast Club", "image_url": "https://s3-media1.fl.yelpcdn.com/bphoto/tBskU517-2-G7VSgac6a5w/o.jpg", "is_closed": false, "url": "https://www.yelp.com/biz/atlanta-breakfast-club-atlanta?adjust_creative=esW3iDi0HV9ZWuH7EG8y6A&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_search&utm_source=esW3iDi0HV9ZWuH7EG8y6A", "review_count": 7413, "categories": [{"alias": "southern", "title": "Southern"}, {"alias": "breakfast_brunch", "title": "Breakfast & Brunch"}, {"alias": "tradamerican", "title": "American"}], "rating": 4.5, "coordinates": {"latitude": 33.7649, "longitude": -84.39546}, "transactions": ["delivery", "pickup"], "price": "$$", "location": {"address1": "249 Ivan Allen Jr Blvd", "address2": "", "address3": "", "city": "Atlanta", "zip_code": "30313", "country": "US", "state": "GA", "display_address": ["249 Ivan Allen Jr Blvd", "Atlanta, GA 30313"]}, "phone": "+14704283825", "display_phone": "(470) 428-3825", "distance": 159.76731209075209, "business_hours": [{"open": [{"is_overnight": false, "start": "0630", "end": "1500", "day": 0}, {"is_overnight": false, "start": "0630", "end": "1500", "day": 1}, {"is_overnight": false, "start": "0630", "end": "1500", "day": 2}, {"is_overnight": false, "start": "0630", "end": "1500", "day": 3}, {"is_overnight": false, "start": "0630", "end": "1500", "day": 4}, {"is_overnight": false, "start": "0630", "end": "1500", "day": 5}, {"is_overnight": false, "start": "0630", "end": "1500", "day": 6}], "hours_type": "REGULAR", "is_open_now": false}], "attributes": {"business_temp_closed": null, "menu_url": "https://www.atlbreakfastclub.com/menu", "open24_hours": null, "waitlist_reservation": true}}], "total": 240, "region": {"center": {"longitude": -84.39525604248047, "latitude": 33.763440105095704}}}
+
+        """
+        let businessResponse = vm.parseGetBusinessesIntoModel(yelpInfo: yelpData) ?? nil
+        XCTAssertNotNil(businessResponse)
+        XCTAssertEqual(businessResponse?.businesses.first?.id, "GJxFtnTqTiokFedNrW9iDQ")
+        XCTAssertEqual(businessResponse?.businesses.first?.name, "Atlanta Breakfast Club")
+        XCTAssertEqual(businessResponse?.businesses.first?.location.address1, "249 Ivan Allen Jr Blvd") //
+        print(businessResponse ?? "")
+    }
+    
+    func testFormatResponseToUser() async {
+        let response = await vm.formatResponseToUser(name: "Atlanta Breakfast Club", address: "249 Ivan Allen Jr Blvd", price: "$$", rating: 4.5, phoneNumber: "+14704283825") ?? ""
+        XCTAssertNotEqual("", response)
+        print(response)
+    }
+    
+    
     
 }
