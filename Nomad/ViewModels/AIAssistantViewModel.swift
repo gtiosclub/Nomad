@@ -10,7 +10,7 @@ import ChatGPTSwift
 
 class AIAssistantViewModel: ObservableObject {
     var openAIAPIKey = ChatGPTAPI(apiKey: "<PUT API KEY HERE>")
-    var currentLocationQuery: LocationInfo = LocationInfo(locationType: "", distance: 0, location: "", preferences: [])
+    var currentLocationQuery: LocationInfo = LocationInfo(locationType: "", distance: 0.0, location: "", preferences: [])
     var yelpAPIKey = "<PUT API KEY HERE>"
     var gasPricesAPIKey = "<PUT GAS KEY HERE>"
     let jsonResponseFormat = Components.Schemas.CreateChatCompletionRequest.response_formatPayload(_type: .json_object) // ensure that query returns json object
@@ -102,7 +102,7 @@ class AIAssistantViewModel: ObservableObject {
                     I will give you a question/statement. From this statement, extract the location type and distance I am looking for and put it in this JSON format. 
                     {
                     locationType: <Restaurant/GasStation/Hotel/RestStop/Point of Interest/Activity>
-                    distance: <Int>
+                    distance: <Double>
                     location: <String>
                     preferences: [String]
                     }
@@ -183,18 +183,18 @@ class AIAssistantViewModel: ObservableObject {
     
     struct LocationInfo: Codable, Equatable {
         let locationType: String
-        let distance: Int
+        let distance: Double
         let location: String
         let preferences: [String]
     }
     
-    func fetchSpecificBusinesses(locationType: String, distance: Int, location: String, preferences: String) async -> String? {
+    func fetchSpecificBusinesses(locationType: String, distance: Double, location: String, preferences: String) async -> String? {
         let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
         let queryItems: [URLQueryItem] = [
             URLQueryItem(name: "location", value: location),
             URLQueryItem(name: "term", value: "\(preferences)  \(locationType)"),
-            URLQueryItem(name: "radius", value: "\(distance * 1609)"), //Because the parameter takes in meters, we convert miles to meters (1 mile = 1608.34 meters)
+            URLQueryItem(name: "radius", value: "\(Int(distance * 1609))"), //Because the parameter takes in meters, we convert miles to meters (1 mile = 1608.34 meters)
             URLQueryItem(name: "limit", value: "1"),
         ]
         components.queryItems = components.queryItems.map { $0 + queryItems } ?? queryItems
