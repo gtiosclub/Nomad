@@ -10,7 +10,7 @@ import MapKit
 @available(iOS 17.0, *)
 struct MapView: View {
     @ObservedObject var mapManager: MapManager
-        
+    
     var body: some View {
         ZStack {
             // All views within Map
@@ -29,11 +29,14 @@ struct MapView: View {
                     MapPolyline(polyline)
                         .stroke(.blue, lineWidth: 5)
                 }
-            
+                
                 
                 
             }.mapStyle(getMapStyle())
-          
+                .onTapGesture {
+                    mapManager.movingMap = true
+                }
+            
             // All Map HUD
             VStack {
                 HStack {
@@ -43,7 +46,8 @@ struct MapView: View {
                             .frame(width: 50, height: 50)
                         RecenterMapView(recenterMap: {
                             if let userLocation = mapManager.userLocation {
-                                mapManager.mapPosition = .camera(MapCamera(centerCoordinate: userLocation, distance: 5000, heading: 0, pitch: 0))
+                                mapManager.mapPosition = .camera(MapCamera(centerCoordinate: userLocation, distance: mapManager.navigating ? 1000 : 5000, heading: (mapManager.navigating ? mapManager.motion.direction : 0) ?? 0, pitch: mapManager.navigating ? 80 : 0))
+                                mapManager.movingMap = false
                             }
                         })
                         .frame(width: 50, height: 50)
