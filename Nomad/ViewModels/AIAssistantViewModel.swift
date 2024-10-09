@@ -9,11 +9,47 @@ import Foundation
 import ChatGPTSwift
 
 class AIAssistantViewModel: ObservableObject {
-    let openAIAPIKey = ChatGPTAPI(apiKey:"<PUT API KEY HERE>")
-    let yelpAPIKey = "<PUT API KEY HERE>"
-    let gasPricesAPIKey = "<PUT GAS KEY HERE>"
+    var openAIAPIKey = ChatGPTAPI(apiKey: "<PUT API KEY HERE>")
+    var yelpAPIKey = "<PUT API KEY HERE>"
+    var gasPricesAPIKey = "<PUT GAS KEY HERE>"
     let jsonResponseFormat = Components.Schemas.CreateChatCompletionRequest.response_formatPayload(_type: .json_object) // ensure that query returns json object
     let gptModel = ChatGPTModel(rawValue: "gpt-4o")
+    let FirebaseVM: FirebaseViewModel = FirebaseViewModel()
+    
+    let initialConditionSentence:String = """
+    I have a Trip with properties
+        stops: [POI]
+        start_location: POI
+        end_location: POI
+        start_date: String
+        end_date: String
+
+    Keep asking me questions until you have information to fill out the Trip. Do not mention the actual variable names.
+
+    """
+    
+    init()  {
+        fetchAPIKeys()
+    }
+    
+    private func fetchAPIKeys() {
+        Task {
+            do {
+                let apimap = try await FirebaseVM.getAPIKeys()
+                
+                self.openAIAPIKey = ChatGPTAPI(apiKey: apimap["OPENAI"] ?? "Error")
+                self.yelpAPIKey = apimap["YELP"] ?? "Error"
+                self.gasPricesAPIKey = apimap["GASPRICES"] ?? "Error"
+                
+                print("Gas key \(self.gasPricesAPIKey)")
+                print("OpenAI key \(self.openAIAPIKey)")
+                print("Yelp key \(self.yelpAPIKey)")
+
+            } catch {
+                print("Failed to fetch API keys: \(error)")
+            }
+        }
+    }
     
     
     func fetchBusinesses() async {

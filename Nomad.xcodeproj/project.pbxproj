@@ -453,6 +453,7 @@
 				6B3E9F682CAF60A100C24BDB /* ExploreTripsView.swift in Sources */,
 				B2F8F3472C97BB5500B9618E /* RootView.swift in Sources */,
 				B298EB552C98F9DE0078696A /* (null) in Sources */,
+				B298EB552C98F9DE0078696A /* (null) in Sources */,
 				E90E9ABA2CAF5C7000A7C4FA /* VoiceInput.swift in Sources */,
 				B2F8F3572C97BCC400B9618E /* POI.swift in Sources */,
 				C49A65502C9CE53400A8B9BA /* MapSearch.swift in Sources */,
