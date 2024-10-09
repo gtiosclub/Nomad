@@ -18,11 +18,11 @@ struct Restaurant: POI, Identifiable, Ratable {
     var imageUrl: String?
     var open_time: String?
     var close_time: String?
-    var longitude: Double?
-    var latitude: Double?
+    var longitude: Double
+    var latitude: Double
     var city: String?
 
-    init(address: String, name: String, rating: Double? = nil, cuisine: String? = nil, price: Int? = nil, website: String? = nil, latitude: Double? = nil, longitude: Double? = nil, city: String? = nil) {
+    init(address: String, name: String, rating: Double? = nil, cuisine: String? = nil, price: Int? = nil, website: String? = nil, latitude: Double, longitude: Double, city: String? = nil) {
         self.id = UUID().uuidString
         self.address = address
         self.name = name
@@ -113,11 +113,11 @@ struct Restaurant: POI, Identifiable, Ratable {
         return website ?? ""
     }
     
-    func getLongitude() -> Double? {
+    func getLongitude() -> Double {
         return longitude
     }
     
-    func getLatitude() -> Double? {
+    func getLatitude() -> Double {
         return latitude
     }
     

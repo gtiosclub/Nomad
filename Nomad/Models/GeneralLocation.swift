@@ -12,11 +12,11 @@ struct GeneralLocation: POI, Identifiable {
     var address: String
     var name: String
     var imageUrl: String?
-    var longitude: Double?
-    var latitude: Double?
+    var longitude: Double
+    var latitude: Double
     var city: String?
     
-    init(address: String, name: String, latitude: Double? = nil, longitude: Double? = nil, city: String? = nil) {
+    init(address: String, name: String, latitude: Double, longitude: Double, city: String? = nil) {
         self.id = UUID().uuidString
         self.address = address
         self.name = name
@@ -67,11 +67,11 @@ struct GeneralLocation: POI, Identifiable {
         return name
     }
     
-    func getLongitude() -> Double? {
+    func getLongitude() -> Double {
         return longitude
     }
     
-    func getLatitude() -> Double? {
+    func getLatitude() -> Double {
         return latitude
     }
     
