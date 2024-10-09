@@ -16,7 +16,7 @@ struct Message: Identifiable {
 class ChatViewModel: ObservableObject {
     @ObservedObject private var aiViewModel = AIAssistantViewModel()
     @Published var messages: [Message] = [
-        Message(content: "Hi! I'm your AI assistant", sender: "AI")
+        Message(content: "Hi! I'm Atlas, your AI assistant", sender: "AI")
     ]
     
     func sendMessage(_ content: String) {
