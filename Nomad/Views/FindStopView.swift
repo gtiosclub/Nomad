@@ -406,20 +406,27 @@ struct FindStopView: View {
                                         VStack(alignment: .leading, spacing: 4) {
                                             Text(activity.name)
                                                 .font(.headline)
-                                            if let rating = activity.rating {
-                                                HStack(spacing: 1) {
-                                                    Text("\(String(format: "%.1f", rating))")
-                                                        .font(.subheadline)
-                                                        .foregroundColor(.secondary)
-                                                    Image(systemName: "star")
-                                                        .resizable()
-                                                        .frame(width: 14, height: 14)
+                                            HStack(spacing: 1) {
+                                                if let city = activity.city {
+                                                    Text("\(city) • ")
+                                                        .font(.system(size: 16))
                                                         .foregroundColor(.secondary)
                                                 }
-                                            } else {
-                                                Text("N/A")
-                                                    .font(.subheadline)
-                                                    .foregroundColor(.secondary)
+                                                if let rating = activity.rating {
+                                                    HStack(spacing: 1) {
+                                                        Text("\(String(format: "%.1f", rating))")
+                                                            .font(.subheadline)
+                                                            .foregroundColor(.secondary)
+                                                        Image(systemName: "star")
+                                                            .resizable()
+                                                            .frame(width: 14, height: 14)
+                                                            .foregroundColor(.secondary)
+                                                    }
+                                                } else {
+                                                    Text("N/A")
+                                                        .font(.subheadline)
+                                                        .foregroundColor(.secondary)
+                                                }
                                             }
                                         }
                                         .padding(.vertical, 8)
@@ -464,6 +471,11 @@ struct FindStopView: View {
                                         VStack(alignment: .leading, spacing: 4) {
                                             Text(generalLocation.name)
                                                 .font(.headline)
+                                            if let city = generalLocation.city {
+                                                Text("\(city)")
+                                                    .font(.system(size: 16))
+                                                    .foregroundColor(.secondary)
+                                            }
                                         }
                                         .padding(.vertical, 8)
                                         Spacer()

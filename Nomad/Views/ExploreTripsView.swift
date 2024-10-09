@@ -11,6 +11,7 @@ struct ExploreTripsView: View {
     @ObservedObject var mapManager: MapManager
     @ObservedObject var vm: UserViewModel
     @State private var currentCity: String? = nil
+    @State var addTrip: Bool = false
     var trips: [Trip]
     var previousTrips: [Trip]
     var communityTrips: [Trip]
@@ -112,6 +113,23 @@ struct ExploreTripsView: View {
                             }
                             .padding(.horizontal)
                         }
+                    }
+                }
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        NavigationLink(destination: ItineraryPlanningView(mapManager: mapManager, vm: vm)) {
+                            Image(systemName: "plus")
+                                .font(.system(size: 24))
+                                .padding()
+                                .background(Color(.systemGray4))
+                                .foregroundColor(.black)
+                                .clipShape(Circle())
+                                .shadow(radius: 2)
+                        }
+                        .padding(.bottom, 10)
+                        .padding(.trailing, 15)
                     }
                 }
             }
