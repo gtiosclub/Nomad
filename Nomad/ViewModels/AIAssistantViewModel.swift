@@ -9,7 +9,7 @@ import Foundation
 import ChatGPTSwift
 
 class AIAssistantViewModel: ObservableObject {
-    let openAIAPIKey = ChatGPTAPI(apiKey: "<PUT API KEY HERE>")
+    let openAIAPIKey = ChatGPTAPI(apiKey:"<PUT API KEY HERE>")
     let yelpAPIKey = "<PUT API KEY HERE>"
     let gasPricesAPIKey = "<PUT GAS KEY HERE>"
     let jsonResponseFormat = Components.Schemas.CreateChatCompletionRequest.response_formatPayload(_type: .json_object) // ensure that query returns json object
@@ -155,7 +155,7 @@ class AIAssistantViewModel: ObservableObject {
             URLQueryItem(name: "location", value: location),
             URLQueryItem(name: "term", value: locationType),
             URLQueryItem(name: "radius", value: "\(distance * 1609)"), //Because the parameter takes in meters, we convert miles to meters (1 mile = 1608.34 meters)
-            URLQueryItem(name: "limit", value: "2"),
+            URLQueryItem(name: "limit", value: "1"),
         ]
         components.queryItems = components.queryItems.map { $0 + queryItems } ?? queryItems
         var request = URLRequest(url: components.url!)
@@ -171,7 +171,7 @@ class AIAssistantViewModel: ObservableObject {
     }
     
     
-    func queryYelp(jsonString: String) async -> String? {
+    func queryYelpWithjSONString(jsonString: String) async -> String? {
         guard let locationInfo = convertStringToStruct(jsonString: jsonString) else {
             return "Error: Unable to parse JSON String"
         }
@@ -182,6 +182,50 @@ class AIAssistantViewModel: ObservableObject {
             return "Error: Unable to access YELP API"
         }
         return businessInformation
+    }
+    
+    func parseGetBusinessesIntoModel(yelpInfo: String) -> BusinessResponse? {
+        let jsonData = yelpInfo.data(using: .utf8)! // Convert the string to Data
+        
+        do {
+            // Decode the JSON data into a YelpLocation instance
+            let decoder = JSONDecoder()
+            let businessesResponse = try decoder.decode(BusinessResponse.self, from: jsonData)
+            return businessesResponse
+        } catch {
+            print("Error decoding JSON: \(error)")
+            return nil
+        }
+    }
+    
+    func formatResponseToUser(name: String, address: String, price: String, rating: Double, phoneNumber: String) async -> String? {
+        do {
+            let response = try await openAIAPIKey.sendMessage(
+                text: """
+                    I will give you data about a business. Give the data back to the user in a concise yet friendly manner. Ensure you write in complete sentences. Although I say I will give you data, it doesn't mean the data is valid. Use discretion on whether the data is valid, and if none of the data is valid, then say there are no restaurants in the area. Note that the price will be a symbol "$", and the number of dollar signs will be out of four. For example, $$$$ = most expensive. Rating is out of 5.0.
+                
+                    Here is the data: <<<Name: \(name), Address: \(address), Price: \(price), Rating: \(rating), Phone Number: \(phoneNumber)
+                """,
+                model: gptModel!)
+            return response
+        } catch {
+            return "Send OpenAI Query Error: \(error.localizedDescription)"
+        }
+    }
+    
+    func converseAndGetInfoFromYelp(query: String) async -> String? {
+        let jsonString = await queryChatGPT(query: query) ?? ""
+        let yelpInfo = await queryYelpWithjSONString(jsonString: jsonString) ?? "!!!Failed!!!"
+        let businessResponse = parseGetBusinessesIntoModel(yelpInfo: yelpInfo)
+        
+        let name = businessResponse?.businesses.first?.name ?? ""
+        let address = businessResponse?.businesses.first?.location.address1 ?? ""
+        let price = businessResponse?.businesses.first?.price ?? ""
+        let rating = businessResponse?.businesses.first?.rating ?? -1
+        let phoneNumber = businessResponse?.businesses.first?.phone ?? ""
+        
+        let response = await formatResponseToUser(name: name, address: address, price: price, rating: rating, phoneNumber: phoneNumber)
+        return response
     }
     
     // Note: this is for text to speech functionality
