@@ -99,11 +99,26 @@ final class AIUnitTesting: XCTestCase {
         print(businesses)
     }
     
-    func testAPIKeys() async {
-        let newVm = AIAssistantViewModel()
-//        print("Gas key \(newVm.gasPricesAPIKey)")
-//        print("OpenAI key \(newVm.openAIAPIKey)")
-//        print("Yelp key \(newVm.yelpAPIKey)")
-    }
+    func testFetchAPIKeys() {
+            // Create an instance of your ViewModel
+            let viewModel = AIAssistantViewModel()
+            
+            // Create an expectation
+            let expectation = self.expectation(description: "Fetch API Keys")
+
+            // Wait for the API keys to be fetched
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { // Adjust the time if needed
+                // Assert the expected values
+                XCTAssertNotNil(viewModel.openAIAPIKey)
+                XCTAssertNotNil(viewModel.yelpAPIKey)
+                XCTAssertNotNil(viewModel.gasPricesAPIKey)
+
+                // Fulfill the expectation
+                expectation.fulfill()
+            }
+
+            // Wait for expectations to be fulfilled
+            waitForExpectations(timeout: 5, handler: nil)
+        }
     
 }

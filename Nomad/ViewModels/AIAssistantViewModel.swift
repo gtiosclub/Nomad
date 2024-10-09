@@ -28,22 +28,23 @@ class AIAssistantViewModel: ObservableObject {
 
     """
     
-    init() {
+    init()  {
+        fetchAPIKeys()
+    }
+    
+    private func fetchAPIKeys() {
         Task {
             do {
                 let apimap = try await FirebaseVM.getAPIKeys()
+                
+                self.openAIAPIKey = ChatGPTAPI(apiKey: apimap["OPENAI"] ?? "Error")
+                self.yelpAPIKey = apimap["YELP"] ?? "Error"
+                self.gasPricesAPIKey = apimap["GASPRICES"] ?? "Error"
+                
+                print("Gas key \(self.gasPricesAPIKey)")
+                print("OpenAI key \(self.openAIAPIKey)")
+                print("Yelp key \(self.yelpAPIKey)")
 
-                if let openAIKey = apimap["OPENAI"] {
-                    self.openAIAPIKey = ChatGPTAPI(apiKey: openAIKey)
-                }
-
-                if let yelpKey = apimap["YELP"] {
-                    self.yelpAPIKey = yelpKey
-                }
-
-                if let gasKey = apimap["GASPRICES"] {
-                    self.gasPricesAPIKey = gasKey
-                }
             } catch {
                 print("Failed to fetch API keys: \(error)")
             }
