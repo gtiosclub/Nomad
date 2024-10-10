@@ -32,7 +32,8 @@ struct FindStopView: View {
                 VStack(alignment: .leading) {
                     Text("Let's Plan Your New Trip")
                         .font(.headline)
-                        .padding(.bottom, 5)
+                        .padding(.vertical, 5)
+                        .padding(.horizontal)
                   
                     if let trip = vm.current_trip {
                         RoutePreviewView(mapManager: mapManager, trip: trip)
@@ -58,6 +59,7 @@ struct FindStopView: View {
                                 .font(.system(size: 16))
                                 .foregroundColor(.gray)
                         }
+                        .padding(.leading)
                         
                         Text("Explore Stops")
                             .font(.headline)
@@ -406,20 +408,27 @@ struct FindStopView: View {
                                         VStack(alignment: .leading, spacing: 4) {
                                             Text(activity.name)
                                                 .font(.headline)
-                                            if let rating = activity.rating {
-                                                HStack(spacing: 1) {
-                                                    Text("\(String(format: "%.1f", rating))")
-                                                        .font(.subheadline)
-                                                        .foregroundColor(.secondary)
-                                                    Image(systemName: "star")
-                                                        .resizable()
-                                                        .frame(width: 14, height: 14)
+                                            HStack(spacing: 1) {
+                                                if let city = activity.city {
+                                                    Text("\(city) • ")
+                                                        .font(.system(size: 16))
                                                         .foregroundColor(.secondary)
                                                 }
-                                            } else {
-                                                Text("N/A")
-                                                    .font(.subheadline)
-                                                    .foregroundColor(.secondary)
+                                                if let rating = activity.rating {
+                                                    HStack(spacing: 1) {
+                                                        Text("\(String(format: "%.1f", rating))")
+                                                            .font(.subheadline)
+                                                            .foregroundColor(.secondary)
+                                                        Image(systemName: "star")
+                                                            .resizable()
+                                                            .frame(width: 14, height: 14)
+                                                            .foregroundColor(.secondary)
+                                                    }
+                                                } else {
+                                                    Text("N/A")
+                                                        .font(.subheadline)
+                                                        .foregroundColor(.secondary)
+                                                }
                                             }
                                         }
                                         .padding(.vertical, 8)
@@ -464,6 +473,11 @@ struct FindStopView: View {
                                         VStack(alignment: .leading, spacing: 4) {
                                             Text(generalLocation.name)
                                                 .font(.headline)
+                                            if let city = generalLocation.city {
+                                                Text("\(city)")
+                                                    .font(.system(size: 16))
+                                                    .foregroundColor(.secondary)
+                                            }
                                         }
                                         .padding(.vertical, 8)
                                         Spacer()
@@ -486,63 +500,20 @@ struct FindStopView: View {
                     }
                     .frame(height: 300)
                     
-                    //                    TextField("Stop Name", text: $stopName)
-                    //                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    //                        .padding(.bottom, 5)
-                    //
-                    //                    TextField("Stop Address", text: $stopAddress)
-                    //                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    //                        .padding(.bottom, 10)
-
-                    //                    Button(isEditing ? "Update Stop" : "Add Stop") {
-                    //                        let newStop = GeneralLocation(address: stopAddress, name: stopName)
-                    //
-                    //                        if isEditing, let stop = selectedStop {
-                    //                            vm.current_trip?.removeStops(removedStops: [stop])
-                    //                            vm.current_trip?.addStops(additionalStops: [newStop])
-                    //                        } else {
-                    //                            vm.current_trip?.addStops(additionalStops: [newStop])
-                    //                        }
-                    //
-                    //                        stopName = ""
-                    //                        stopAddress = ""
-                    //                        isEditing = false
-                    //                        selectedStop = nil
-                    //                    }
-                    //                    .padding(.bottom, 10)
-                    
-                    //                    List {
-                    //                        ForEach(vm.current_trip?.getStops().filter { $0.name.contains(selection) } ?? [], id: \.address) { stop in
-                    //                            HStack {
-                    //                                Text("\(stop.name) - \(stop.address)")
-                    //                                Spacer()
-                    //                                Button("Edit") {
-                    //                                    stopName = stop.name
-                    //                                    stopAddress = stop.address
-                    //                                    selectedStop = stop
-                    //                                    isEditing = true
-                    //                                }
-                    //                                .padding(.leading)
-                    //
-                    //                                Button("Delete") {
-                    //                                    vm.current_trip?.removeStops(removedStops: [stop])
-                    //                                }
-                    //                                .foregroundColor(.red)
-                    //                            }
-                    //                        }
-                    //                        .onDelete(perform: { indexSet in
-                    //                            if let index = indexSet.first {
-                    //                                let stopToDelete = vm.current_trip?.getStops().filter { $0.name.contains(selection) }[index]
-                    //                                if let stopToDelete = stopToDelete {
-                    //                                    vm.current_trip?.removeStops(removedStops: [stopToDelete])
-                    //                                }
-                    //                            }
-                    //                        })
-                    //                    }
+                    NavigationLink(destination: PreviewRouteView(mapManager: mapManager, vm: vm, trip: vm.current_trip!)) {
+                        Text("Continue").font(.headline)
+                            .foregroundColor(.black)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.gray.opacity(0.3))
+                            .cornerRadius(15)
+                            .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
+                    }
                 }
                 .padding(.top, 20)
             }
-        }.onAppear() {
+        }
+        .onAppear() {
             Task {
                 await updateTripRoute()
             }

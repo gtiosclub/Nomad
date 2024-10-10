@@ -14,7 +14,7 @@ struct PreviewRouteView: View {
     @ObservedObject var vm: UserViewModel
     @State private var tripTitle: String = ""
     @State private var isPublic: Bool = true
-    var trip: Trip
+    @State var trip: Trip
     
     var body: some View {
         ScrollView {
@@ -26,15 +26,8 @@ struct PreviewRouteView: View {
                     .padding(.leading)
                     .padding(.top)
                 
-                if let trip = vm.current_trip {
-                    RoutePreviewView(mapManager: mapManager, trip: trip)
-                        .frame(height: 300)
-                } else {
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(height: 300)
-                        .overlay(Text("No Trip Available").foregroundColor(.gray))
-                }
+                RoutePreviewView(mapManager: mapManager, trip: trip)
+                    .frame(height: 300)
                 
                 Spacer().frame(height: 20)
                 
@@ -116,7 +109,7 @@ struct PreviewRouteView: View {
                     Spacer(minLength: 10)
                     
                     Button("Save Route") {
-                       
+                        
                     }
                     .padding()
                     .background(Color.blue)
@@ -128,6 +121,24 @@ struct PreviewRouteView: View {
         }
         .onAppear {
             vm.setCurrentTrip(trip: trip)
+            Task {
+                await updateTripRoute()
+            }
+        }
+    }
+    func updateTripRoute() async {
+        let start_loc = trip.getStartLocation()
+        let end_loc = trip.getEndLocation()
+        let all_stops = trip.getStops()
+        
+        var all_pois: [any POI] = []
+        all_pois.append(start_loc)
+        all_pois.append(contentsOf: all_stops)
+        all_pois.append(end_loc)
+        
+        if let newRoutes = await mapManager.generateRoute(pois: all_pois) {
+            
+            trip.setRoute(route: newRoutes[0])
         }
     }
     
@@ -164,8 +175,8 @@ struct PreviewRouteView: View {
 #Preview {
     PreviewRouteView(mapManager: .init(), vm: .init(user: User(id: "sampleUserID", name: "Sample User", trips: [
         Trip(start_location: Restaurant(address: "848 Spring Street Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090),
-                end_location: Hotel(address: "201 8th Ave S Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947),
-                start_date: "10-05-2024", end_date: "10-05-2024", stops: [])
+             end_location: Hotel(address: "201 8th Ave S Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947),
+             start_date: "10-05-2024", end_date: "10-05-2024", stops: [])
     ])), trip: Trip(start_location: Restaurant(address: "848 Spring Street Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090),
                     end_location: Hotel(address: "201 8th Ave S Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947),
                     start_date: "10-05-2024", end_date: "10-05-2024", stops: []))

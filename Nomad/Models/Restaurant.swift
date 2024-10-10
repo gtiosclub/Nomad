@@ -22,7 +22,7 @@ struct Restaurant: POI, Identifiable, Ratable {
     var latitude: Double
     var city: String?
 
-    init(address: String, name: String, rating: Double? = nil, cuisine: String? = nil, price: Int? = nil, website: String? = nil, latitude: Double = 0.0, longitude: Double = 0.0, city: String? = nil) {
+    init(address: String, name: String, rating: Double? = nil, cuisine: String? = nil, price: Int? = nil, website: String? = nil, latitude: Double, longitude: Double, city: String? = nil) {
         self.id = UUID().uuidString
         self.address = address
         self.name = name
@@ -37,7 +37,7 @@ struct Restaurant: POI, Identifiable, Ratable {
 
     init(from business: Business) {
         self.id = business.id
-        self.address = business.location.address1 ?? "No address"
+        self.address = business.location.display_address.joined(separator: ", ")
         self.name = business.name
         self.rating = business.rating
         self.cuisine = business.categories.first?.title

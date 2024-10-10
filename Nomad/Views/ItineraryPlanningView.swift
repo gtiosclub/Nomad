@@ -128,6 +128,11 @@ struct ItineraryPlanningView: View {
                                         selection: $startDate,
                                         displayedComponents: [.date]
                                     )
+                                    .onChange(of: startDate) { oldValue, newValue in
+                                        if startDate > endDate {
+                                            endDate = startDate
+                                        }
+                                    }
                                     DatePicker(
                                         "",
                                         selection: $startTime,
@@ -161,22 +166,21 @@ struct ItineraryPlanningView: View {
                         inputNameEnd = "End Location"
                     }
                     Task {
-                        let trip = await vm.createTrip(start_location: GeneralLocation(address: inputAddressStart, name: inputNameStart, latitude: startLatitude, longitude: startLongitude), end_location: GeneralLocation(address: inputAddressEnd, name: inputNameEnd, latitude: endLatitude, longitude: endLongitude), start_date: ItineraryPlanningView.dateToString(date: startDate), end_date: ItineraryPlanningView.dateToString(date: endDate), stops: [], start_time: ItineraryPlanningView.timeToString(date: startTime))
-                        vm.addTripToUser(trip: trip)
+                        await vm.createTrip(start_location: GeneralLocation(address: inputAddressStart, name: inputNameStart, latitude: startLatitude, longitude: startLongitude), end_location: GeneralLocation(address: inputAddressEnd, name: inputNameEnd, latitude: endLatitude, longitude: endLongitude), start_date: ItineraryPlanningView.dateToString(date: startDate), end_date: ItineraryPlanningView.dateToString(date: endDate), stops: [], start_time: ItineraryPlanningView.timeToString(date: startTime))
+                        
+                        inputNameEnd = ""
+                        inputNameStart = ""
+                        inputAddressEnd = ""
+                        inputAddressStart = ""
+                        startDate = Date()
+                        endDate = Date()
+                        startTime = Date()
+                        startLatitude = 0.0
+                        startLongitude = 0.0
+                        endLatitude = 0.0
+                        endLongitude = 0.0
+                        editTrip = true
                     }
-                    
-                    inputNameEnd = ""
-                    inputNameStart = ""
-                    inputAddressEnd = ""
-                    inputAddressStart = ""
-                    startDate = Date()
-                    endDate = Date()
-                    startTime = Date()
-                    startLatitude = 0.0
-                    startLongitude = 0.0
-                    endLatitude = 0.0
-                    endLongitude = 0.0
-                    editTrip = true
                 }) {
                     Text("Continue").font(.headline)
                         .foregroundColor(.black)
@@ -187,11 +191,16 @@ struct ItineraryPlanningView: View {
                         .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
                 }
                 .padding(.horizontal, 50)
-                .navigationDestination(isPresented: $editTrip, destination: {TripView(mapManager: mapManager, vm: vm, trip: vm.current_trip)})
-                
+                .navigationDestination(isPresented: $editTrip, destination: {
+                    FindStopView(mapManager: mapManager, vm: vm)
+                })
+                                
                 Spacer()
                 
             }
+        }
+        .onAppear() {
+            vm.clearCurrentTrip()
         }
     }
     
@@ -214,15 +223,19 @@ struct ItineraryPlanningView: View {
                                 }
                                 
                             } label: {
-                                VStack(alignment: .leading) {
-                                    Text(location.title)
-                                        .foregroundColor(Color.black)
-                                    Text(location.subtitle)
-                                        .font(.caption)
-                                        .foregroundColor(Color.gray)
+                                HStack {
+                                    VStack(alignment: .leading) {
+                                        Text(location.title)
+                                            .foregroundColor(Color.black)
+                                        Text(location.subtitle)
+                                            .font(.caption)
+                                            .foregroundColor(Color.gray)
+                                            .multilineTextAlignment(.leading)
+                                    }
+                                    .padding(.vertical, 5)
+                                    .padding(.horizontal)
+                                    Spacer()
                                 }
-                                .padding(.vertical, 5)
-                                .padding(.horizontal)
                             }
                             Divider()
                         }
@@ -269,7 +282,7 @@ struct ItineraryPlanningView: View {
                     
                     let reversedGeoLocation = ReversedGeoLocation(with: placemark)
                     
-                    mapSearch.searchTerm = "\(reversedGeoLocation.streetNumber) \(reversedGeoLocation.streetName) \(reversedGeoLocation.city) \(reversedGeoLocation.state) \(reversedGeoLocation.zipCode)"
+                    mapSearch.searchTerm = "\(reversedGeoLocation.streetNumber) \(reversedGeoLocation.streetName), \(reversedGeoLocation.city), \(reversedGeoLocation.state) \(reversedGeoLocation.zipCode)"
                     
                     inputAddress.wrappedValue = mapSearch.searchTerm
                     
@@ -280,5 +293,5 @@ struct ItineraryPlanningView: View {
 }
 
 #Preview {
-    ItineraryPlanningView(mapManager: MapManager(), vm: .init(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "177 North Avenue NW, Atlanta, GA 30332", name: "Georgia Tech"), end_location: Hotel(address: "387 West Peachtree, Atlanta", name: "Hilton"))])))
+    ItineraryPlanningView(mapManager: MapManager(), vm: .init(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "177 North Avenue NW, Atlanta, GA 30332", name: "Georgia Tech", latitude: 33.771712, longitude: -84.392842), end_location: Hotel(address: "387 West Peachtree, Atlanta, GA", name: "Hilton", latitude: 33.763814, longitude: -84.387338))])))
 }

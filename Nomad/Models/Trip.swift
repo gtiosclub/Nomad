@@ -6,10 +6,11 @@
 //
 
 import Foundation
+import MapKit
 
-struct Trip: Identifiable, Equatable, Observable {
+class Trip: Identifiable, Equatable, ObservableObject {
     var id: String
-    private var route: NomadRoute?
+    @Published var route: NomadRoute?
     private var stops: [any POI]
     private var start_location: any POI
     private var end_location: any POI
@@ -18,7 +19,7 @@ struct Trip: Identifiable, Equatable, Observable {
     private var created_date: String
     private var modified_date: String
     private var start_time: String
-    private var coverImageURL: String
+    @Published var coverImageURL: String
     private var name: String
 
     init(route: NomadRoute? = nil, start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM", name: String = "", coverImageURL: String = "") {
@@ -36,15 +37,24 @@ struct Trip: Identifiable, Equatable, Observable {
         self.name = name
         self.coverImageURL = coverImageURL
         if coverImageURL.isEmpty {
-            Trip.getCityImage(location: end_location) { [self] imageURL in
-                var mutableTrip = self
-                mutableTrip.setCoverImageURL(newURL: imageURL)
+            Trip.getCityImage(location: end_location) { imageURL in
+                self.coverImageURL = imageURL
             }
         }
     }
     
-    mutating func setCoverImageURL(newURL: String) {
+    func generateRoute() async {
+        var pois = [self.getStartLocation()]
+        pois.append(contentsOf: self.getStops())
+        pois.append(self.getEndLocation())
+        if let routes = await RootView.mapManager.generateRoute(pois: pois) {
+            self.setRoute(route: routes[0]) // set main route
+        }
+    }
+    
+    func setCoverImageURL(newURL: String) {
         self.coverImageURL = newURL
+        self.updateModifiedDate()
     }
     
     static func getCityImage(location: any POI, completion: @escaping (String) -> Void) {
@@ -104,7 +114,7 @@ struct Trip: Identifiable, Equatable, Observable {
         return lhs.id == rhs.id && lhs.modified_date == rhs.modified_date
     }
     
-    mutating func updateModifiedDate() {
+    func updateModifiedDate() {
         self.modified_date = Trip.getCurrentDateTime()
     }
     
@@ -115,12 +125,12 @@ struct Trip: Identifiable, Equatable, Observable {
         return dateFormatter.string(from: currentDate)
     }
     
-    mutating func setStartLocation(new_start_location: any POI) {
+    func setStartLocation(new_start_location: any POI) {
         self.start_location = new_start_location
         self.updateModifiedDate()
     }
     
-    mutating func setEndLocation(new_end_location: any POI) {
+    func setEndLocation(new_end_location: any POI) {
         self.end_location = new_end_location
         self.updateModifiedDate()
         Trip.getCityImage(location: new_end_location) { [self] imageURL in
@@ -129,39 +139,39 @@ struct Trip: Identifiable, Equatable, Observable {
         }
     }
     
-    mutating func setStartDate(newDate: String) {
+    func setStartDate(newDate: String) {
         self.start_date = newDate
         self.updateModifiedDate()
     }
     
-    mutating func setEndDate(newDate: String) {
+    func setEndDate(newDate: String) {
         self.end_date = newDate
         self.updateModifiedDate()
     }
     
-    mutating func setStartTime(newTime: String) {
+    func setStartTime(newTime: String) {
         self.start_time = newTime
         self.updateModifiedDate()
     }
     
-    mutating func addStops(additionalStops: [any POI]) {
+    func addStops(additionalStops: [any POI]) {
         self.stops.append(contentsOf: additionalStops)
         self.updateModifiedDate()
     }
     
-    mutating func addStopAtIndex(newStop: any POI, index: Int) {
+    func addStopAtIndex(newStop: any POI, index: Int) {
         self.stops.insert(newStop, at: index)
         self.updateModifiedDate()
     }
     
-    mutating func removeStops(removedStops: [any POI]) {
+    func removeStops(removedStops: [any POI]) {
         self.stops.removeAll { stop in
             removedStops.contains(where: { $0.name == stop.name })
         }
         self.updateModifiedDate()
     }
     
-    mutating func setName(newName: String) {
+    func setName(newName: String) {
         self.name = newName
     }
     
@@ -193,7 +203,7 @@ struct Trip: Identifiable, Equatable, Observable {
         return Trip(start_location: start_location, end_location: end_location, start_date: start_date, end_date: end_date, stops: stops)
     }
     
-    mutating func setRoute(route: NomadRoute) {
+    func setRoute(route: NomadRoute) {
         self.route = route
     }
     
@@ -207,5 +217,13 @@ struct Trip: Identifiable, Equatable, Observable {
     
     func getName() -> String {
         name
+    }
+    
+    func getStartLocationCoordinates() -> CLLocationCoordinate2D {
+        CLLocationCoordinate2D(latitude: start_location.latitude, longitude: start_location.longitude)
+    }
+    
+    func getEndLocationCoordinates() -> CLLocationCoordinate2D {
+        CLLocationCoordinate2D(latitude: end_location.latitude, longitude: end_location.longitude)
     }
 }
