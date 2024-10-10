@@ -59,8 +59,9 @@ password sk.eyJ1Ijoidmlnc2sxNyIsImEiOiJjbTE4cW9obXEweHp0MmxtejU4am05d3M5In0.9q4B
 Here is a quick summary of how the structure of the map and navigation scheme will operate, and how you should interact with it. 
 
 ## Models
-- **NomadRoute**: This is the custom data type we will use for our routes. This is where all information related to a route is stored, including the information for each **Step** of the route.
-- **Step** (defined within NomadRoute.swift): This type defines a single step of a route (i.e. "Turn right in 0.5 miles at Techwood Pkwy). You can find the shape of the step (MKPolyline), descriptions of the instruction, or exit numbers here.
+- **NomadRoute**: This is the custom data type we will use for our routes. This is where all information related to a route is stored, including the information for each **NomadLeg** of the route. You can find the shape of the route (MKPolyline), start and end coordinate, and all coords.
+- **NomadLeg** (defined within NomadRoute.swift): This type defines a single leg of a route (i.e. "From Georgia Tech to Ruby Falls Hotel"). You can find the shape of the leg (MKPolyline), start and end coordinate, and all coords.
+- **NomadStep** (defined within NomadRoute.swift): This type defines a single step of a route (i.e. "Turn right in 0.5 miles at Techwood Pkwy"). You can find the shape of the step (MKPolyline), descriptions of the instruction, or exit numbers here.
 
 ## Adding/Removing View Components to the Map
 - **Markers**: You should always add/remove a marker from the map using the *showMarker* and *removeMarker* functions in the view model. You can customize the title of the marker, location, and icon displayed with it.
