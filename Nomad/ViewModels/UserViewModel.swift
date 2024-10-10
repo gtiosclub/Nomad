@@ -176,7 +176,7 @@ class UserViewModel: ObservableObject {
             totalDist += await getDistance(fromAddress: stops[stops.count-1].address, toAddress: current_trip.getEndLocation().address)
         }
         DispatchQueue.main.async {
-            self.total_distance = totalDist
+            self.total_distance = totalDist * 0.000621371
         }
     }
     
@@ -195,7 +195,7 @@ class UserViewModel: ObservableObject {
             totalTime += await getTime(fromAddress: stops[stops.count-1].address, toAddress: current_trip.getEndLocation().address)
         }
         DispatchQueue.main.async {
-            self.total_time = totalTime
+            self.total_time = totalTime / 60
         }
     }
 
@@ -317,25 +317,26 @@ class UserViewModel: ObservableObject {
             let estimatedDistanceToEnd = await getDistance(fromAddress: startAddress, toAddress: endAddress)
             distances.append(estimatedDistanceToEnd * 0.000621371)
         }
+        if !stops.isEmpty {
+            for i in 0..<stops.count - 1 {
+                let startLocationAddress = stops[i].address
+                let endLocationAddress = stops[i + 1].address
+                
+                let estimatedTime = await getTime(fromAddress: startLocationAddress, toAddress: endLocationAddress)
+                times.append(estimatedTime / 60)
+                
+                let distance = await getDistance(fromAddress: startLocationAddress, toAddress: endLocationAddress)
+                distances.append(distance * 0.000621371)
+            }
 
-        for i in 0..<stops.count - 1 {
-            let startLocationAddress = stops[i].address
-            let endLocationAddress = stops[i + 1].address
-            
-            let estimatedTime = await getTime(fromAddress: startLocationAddress, toAddress: endLocationAddress)
-            times.append(estimatedTime / 60)
-            
-            let distance = await getDistance(fromAddress: startLocationAddress, toAddress: endLocationAddress)
-            distances.append(distance * 0.000621371)
-        }
+            if let lastStop = stops.last {
+                let lastStopAddress = lastStop.address
+                let estimatedTimeToEnd = await getTime(fromAddress: lastStopAddress, toAddress: endAddress)
+                times.append(estimatedTimeToEnd / 60)
 
-        if let lastStop = stops.last {
-            let lastStopAddress = lastStop.address
-            let estimatedTimeToEnd = await getTime(fromAddress: lastStopAddress, toAddress: endAddress)
-            times.append(estimatedTimeToEnd / 60)
-
-            let estimatedDistanceToEnd = await getDistance(fromAddress: lastStopAddress, toAddress: endAddress)
-            distances.append(estimatedDistanceToEnd * 0.000621371)
+                let estimatedDistanceToEnd = await getDistance(fromAddress: lastStopAddress, toAddress: endAddress)
+                distances.append(estimatedDistanceToEnd * 0.000621371)
+            }
         }
     }
 
