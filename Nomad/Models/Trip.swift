@@ -21,6 +21,8 @@ class Trip: Identifiable, Equatable, ObservableObject {
     private var start_time: String
     @Published var coverImageURL: String
     private var name: String
+    var title: String?
+    var isPrivate: Bool = true
 
     init(route: NomadRoute? = nil, start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM", name: String = "", coverImageURL: String = "") {
         self.route = route
@@ -219,6 +221,22 @@ class Trip: Identifiable, Equatable, ObservableObject {
         name
     }
     
+    func getTitle() -> String {
+        return title ?? "Untitled Trip"
+    }
+
+    func setTitle(newTitle: String) {
+        self.title = newTitle
+    }
+
+    func isPrivate() -> Bool {
+        return isPrivate
+    }
+
+    func setVisibility(isPrivate: Bool) {
+        self.isPrivate = isPrivate
+    }
+  
     func getStartLocationCoordinates() -> CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: start_location.latitude, longitude: start_location.longitude)
     }

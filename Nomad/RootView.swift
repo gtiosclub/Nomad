@@ -58,8 +58,8 @@ struct RootView: View {
                     await RootView.mapManager.setupMapbox()
                 }
             }
+        }
     }
-}
 
 #Preview {
     RootView()

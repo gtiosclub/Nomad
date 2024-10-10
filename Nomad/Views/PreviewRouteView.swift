@@ -12,111 +12,131 @@ import MapKit
 struct PreviewRouteView: View {
     @ObservedObject var mapManager: MapManager
     @ObservedObject var vm: UserViewModel
-    @State private var tripTitle: String = ""
-    @State private var isPublic: Bool = true
+    @State private var title: String = ""
+    @State private var isPrivate: Bool = true
+    @Environment(\.dismiss) var dismiss
     @State var trip: Trip
     
     var body: some View {
-        ScrollView {
-            VStack {
-                Text("Preview Your Route")
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.leading)
-                    .padding(.top)
-                
-                RoutePreviewView(mapManager: mapManager, trip: trip)
-                    .frame(height: 300)
-                
-                Spacer().frame(height: 20)
-                
-                HStack {
-                    VStack {
-                        Text("\(Int(vm.total_time / 60)) hr \(Int(vm.total_time.truncatingRemainder(dividingBy: 60))) min")
-                            .padding()
-                            .fontWeight(.bold)
-                            .background(Color.gray.opacity(0.2))
-                            .cornerRadius(8)
-                    }
-                    .frame(maxWidth: .infinity)
-                    
-                    VStack {
-                        Text("\(vm.total_distance, specifier: "%.0f") miles")
-                            .padding()
-                            .fontWeight(.bold)
-                            .background(Color.gray.opacity(0.2))
-                            .cornerRadius(8)
-                    }
-                    .frame(maxWidth: .infinity)
-                }
-                .padding(.horizontal)
-                
-                Text("Route Details")
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.leading)
-                
-                if let trip = vm.current_trip {
-                    RoutePlanListView(vm: vm)
-                        .frame(height: 200)
-                        .padding()
-                } else {
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(height: 200)
-                        .overlay(Text("No Route Details Available").foregroundColor(.gray))
-                        .padding()
-                }
-                
-                Text("Finalize Your Route")
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                
-                Text("Route Name")
-                    .font(.body)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 10)
-                
-                TextField("Trip Title", text: $tripTitle)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding()
-                
+        NavigationStack {
+            ScrollView {
                 VStack {
-                    Text("Route Visibility")
+                    Text("Preview Your Route")
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading)
+                        .padding(.top)
+                    
+                    if let trip = vm.current_trip {
+                        RoutePreviewView(mapManager: mapManager, trip: trip)
+                            .frame(height: 300)
+                    } else {
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.3))
+                            .frame(height: 300)
+                            .overlay(Text("No Trip Available").foregroundColor(.gray))
+                    }
+                    
+                    Spacer().frame(height: 20)
+                    
+                    HStack {
+                        VStack {
+                            Text("\(Int(vm.total_time / 60)) hr \(Int(vm.total_time.truncatingRemainder(dividingBy: 60))) min")
+                                .padding()
+                                .fontWeight(.bold)
+                                .background(Color.gray.opacity(0.2))
+                                .cornerRadius(8)
+                        }
+                        .frame(maxWidth: .infinity)
+                        
+                        VStack {
+                            Text("\(vm.total_distance, specifier: "%.0f") miles")
+                                .padding()
+                                .fontWeight(.bold)
+                                .background(Color.gray.opacity(0.2))
+                                .cornerRadius(8)
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                    .padding(.horizontal)
+                    
+                    Text("Route Details")
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading)
+                        .padding(.top)
+                        
+                    
+                    if let trip = vm.current_trip {
+                        RoutePlanListView(vm: vm)
+                            .frame(height: 100)
+                            .padding()
+                    } else {
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.3))
+                            .frame(height: 200)
+                            .overlay(Text("No Route Details Available").foregroundColor(.gray))
+                            .padding()
+                    }
+                    
+                    Text("Finalize Your Route")
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading)
+                        .padding(.top)
+                    
+                    Text("Route Name")
                         .font(.body)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.leading)
+                        .padding(.top)
                     
-                    VStack {
-                        RadioButton(text: "Public", isSelected: $isPublic, value: true)
-                        RadioButton(text: "Private", isSelected: $isPublic, value: false)
-                    }
-                }
-                
-                HStack {
-                    NavigationLink(destination: TripView(mapManager: mapManager, vm: vm)) {
-                        Button("Edit Route") {
+                    TextField("Trip Title", text: $title)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding()
+                    
+                    VStack(alignment: .leading) {
+                        Text("Route Visibility")
+                            .font(.body)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.leading)
                             
+                        
+                        VStack(alignment: .leading) {
+                            RadioButton(text: "Public", isSelected: $isPrivate, value: false)
+                            RadioButton(text: "Private", isSelected: $isPrivate, value: true)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 30)
+                    }
+                    
+                    HStack {
+                        NavigationLink(destination: FindStopView(mapManager: mapManager, vm: vm)) {
+                            Text("Edit Route")
+                                .padding()
+                                .background(Color.gray.opacity(0.2))
+                                .cornerRadius(8)
+                                .foregroundColor(Color.black)
+                        }
+                        
+                        Spacer().frame(width: 60)
+                        
+                        Button("Save Route") {
+                            vm.setTripTitle(newTitle: title)
+                            vm.setTripVisibility(isPrivate: isPrivate)
+                            
+                            dismiss()
                         }
                         .padding()
                         .background(Color.gray.opacity(0.2))
+                        .foregroundColor(.black)
                         .cornerRadius(8)
                     }
-                    
-                    Spacer(minLength: 10)
-                    
-                    Button("Save Route") {
-                        
-                    }
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
+                    .padding(.horizontal)
                 }
-                .padding(.horizontal)
             }
         }
         .onAppear {
