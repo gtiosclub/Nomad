@@ -9,11 +9,44 @@ import Foundation
 import ChatGPTSwift
 
 class AIAssistantViewModel: ObservableObject {
-    let openAIAPIKey = ChatGPTAPI(apiKey: "<PUT API KEY HERE>")
-    let yelpAPIKey = "<PUT API KEY HERE>"
-    let gasPricesAPIKey = "<PUT GAS KEY HERE>"
+    var openAIAPIKey = ChatGPTAPI(apiKey: "<PUT API KEY HERE>")
+    var currentLocationQuery: LocationInfo = LocationInfo(locationType: "", distance: 0.0, location: "", preferences: [])
+    var yelpAPIKey = "<PUT API KEY HERE>"
+    var gasPricesAPIKey = "<PUT GAS KEY HERE>"
     let jsonResponseFormat = Components.Schemas.CreateChatCompletionRequest.response_formatPayload(_type: .json_object) // ensure that query returns json object
     let gptModel = ChatGPTModel(rawValue: "gpt-4o")
+    let FirebaseVM: FirebaseViewModel = FirebaseViewModel()
+    
+    let initialConditionSentence:String = """
+    I have a Trip with properties
+        stops: [POI]
+        start_location: POI
+        end_location: POI
+        start_date: String
+        end_date: String
+
+    Keep asking me questions until you have information to fill out the Trip. Do not mention the actual variable names.
+
+    """
+    
+    init()  {
+        fetchAPIKeys()
+    }
+    
+    private func fetchAPIKeys() {
+        Task {
+            do {
+                let apimap = try await FirebaseVM.getAPIKeys()
+                
+                self.openAIAPIKey = ChatGPTAPI(apiKey: apimap["OPENAI"] ?? "Error")
+                self.yelpAPIKey = apimap["YELP"] ?? "Error"
+                self.gasPricesAPIKey = apimap["GASPRICES"] ?? "Error"
+
+            } catch {
+                print("Failed to fetch API keys: \(error)")
+            }
+        }
+    }
     
     
     func fetchBusinesses() async {
@@ -66,17 +99,21 @@ class AIAssistantViewModel: ObservableObject {
         do {
             let response = try await openAIAPIKey.sendMessage(
                 text: """
-                    I will give you a question/statement. From this statement, extract the location type and distance I am looking for and put it in this JSON format:
+                    I will give you a question/statement. From this statement, extract the location type and distance I am looking for and put it in this JSON format. 
                     {
                     locationType: <Restaurant/GasStation/Hotel/RestStop/Point of Interest/Activity>
-                    distance: <Int>
+                    distance: <Double>
                     location: <String>
+                    preferences: [String]
                     }
                     
-                    Here is the statement: \(query)
+                    Reuse information from past queries if not given by the user: \(currentLocationQuery). Here is the statement: \(query)
                 """,
                 model: gptModel!,
                 responseFormat: jsonResponseFormat)
+            
+            print(response)
+            
             return response
         } catch {
             return "Send OpenAI Query Error: \(error.localizedDescription)"
@@ -135,27 +172,30 @@ class AIAssistantViewModel: ObservableObject {
             // Decode the JSON data into a YelpLocation instance
             let decoder = JSONDecoder()
             let location = try decoder.decode(LocationInfo.self, from: jsonData)
+            print(location)
+            
             return location
         } catch {
             print("Error decoding JSON: \(error)")
-            return LocationInfo(locationType: "", distance: -1, location: "")
+            return LocationInfo(locationType: "", distance: -1, location: "", preferences: [])
         }
     }
     
     struct LocationInfo: Codable, Equatable {
         let locationType: String
-        let distance: Int
+        let distance: Double
         let location: String
+        let preferences: [String]
     }
     
-    func fetchSpecificBusinesses(locationType: String, distance: Int, location: String) async -> String? {
+    func fetchSpecificBusinesses(locationType: String, distance: Double, location: String, preferences: String) async -> String? {
         let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
         let queryItems: [URLQueryItem] = [
             URLQueryItem(name: "location", value: location),
-            URLQueryItem(name: "term", value: locationType),
-            URLQueryItem(name: "radius", value: "\(distance * 1609)"), //Because the parameter takes in meters, we convert miles to meters (1 mile = 1608.34 meters)
-            URLQueryItem(name: "limit", value: "2"),
+            URLQueryItem(name: "term", value: "\(preferences)  \(locationType)"),
+            URLQueryItem(name: "radius", value: "\(Int(distance * 1609))"), //Because the parameter takes in meters, we convert miles to meters (1 mile = 1608.34 meters)
+            URLQueryItem(name: "limit", value: "1"),
         ]
         components.queryItems = components.queryItems.map { $0 + queryItems } ?? queryItems
         var request = URLRequest(url: components.url!)
@@ -171,17 +211,62 @@ class AIAssistantViewModel: ObservableObject {
     }
     
     
-    func queryYelp(jsonString: String) async -> String? {
+    func queryYelpWithjSONString(jsonString: String) async -> String? {
         guard let locationInfo = convertStringToStruct(jsonString: jsonString) else {
             return "Error: Unable to parse JSON String"
         }
         let locationType = locationInfo.locationType
         let distance = locationInfo.distance
         let location = locationInfo.location
-        guard let businessInformation = await fetchSpecificBusinesses(locationType: locationType, distance: distance, location: location) else {
+        let preferences = locationInfo.preferences.joined(separator: ", ")
+        guard let businessInformation = await fetchSpecificBusinesses(locationType: locationType, distance: distance, location: location, preferences: preferences) else {
             return "Error: Unable to access YELP API"
         }
         return businessInformation
+    }
+    
+    func parseGetBusinessesIntoModel(yelpInfo: String) -> BusinessResponse? {
+        let jsonData = yelpInfo.data(using: .utf8)! // Convert the string to Data
+        
+        do {
+            // Decode the JSON data into a YelpLocation instance
+            let decoder = JSONDecoder()
+            let businessesResponse = try decoder.decode(BusinessResponse.self, from: jsonData)
+            return businessesResponse
+        } catch {
+            print("Error decoding JSON: \(error)")
+            return nil
+        }
+    }
+    
+    func formatResponseToUser(name: String, address: String, price: String, rating: Double, phoneNumber: String) async -> String? {
+        do {
+            let response = try await openAIAPIKey.sendMessage(
+                text: """
+                    I will give you data about a business. Give the data back to the user in a concise yet friendly manner. Ensure you write in complete sentences. Although I say I will give you data, it doesn't mean the data is valid. Use discretion on whether the data is valid, and if none of the data is valid, then say there are no restaurants in the area. Note that the price will be a symbol "$", and the number of dollar signs will be out of four. For example, $$$$ = most expensive. Rating is out of 5.0.
+                
+                    Here is the data: <<<Name: \(name), Address: \(address), Price: \(price), Rating: \(rating), Phone Number: \(phoneNumber)
+                """,
+                model: gptModel!)
+            return response
+        } catch {
+            return "Send OpenAI Query Error: \(error.localizedDescription)"
+        }
+    }
+    
+    func converseAndGetInfoFromYelp(query: String) async -> String? {
+        let jsonString = await queryChatGPT(query: query) ?? ""
+        let yelpInfo = await queryYelpWithjSONString(jsonString: jsonString) ?? "!!!Failed!!!"
+        let businessResponse = parseGetBusinessesIntoModel(yelpInfo: yelpInfo)
+        
+        let name = businessResponse?.businesses.first?.name ?? ""
+        let address = businessResponse?.businesses.first?.location.address1 ?? ""
+        let price = businessResponse?.businesses.first?.price ?? ""
+        let rating = businessResponse?.businesses.first?.rating ?? -1
+        let phoneNumber = businessResponse?.businesses.first?.phone ?? ""
+        
+        let response = await formatResponseToUser(name: name, address: address, price: price, rating: rating, phoneNumber: phoneNumber)
+        return response
     }
     
     // Note: this is for text to speech functionality

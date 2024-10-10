@@ -32,7 +32,51 @@ struct TripView: View {
                         startLocationAddress = vm.current_trip?.getStartLocation().address ?? ""
                         endLocationName = vm.current_trip?.getEndLocation().name ?? ""
                         endLocationAddress = vm.current_trip?.getEndLocation().address ?? ""
+                        startDate = TripView.stringToDate(dateString: (vm.current_trip?.getStartDate())!) ?? Date()
+                        endDate  = TripView.stringToDate(dateString: (vm.current_trip?.getEndDate())!) ?? Date()
+                        startTime = TripView.stringToTime(timeString: (vm.current_trip?.getStartTime())!) ?? Date()
                     }
+
+                Spacer(minLength: 20)
+                Text("Your trip from  \(vm.current_trip?.getStartLocation().name ?? "") to \(vm.current_trip?.getEndLocation().name ?? "")")
+                    .frame(width: UIScreen.main.bounds.width - 20, alignment: .topLeading)
+                VStack {
+                    HStack {
+                        TextField("Start Location Name", text: $startLocationName)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                        Spacer()
+                        TextField("Start Location Address", text: $startLocationAddress)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                    }
+                    HStack {
+                        TextField("End Location Name", text: $endLocationName)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                        Spacer()
+                        TextField("End Location Address", text: $endLocationAddress)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                    }
+                }
+                .padding()
+
+                VStack {
+                    Button("Save Changes") {
+                        if trip != nil {
+                            vm.setStartLocation(new_start_location: GeneralLocation(address: startLocationAddress, name: startLocationName))
+                            vm.setEndLocation(new_end_location: GeneralLocation(address: endLocationAddress, name: endLocationName))
+                        }
+                    }
+                    .padding()
+                    .padding()
+
+                    Text("Stops")
+                        .font(.headline)
+
+                    NavigationLink("Add a Stop", destination: { FindStopView(mapManager: mapManager, vm: vm)} )
+
+                    ForEach(vm.current_trip?.getStops() ?? [], id: \.address) { stop in
+                        Text("\(stop.name)")
+                    }
+                }
                 
                 Spacer(minLength: 20)
                 
@@ -158,10 +202,20 @@ struct TripView: View {
         dateformatter.dateFormat = "HH:mm a"
         return dateformatter.string(from: date)
     }
+    
+    static func stringToDate(dateString: String) -> Date? {
+        dateformatter.dateFormat = "MM-dd-yyyy HH:mm:ss"
+        return dateformatter.date(from: dateString)
+    }
+
+    static func stringToTime(timeString: String) -> Date? {
+        dateformatter.dateFormat = "HH:mm a"
+        return dateformatter.date(from: timeString)
+    }
 
 }
 
 #Preview {
-    TripView(mapManager: MapManager(), vm: .init(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "123 5th Street", name: "Georgia Tech"), end_location: Hotel(address: "387 West Peachtree", name: "Hilton"))])), trip: .init(start_location: Restaurant(address: "123 street", name: "Tiffs", rating: 3.2), end_location: Hotel(address: "387 West Peachtree", name: "Hilton")))
+    TripView(mapManager: MapManager(), vm: .init(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "123 5th Street", name: "Georgia Tech"), end_location: Hotel(address: "387 West Peachtree, Atlanta", name: "Hilton"))])), trip: .init(start_location: Restaurant(address: "123 street", name: "Tiffs", rating: 3.2), end_location: Hotel(address: "387 West Peachtree, Atlanta", name: "Hilton")))
 }
 

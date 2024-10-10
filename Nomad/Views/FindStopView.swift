@@ -33,34 +33,38 @@ struct FindStopView: View {
                     Text("Let's Plan Your New Trip")
                         .font(.headline)
                         .padding(.bottom, 5)
-                    
-                    RoutePreviewView(mapManager: mapManager, trip: $vm.current_trip)
-                        .frame(minHeight: 250.0)
-                    
+                  
+                    if let trip = vm.current_trip {
+                        RoutePreviewView(mapManager: mapManager, trip: Binding.constant(trip))
+                            .frame(minHeight: 250.0)
+                    } else {
+                        Text("No current trip available")
+                            .foregroundColor(.red)
+                    }
                 }
-                    
+                
                 VStack(alignment: .leading, spacing: 15) {
-                        HStack {
-                            ZStack {
-                                Circle()
-                                    .fill(Color.white)
-                                    .frame(width: 24, height: 24)
-                                    .overlay {
-                                        Circle()
-                                            .stroke(Color.gray, lineWidth: 1)
-                                    }
-                                
-                                Text("3")
-                                    .font(.system(size: 16))
-                                    .foregroundColor(.gray)
-                            }
+                    HStack {
+                        ZStack {
+                            Circle()
+                                .fill(Color.white)
+                                .frame(width: 24, height: 24)
+                                .overlay {
+                                    Circle()
+                                        .stroke(Color.gray, lineWidth: 1)
+                                }
                             
-                            Text("Explore Stops")
-                                .font(.headline)
-                                .padding(.bottom, 5)
-                                .offset(x: 12, y: 3)
+                            Text("3")
+                                .font(.system(size: 16))
+                                .foregroundColor(.gray)
                         }
-                                    
+                        
+                        Text("Explore Stops")
+                            .font(.headline)
+                            .padding(.bottom, 5)
+                            .offset(x: 12, y: 3)
+                    }
+                    
                     VStack(spacing: 8) {
                         HStack {
                             ForEach(stop_types.prefix(4), id: \.self) { option in
@@ -99,9 +103,9 @@ struct FindStopView: View {
                         }
                     }
                     .padding(5)
-                                    
+                    
                     Divider()
-                                    
+                    
                     VStack(alignment: .leading, spacing: 16) {
                         
                         if selection == "Dining" {
@@ -195,7 +199,7 @@ struct FindStopView: View {
                         }
                     }
                     .padding(.horizontal)
-                                    
+                    
                     Button(action: {
                         isLoading = true
                         hasSearched = true
@@ -235,9 +239,7 @@ struct FindStopView: View {
                                 ForEach(vm.restaurants) { restaurant in
                                     HStack {
                                         Button(action: {
-                                            Task {
-                                                await addStop(stop: restaurant)
-                                            }
+                                            addStop(restaurant)
                                         }) {
                                             ZStack {
                                                 Circle()
@@ -314,9 +316,7 @@ struct FindStopView: View {
                                 ForEach(vm.hotels) { hotel in
                                     HStack {
                                         Button(action: {
-                                            Task {
-                                                await addStop(stop: hotel)
-                                            }
+                                            addStop(hotel)
                                         }) {
                                             ZStack {
                                                 Circle()
@@ -376,9 +376,7 @@ struct FindStopView: View {
                                 ForEach(vm.activities) { activity in
                                     HStack() {
                                         Button(action: {
-                                            Task {
-                                                await addStop(stop: activity)
-                                            }
+                                            addStop(activity)
                                         }) {
                                             ZStack {
                                                 Circle()
@@ -408,20 +406,27 @@ struct FindStopView: View {
                                         VStack(alignment: .leading, spacing: 4) {
                                             Text(activity.name)
                                                 .font(.headline)
-                                            if let rating = activity.rating {
-                                                HStack(spacing: 1) {
-                                                    Text("\(String(format: "%.1f", rating))")
-                                                        .font(.subheadline)
-                                                        .foregroundColor(.secondary)
-                                                    Image(systemName: "star")
-                                                        .resizable()
-                                                        .frame(width: 14, height: 14)
+                                            HStack(spacing: 1) {
+                                                if let city = activity.city {
+                                                    Text("\(city) • ")
+                                                        .font(.system(size: 16))
                                                         .foregroundColor(.secondary)
                                                 }
-                                            } else {
-                                                Text("N/A")
-                                                    .font(.subheadline)
-                                                    .foregroundColor(.secondary)
+                                                if let rating = activity.rating {
+                                                    HStack(spacing: 1) {
+                                                        Text("\(String(format: "%.1f", rating))")
+                                                            .font(.subheadline)
+                                                            .foregroundColor(.secondary)
+                                                        Image(systemName: "star")
+                                                            .resizable()
+                                                            .frame(width: 14, height: 14)
+                                                            .foregroundColor(.secondary)
+                                                    }
+                                                } else {
+                                                    Text("N/A")
+                                                        .font(.subheadline)
+                                                        .foregroundColor(.secondary)
+                                                }
                                             }
                                         }
                                         .padding(.vertical, 8)
@@ -436,9 +441,7 @@ struct FindStopView: View {
                                 ForEach(vm.generalLocations) { generalLocation in
                                     HStack {
                                         Button(action: {
-                                            Task {
-                                                await addStop(stop: generalLocation)
-                                            }
+                                            addStop(generalLocation)
                                         }) {
                                             ZStack {
                                                 Circle()
@@ -468,6 +471,11 @@ struct FindStopView: View {
                                         VStack(alignment: .leading, spacing: 4) {
                                             Text(generalLocation.name)
                                                 .font(.headline)
+                                            if let city = generalLocation.city {
+                                                Text("\(city)")
+                                                    .font(.system(size: 16))
+                                                    .foregroundColor(.secondary)
+                                            }
                                         }
                                         .padding(.vertical, 8)
                                         Spacer()
@@ -490,60 +498,59 @@ struct FindStopView: View {
                     }
                     .frame(height: 300)
                     
-                    TextField("Stop Name", text: $stopName)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .padding(.bottom, 5)
+                    //                    TextField("Stop Name", text: $stopName)
+                    //                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                    //                        .padding(.bottom, 5)
+                    //
+                    //                    TextField("Stop Address", text: $stopAddress)
+                    //                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                    //                        .padding(.bottom, 10)
+
+                    //                    Button(isEditing ? "Update Stop" : "Add Stop") {
+                    //                        let newStop = GeneralLocation(address: stopAddress, name: stopName)
+                    //
+                    //                        if isEditing, let stop = selectedStop {
+                    //                            vm.current_trip?.removeStops(removedStops: [stop])
+                    //                            vm.current_trip?.addStops(additionalStops: [newStop])
+                    //                        } else {
+                    //                            vm.current_trip?.addStops(additionalStops: [newStop])
+                    //                        }
+                    //
+                    //                        stopName = ""
+                    //                        stopAddress = ""
+                    //                        isEditing = false
+                    //                        selectedStop = nil
+                    //                    }
+                    //                    .padding(.bottom, 10)
                     
-                    TextField("Stop Address", text: $stopAddress)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .padding(.bottom, 10)
-                    
-                    Button(isEditing ? "Update Stop" : "Add Stop") {
-                        let newStop = GeneralLocation(address: stopAddress, name: stopName)
-                        
-                        Task {
-                            if isEditing, let stop = selectedStop {
-                                await replaceStop(oldStop: stop, newStop: newStop)
-                            } else {
-                                await addStop(stop: newStop)
-                            }
-                        }
-                        
-                        stopName = ""
-                        stopAddress = ""
-                        isEditing = false
-                        selectedStop = nil
-                    }
-                    .padding(.bottom, 10)
-                    
-                    List {
-                        ForEach(vm.current_trip?.getStops().filter { $0.name.contains(selection) } ?? [], id: \.address) { stop in
-                            HStack {
-                                Text("\(stop.name) - \(stop.address)")
-                                Spacer()
-                                Button("Edit") {
-                                    stopName = stop.name
-                                    stopAddress = stop.address
-                                    selectedStop = stop
-                                    isEditing = true
-                                }
-                                .padding(.leading)
-                                
-                                Button("Delete") {
-                                    vm.current_trip?.removeStops(removedStops: [stop])
-                                }
-                                .foregroundColor(.red)
-                            }
-                        }
-                        .onDelete(perform: { indexSet in
-                            if let index = indexSet.first {
-                                let stopToDelete = vm.current_trip?.getStops().filter { $0.name.contains(selection) }[index]
-                                if let stopToDelete = stopToDelete {
-                                    vm.current_trip?.removeStops(removedStops: [stopToDelete])
-                                }
-                            }
-                        })
-                    }
+                    //                    List {
+                    //                        ForEach(vm.current_trip?.getStops().filter { $0.name.contains(selection) } ?? [], id: \.address) { stop in
+                    //                            HStack {
+                    //                                Text("\(stop.name) - \(stop.address)")
+                    //                                Spacer()
+                    //                                Button("Edit") {
+                    //                                    stopName = stop.name
+                    //                                    stopAddress = stop.address
+                    //                                    selectedStop = stop
+                    //                                    isEditing = true
+                    //                                }
+                    //                                .padding(.leading)
+                    //
+                    //                                Button("Delete") {
+                    //                                    vm.current_trip?.removeStops(removedStops: [stop])
+                    //                                }
+                    //                                .foregroundColor(.red)
+                    //                            }
+                    //                        }
+                    //                        .onDelete(perform: { indexSet in
+                    //                            if let index = indexSet.first {
+                    //                                let stopToDelete = vm.current_trip?.getStops().filter { $0.name.contains(selection) }[index]
+                    //                                if let stopToDelete = stopToDelete {
+                    //                                    vm.current_trip?.removeStops(removedStops: [stopToDelete])
+                    //                                }
+                    //                            }
+                    //                        })
+                    //                    }
                 }
                 .padding(.top, 20)
             }
@@ -552,10 +559,6 @@ struct FindStopView: View {
                 await updateTripRoute()
             }
         }
-    }
-    func addStop(stop: any POI) async {
-        vm.current_trip?.addStops(additionalStops: [stop])
-        await self.updateTripRoute()
     }
     
     func removeStop(stop: any POI) async {
@@ -584,9 +587,16 @@ struct FindStopView: View {
             vm.setTripRoute(route: newRoutes[0])
         }
     }
+    
+    func addStop(_ stop: any POI) {
+        Task {
+            await vm.addStop(stop: stop)
+            await self.updateTripRoute()
+        }
+    }
 }
 
 
 #Preview {
-    FindStopView(mapManager: MapManager(), vm: .init(user: User(id: "89379", name: "Austin", trips: [Trip(start_location: GeneralLocation(address: "177 North Avenue NW, Atlanta, GA 30332", name: "Georgia Tech"), end_location: Hotel(address: "387 West Peachtree", name: "Hilton"))])))
+    FindStopView(mapManager: MapManager(), vm: .init(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: [Trip(start_location: Restaurant(address: "848 Spring Street, Atlanta, GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)])])))
 }

@@ -30,10 +30,10 @@ struct RoutePlanListView: View {
             }
         }
         .padding(.horizontal, 25)
-        .padding(.vertical, 25)
+        .padding(.vertical, 15)
         .padding(.leading, 0)
         .padding(.trailing, 40)
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: UIScreen.main.bounds.width)
         .background(Color.white)
         .cornerRadius(10)
         .shadow(radius: 5)
@@ -51,7 +51,8 @@ struct RoutePlanListView: View {
                     .font(.caption)
                     .foregroundColor(.gray)
                     .frame(width: 50, alignment: .trailing)
-                    .padding(.top, isLast ? -40 : -75)
+                    .padding(.bottom, 15)
+                    .padding(.top, isLast ? -15 : -30)
             } else {
                 Spacer().frame(width: 50)
             }
@@ -61,17 +62,18 @@ struct RoutePlanListView: View {
                 if !isLast {
                     Rectangle()
                         .fill(Color.gray)
-                        .frame(width: 1, height: 60)
-                        .padding(.leading, 5)
+                        .frame(width: 1, height: 20)
+                        .padding(.leading, 0)
                 }
             }
-            .padding(.leading, 5)
+            .padding(.leading, 15)
 
             Text(locationName)
+                .lineLimit(1)
                 .font(.headline)
                 .foregroundColor(.primary)
                 .padding(.leading, 5)
-                .padding(.top, isLast ? -6 : -40)
+                .padding(.top, isLast ? -5 : -20)
         }
         .padding(.vertical, 0)
     }
@@ -80,8 +82,8 @@ struct RoutePlanListView: View {
 #Preview {
     let trip = Trip(
         start_location: GeneralLocation(address: "177 North Avenue NW, Atlanta, GA 30332", name: "Georgia Tech"),
-        end_location: Hotel(address: "387 West Peachtree", name: "Hilton"),
-        stops: [Restaurant(address: "85 5th St. NW Atlanta, GA 30308", name: "Moes"), GeneralLocation(address: "630 10th St NW, Atlanta, GA 30318", name: "QuikTrip")]
+        end_location: Hotel(address: "387 West Peachtree, Atlanta", name: "Hilton"),
+        stops: [Restaurant(address: "85 5th St. NW, Atlanta, GA 30308", name: "Moes"), GeneralLocation(address: "630 10th St NW, Atlanta, GA 30318", name: "QuikTrip")]
     )
 
     let user = User(id: "89379", name: "Austin", trips: [trip])
