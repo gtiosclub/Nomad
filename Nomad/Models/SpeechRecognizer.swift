@@ -143,7 +143,6 @@ actor SpeechRecognizer: ObservableObject {
     }
     
     nonisolated private func recognitionHandler(audioEngine: AVAudioEngine, result: SFSpeechRecognitionResult?, error: Error?) {
-        
         let receivedFinalResult = result?.isFinal ?? false
         let receivedError = error != nil
 
@@ -159,13 +158,11 @@ actor SpeechRecognizer: ObservableObject {
             transcribe(transcription)
             //print("Have transcribed")
             
-            //send to the view model
-            
             //start monitoring for silence
             Task { @MainActor in
                 print("New transcription received: \(transcription)")
                 // self.silenceTimer?.invalidate()  // Invalidate any previous timer
-                //await self.startSilenceTimer()         // Start a new silence timer
+                await self.startSilenceTimer()         // Start a new silence timer
             }
             
             // Check if the word "done" was spoken
