@@ -291,8 +291,10 @@ class UserViewModel: ObservableObject {
     }
     
     func calculateLegInfo() async {
-        distances.removeAll()
-        times.removeAll()
+        DispatchQueue.main.async {
+            self.distances.removeAll()
+            self.times.removeAll()
+        }
         
         guard let currentTrip = current_trip else { return }
         let stops = currentTrip.getStops()
@@ -306,36 +308,50 @@ class UserViewModel: ObservableObject {
             let firstStopAddress = stops[0].address
             
             let estimatedTimeToFirstStop = await getTime(fromAddress: startAddress, toAddress: firstStopAddress)
-            times.append(estimatedTimeToFirstStop / 60)
-
+            DispatchQueue.main.async {
+                self.times.append(estimatedTimeToFirstStop / 60)
+            }
             let estimatedDistanceToFirstStop = await getDistance(fromAddress: startAddress, toAddress: firstStopAddress)
-            distances.append(estimatedDistanceToFirstStop * 0.000621371)
+            DispatchQueue.main.async {
+                self.distances.append(estimatedDistanceToFirstStop * 0.000621371)
+            }
         } else {
             let estimatedTimeToEnd = await getTime(fromAddress: startAddress, toAddress: endAddress)
-            times.append(estimatedTimeToEnd / 60)
-
+            DispatchQueue.main.async {
+                self.times.append(estimatedTimeToEnd / 60)
+            }
             let estimatedDistanceToEnd = await getDistance(fromAddress: startAddress, toAddress: endAddress)
-            distances.append(estimatedDistanceToEnd * 0.000621371)
+            DispatchQueue.main.async {
+                self.distances.append(estimatedDistanceToEnd * 0.000621371)
+            }
         }
-        if !stops.isEmpty {
+        if stops.count != 0 {
             for i in 0..<stops.count - 1 {
                 let startLocationAddress = stops[i].address
                 let endLocationAddress = stops[i + 1].address
                 
                 let estimatedTime = await getTime(fromAddress: startLocationAddress, toAddress: endLocationAddress)
-                times.append(estimatedTime / 60)
+                DispatchQueue.main.async {
+                    self.times.append(estimatedTime / 60)
+                }
                 
                 let distance = await getDistance(fromAddress: startLocationAddress, toAddress: endLocationAddress)
-                distances.append(distance * 0.000621371)
+                DispatchQueue.main.async {
+                    self.distances.append(distance * 0.000621371)
+                }
+            }
+        }
+
+        if let lastStop = stops.last {
+            let lastStopAddress = lastStop.address
+            let estimatedTimeToEnd = await getTime(fromAddress: lastStopAddress, toAddress: endAddress)
+            DispatchQueue.main.async {
+                self.times.append(estimatedTimeToEnd / 60)
             }
 
-            if let lastStop = stops.last {
-                let lastStopAddress = lastStop.address
-                let estimatedTimeToEnd = await getTime(fromAddress: lastStopAddress, toAddress: endAddress)
-                times.append(estimatedTimeToEnd / 60)
-
-                let estimatedDistanceToEnd = await getDistance(fromAddress: lastStopAddress, toAddress: endAddress)
-                distances.append(estimatedDistanceToEnd * 0.000621371)
+            let estimatedDistanceToEnd = await getDistance(fromAddress: lastStopAddress, toAddress: endAddress)
+            DispatchQueue.main.async {
+                self.distances.append(estimatedDistanceToEnd * 0.000621371)
             }
         }
     }
@@ -426,7 +442,9 @@ class UserViewModel: ObservableObject {
         let geoCoder = CLGeocoder()
         do {
             if let placemark = try await geoCoder.reverseGeocodeLocation(userLocation).first {
-                currentCity = placemark.locality!
+                DispatchQueue.main.async {
+                    self.currentCity = placemark.locality!
+                }
             }
         } catch {
             print("Error during reverse geocoding: \(error)")

@@ -36,6 +36,7 @@ struct Trip: Identifiable, Equatable, Observable {
         self.name = name
         self.coverImageURL = coverImageURL
         if coverImageURL.isEmpty {
+            print("finding image for \(end_location.getName())")
             Trip.getCityImage(location: end_location) { [self] imageURL in
                 var mutableTrip = self
                 mutableTrip.setCoverImageURL(newURL: imageURL)
