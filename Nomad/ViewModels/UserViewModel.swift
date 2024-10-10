@@ -312,12 +312,12 @@ class UserViewModel: ObservableObject {
         
         guard let currentTrip = current_trip else { return }
         let stops = currentTrip.getStops()
-
+        
         let startLocation = currentTrip.getStartLocation()
         let startAddress = startLocation.address
         let endLocation = currentTrip.getEndLocation()
         let endAddress = endLocation.address
-
+        
         if !stops.isEmpty {
             let firstStopAddress = stops[0].address
             
@@ -356,20 +356,20 @@ class UserViewModel: ObservableObject {
                 }
             }
         }
-
+        
         if let lastStop = stops.last {
             let lastStopAddress = lastStop.address
             let estimatedTimeToEnd = await getTime(fromAddress: lastStopAddress, toAddress: endAddress)
             DispatchQueue.main.async {
                 self.times.append(estimatedTimeToEnd / 60)
             }
-
+            
             let estimatedDistanceToEnd = await getDistance(fromAddress: lastStopAddress, toAddress: endAddress)
             DispatchQueue.main.async {
                 self.distances.append(estimatedDistanceToEnd * 0.000621371)
             }
         }
-
+    }
 
     func fetchPlaces(location: String, stopType: String, rating: Double?, price: Int?, cuisine: String?) async {
         let apiKey = "hpQdyXearQyP-ahpSeW2wDZvn-ljfmsGvN6RTKqo18I6R23ZB3dfbzAnEjvS8tWoPwyH9FFTGifdZ-n_qH80jbRuDbGb0dHu1qEPrLH-vqNq_d6TZdUaC_kZpwvqZnYx"
