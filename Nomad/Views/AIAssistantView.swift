@@ -88,7 +88,8 @@ struct AIAssistantView: View {
                         let transcript = speechRecognizer.transcript
                         
                         if !transcript.isEmpty {
-                            viewModel.sendMessage(transcript)
+                            //viewModel.sendMessage(transcript)
+                            //currentMessage = transcript
                         }
                         
                         isMicrophone = false
@@ -104,12 +105,16 @@ struct AIAssistantView: View {
                         .clipShape(Circle())
                         .foregroundColor(isMicrophone ? .red : .gray)
                 }
-                
                 TextField("Ask me anything...", text: $currentMessage)
                     .padding()
                     .background(Color.gray.opacity(0.2))
                     .cornerRadius(10)
                     .frame(minHeight: 40)
+                    .onChange(of: speechRecognizer.transcript) { newTranscript in
+                        currentMessage = newTranscript
+                    }
+                
+                
 
                 Button(action: {
                     if !currentMessage.isEmpty {

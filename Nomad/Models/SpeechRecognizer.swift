@@ -33,7 +33,7 @@ actor SpeechRecognizer: ObservableObject {
         }
     }
     
-    @MainActor var transcript: String = ""
+    @Published @MainActor var transcript: String = ""
     
     private var audioEngine: AVAudioEngine?
     private var silenceTimer: Timer?
@@ -163,7 +163,7 @@ actor SpeechRecognizer: ObservableObject {
             
             //start monitoring for silence
             Task { @MainActor in
-                print("New transcription received: \(transcription)")
+                //print("New transcription received: \(transcription)")
                 // self.silenceTimer?.invalidate()  // Invalidate any previous timer
                 //await self.startSilenceTimer()         // Start a new silence timer
             }
@@ -186,6 +186,7 @@ actor SpeechRecognizer: ObservableObject {
         Task { @MainActor in
             //print("In nonisolaed private func transcribe")
             transcript = message
+            print(transcript)
         }
     }
     nonisolated private func transcribe(_ error: Error) {
