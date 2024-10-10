@@ -33,7 +33,7 @@ class ChatViewModel: ObservableObject {
                 }
             } else {
                 DispatchQueue.main.async {
-                    let errorMessage = Message(content: "Sorry, I couldn't find any restaurants.", sender: "AI")
+                    let errorMessage = Message(content: "Sorry, I couldn't find any restaurants", sender: "AI")
                     self.messages.append(errorMessage)
                 }
             }
