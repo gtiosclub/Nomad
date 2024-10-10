@@ -214,4 +214,3 @@ struct ExploreTripsView: View {
         
         ExploreTripsView(mapManager: .init(), vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")), trips: trips, previousTrips: previousTrips, communityTrips: communityTrips)
     }
-
