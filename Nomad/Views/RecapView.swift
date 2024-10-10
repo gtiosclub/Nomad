@@ -52,7 +52,7 @@ struct CardView: View, Identifiable {
                     image
                         .resizable()
                         .scaledToFill()
-                        .frame(width: 120, height: 120)
+                        .frame(width: 165, height: 135)
                         .cornerRadius(10)
                         .padding(.horizontal, 10)
                 } placeholder: {

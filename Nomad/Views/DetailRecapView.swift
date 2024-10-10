@@ -64,7 +64,7 @@ struct DetailRecapView: View {
                             .foregroundColor(.gray.opacity(0.5))
                             .frame(width: 155, height: 87)
                         VStack {
-                            Text(String(round(vm.total_time)))
+                            Text(String(round(vm.total_time / 60)))
                                 .font(.system(size: 30))
                             Text("hours spent")
                         }
