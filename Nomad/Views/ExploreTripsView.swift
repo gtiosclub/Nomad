@@ -65,7 +65,7 @@ struct ExploreTripsView: View {
                             
                             ScrollView(.horizontal) {
                                 HStack {
-                                    ForEach(trips) { trip in
+                                    ForEach(vm.user?.trips ?? []) { trip in
                                         NavigationLink(destination: {
                                             PreviewRouteView(mapManager: mapManager, vm: vm, trip: trip)
                                         }, label: {
@@ -154,19 +154,18 @@ struct ExploreTripsView: View {
     }
     
     struct TripGridView: View {
-//        var tripName: String
-//        var imageURL: String
         @ObservedObject var trip: Trip
+        
         var body: some View {
             VStack {
-                if trip.getCoverImageURL().isEmpty {
+                if trip.coverImageURL.isEmpty {
                     Rectangle()
                         .fill(Color.gray.opacity(0.3))
                         .frame(width: 120, height: 120)
                         .cornerRadius(10)
                         .padding(.horizontal, 10)
                 } else {
-                    AsyncImage(url: URL(string: trip.getCoverImageURL())) { image in
+                    AsyncImage(url: URL(string: trip.coverImageURL)) { image in
                         image
                             .resizable()
                             .scaledToFill()
@@ -178,6 +177,9 @@ struct ExploreTripsView: View {
                             .frame(width: 120, height: 120)
                             .cornerRadius(10)
                             .padding(.horizontal, 10)
+                    }
+                    .onChange(of: trip.coverImageURL, initial: true) { old, new in
+                        print("changing image url \(old) \(new)")
                     }
                 }
                 

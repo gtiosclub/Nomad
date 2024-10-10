@@ -22,6 +22,7 @@ struct FindStopView: View {
     @State private var stopAddress: String = ""
     @State private var selectedStop: (any POI)?
     @State private var isEditing: Bool = false
+    @Environment(\.dismiss) var dismiss
     
     let stop_types = ["Dining", "Activities", "Scenic", "Hotels", "Tours & Landmarks", "Entertainment"]
     let cuisines = ["Chinese", "Italian", "Indian", "American", "Japanese", "Korean"]

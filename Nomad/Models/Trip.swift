@@ -20,8 +20,7 @@ class Trip: Identifiable, Equatable, ObservableObject {
     private var modified_date: String
     private var start_time: String
     @Published var coverImageURL: String
-    private var name: String
-    var title: String?
+    var name: String
     var isPrivate: Bool = true
 
     init(route: NomadRoute? = nil, start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM", name: String = "", coverImageURL: String = "") {
@@ -35,14 +34,21 @@ class Trip: Identifiable, Equatable, ObservableObject {
         self.created_date = Trip.getCurrentDateTime()
         self.modified_date = self.created_date
         self.start_time = start_time
-        self.coverImageURL = ""
-        self.name = name
         self.coverImageURL = coverImageURL
+        self.name = name
         if coverImageURL.isEmpty {
+            print("find image for \(end_location.name)")
             Trip.getCityImage(location: end_location) { imageURL in
-                self.coverImageURL = imageURL
+                DispatchQueue.main.async {
+                    self.coverImageURL = imageURL
+                }
             }
         }
+//        if coverImageURL.isEmpty {
+//            Task {
+//                self.coverImageURL = await Trip.getCityImageAsync(location: end_location)
+//            }
+//        }
     }
     
     func generateRoute() async {
@@ -54,9 +60,56 @@ class Trip: Identifiable, Equatable, ObservableObject {
         }
     }
     
-    func setCoverImageURL(newURL: String) {
-        self.coverImageURL = newURL
-        self.updateModifiedDate()
+//    func setCoverImageURL(newURL: String) {
+//        self.coverImageURL = newURL
+//        self.updateModifiedDate()
+//    }
+    
+    @MainActor
+    static func getCityImageAsync(location: any POI) async -> String {
+        var search_city: String = ""
+        if let city = location.getCity() {
+            search_city = city
+        } else {
+            let location_split = location.getAddress().split(separator: ",")
+            if location_split.count > 1 {
+                search_city = location_split[1].description
+            }
+        }
+        
+        let urlString = "https://pixabay.com/api/?key=46410552-0c1561d54d98701d038092a47&q=\(search_city)-city-scenic&image_type=photo"
+        
+        guard let url = URL(string: urlString) else {
+            print("Invalid URL")
+            return ""
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.timeoutInterval = 10
+        
+        struct PixabayResponse: Codable {
+            let hits: [PixabayPhoto]
+        }
+
+        struct PixabayPhoto: Codable {
+            let id: Int
+            let webformatURL: String
+        }
+        
+        do {
+            // Use async/await to fetch data
+            let (data, _) = try await URLSession.shared.data(for: request)
+            
+            // Decode the response data
+            let pixabayResponse = try JSONDecoder().decode(PixabayResponse.self, from: data)
+            let firstImageURL = pixabayResponse.hits.first?.webformatURL ?? ""
+            
+            return firstImageURL
+        } catch {
+            print("Error fetching or decoding data: \(error)")
+            return ""
+        }
     }
     
     static func getCityImage(location: any POI, completion: @escaping (String) -> Void) {
@@ -71,7 +124,7 @@ class Trip: Identifiable, Equatable, ObservableObject {
         }
         
         let url = URL(string: "https://pixabay.com/api/?key=46410552-0c1561d54d98701d038092a47&q=\(search_city)-city-GA-scenic&image_type=photo")!
-
+        
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         request.timeoutInterval = 10
@@ -79,7 +132,7 @@ class Trip: Identifiable, Equatable, ObservableObject {
         struct PixabayResponse: Codable {
             let hits: [PixabayPhoto]
         }
-
+        
         struct PixabayPhoto: Codable {
             let id: Int
             let webformatURL: String
@@ -97,7 +150,7 @@ class Trip: Identifiable, Equatable, ObservableObject {
                 completion("")
                 return
             }
-                                    
+            
             do {
                 let pixabayResponse = try JSONDecoder().decode(PixabayResponse.self, from: data)
                 let hits = pixabayResponse.hits
@@ -135,10 +188,9 @@ class Trip: Identifiable, Equatable, ObservableObject {
     func setEndLocation(new_end_location: any POI) {
         self.end_location = new_end_location
         self.updateModifiedDate()
-        Trip.getCityImage(location: new_end_location) { [self] imageURL in
-            var mutableTrip = self
-            mutableTrip.setCoverImageURL(newURL: imageURL)
-        }
+//        Trip.getCityImage(location: new_end_location) { [self] imageURL in
+//            self.coverImageURL = imageURL
+//        }
     }
     
     func setStartDate(newDate: String) {
@@ -171,10 +223,6 @@ class Trip: Identifiable, Equatable, ObservableObject {
             removedStops.contains(where: { $0.name == stop.name })
         }
         self.updateModifiedDate()
-    }
-    
-    func setName(newName: String) {
-        self.name = newName
     }
     
     func getStops() -> [any POI] {
@@ -218,18 +266,14 @@ class Trip: Identifiable, Equatable, ObservableObject {
     }
     
     func getName() -> String {
-        name
-    }
-    
-    func getTitle() -> String {
-        return title ?? "Untitled Trip"
+        return name.isEmpty ? "Unnamed Trip" : name
     }
 
-    func setTitle(newTitle: String) {
-        self.title = newTitle
+    func setName(newName: String) {
+        self.name = newName
     }
 
-    func isPrivate() -> Bool {
+    func setIsPrivate() -> Bool {
         return isPrivate
     }
 

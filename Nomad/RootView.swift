@@ -30,6 +30,7 @@ struct RootView: View {
         Trip(start_location: Activity(address: "4953 Franklin Ave, Los Angeles CA 90027", name: "Johnson Family Spring Retreat", latitude: 34.1116, longitude: -118.2968, city: "Los Angeles"), end_location: Hotel(address: "50 W Main St, Blue Ridge GA 30513", name: "Another Hotel", latitude: 34.8688, longitude: -84.3232, city: "Blue Ridge"), name: "GA Mountains")
     ]
     
+//    @ObservedObject static var user =
     @ObservedObject var vm = UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: RootView.my_trips))
     
     var body: some View {
@@ -40,7 +41,7 @@ struct RootView: View {
                 }
                 .tag(1)
 
-            ExploreTripsView(mapManager: RootView.mapManager, vm: vm, trips: vm.getTrips(), previousTrips: RootView.previous_trips, communityTrips: RootView.community_trips)
+            ExploreTripsView(mapManager: RootView.mapManager, vm: vm, trips: vm.user?.trips ?? [], previousTrips: RootView.previous_trips, communityTrips: RootView.community_trips)
                 .tabItem {
                     Label("Plan", systemImage: "pencil")
                 }

@@ -71,7 +71,7 @@ struct PreviewRouteView: View {
                     
                     if let trip = vm.current_trip {
                         RoutePlanListView(vm: vm)
-                            .frame(height: 100)
+//                            .frame(height: 100)
                             .padding()
                     } else {
                         Rectangle()
@@ -125,8 +125,8 @@ struct PreviewRouteView: View {
                         Spacer().frame(width: 60)
                         
                         Button("Save Route") {
-                            vm.setTripTitle(newTitle: title)
-                            vm.setTripVisibility(isPrivate: isPrivate)
+                            vm.setTripTitle(newTitle: $title.wrappedValue)
+                            vm.setIsPrivate(isPrivate: $isPrivate.wrappedValue)
                             
                             dismiss()
                         }
@@ -141,6 +141,8 @@ struct PreviewRouteView: View {
         }
         .onAppear {
             vm.setCurrentTrip(trip: trip)
+            title = vm.current_trip?.getName() ?? ""
+            isPrivate = vm.current_trip?.isPrivate ?? true
             Task {
                 await updateTripRoute()
             }

@@ -44,8 +44,12 @@ class UserViewModel: ObservableObject {
     @MainActor
     func createTrip(start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM") async -> Trip {
         let route = await getRoute()
-        self.current_trip = Trip(route: route, start_location: start_location, end_location: end_location, start_date: start_date, end_date: end_date, stops: stops, start_time: start_time)
+        let cityImageURL = await Trip.getCityImageAsync(location: end_location)
+        print(cityImageURL)
+        self.current_trip = Trip(route: route, start_location: start_location, end_location: end_location, start_date: start_date, end_date: end_date, stops: stops, start_time: start_time, coverImageURL: cityImageURL)
+        
         self.user?.addTrip(trip: self.current_trip!)
+                
         return current_trip!
     }
     
@@ -480,25 +484,32 @@ class UserViewModel: ObservableObject {
     }
     
     func setTripTitle(newTitle: String) {
-        current_trip?.setTitle(newTitle: newTitle)
+        current_trip?.setName(newName: newTitle)
+        user?.updateTrip(trip: current_trip!)
+        
     }
 
     func getTripTitle() -> String {
-        return current_trip?.getTitle() ?? "Untitled Trip"
+        return current_trip?.getName() ?? "Unnamed Trip"
     }
 
-    func setTripVisibility(isPrivate: Bool) {
+    func setIsPrivate(isPrivate: Bool) {
         current_trip?.setVisibility(isPrivate: isPrivate)
+        user?.updateTrip(trip: current_trip!)
     }
 
     func getTripVisibility() -> Bool {
-        return current_trip?.isPrivate() ?? true
+        return current_trip?.setIsPrivate() ?? true
     }
 
     func clearCurrentTrip() {
         current_trip = nil
         total_time = 0
         total_distance = 0
+    }
+    
+    func getUser() -> User? {
+        user
     }
 }
 
