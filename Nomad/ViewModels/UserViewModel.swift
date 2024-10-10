@@ -176,7 +176,7 @@ class UserViewModel: ObservableObject {
             totalDist += await getDistance(fromAddress: stops[stops.count-1].address, toAddress: current_trip.getEndLocation().address)
         }
         DispatchQueue.main.async {
-            self.total_distance = totalDist
+            self.total_distance = totalDist / 1609
         }
     }
     
@@ -195,7 +195,7 @@ class UserViewModel: ObservableObject {
             totalTime += await getTime(fromAddress: stops[stops.count-1].address, toAddress: current_trip.getEndLocation().address)
         }
         DispatchQueue.main.async {
-            self.total_time = totalTime
+            self.total_time = totalTime / 3600
         }
     }
 
@@ -291,53 +291,71 @@ class UserViewModel: ObservableObject {
     }
     
     func calculateLegInfo() async {
-        distances.removeAll()
-        times.removeAll()
-        
-        guard let currentTrip = current_trip else { return }
-        let stops = currentTrip.getStops()
-
-        let startLocation = currentTrip.getStartLocation()
-        let startAddress = startLocation.address
-        let endLocation = currentTrip.getEndLocation()
-        let endAddress = endLocation.address
-
-        if !stops.isEmpty {
-            let firstStopAddress = stops[0].address
+            DispatchQueue.main.async {
+                self.distances.removeAll()
+                self.times.removeAll()
+            }
             
-            let estimatedTimeToFirstStop = await getTime(fromAddress: startAddress, toAddress: firstStopAddress)
-            times.append(estimatedTimeToFirstStop / 60)
+            guard let currentTrip = current_trip else { return }
+            let stops = currentTrip.getStops()
 
-            let estimatedDistanceToFirstStop = await getDistance(fromAddress: startAddress, toAddress: firstStopAddress)
-            distances.append(estimatedDistanceToFirstStop * 0.000621371)
-        } else {
-            let estimatedTimeToEnd = await getTime(fromAddress: startAddress, toAddress: endAddress)
-            times.append(estimatedTimeToEnd / 60)
+            let startLocation = currentTrip.getStartLocation()
+            let startAddress = startLocation.address
+            let endLocation = currentTrip.getEndLocation()
+            let endAddress = endLocation.address
 
-            let estimatedDistanceToEnd = await getDistance(fromAddress: startAddress, toAddress: endAddress)
-            distances.append(estimatedDistanceToEnd * 0.000621371)
-        }
-
-        for i in 0..<stops.count - 1 {
-            let startLocationAddress = stops[i].address
-            let endLocationAddress = stops[i + 1].address
+            if !stops.isEmpty {
+                let firstStopAddress = stops[0].address
+                
+                let estimatedTimeToFirstStop = await getTime(fromAddress: startAddress, toAddress: firstStopAddress)
+                DispatchQueue.main.async {
+                    self.times.append(estimatedTimeToFirstStop / 60)
+                }
+                let estimatedDistanceToFirstStop = await getDistance(fromAddress: startAddress, toAddress: firstStopAddress)
+                DispatchQueue.main.async {
+                    self.distances.append(estimatedDistanceToFirstStop * 0.000621371)
+                }
+            } else {
+                let estimatedTimeToEnd = await getTime(fromAddress: startAddress, toAddress: endAddress)
+                DispatchQueue.main.async {
+                    self.times.append(estimatedTimeToEnd / 60)
+                }
+                let estimatedDistanceToEnd = await getDistance(fromAddress: startAddress, toAddress: endAddress)
+                DispatchQueue.main.async {
+                    self.distances.append(estimatedDistanceToEnd * 0.000621371)
+                }
+            }
             
-            let estimatedTime = await getTime(fromAddress: startLocationAddress, toAddress: endLocationAddress)
-            times.append(estimatedTime / 60)
-            
-            let distance = await getDistance(fromAddress: startLocationAddress, toAddress: endLocationAddress)
-            distances.append(distance * 0.000621371)
-        }
+            if stops.count != 0 {
+                for i in 0..<stops.count - 1 {
+                    let startLocationAddress = stops[i].address
+                    let endLocationAddress = stops[i + 1].address
+                    
+                    let estimatedTime = await getTime(fromAddress: startLocationAddress, toAddress: endLocationAddress)
+                    DispatchQueue.main.async {
+                        self.times.append(estimatedTime / 60)
+                    }
+                    
+                    let distance = await getDistance(fromAddress: startLocationAddress, toAddress: endLocationAddress)
+                    DispatchQueue.main.async {
+                        self.distances.append(distance * 0.000621371)
+                    }
+                }
+            }
 
-        if let lastStop = stops.last {
-            let lastStopAddress = lastStop.address
-            let estimatedTimeToEnd = await getTime(fromAddress: lastStopAddress, toAddress: endAddress)
-            times.append(estimatedTimeToEnd / 60)
+            if let lastStop = stops.last {
+                let lastStopAddress = lastStop.address
+                let estimatedTimeToEnd = await getTime(fromAddress: lastStopAddress, toAddress: endAddress)
+                DispatchQueue.main.async {
+                    self.times.append(estimatedTimeToEnd / 60)
+                }
 
-            let estimatedDistanceToEnd = await getDistance(fromAddress: lastStopAddress, toAddress: endAddress)
-            distances.append(estimatedDistanceToEnd * 0.000621371)
+                let estimatedDistanceToEnd = await getDistance(fromAddress: lastStopAddress, toAddress: endAddress)
+                DispatchQueue.main.async {
+                    self.distances.append(estimatedDistanceToEnd * 0.000621371)
+                }
+            }
         }
-    }
 
 
     func fetchPlaces(location: String, stopType: String, rating: Double?, price: Int?, cuisine: String?) async {
