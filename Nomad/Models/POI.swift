@@ -10,8 +10,8 @@ import Foundation
 protocol POI: Equatable {
     var address: String { get set }
     var name: String { get set }
-    var latitude: Double? { get set }
-    var longitude: Double? { get set }
+    var latitude: Double { get set }
+    var longitude: Double { get set }
     var city: String? { get set }
     
     mutating func setAddress(newAddress: String)
@@ -21,8 +21,8 @@ protocol POI: Equatable {
     
     mutating func setLatitude(newLatitude: Double)
     mutating func setLongitude(newLongitude: Double)
-    func getLatitude() -> Double?
-    func getLongitude() -> Double?
+    func getLatitude() -> Double
+    func getLongitude() -> Double
     
     mutating func setCity(newCity: String)
     func getCity() -> String?

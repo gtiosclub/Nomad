@@ -15,8 +15,7 @@ struct PreviewRouteView: View {
     @State private var title: String = ""
     @State private var isPrivate: Bool = true
     @Environment(\.dismiss) var dismiss
-    
-    var trip: Trip
+    @State var trip: Trip
     
     var body: some View {
         NavigationStack {
@@ -139,9 +138,27 @@ struct PreviewRouteView: View {
                     .padding(.horizontal)
                 }
             }
-            .onAppear {
-                vm.setCurrentTrip(trip: trip)
+        }
+        .onAppear {
+            vm.setCurrentTrip(trip: trip)
+            Task {
+                await updateTripRoute()
             }
+        }
+    }
+    func updateTripRoute() async {
+        let start_loc = trip.getStartLocation()
+        let end_loc = trip.getEndLocation()
+        let all_stops = trip.getStops()
+        
+        var all_pois: [any POI] = []
+        all_pois.append(start_loc)
+        all_pois.append(contentsOf: all_stops)
+        all_pois.append(end_loc)
+        
+        if let newRoutes = await mapManager.generateRoute(pois: all_pois) {
+            
+            trip.setRoute(route: newRoutes[0])
         }
     }
     
@@ -177,6 +194,10 @@ struct PreviewRouteView: View {
 
 #Preview {
     PreviewRouteView(mapManager: .init(), vm: .init(user: User(id: "sampleUserID", name: "Sample User", trips: [
-        Trip(start_location: Restaurant(address: "848 Spring Street, Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy, Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)], name: "ATL to Nashville", coverImageURL: "https://pixabay.com/get/g396fa4b9bb9c1731092f12dcf2bb686fc52caaa5dc7a6f7a9edafe2c402bfe67b1a3affcdae0731b43338a151f0d3b21_640.jpg")
-    ])), trip: Trip(start_location: Restaurant(address: "848 Spring Street, Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy, Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)], name: "ATL to Nashville", coverImageURL: "https://pixabay.com/get/g396fa4b9bb9c1731092f12dcf2bb686fc52caaa5dc7a6f7a9edafe2c402bfe67b1a3affcdae0731b43338a151f0d3b21_640.jpg"))
+        Trip(start_location: Restaurant(address: "848 Spring Street Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090),
+             end_location: Hotel(address: "201 8th Ave S Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947),
+             start_date: "10-05-2024", end_date: "10-05-2024", stops: [])
+    ])), trip: Trip(start_location: Restaurant(address: "848 Spring Street Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090),
+                    end_location: Hotel(address: "201 8th Ave S Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947),
+                    start_date: "10-05-2024", end_date: "10-05-2024", stops: []))
 }
