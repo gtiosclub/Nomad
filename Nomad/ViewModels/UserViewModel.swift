@@ -176,7 +176,7 @@ class UserViewModel: ObservableObject {
             totalDist += await getDistance(fromAddress: stops[stops.count-1].address, toAddress: current_trip.getEndLocation().address)
         }
         DispatchQueue.main.async {
-            self.total_distance = totalDist
+            self.total_distance = totalDist * 0.000621371
         }
     }
     
@@ -195,7 +195,7 @@ class UserViewModel: ObservableObject {
             totalTime += await getTime(fromAddress: stops[stops.count-1].address, toAddress: current_trip.getEndLocation().address)
         }
         DispatchQueue.main.async {
-            self.total_time = totalTime
+            self.total_time = totalTime / 60
         }
     }
 
