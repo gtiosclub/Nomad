@@ -115,6 +115,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     // generate routes for navigation (index 0 is main route, others are alternates)
     public func generateRoute(stop_coords: [CLLocationCoordinate2D]) async -> [NomadRoute]? {
+        print("fetching routes...")
         var nomadRoutes = [NomadRoute]() // return variable
         var tripWaypoints: [Waypoint] = []
         for coord in stop_coords {
@@ -122,7 +123,6 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             tripWaypoints.append(Waypoint(coordinate: mapPoint.coordinate, name: mapPoint.name))
         }
         
-        print("update routes 2")
         var navRoutes: NavigationRoutes?
         if let provider = await core?.routingProvider() {
             let routeOptions = NavigationRouteOptions(
@@ -163,6 +163,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                 let nomadRoute = NomadRoute(route: route, steps: routeSteps)
                 nomadRoutes.append(nomadRoute)
             }
+            print("...routes fetched")
             return nomadRoutes
             
         } else {
@@ -226,9 +227,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     // Generate legs with Step structs
     private func getSteps(route: Route) -> [Step] {
         var steps = [Step]()
-        print("Legs \(route.legs.count)")
         for leg in route.legs {
-            print("Steps \(leg.steps.count)")
             for step in leg.steps {
                 steps.append(Step(step: step))
             }

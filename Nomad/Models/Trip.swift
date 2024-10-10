@@ -9,7 +9,7 @@ import Foundation
 
 struct Trip: Identifiable, Equatable, Observable {
     var id: String
-    private var route: NomadRoute?
+    var route: NomadRoute?
     private var stops: [any POI]
     private var start_location: any POI
     private var end_location: any POI

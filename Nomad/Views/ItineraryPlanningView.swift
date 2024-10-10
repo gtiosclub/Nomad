@@ -35,130 +35,128 @@ struct ItineraryPlanningView: View {
     @State var lastEdited: completion = .null
     
     var body: some View {
-        NavigationStack {
-            VStack {
-                
-                Section(content: {
-                    Text("Let's plan your new trip")
-                        .frame(width: UIScreen.main.bounds.width - 20, alignment: .leading)
-                        .font(.headline)
-                        .padding()
-                })
-                HStack{
-                    ZStack{
-                        Circle().fill(.black).frame(width: 21, height: 21)
-                        Circle().fill(.white).frame(width: 19, height: 19)
-                        Text("1")
-                    }.padding(.horizontal)
-                    Text("Enter your route information")
-                }.padding(.horizontal)
+        VStack {
+            
+            Section(content: {
+                Text("Let's plan your new trip")
                     .frame(width: UIScreen.main.bounds.width - 20, alignment: .leading)
                     .font(.headline)
-                ZStack {
-                    VStack(spacing: 15){
-                        VStack{
-                            TextField("Start Location", text: $inputAddressStart).padding().background(Color.white).cornerRadius(10)
-                                .onChange(of: inputAddressStart) {
-                                    lastEdited = .start
-                                    mapSearch.searchTerm = inputAddressStart
-                                }
-                            
-                        }
-                        
-                        ZStack{
-                            TextField("End Location", text: $inputAddressEnd).padding().background(Color.white).cornerRadius(10)
-                                .onChange(of: inputAddressEnd) {
-                                    lastEdited = .end
-                                    mapSearch.searchTerm = inputAddressEnd
-                                }
-                            if(lastEdited == completion.start && !isClicked){
-                                dropdownMenu(inputAddress: $inputAddressStart, inputName: $inputNameStart, inputLatitude: $startLatitude, inputLongitude: $startLongitude)
-                            }
-                            
-                        }
-                        if(lastEdited == completion.end && !isClicked){
-                            dropdownMenu(inputAddress: $inputAddressEnd, inputName: $inputNameEnd, inputLatitude: $endLatitude, inputLongitude: $endLongitude)
-                        }
-                    }.padding(20)
-                }.background(Color.gray.opacity(0.5))
-                    .cornerRadius(15)
                     .padding()
-                HStack{
-                    ZStack{
-                        Circle().fill(.black).frame(width: 21, height: 21)
-                        Circle().fill(.white).frame(width: 19, height: 19)
-                        Text("2")
-                    }.padding(.horizontal)
-                    Text("Enter your dates")
-                }.padding(.horizontal)
-                    .frame(width: UIScreen.main.bounds.width - 20, alignment: .leading)
-                    .font(.headline)
+            })
+            HStack{
                 ZStack{
+                    Circle().fill(.black).frame(width: 21, height: 21)
+                    Circle().fill(.white).frame(width: 19, height: 19)
+                    Text("1")
+                }.padding(.horizontal)
+                Text("Enter your route information")
+            }.padding(.horizontal)
+                .frame(width: UIScreen.main.bounds.width - 20, alignment: .leading)
+                .font(.headline)
+            ZStack {
+                VStack(spacing: 15){
                     VStack{
-                        Text("Departure").padding()
-                        DatePicker(
-                            "Date",
-                            selection: $startDate,
-                            displayedComponents: [.date]
-                        ).padding(.horizontal)
-                        DatePicker(
-                            "Time",
-                            selection: $startTime,
-                            displayedComponents: [.hourAndMinute]
-                        ).padding(.horizontal)
-                        Text("Arrival").padding()
-                        HStack{
-                            Spacer()
-                            DatePicker(
-                                "Date",
-                                selection: $endDate,
-                                displayedComponents: [.date]
-                            )
-                            Spacer()
-                        }.padding()
-                    }
-                }.background(Color.gray.opacity(0.1))
-                    .cornerRadius(15)
-                    .padding()
-                Button(action: {
-                    if(inputAddressStart.contains(inputNameStart)){
-                        inputNameStart = "Start Location"
-                    }
-                    if(inputAddressEnd.contains(inputNameEnd)){
-                        inputNameEnd = "End Location"
-                    }
-                    Task {
-                        let trip = await vm.createTrip(start_location: GeneralLocation(address: inputAddressStart, name: inputNameStart, latitude: startLatitude, longitude: startLongitude), end_location: GeneralLocation(address: inputAddressEnd, name: inputNameEnd, latitude: endLatitude, longitude: endLongitude), start_date: ItineraryPlanningView.dateToString(date: startDate), end_date: ItineraryPlanningView.dateToString(date: endDate), stops: [], start_time: ItineraryPlanningView.timeToString(date: startTime))
-                        vm.addTripToUser(trip: trip)
+                        TextField("Start Location", text: $inputAddressStart).padding().background(Color.white).cornerRadius(10)
+                            .onChange(of: inputAddressStart) {
+                                lastEdited = .start
+                                mapSearch.searchTerm = inputAddressStart
+                            }
+                        
                     }
                     
-                    inputNameEnd = ""
-                    inputNameStart = ""
-                    inputAddressEnd = ""
-                    inputAddressStart = ""
-                    startDate = Date()
-                    endDate = Date()
-                    startTime = Date()
-                    startLatitude = 0.0
-                    startLongitude = 0.0
-                    endLatitude = 0.0
-                    endLongitude = 0.0
-                    editTrip = true
-                }) {
-                    Text("Continue").font(.headline)
-                        .foregroundColor(.black)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.gray.opacity(0.3))
-                        .cornerRadius(15)
-                        .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
+                    ZStack{
+                        TextField("End Location", text: $inputAddressEnd).padding().background(Color.white).cornerRadius(10)
+                            .onChange(of: inputAddressEnd) {
+                                lastEdited = .end
+                                mapSearch.searchTerm = inputAddressEnd
+                            }
+                        if(lastEdited == completion.start && !isClicked){
+                            dropdownMenu(inputAddress: $inputAddressStart, inputName: $inputNameStart, inputLatitude: $startLatitude, inputLongitude: $startLongitude)
+                        }
+                        
+                    }
+                    if(lastEdited == completion.end && !isClicked){
+                        dropdownMenu(inputAddress: $inputAddressEnd, inputName: $inputNameEnd, inputLatitude: $endLatitude, inputLongitude: $endLongitude)
+                    }
+                }.padding(20)
+            }.background(Color.gray.opacity(0.5))
+                .cornerRadius(15)
+                .padding()
+            HStack{
+                ZStack{
+                    Circle().fill(.black).frame(width: 21, height: 21)
+                    Circle().fill(.white).frame(width: 19, height: 19)
+                    Text("2")
+                }.padding(.horizontal)
+                Text("Enter your dates")
+            }.padding(.horizontal)
+                .frame(width: UIScreen.main.bounds.width - 20, alignment: .leading)
+                .font(.headline)
+            ZStack{
+                VStack{
+                    Text("Departure").padding()
+                    DatePicker(
+                        "Date",
+                        selection: $startDate,
+                        displayedComponents: [.date]
+                    ).padding(.horizontal)
+                    DatePicker(
+                        "Time",
+                        selection: $startTime,
+                        displayedComponents: [.hourAndMinute]
+                    ).padding(.horizontal)
+                    Text("Arrival").padding()
+                    HStack{
+                        Spacer()
+                        DatePicker(
+                            "Date",
+                            selection: $endDate,
+                            displayedComponents: [.date]
+                        )
+                        Spacer()
+                    }.padding()
                 }
-                .padding(.horizontal, 50)
-                .navigationDestination(isPresented: $editTrip, destination: {TripView(mapManager: mapManager, vm: vm, trip: vm.current_trip)})
+            }.background(Color.gray.opacity(0.1))
+                .cornerRadius(15)
+                .padding()
+            Button(action: {
+                if(inputAddressStart.contains(inputNameStart)){
+                    inputNameStart = "Start Location"
+                }
+                if(inputAddressEnd.contains(inputNameEnd)){
+                    inputNameEnd = "End Location"
+                }
+                Task {
+                    let trip = await vm.createTrip(start_location: GeneralLocation(address: inputAddressStart, name: inputNameStart, latitude: startLatitude, longitude: startLongitude), end_location: GeneralLocation(address: inputAddressEnd, name: inputNameEnd, latitude: endLatitude, longitude: endLongitude), start_date: ItineraryPlanningView.dateToString(date: startDate), end_date: ItineraryPlanningView.dateToString(date: endDate), stops: [], start_time: ItineraryPlanningView.timeToString(date: startTime))
+                    vm.addTripToUser(trip: trip)
+                }
                 
-                Spacer()
-                
+                inputNameEnd = ""
+                inputNameStart = ""
+                inputAddressEnd = ""
+                inputAddressStart = ""
+                startDate = Date()
+                endDate = Date()
+                startTime = Date()
+                startLatitude = 0.0
+                startLongitude = 0.0
+                endLatitude = 0.0
+                endLongitude = 0.0
+                editTrip = true
+            }) {
+                Text("Continue").font(.headline)
+                    .foregroundColor(.black)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.gray.opacity(0.3))
+                    .cornerRadius(15)
+                    .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
             }
+            .padding(.horizontal, 50)
+            .navigationDestination(isPresented: $editTrip, destination: {TripView(vm: vm, trip: vm.current_trip)})
+            
+            Spacer()
+            
         }
     }
     
