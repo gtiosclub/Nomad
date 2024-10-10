@@ -33,7 +33,7 @@ class ChatViewModel: ObservableObject {
                 }
             } else {
                 DispatchQueue.main.async {
-                    let errorMessage = Message(content: "Sorry, I couldn't find any restaurants.", sender: "AI")
+                    let errorMessage = Message(content: "Sorry, I couldn't find any restaurants", sender: "AI")
                     self.messages.append(errorMessage)
                 }
             }
@@ -44,7 +44,8 @@ class ChatViewModel: ObservableObject {
 struct AIAssistantView: View {
     @StateObject var aiViewModel = AIAssistantViewModel()
     @StateObject private var viewModel = ChatViewModel()
-//    @StateObject var speechRecognizer = SpeechRecognizer()
+    @StateObject var speechRecognizer = SpeechRecognizer()
+    @State private var isMicrophone = false
 
     @State private var currentMessage: String = ""
 
@@ -82,20 +83,38 @@ struct AIAssistantView: View {
             HStack {
                 Button(action: {
                     // Microphone action if necessary
+                    if isMicrophone {
+                        speechRecognizer.stopTranscribing()
+                        let transcript = speechRecognizer.transcript
+                        
+                        if !transcript.isEmpty {
+                            //viewModel.sendMessage(transcript)
+                            //currentMessage = transcript
+                        }
+                        
+                        isMicrophone = false
+                    } else {
+                        speechRecognizer.startTranscribing()
+                        isMicrophone = true
+                    }
                 }) {
                     Image(systemName: "microphone.fill")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 40, height: 40)
                         .clipShape(Circle())
-                        .foregroundColor(.black)
+                        .foregroundColor(isMicrophone ? .red : .gray)
                 }
-                
                 TextField("Ask me anything...", text: $currentMessage)
                     .padding()
                     .background(Color.gray.opacity(0.2))
                     .cornerRadius(10)
                     .frame(minHeight: 40)
+                    .onChange(of: speechRecognizer.transcript) { newTranscript in
+                        currentMessage = newTranscript
+                    }
+                
+                
 
                 Button(action: {
                     if !currentMessage.isEmpty {
