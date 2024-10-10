@@ -33,7 +33,7 @@ struct RoutePlanListView: View {
         .padding(.vertical, 15)
         .padding(.leading, 0)
         .padding(.trailing, 40)
-        .frame(maxWidth: UIScreen.main.bounds.width - 40)
+        .frame(maxWidth: UIScreen.main.bounds.width)
         .background(Color.white)
         .cornerRadius(10)
         .shadow(radius: 5)
@@ -72,6 +72,7 @@ struct RoutePlanListView: View {
             .padding(.leading, 10)
 
             Text(locationName)
+                .lineLimit(1)
                 .font(.headline)
                 .foregroundColor(.primary)
                 .padding(.leading, 5)

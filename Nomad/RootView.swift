@@ -47,7 +47,7 @@ struct RootView: View {
                 }
                 .tag(2)
 
-            RecapView()
+            RecapView(vm: vm, mapManager: mapManager)
                 .tabItem {
                     Label("Recaps", systemImage: "play.square.stack")
                 }

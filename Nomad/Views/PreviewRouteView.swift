@@ -149,9 +149,9 @@ struct PreviewRouteView: View {
         }
     }
     func updateTripRoute() async {
-        let start_loc = trip.getStartLocation()
-        let end_loc = trip.getEndLocation()
-        let all_stops = trip.getStops()
+        guard let start_loc = vm.current_trip?.getStartLocation() else { return }
+        guard let end_loc = vm.current_trip?.getEndLocation() else { return }
+        guard let all_stops = vm.current_trip?.getStops() else { return }
         
         var all_pois: [any POI] = []
         all_pois.append(start_loc)

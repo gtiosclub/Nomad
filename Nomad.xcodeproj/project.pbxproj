@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		48BBC2D22C9CE5070093D9D0 /* DetailRecapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48BBC2D12C9CE5070093D9D0 /* DetailRecapView.swift */; };
 		391165FA2CB53542004B8695 /* PreviewRouteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 391165F92CB53542004B8695 /* PreviewRouteView.swift */; };
 		48974B842C9A438B0057B073 /* Activity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B832C9A43880057B073 /* Activity.swift */; };
 		48974B862C9A44A30057B073 /* Hotel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B852C9A449F0057B073 /* Hotel.swift */; };
@@ -87,6 +88,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		48BBC2D12C9CE5070093D9D0 /* DetailRecapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRecapView.swift; sourceTree = "<group>"; };
 		391165F92CB53542004B8695 /* PreviewRouteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewRouteView.swift; sourceTree = "<group>"; };
 		48974B832C9A43880057B073 /* Activity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Activity.swift; sourceTree = "<group>"; };
 		48974B852C9A449F0057B073 /* Hotel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hotel.swift; sourceTree = "<group>"; };
@@ -248,6 +250,7 @@
 			children = (
 				84FC27152CAC741D008C8339 /* Onboarding */,
 				B2F8F3492C97BC7700B9618E /* RecapView.swift */,
+				48BBC2D12C9CE5070093D9D0 /* DetailRecapView.swift */,
 				B2F8F34B2C97BC7F00B9618E /* MapView.swift */,
 				B25A5C6D2CAE27C1001FC87E /* MapPreviewView.swift */,
 				B2F8F34D2C97BC8A00B9618E /* AIAssistantView.swift */,
@@ -469,6 +472,7 @@
 				B29D04012CB0B48B00524D8B /* MapMarker.swift in Sources */,
 				B28668172CB309250095F653 /* MapManager.swift in Sources */,
 				B2F8F3552C97BCBB00B9618E /* Trip.swift in Sources */,
+				48BBC2D22C9CE5070093D9D0 /* DetailRecapView.swift in Sources */,
 				C49A65522C9CE6D600A8B9BA /* LocationSearchBox.swift in Sources */,
 				B2F8F34A2C97BC7700B9618E /* RecapView.swift in Sources */,
 				B2F8F35B2C97BD2200B9618E /* RestStop.swift in Sources */,

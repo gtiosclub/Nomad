@@ -369,7 +369,6 @@ class UserViewModel: ObservableObject {
                 self.distances.append(estimatedDistanceToEnd * 0.000621371)
             }
         }
-    }
 
 
     func fetchPlaces(location: String, stopType: String, rating: Double?, price: Int?, cuisine: String?) async {
