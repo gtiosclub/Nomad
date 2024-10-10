@@ -10,28 +10,32 @@ import MapboxDirections
 
 struct NomadRoute {
     let id = UUID()
-    var route: Route?
+    var route: Route? // mapbox object, not sure if we need anything from here yet.
     var legs: [NomadLeg]
     
-    // returns an array of polylines for each step of the route.
-    func getRoutePolyline() -> MKPolyline {
-        var all_coords = [CLLocationCoordinate2D]()
-        if let shape = route?.shape?.coordinates {
-            for coord in shape {
-                all_coords.append(CLLocationCoordinate2D(latitude: coord.latitude, longitude: coord.longitude))
-            }
-        }
-        let polyline = MKPolyline(coordinates: all_coords, count: all_coords.count)
-        return polyline
+    
+    func getStartLocation() -> CLLocationCoordinate2D {
+        return legs.first?.startCoordinate ?? CLLocationCoordinate2D()
     }
     
-//    func getStartLocation() -> CLLocationCoordinate2D? {
-//        return steps[0].startCoordinate
-//    }
-//    
-//    func getEndLocation() -> CLLocationCoordinate2D? {
-//        steps[steps.count - 1].endCoordinate
-//    }
+    func getEndLocation() -> CLLocationCoordinate2D {
+        return legs.last?.endCoordinate ?? CLLocationCoordinate2D()
+    }
+    
+    // returns an array of polylines for each step of the route.
+    func getShape() -> MKPolyline {
+        let coords = getCoordinates()
+        return NomadRoute.convertToMKPolyline(coords)
+    }
+    
+    func getCoordinates() -> [CLLocationCoordinate2D] {
+        var coords = [CLLocationCoordinate2D]()
+        for leg in legs {
+            coords.append(contentsOf: leg.getCoordinates())
+        }
+        return coords
+    }
+    
     static func convertToMKPolyline(_ coords: [LocationCoordinate2D]) -> MKPolyline {
         var coordinates = [CLLocationCoordinate2D]()
         for coord in coords {
@@ -43,19 +47,26 @@ struct NomadRoute {
 
 struct NomadLeg {
     let id = UUID()
-    var steps: [Step]
+    var steps: [NomadStep]
     var startCoordinate: CLLocationCoordinate2D
     var endCoordinate: CLLocationCoordinate2D
-    var routeShape: MKPolyline
-    private var coords: [CLLocationCoordinate2D]
     
     init(leg: MapboxDirections.RouteLeg) {
-        
+        var steps = [NomadStep]()
+        for step in leg.steps {
+            steps.append(NomadStep(step: step))
+        }
+        self.init(steps: steps)
     }
     
     init(steps: [NomadStep]) {
+        self.steps = steps
+        self.startCoordinate = steps.first?.startCoordinate ?? CLLocationCoordinate2D()
+        self.endCoordinate = steps.last?.endCoordinate ?? CLLocationCoordinate2D()
+        
         
     }
+    
     func getStartLocation() -> CLLocationCoordinate2D {
         return startCoordinate
     }
@@ -64,15 +75,20 @@ struct NomadLeg {
     }
     
     func getShape() -> MKPolyline {
-        return routeShape
+        let coords = getCoordinates()
+        return NomadRoute.convertToMKPolyline(coords)
     }
     
     func getCoordinates() -> [CLLocationCoordinate2D] {
+        var coords = [CLLocationCoordinate2D]()
+        for step in steps {
+            coords.append(contentsOf: step.getCoordinates())
+        }
         return coords
     }
 }
 
-struct Step {
+struct NomadStep {
     let id = UUID()
     
     struct Direction {
@@ -87,17 +103,17 @@ struct Step {
         var exitNames: [String]? // Names at roundabout exit
     }
     
-    var routeShape: MKPolyline
-    var startCoordinate: CLLocationCoordinate2D?
-    var endCoordinate: CLLocationCoordinate2D?
+    private var routeShape: MKPolyline
+    var startCoordinate: CLLocationCoordinate2D
+    var endCoordinate: CLLocationCoordinate2D
     var direction: Direction
     var exit: Exit?
     private var coords: [CLLocationCoordinate2D]
     
     
     init(step: RouteStep) {
-        self.startCoordinate = step.shape?.coordinates.first
-        self.endCoordinate = step.shape?.coordinates.last
+        self.startCoordinate = step.shape?.coordinates.first ?? CLLocationCoordinate2D()
+        self.endCoordinate = step.shape?.coordinates.last ?? CLLocationCoordinate2D()
         self.coords = step.shape?.coordinates ?? []
         self.routeShape = NomadRoute.convertToMKPolyline(step.shape?.coordinates ?? [])
         self.direction = Direction(distance: step.distance, instructions: step.instructions, expectedTravelTime: step.expectedTravelTime)
@@ -112,7 +128,8 @@ struct Step {
     init() {
         self.startCoordinate = CLLocationCoordinate2D(latitude: 33.7501, longitude: 84.3885)
         self.endCoordinate = CLLocationCoordinate2D(latitude: 32.7501, longitude: 83.3885)
-        self.routeShape = NomadRoute.convertToMKPolyline([startCoordinate!, endCoordinate!])
+        self.coords = []
+        self.routeShape = NomadRoute.convertToMKPolyline([startCoordinate, endCoordinate])
         self.direction = Direction(distance: 100, instructions: "Turn right in 100 miles", expectedTravelTime: TimeInterval(5000))
         self.exit = Exit(destinations: ["Atlanta", "New York"], exitCodes: ["78", "79"], exitNames: ["Georgia Ave.","Peachtree St."])
     }

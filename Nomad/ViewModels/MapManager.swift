@@ -54,13 +54,23 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     // MAPPOLYLINE CRUD
-    func showPolyline(step: Step) {
-        mapPolylines.append(step.routeShape)
+    func showPolyline(step: NomadStep) {
+        mapPolylines.append(step.getShape())
     }
     
-    func removePolyline(step: Step) {
+    func removePolyline(step: NomadStep) {
         mapPolylines.removeAll { polyline in
-            polyline == step.routeShape // might not work if polyline is not equatable by geometry
+            polyline == step.getShape() // might not work if polyline is not equatable by geometry
+        }
+    }
+    
+    func showPolyline(leg: NomadLeg) {
+        mapPolylines.append(leg.getShape())
+    }
+    
+    func removePolyline(leg: NomadLeg) {
+        mapPolylines.removeAll { polyline in
+            polyline == leg.getShape() // might not work if polyline is not equatable by geometry
         }
     }
     
@@ -151,16 +161,16 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             guard let previewRoutes = navRoutes else { return nil }
             let mainRoute = previewRoutes.mainRoute.route
                             
-            let mainRouteSteps = getSteps(route: mainRoute)
-            let mainNomadRoute = NomadRoute(route: mainRoute, steps: mainRouteSteps)
+            let mainRouteLegs = getLegs(route: mainRoute)
+            let mainNomadRoute = NomadRoute(route: mainRoute, legs: mainRouteLegs)
             nomadRoutes.append(mainNomadRoute)
             
             let alternativeRoutes = previewRoutes.alternativeRoutes
             for alt_route in alternativeRoutes {
                 let route = alt_route.route
                                 
-                let routeSteps = getSteps(route: route)
-                let nomadRoute = NomadRoute(route: route, steps: routeSteps)
+                let routeLegs = getLegs(route: mainRoute)
+                let nomadRoute = NomadRoute(route: mainRoute, legs: routeLegs)
                 nomadRoutes.append(nomadRoute)
             }
             return nomadRoutes
@@ -178,11 +188,11 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         let mainRoute = previewRoutes.mainRoute.route
         print(mainRoute.legs.count)
                         
-        let routeSteps = getSteps(route: mainRoute)
-        let newRoute = NomadRoute(route: mainRoute, steps: routeSteps)
+        let routeLegs = getLegs(route: mainRoute)
+        let newRoute = NomadRoute(route: mainRoute, legs: routeLegs)
         self.routes.append(newRoute)
-        for step in newRoute.steps {
-            showPolyline(step: step)
+        for leg in newRoute.legs {
+            showPolyline(leg: leg)
         }
     }
     
@@ -224,16 +234,12 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     // ROUTE GENERATION HELPERS
     
     // Generate legs with Step structs
-    private func getSteps(route: Route) -> [Step] {
-        var steps = [Step]()
-        print("Legs \(route.legs.count)")
-        for leg in route.legs {
-            print("Steps \(leg.steps.count)")
-            for step in leg.steps {
-                steps.append(Step(step: step))
-            }
+    private func getLegs(route: Route) -> [NomadLeg] {
+        var legs = [NomadLeg]()
+        for routeleg in route.legs {
+            legs.append(NomadLeg(leg: routeleg))
         }
-        return steps
+        return legs
     }
     
     /// WAYPOINT CRUD SECTION

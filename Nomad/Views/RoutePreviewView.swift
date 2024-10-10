@@ -26,7 +26,7 @@ struct RoutePreviewView: View {
                 Map(initialPosition: .automatic) {
                     Marker("Start", coordinate: self.trip.getRoute()?.getStartLocation() ?? CLLocationCoordinate2D())
                     Marker("End", coordinate: self.trip.getRoute()?.getEndLocation() ?? CLLocationCoordinate2D())
-                    if let polyline = self.trip.getRoute()?.getRoutePolyline() {
+                    if let polyline = self.trip.getRoute()?.getShape() {
                             MapPolyline(polyline)
                                 .stroke(.blue, lineWidth: 5)
                     }
