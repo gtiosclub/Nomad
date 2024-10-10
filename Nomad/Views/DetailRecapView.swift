@@ -42,7 +42,7 @@ struct DetailRecapView: View {
                             .padding(.bottom, 10)
                         HStack {
                             Image(systemName: "mappin")
-                            Text((vm.current_trip?.getEndLocation().getName())!)
+                            Text((vm.current_trip?.getEndLocation().getName() ?? "Destination"))
                         }.padding(.bottom, 10)
                     }
                     Spacer()
