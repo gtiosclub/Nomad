@@ -448,6 +448,23 @@ class UserViewModel: ObservableObject {
         
         return nil
     }
+    
+    func setTripTitle(newTitle: String) {
+        current_trip?.setTitle(newTitle: newTitle)
+    }
+
+    func getTripTitle() -> String {
+        return current_trip?.getTitle() ?? "Untitled Trip"
+    }
+
+    func setTripVisibility(isPrivate: Bool) {
+        current_trip?.setVisibility(isPrivate: isPrivate)
+    }
+
+    func getTripVisibility() -> Bool {
+        return current_trip?.isPrivate() ?? true
+    }
+
 }
 
 struct YelpResponse: Codable {

@@ -33,33 +33,34 @@ struct RootView: View {
     @ObservedObject var vm = UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: RootView.my_trips))
     
     var body: some View {
-        TabView(selection: $selectedTab) {
-            MapView(mapManager: mapManager)
-                .tabItem {
-                    Label("Navigation", systemImage: "map.fill")
-                }
-                .tag(1)
-
-            ExploreTripsView(mapManager: mapManager, vm: vm, trips: RootView.my_trips, previousTrips: RootView.previous_trips, communityTrips: RootView.community_trips)
-                .tabItem {
-                    Label("Plan", systemImage: "pencil")
-                }
-                .tag(2)
-
-            RecapView()
-                .tabItem {
-                    Label("Recaps", systemImage: "play.square.stack")
-                }
-                .tag(3)
-        }.environmentObject(mapManager)
+            TabView(selection: $selectedTab) {
+                MapView(mapManager: mapManager)
+                    .tabItem {
+                        Label("Navigation", systemImage: "map.fill")
+                    }
+                    .tag(1)
+                
+                ExploreTripsView(mapManager: mapManager, vm: vm, trips: RootView.my_trips, previousTrips: RootView.previous_trips, communityTrips: RootView.community_trips)
+                    .tabItem {
+                        Label("Plan", systemImage: "pencil")
+                    }
+                    .tag(2)
+                
+                RecapView()
+                    .tabItem {
+                        Label("Recaps", systemImage: "play.square.stack")
+                    }
+                    .tag(3)
+            }
+            .environmentObject(mapManager)
             .task {
                 if !mapboxSetUp {
                     self.mapboxSetUp = true
                     await mapManager.setupMapbox()
                 }
             }
+        }
     }
-}
 
 #Preview {
     RootView()

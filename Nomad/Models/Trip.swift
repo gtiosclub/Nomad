@@ -20,6 +20,8 @@ struct Trip: Identifiable, Equatable, Observable {
     private var start_time: String
     private var coverImageURL: String
     private var name: String
+    var title: String?
+    var visibility: Bool = true
 
     init(route: NomadRoute? = nil, start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM", name: String = "", coverImageURL: String = "") {
         self.route = route
@@ -42,6 +44,7 @@ struct Trip: Identifiable, Equatable, Observable {
             }
         }
     }
+    
     
     mutating func setCoverImageURL(newURL: String) {
         self.coverImageURL = newURL
@@ -207,5 +210,21 @@ struct Trip: Identifiable, Equatable, Observable {
     
     func getName() -> String {
         name
+    }
+    
+    func getTitle() -> String {
+        return title ?? "Untitled Trip"
+    }
+
+    mutating func setTitle(newTitle: String) {
+        self.title = newTitle
+    }
+
+    func isPrivate() -> Bool {
+        return visibility
+    }
+
+    mutating func setVisibility(isPrivate: Bool) {
+        self.visibility = isPrivate
     }
 }
