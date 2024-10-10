@@ -44,7 +44,8 @@ class ChatViewModel: ObservableObject {
 struct AIAssistantView: View {
     @StateObject var aiViewModel = AIAssistantViewModel()
     @StateObject private var viewModel = ChatViewModel()
-//    @StateObject var speechRecognizer = SpeechRecognizer()
+    @StateObject var speechRecognizer = SpeechRecognizer()
+    @State private var isMicrophone = false
 
     @State private var currentMessage: String = ""
 
@@ -82,13 +83,26 @@ struct AIAssistantView: View {
             HStack {
                 Button(action: {
                     // Microphone action if necessary
+                    if isMicrophone {
+                        speechRecognizer.stopTranscribing()
+                        let transcript = speechRecognizer.transcript
+                        
+                        if !transcript.isEmpty {
+                            viewModel.sendMessage(transcript)
+                        }
+                        
+                        isMicrophone = false
+                    } else {
+                        speechRecognizer.startTranscribing()
+                        isMicrophone = true
+                    }
                 }) {
                     Image(systemName: "microphone.fill")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 40, height: 40)
                         .clipShape(Circle())
-                        .foregroundColor(.black)
+                        .foregroundColor(isMicrophone ? .red : .gray)
                 }
                 
                 TextField("Ask me anything...", text: $currentMessage)
