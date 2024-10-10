@@ -29,7 +29,7 @@ struct RoutePlanListView: View {
                 createLocationView(locationName: "End at \(endLocation.name)", time: vm.times.last, isLast: true)
             }
         }
-        .padding(.horizontal, 25)
+        .padding(.horizontal, 10)
         .padding(.vertical, 15)
         .padding(.leading, 0)
         .padding(.trailing, 40)
@@ -47,12 +47,15 @@ struct RoutePlanListView: View {
     private func createLocationView(locationName: String, time: Double?, isLast: Bool) -> some View {
         HStack(alignment: .center, spacing: 5) {
             if let time = time {
-                Text("\(time, specifier: "%.0f") MIN")
+                let hours = time / 60
+                Text(time > 60 ? "\(hours, specifier: "%.1f") HR" : "\(time, specifier: "%.0f") MIN")
                     .font(.caption)
                     .foregroundColor(.gray)
                     .frame(width: 50, alignment: .trailing)
                     .padding(.bottom, 15)
                     .padding(.top, isLast ? -15 : -30)
+//                    .padding(.leading, -5)
+//                    .padding(.trailing, 5)
             } else {
                 Spacer().frame(width: 50)
             }
@@ -66,13 +69,14 @@ struct RoutePlanListView: View {
                         .padding(.leading, 0)
                 }
             }
-            .padding(.leading, 15)
+            .padding(.leading, 10)
 
             Text(locationName)
                 .font(.headline)
                 .foregroundColor(.primary)
                 .padding(.leading, 5)
                 .padding(.top, isLast ? -5 : -20)
+                .lineLimit(1)
         }
         .padding(.vertical, 0)
     }

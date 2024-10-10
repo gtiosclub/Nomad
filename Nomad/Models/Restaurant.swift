@@ -37,7 +37,7 @@ struct Restaurant: POI, Identifiable, Ratable {
 
     init(from business: Business) {
         self.id = business.id
-        self.address = business.location.address1 ?? "No address"
+        self.address = business.location.display_address.joined(separator: ", ")
         self.name = business.name
         self.rating = business.rating
         self.cuisine = business.categories.first?.title

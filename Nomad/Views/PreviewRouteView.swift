@@ -26,7 +26,7 @@ struct PreviewRouteView: View {
                     .padding(.leading)
                     .padding(.top)
                 
-                RoutePreviewView(mapManager: mapManager, trip: $trip)
+                RoutePreviewView(mapManager: mapManager, trip: trip)
                     .frame(height: 300)
                 
                 Spacer().frame(height: 20)

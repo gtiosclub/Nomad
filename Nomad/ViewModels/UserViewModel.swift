@@ -26,11 +26,11 @@ class UserViewModel: ObservableObject {
     
     init(user: User? = nil) {
         self.user = user
-        if user?.getTrips().count ?? 0 >= 1 {
-            if let trip = user?.getTrips()[0] {
-                current_trip = trip
-            }
-        }
+//        if user?.getTrips().count ?? 0 >= 1 {
+//            if let trip = user?.getTrips()[0] {
+//                current_trip = trip
+//            }
+//        }
     }
     
     func setUser(user: User) {
@@ -41,9 +41,11 @@ class UserViewModel: ObservableObject {
         self.user = User(id: UUID().uuidString, name: name)
     }
     
+    @MainActor
     func createTrip(start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM") async -> Trip {
-        self.current_trip = Trip(start_location: start_location, end_location: end_location, start_date: start_date, end_date: end_date, stops: stops, start_time: start_time)
-        await updateRoute()
+        let route = await getRoute()
+        self.current_trip = Trip(route: route, start_location: start_location, end_location: end_location, start_date: start_date, end_date: end_date, stops: stops, start_time: start_time)
+        self.user?.addTrip(trip: self.current_trip!)
         return current_trip!
     }
     
@@ -60,19 +62,14 @@ class UserViewModel: ObservableObject {
     
     func addStop(stop: any POI) async {
         if let trip = current_trip {
-            print(trip.getStartLocation().getAddress())
-            print(stop.getAddress())
             let start_coordinates = CLLocationCoordinate2D(latitude: trip.getStartLocation().getLatitude(), longitude: trip.getStartLocation().getLongitude())
             let stop_coordinates = CLLocationCoordinate2D(latitude: stop.getLatitude(), longitude: stop.getLongitude())
             let from_start = await getDistanceCoordinates(from: start_coordinates, to: stop_coordinates)
             var from_stops: [Double] = []
             for current_stop in trip.getStops() {
-                print(current_stop.getAddress())
                 let current_stop_coordinates = CLLocationCoordinate2D(latitude: current_stop.getLatitude(), longitude: current_stop.getLongitude())
                 from_stops.append(await getDistanceCoordinates(from: current_stop_coordinates, to: stop_coordinates))
             }
-            print(from_start)
-            print(from_stops)
             let min_stop_distance = from_stops.min() ?? 10000000
             if min_stop_distance < from_start {
                 let index = from_stops.firstIndex(of: min_stop_distance)!
@@ -137,9 +134,22 @@ class UserViewModel: ObservableObject {
             pois.append(contentsOf: trip.getStops())
             pois.append(trip.getEndLocation())
             if let routes = await mapManager.generateRoute(pois: pois) {
-                self.current_trip?.setRoute(route: routes[0]) // set main route
+                trip.setRoute(route: routes[0]) // set main route
             }
         }
+    }
+    
+    func getRoute() async -> NomadRoute? {
+        if let trip = current_trip {
+            var pois = [trip.getStartLocation()]
+            pois.append(contentsOf: trip.getStops())
+            pois.append(trip.getEndLocation())
+            if let routes = await mapManager.generateRoute(pois: pois) {
+                print("found route: \(routes[0])")
+                return routes[0]
+            }
+        }
+        return nil
     }
     
     func setTripRoute(route: NomadRoute) {
@@ -325,6 +335,7 @@ class UserViewModel: ObservableObject {
                 self.distances.append(estimatedDistanceToEnd * 0.000621371)
             }
         }
+        
         if stops.count != 0 {
             for i in 0..<stops.count - 1 {
                 let startLocationAddress = stops[i].address
@@ -467,6 +478,12 @@ class UserViewModel: ObservableObject {
         
         return nil
     }
+    
+    func clearCurrentTrip() {
+        current_trip = nil
+        total_time = 0
+        total_distance = 0
+    }
 }
 
 struct YelpResponse: Codable {
@@ -486,8 +503,9 @@ struct Business: Codable {
 }
 
 struct Location: Codable {
-    let address1: String?
-    let city: String?
+    let address1: String
+    let city: String
+    let display_address: [String]
 }
 
 struct Coordinates: Codable {
