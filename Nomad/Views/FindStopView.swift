@@ -22,6 +22,7 @@ struct FindStopView: View {
     @State private var stopAddress: String = ""
     @State private var selectedStop: (any POI)?
     @State private var isEditing: Bool = false
+    @Environment(\.dismiss) var dismiss
     
     let stop_types = ["Dining", "Activities", "Scenic", "Hotels", "Tours & Landmarks", "Entertainment"]
     let cuisines = ["Chinese", "Italian", "Indian", "American", "Japanese", "Korean"]
@@ -32,7 +33,8 @@ struct FindStopView: View {
                 VStack(alignment: .leading) {
                     Text("Let's Plan Your New Trip")
                         .font(.headline)
-                        .padding(.bottom, 5)
+                        .padding(.vertical, 5)
+                        .padding(.horizontal)
                   
                     if let trip = vm.current_trip {
                         RoutePreviewView(mapManager: mapManager, trip: Binding.constant(trip))
@@ -58,6 +60,7 @@ struct FindStopView: View {
                                 .font(.system(size: 16))
                                 .foregroundColor(.gray)
                         }
+                        .padding(.leading)
                         
                         Text("Explore Stops")
                             .font(.headline)
@@ -498,63 +501,20 @@ struct FindStopView: View {
                     }
                     .frame(height: 300)
                     
-                    //                    TextField("Stop Name", text: $stopName)
-                    //                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    //                        .padding(.bottom, 5)
-                    //
-                    //                    TextField("Stop Address", text: $stopAddress)
-                    //                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    //                        .padding(.bottom, 10)
-
-                    //                    Button(isEditing ? "Update Stop" : "Add Stop") {
-                    //                        let newStop = GeneralLocation(address: stopAddress, name: stopName)
-                    //
-                    //                        if isEditing, let stop = selectedStop {
-                    //                            vm.current_trip?.removeStops(removedStops: [stop])
-                    //                            vm.current_trip?.addStops(additionalStops: [newStop])
-                    //                        } else {
-                    //                            vm.current_trip?.addStops(additionalStops: [newStop])
-                    //                        }
-                    //
-                    //                        stopName = ""
-                    //                        stopAddress = ""
-                    //                        isEditing = false
-                    //                        selectedStop = nil
-                    //                    }
-                    //                    .padding(.bottom, 10)
-                    
-                    //                    List {
-                    //                        ForEach(vm.current_trip?.getStops().filter { $0.name.contains(selection) } ?? [], id: \.address) { stop in
-                    //                            HStack {
-                    //                                Text("\(stop.name) - \(stop.address)")
-                    //                                Spacer()
-                    //                                Button("Edit") {
-                    //                                    stopName = stop.name
-                    //                                    stopAddress = stop.address
-                    //                                    selectedStop = stop
-                    //                                    isEditing = true
-                    //                                }
-                    //                                .padding(.leading)
-                    //
-                    //                                Button("Delete") {
-                    //                                    vm.current_trip?.removeStops(removedStops: [stop])
-                    //                                }
-                    //                                .foregroundColor(.red)
-                    //                            }
-                    //                        }
-                    //                        .onDelete(perform: { indexSet in
-                    //                            if let index = indexSet.first {
-                    //                                let stopToDelete = vm.current_trip?.getStops().filter { $0.name.contains(selection) }[index]
-                    //                                if let stopToDelete = stopToDelete {
-                    //                                    vm.current_trip?.removeStops(removedStops: [stopToDelete])
-                    //                                }
-                    //                            }
-                    //                        })
-                    //                    }
+                    NavigationLink(destination: PreviewRouteView(mapManager: mapManager, vm: vm, trip: vm.current_trip!)) {
+                        Text("Continue").font(.headline)
+                            .foregroundColor(.black)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.gray.opacity(0.3))
+                            .cornerRadius(15)
+                            .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
+                    }
                 }
                 .padding(.top, 20)
             }
-        }.onAppear() {
+        }
+        .onAppear() {
             Task {
                 await updateTripRoute()
             }

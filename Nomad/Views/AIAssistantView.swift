@@ -113,8 +113,7 @@ struct AIAssistantView: View {
                     .onChange(of: speechRecognizer.transcript) { newTranscript in
                         currentMessage = newTranscript
                     }
-                
-                
+
 
                 Button(action: {
                     if !currentMessage.isEmpty {

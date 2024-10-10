@@ -11,7 +11,7 @@ import SwiftUI
 
 struct RoutePreviewView: View {
     @ObservedObject var mapManager: MapManager
-    @Binding var trip: Trip
+    @ObservedObject var trip: Trip
 
     @State var region: MKCoordinateRegion = MKCoordinateRegion()
     
@@ -24,14 +24,14 @@ struct RoutePreviewView: View {
         VStack {
             ZStack {
                 Map(initialPosition: .automatic) {
-                    Marker("Start", coordinate: self.trip.getRoute()?.getStartLocation() ?? CLLocationCoordinate2D())
-                    Marker("End", coordinate: self.trip.getRoute()?.getEndLocation() ?? CLLocationCoordinate2D())
+                    Marker("Start", coordinate: self.trip.getStartLocationCoordinates())
+                    Marker("End", coordinate: self.trip.getEndLocationCoordinates())
                     if let polyline = self.trip.getRoute()?.getRoutePolyline() {
-                            MapPolyline(polyline)
-                                .stroke(.blue, lineWidth: 5)
+                        MapPolyline(polyline)
+                            .stroke(.blue, lineWidth: 5)
                     }
                     ForEach(self.trip.getStops(), id: \.latitude) { stop in
-                        let stop_coord = CLLocationCoordinate2D(latitude: stop.getLatitude()!, longitude: stop.getLongitude()!)
+                        let stop_coord = CLLocationCoordinate2D(latitude: stop.getLatitude(), longitude: stop.getLongitude())
                         Marker("\(stop.getName())", coordinate: stop_coord)
                     }
                 }
