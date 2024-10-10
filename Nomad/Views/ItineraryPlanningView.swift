@@ -37,89 +37,122 @@ struct ItineraryPlanningView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                
                 Section(content: {
                     Text("Let's plan your new trip")
                         .frame(width: UIScreen.main.bounds.width - 20, alignment: .leading)
                         .font(.headline)
-                        .padding()
-                })
+                }).padding()
                 HStack{
-                    ZStack{
-                        Circle().fill(.black).frame(width: 21, height: 21)
-                        Circle().fill(.white).frame(width: 19, height: 19)
-                        Text("1")
-                    }.padding(.horizontal)
-                    Text("Enter your route information")
-                }.padding(.horizontal)
-                    .frame(width: UIScreen.main.bounds.width - 20, alignment: .leading)
-                    .font(.headline)
-                ZStack {
-                    VStack(spacing: 15){
-                        VStack{
-                            TextField("Start Location", text: $inputAddressStart).padding().background(Color.white).cornerRadius(10)
-                                .onChange(of: inputAddressStart) {
-                                    lastEdited = .start
-                                    mapSearch.searchTerm = inputAddressStart
-                                }
-                            
-                        }
-                        
-                        ZStack{
-                            TextField("End Location", text: $inputAddressEnd).padding().background(Color.white).cornerRadius(10)
-                                .onChange(of: inputAddressEnd) {
-                                    lastEdited = .end
-                                    mapSearch.searchTerm = inputAddressEnd
-                                }
-                            if(lastEdited == completion.start && !isClicked){
-                                dropdownMenu(inputAddress: $inputAddressStart, inputName: $inputNameStart, inputLatitude: $startLatitude, inputLongitude: $startLongitude)
-                            }
-                            
-                        }
-                        if(lastEdited == completion.end && !isClicked){
-                            dropdownMenu(inputAddress: $inputAddressEnd, inputName: $inputNameEnd, inputLatitude: $endLatitude, inputLongitude: $endLongitude)
-                        }
-                    }.padding(20)
-                }.background(Color.gray.opacity(0.5))
-                    .cornerRadius(15)
-                    .padding()
-                HStack{
-                    ZStack{
-                        Circle().fill(.black).frame(width: 21, height: 21)
-                        Circle().fill(.white).frame(width: 19, height: 19)
-                        Text("2")
-                    }.padding(.horizontal)
-                    Text("Enter your dates")
-                }.padding(.horizontal)
-                    .frame(width: UIScreen.main.bounds.width - 20, alignment: .leading)
-                    .font(.headline)
-                ZStack{
                     VStack{
-                        Text("Departure").padding()
-                        DatePicker(
-                            "Date",
-                            selection: $startDate,
-                            displayedComponents: [.date]
-                        ).padding(.horizontal)
-                        DatePicker(
-                            "Time",
-                            selection: $startTime,
-                            displayedComponents: [.hourAndMinute]
-                        ).padding(.horizontal)
-                        Text("Arrival").padding()
-                        HStack{
-                            Spacer()
-                            DatePicker(
-                                "Date",
-                                selection: $endDate,
-                                displayedComponents: [.date]
-                            )
-                            Spacer()
-                        }.padding()
+                        ZStack{
+                            Circle()
+                                .fill(Color.white)
+                                .frame(width: 24, height: 24)
+                                .overlay {
+                                    Circle()
+                                        .stroke(Color.gray, lineWidth: 1)
+                                }
+                            
+                            Text("1")
+                                .font(.system(size: 16))
+                                .foregroundColor(.gray)
+                        }
+                        Spacer()
                     }
-                }.background(Color.gray.opacity(0.1))
-                    .cornerRadius(15)
-                    .padding()
+                    VStack{
+                        HStack{
+                            Text("Enter your route information").frame(alignment: .leading).padding(.horizontal)
+                            Spacer()
+                        }
+                        ZStack {
+                            VStack(spacing: 15){
+                                VStack{
+                                    TextField("Start Location", text: $inputAddressStart).padding().background(Color.white).cornerRadius(10)
+                                        .onChange(of: inputAddressStart) {
+                                            lastEdited = .start
+                                            mapSearch.searchTerm = inputAddressStart
+                                        }
+                                    
+                                }
+                                ZStack{
+                                    TextField("End Location", text: $inputAddressEnd).padding().background(Color.white).cornerRadius(10)
+                                        .onChange(of: inputAddressEnd) {
+                                            lastEdited = .end
+                                            mapSearch.searchTerm = inputAddressEnd
+                                        }
+                                    if(lastEdited == completion.start && !isClicked){
+                                        dropdownMenu(inputAddress: $inputAddressStart, inputName: $inputNameStart, inputLatitude: $startLatitude, inputLongitude: $startLongitude)
+                                    }
+                                    
+                                }
+                                if(lastEdited == completion.end && !isClicked){
+                                    dropdownMenu(inputAddress: $inputAddressEnd, inputName: $inputNameEnd, inputLatitude: $endLatitude, inputLongitude: $endLongitude)
+                                }
+                            }.padding(20)
+                        }.background(Color.gray.opacity(0.3))
+                            .cornerRadius(15)
+                            .padding()
+                    }
+                }.padding(.horizontal)
+                    .frame(width: UIScreen.main.bounds.width - 20, height: 230, alignment: .leading)
+                    .font(.headline)
+                
+                HStack{
+                    VStack{
+                        ZStack{
+                            Circle()
+                                .fill(Color.white)
+                                .frame(width: 24, height: 24)
+                                .overlay {
+                                    Circle()
+                                        .stroke(Color.gray, lineWidth: 1)
+                                }
+                            
+                            Text("2")
+                                .font(.system(size: 16))
+                                .foregroundColor(.gray)
+                        }
+                        Spacer()
+                    }
+                    VStack{
+                        HStack{
+                            Text("Enter your dates").frame(alignment: .leading).padding(.horizontal)
+                            Spacer()
+                        }
+                        ZStack{
+                            VStack{
+                                Text("Departure").padding()
+                                HStack{
+                                    DatePicker(
+                                        "",
+                                        selection: $startDate,
+                                        displayedComponents: [.date]
+                                    )
+                                    DatePicker(
+                                        "",
+                                        selection: $startTime,
+                                        displayedComponents: [.hourAndMinute]
+                                    )
+                                }.padding(.horizontal)
+                                
+                                Text("Arrival").padding()
+                                HStack{
+                                    DatePicker(
+                                        "",
+                                        selection: $endDate,
+                                        displayedComponents: [.date]
+                                    )
+                                    Spacer(minLength: 60)
+                                }.padding()
+                            }
+                        }.background(Color.gray.opacity(0.3))
+                            .cornerRadius(15)
+                            .padding()
+                    }
+                }.padding(.horizontal)
+                    .frame(width: UIScreen.main.bounds.width - 20, height: 300, alignment: .leading)
+                    .font(.headline)
+                
                 Button(action: {
                     if(inputAddressStart.contains(inputNameStart)){
                         inputNameStart = "Start Location"
