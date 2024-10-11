@@ -8,7 +8,7 @@
 import MapKit
 import MapboxDirections
 
-struct NomadRoute {
+struct NomadRoute: Codable {
     let id = UUID()
     var route: Route? // mapbox object, not sure if we need anything from here yet.
     var legs: [NomadLeg]
@@ -42,6 +42,29 @@ struct NomadRoute {
             coordinates.append(CLLocationCoordinate2D(latitude: coord.latitude, longitude: coord.longitude))
         }
         return MKPolyline(coordinates: coordinates, count: coordinates.count)
+    }
+    
+    func getJSONCoordinates() -> [CLLocationCoordinate2D] {
+        let origCoords = getCoordinates()
+        if origCoords.count < 2 {
+            return origCoords
+        }
+        
+        let MAX_COORDS: Double = 100
+        var jsonCoords = [CLLocationCoordinate2D]()
+        let stepSize = Int(ceil(Double(origCoords.count + 1) / MAX_COORDS))
+        for i in stride(from: 0, to:origCoords.count - 1, by: stepSize) {
+            jsonCoords.append(origCoords[i])
+        }
+        if (jsonCoords.last! != origCoords[origCoords.count - 1]) {
+            if (jsonCoords.count < Int(MAX_COORDS)) {
+                jsonCoords.append(origCoords[origCoords.count - 1])
+            } else {
+                jsonCoords[jsonCoords.count - 1] = origCoords[origCoords.count - 1]
+            }
+        }
+        
+        return jsonCoords
     }
 }
 
