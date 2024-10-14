@@ -13,6 +13,16 @@ struct NomadRoute: Codable {
     var route: Route? // mapbox object, not sure if we need anything from here yet.
     var legs: [NomadLeg]
     
+    enum CodingKeys: String, CodingKey {
+        case id
+        case startCoordinate
+        case endCoordinate
+        case coordinates
+    }
+    
+    init(from decoder: Decoder) throws {
+        // Set route to null initially, create separate method that actually generates route from MapBox
+    }
     
     func getStartLocation() -> CLLocationCoordinate2D {
         return legs.first?.startCoordinate ?? CLLocationCoordinate2D()
@@ -65,6 +75,21 @@ struct NomadRoute: Codable {
         }
         
         return jsonCoords
+    }
+    
+    private func getCoordinateString(coord: CLLocationCoordinate2D) -> String {
+        return "\(coord.latitude),\(coord.longitude)"
+    }
+        
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.id.uuidString, forKey: .id)
+        
+        try container.encode(getCoordinateString(coord: getStartLocation()), forKey: .startCoordinate)
+        try container.encode(getCoordinateString(coord: getEndLocation()), forKey: .endCoordinate)
+        
+        let jsonCoordStrings = self.getJSONCoordinates().map { getCoordinateString(coord: $0) }
+        try container.encode(jsonCoordStrings.joined(separator: ";"), forKey: .coordinates)
     }
 }
 
