@@ -9,7 +9,6 @@ import SwiftUI
 import CoreLocation
 
 struct FindStopView: View {
-    @ObservedObject var mapManager: MapManager
     @ObservedObject var vm: UserViewModel
     @State var selection: String = "Dining"
     @State private var searchTerm: String = ""
@@ -22,20 +21,21 @@ struct FindStopView: View {
     @State private var stopAddress: String = ""
     @State private var selectedStop: (any POI)?
     @State private var isEditing: Bool = false
+    @Environment(\.dismiss) var dismiss
     
     let stop_types = ["Dining", "Activities", "Scenic", "Hotels", "Tours & Landmarks", "Entertainment"]
     let cuisines = ["Chinese", "Italian", "Indian", "American", "Japanese", "Korean"]
     
     var body: some View {
-        NavigationStack {
             ScrollView {
                 VStack(alignment: .leading) {
                     Text("Let's Plan Your New Trip")
                         .font(.headline)
-                        .padding(.bottom, 5)
+                        .padding(.vertical, 5)
+                        .padding(.horizontal)
                   
                     if let trip = vm.current_trip {
-                        RoutePreviewView(mapManager: mapManager, trip: Binding.constant(trip))
+                        RoutePreviewView(vm: vm, trip: Binding.constant(trip))
                             .frame(minHeight: 250.0)
                     } else {
                         Text("No current trip available")
@@ -58,6 +58,7 @@ struct FindStopView: View {
                                 .font(.system(size: 16))
                                 .foregroundColor(.gray)
                         }
+                        .padding(.leading)
                         
                         Text("Explore Stops")
                             .font(.headline)
@@ -498,66 +499,21 @@ struct FindStopView: View {
                     }
                     .frame(height: 300)
                     
-                    //                    TextField("Stop Name", text: $stopName)
-                    //                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    //                        .padding(.bottom, 5)
-                    //
-                    //                    TextField("Stop Address", text: $stopAddress)
-                    //                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    //                        .padding(.bottom, 10)
-
-                    //                    Button(isEditing ? "Update Stop" : "Add Stop") {
-                    //                        let newStop = GeneralLocation(address: stopAddress, name: stopName)
-                    //
-                    //                        if isEditing, let stop = selectedStop {
-                    //                            vm.current_trip?.removeStops(removedStops: [stop])
-                    //                            vm.current_trip?.addStops(additionalStops: [newStop])
-                    //                        } else {
-                    //                            vm.current_trip?.addStops(additionalStops: [newStop])
-                    //                        }
-                    //
-                    //                        stopName = ""
-                    //                        stopAddress = ""
-                    //                        isEditing = false
-                    //                        selectedStop = nil
-                    //                    }
-                    //                    .padding(.bottom, 10)
-                    
-                    //                    List {
-                    //                        ForEach(vm.current_trip?.getStops().filter { $0.name.contains(selection) } ?? [], id: \.address) { stop in
-                    //                            HStack {
-                    //                                Text("\(stop.name) - \(stop.address)")
-                    //                                Spacer()
-                    //                                Button("Edit") {
-                    //                                    stopName = stop.name
-                    //                                    stopAddress = stop.address
-                    //                                    selectedStop = stop
-                    //                                    isEditing = true
-                    //                                }
-                    //                                .padding(.leading)
-                    //
-                    //                                Button("Delete") {
-                    //                                    vm.current_trip?.removeStops(removedStops: [stop])
-                    //                                }
-                    //                                .foregroundColor(.red)
-                    //                            }
-                    //                        }
-                    //                        .onDelete(perform: { indexSet in
-                    //                            if let index = indexSet.first {
-                    //                                let stopToDelete = vm.current_trip?.getStops().filter { $0.name.contains(selection) }[index]
-                    //                                if let stopToDelete = stopToDelete {
-                    //                                    vm.current_trip?.removeStops(removedStops: [stopToDelete])
-                    //                                }
-                    //                            }
-                    //                        })
-                    //                    }
+                    NavigationLink(destination: PreviewRouteView(vm: vm, trip: vm.current_trip!)) {
+                        Text("Continue").font(.headline)
+                            .foregroundColor(.black)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.gray.opacity(0.3))
+                            .cornerRadius(15)
+                            .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
+                    }
                 }
                 .padding(.top, 20)
-            }
-        }.onAppear() {
-            Task {
-                await updateTripRoute()
-            }
+            }.onAppear() {
+                Task {
+                    await updateTripRoute()
+                }
         }
     }
     
@@ -582,7 +538,7 @@ struct FindStopView: View {
         all_pois.append(contentsOf: all_stops)
         all_pois.append(end_loc)
         
-        if let newRoutes = await mapManager.generateRoute(pois: all_pois) {
+        if let newRoutes = await vm.mapManager.generateRoute(pois: all_pois) {
             
             vm.setTripRoute(route: newRoutes[0])
         }
@@ -598,5 +554,5 @@ struct FindStopView: View {
 
 
 #Preview {
-    FindStopView(mapManager: MapManager(), vm: .init(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: [Trip(start_location: Restaurant(address: "848 Spring Street, Atlanta, GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)])])))
+    FindStopView(vm: .init(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: [Trip(start_location: Restaurant(address: "848 Spring Street, Atlanta, GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)])])))
 }
