@@ -29,11 +29,14 @@ struct MapView: View {
                     MapPolyline(polyline)
                         .stroke(.blue, lineWidth: 5)
                 }
-            
+                
                 
                 
             }.mapStyle(getMapStyle())
-          
+                .onTapGesture {
+                    vm.mapManager.movingMap = true
+                }
+            
             // All Map HUD
             VStack {
                 HStack {
@@ -43,7 +46,9 @@ struct MapView: View {
                             .frame(width: 50, height: 50)
                         RecenterMapView(recenterMap: {
                             if let userLocation = vm.mapManager.userLocation {
-                                vm.mapManager.mapPosition = .camera(MapCamera(centerCoordinate: userLocation, distance: 5000, heading: 0, pitch: 0))
+                                vm.mapManager.mapPosition = .camera(MapCamera(centerCoordinate: userLocation, distance: vm.mapManager.navigating ? 1000 : 5000, heading: (vm.mapManager.navigating ? vm.mapManager.motion.direction : 0) ?? 0, pitch: vm.mapManager.navigating ? 80 : 0))
+                                vm.mapManager.movingMap = false
+
                             }
                         })
                         .frame(width: 50, height: 50)

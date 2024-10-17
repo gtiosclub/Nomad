@@ -18,10 +18,10 @@ struct RoutePreviewView: View {
         VStack {
             Map(initialPosition: .automatic) {
                 if let route = vm.getTrip(trip_id: trip.id)?.route {
-                    Marker("Start", coordinate: route.getStartLocation() ?? CLLocationCoordinate2D())
-                    Marker("End", coordinate: route.getEndLocation() ?? CLLocationCoordinate2D())
+                    Marker("Start", coordinate: route.getStartLocation())
+                    Marker("End", coordinate: route.getEndLocation())
                     
-                    MapPolyline(route.getRoutePolyline())
+                    MapPolyline(route.getShape())
                         .stroke(.blue, lineWidth: 5)
                 }
                 ForEach(trip.getStops(), id: \.latitude) { stop in
