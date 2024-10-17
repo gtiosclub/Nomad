@@ -19,7 +19,7 @@
             parallelizable = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "84F954812CC1928300BA5B9B"
+               BlueprintIdentifier = "847FC2B72CC1C25600145934"
                BuildableName = "FirebaseTesting.xctest"
                BlueprintName = "FirebaseTesting"
                ReferencedContainer = "container:Nomad.xcodeproj">
