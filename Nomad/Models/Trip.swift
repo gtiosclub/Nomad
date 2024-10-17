@@ -10,7 +10,7 @@ import MapKit
 
 class Trip: Identifiable, Equatable, ObservableObject {
     var id: String
-    @Published var route: NomadRoute?
+    var route: NomadRoute?
     private var stops: [any POI]
     private var start_location: any POI
     private var end_location: any POI

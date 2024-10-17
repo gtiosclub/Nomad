@@ -197,7 +197,32 @@ struct ItineraryPlanningView: View {
                                 
                 Spacer()
                 
+                inputNameEnd = ""
+                inputNameStart = ""
+                inputAddressEnd = ""
+                inputAddressStart = ""
+                startDate = Date()
+                endDate = Date()
+                startTime = Date()
+                startLatitude = 0.0
+                startLongitude = 0.0
+                endLatitude = 0.0
+                endLongitude = 0.0
+                editTrip = true
+            }) {
+                Text("Continue").font(.headline)
+                    .foregroundColor(.black)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.gray.opacity(0.3))
+                    .cornerRadius(15)
+                    .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
             }
+            .padding(.horizontal, 50)
+            .navigationDestination(isPresented: $editTrip, destination: {TripView(vm: vm, trip: vm.current_trip)})
+            
+            Spacer()
+            
         }
         .onAppear() {
             vm.clearCurrentTrip()
