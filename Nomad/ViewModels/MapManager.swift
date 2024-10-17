@@ -339,15 +339,18 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func getFutureLocation(time: TimeInterval, route: NomadRoute) -> CLLocationCoordinate2D? {
         
         var currTime = 0.0
-        var currStepIndex = 0
         
-        while currTime < time && currStepIndex < route.steps.count - 1 {
-            let step = route.steps[currStepIndex]
-            currTime += step.direction.expectedTravelTime
-            currStepIndex += 1
+        for leg in route.legs {
+            for step in leg.steps {
+                if currTime < time {
+                    currTime += step.direction.expectedTravelTime
+                } else {
+                    return step.endCoordinate
+                }
+                
+            }
         }
-        
-        return route.steps[currStepIndex].endCoordinate
+        return nil
     }
     
 }
