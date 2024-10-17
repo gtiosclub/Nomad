@@ -1,12 +1,12 @@
 //
 //  FirebaseTesting.swift
-//  FirebaseTesting
+//  Nomad
 //
 //  Created by Datta Kansal on 10/17/24.
 //
 
 import XCTest
-import FirebaseFirestore
+import Firebase
 @testable import Nomad
 
 
@@ -50,7 +50,7 @@ final class FirebaseTesting: XCTestCase {
     func testGetAllTrips_noTrips() async {
         let userID = "adExED5FHfNSzTr63EC1sSrGaOG2" // Fill in with a valid test userID
         let trips = await vm.getAllTrips(userID: userID)
-        
+        print("Hey!")
         XCTAssertTrue(trips.isEmpty, "Expected no trips for user with no trips.")
     }
 
