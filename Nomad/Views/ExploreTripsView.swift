@@ -18,8 +18,8 @@ struct ExploreTripsView: View {
                     VStack(alignment: .leading) {
                         HStack {
                             Image(systemName: "mappin.and.ellipse")
-                                .padding()
                                 .padding(.trailing, 0)
+                                .padding(.leading)
                             if let city = vm.currentCity {
                                 Text("\(city)")
                                     .font(.headline)
@@ -74,7 +74,7 @@ struct ExploreTripsView: View {
                                         NavigationLink(destination: {
                                             PreviewRouteView(vm: vm, trip: trip)
                                         }, label: {
-                                            TripGridView(tripName: trip.getName(), imageURL: trip.getCoverImageURL())
+                                            TripGridView(trip: trip)
                                                 .frame(alignment: .top)
                                         })
                                     }
@@ -92,7 +92,7 @@ struct ExploreTripsView: View {
                                         NavigationLink(destination: {
                                             PreviewRouteView(vm: vm, trip: trip)
                                         }, label: {
-                                            TripGridView(tripName: trip.getName(), imageURL: trip.getCoverImageURL())
+                                            TripGridView(trip: trip)
                                                 .frame(alignment: .top)
                                         })
                                     }
@@ -110,7 +110,7 @@ struct ExploreTripsView: View {
                                         NavigationLink(destination: {
                                             PreviewRouteView(vm: vm, trip: trip)
                                         }, label: {
-                                            TripGridView(tripName:trip.getName(), imageURL: trip.getCoverImageURL())
+                                            TripGridView(trip: trip)
                                                 .frame(alignment: .top)
                                         })
                                     }
@@ -118,6 +118,23 @@ struct ExploreTripsView: View {
                             }
                             .padding(.horizontal)
                         }
+                    }
+                }
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        NavigationLink(destination: ItineraryPlanningView(mapManager: mapManager, vm: vm)) {
+                            Image(systemName: "plus")
+                                .font(.system(size: 24))
+                                .padding()
+                                .background(Color(.systemGray4))
+                                .foregroundColor(.black)
+                                .clipShape(Circle())
+                                .shadow(radius: 2)
+                        }
+                        .padding(.bottom, 10)
+                        .padding(.trailing, 15)
                     }
                 }
             }
@@ -147,19 +164,18 @@ struct ExploreTripsView: View {
     }
     
     struct TripGridView: View {
-        var tripName: String
-        var imageURL: String
+        @ObservedObject var trip: Trip
         
         var body: some View {
             VStack {
-                if imageURL.isEmpty {
+                if trip.coverImageURL.isEmpty {
                     Rectangle()
                         .fill(Color.gray.opacity(0.3))
                         .frame(width: 120, height: 120)
                         .cornerRadius(10)
                         .padding(.horizontal, 10)
                 } else {
-                    AsyncImage(url: URL(string: imageURL)) { image in
+                    AsyncImage(url: URL(string: trip.coverImageURL)) { image in
                         image
                             .resizable()
                             .scaledToFill()
@@ -172,9 +188,12 @@ struct ExploreTripsView: View {
                             .cornerRadius(10)
                             .padding(.horizontal, 10)
                     }
+                    .onChange(of: trip.coverImageURL, initial: true) { old, new in
+                        print("changing image url \(old) \(new)")
+                    }
                 }
                 
-                Text(tripName)
+                Text(trip.getName())
                     .lineLimit(3)
                     .multilineTextAlignment(.center)
                     .frame(width: 120)
@@ -189,4 +208,3 @@ struct ExploreTripsView: View {
     #Preview {
         ExploreTripsView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")))
     }
-

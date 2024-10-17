@@ -11,11 +11,10 @@ import MapKit
 @available(iOS 17.0, *)
 struct PreviewRouteView: View {
     @ObservedObject var vm: UserViewModel
+    @State private var title: String = ""
+    @State private var isPrivate: Bool = true
+    @Environment(\.dismiss) var dismiss
     @State var trip: Trip
-    
-    // User inputs
-    @State private var tripTitle: String = ""
-    @State private var isPublic: Bool = true
     
     var body: some View {
         ScrollView {
@@ -33,21 +32,37 @@ struct PreviewRouteView: View {
                 Spacer().frame(height: 20)
                 
                 HStack {
-                    VStack {
                         Text(formatTimeDuration(duration: trip.route?.getTotalTime() ?? TimeInterval(0)))
                             .padding()
                             .fontWeight(.bold)
                             .background(Color.gray.opacity(0.2))
                             .cornerRadius(8)
-                    }
-                    .frame(maxWidth: .infinity)
-                    
-                    VStack {
-                        Text(formatDistance(distance: trip.route?.getTotalDistance() ?? 0))
+                        Text(formatDistance(distance: trip.route?.getTotalDistance() ?? 0))                            
                             .padding()
                             .fontWeight(.bold)
                             .background(Color.gray.opacity(0.2))
                             .cornerRadius(8)
+                    }
+                    .padding(.horizontal)
+                    
+                    Text("Route Details")
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading)
+                        .padding(.top)
+                        
+            
+                    if let trip = vm.current_trip {
+                        RoutePlanListView(vm: vm)
+//                            .frame(height: 100)
+                            .padding()
+                    } else {
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.3))
+                            .frame(height: 200)
+                            .overlay(Text("No Route Details Available").foregroundColor(.gray))
+                            .padding()
                     }
                     .frame(maxWidth: .infinity)
                 }
@@ -79,34 +94,51 @@ struct PreviewRouteView: View {
                         .font(.body)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.leading)
+                        .padding(.top)
                     
-                    VStack {
-                        RadioButton(text: "Public", isSelected: $isPublic, value: true)
-                        RadioButton(text: "Private", isSelected: $isPublic, value: false)
-                    }
-                }
-                
-                HStack {
-                    NavigationLink(destination: TripView(vm: vm)) {
-                        Button("Edit Route") {
+                    TextField("Trip Title", text: $title)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding()
+                    
+                    VStack(alignment: .leading) {
+                        Text("Route Visibility")
+                            .font(.body)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.leading)
                             
+                        
+                        VStack(alignment: .leading) {
+                            RadioButton(text: "Public", isSelected: $isPrivate, value: false)
+                            RadioButton(text: "Private", isSelected: $isPrivate, value: true)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 30)
+                    }
+                    
+                    HStack {
+                        NavigationLink(destination: FindStopView(vm: vm)) {
+                            Text("Edit Route")
+                                .padding()
+                                .background(Color.gray.opacity(0.2))
+                                .cornerRadius(8)
+                                .foregroundColor(Color.black)
+                        }
+                        
+                        Spacer().frame(width: 60)
+                        
+                        Button("Save Route") {
+                            vm.setTripTitle(newTitle: $title.wrappedValue)
+                            vm.setIsPrivate(isPrivate: $isPrivate.wrappedValue)
+                            
+                            dismiss()
                         }
                         .padding()
                         .background(Color.gray.opacity(0.2))
+                        .foregroundColor(.black)
                         .cornerRadius(8)
                     }
-                    
-                    Spacer(minLength: 10)
-                    
-                    Button("Save Route") {
-                        
-                    }
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
+                    .padding(.horizontal)
                 }
-                .padding(.horizontal)
             }
         }
         .onAppear {

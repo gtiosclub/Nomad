@@ -58,14 +58,14 @@ struct TripView: View {
                 .padding()
 
                 VStack {
-                    Button("Save Changes") {
-                        if trip != nil {
-                            vm.setStartLocation(new_start_location: GeneralLocation(address: startLocationAddress, name: startLocationName))
-                            vm.setEndLocation(new_end_location: GeneralLocation(address: endLocationAddress, name: endLocationName))
-                        }
-                    }
-                    .padding()
-                    .padding()
+//                    Button("Save Changes") {
+//                        if trip != nil {
+//                            vm.setStartLocation(new_start_location: GeneralLocation(address: startLocationAddress, name: startLocationName))
+//                            vm.setEndLocation(new_end_location: GeneralLocation(address: endLocationAddress, name: endLocationName))
+//                        }
+//                    }
+//                    .padding()
+//                    .padding()
 
                     Text("Stops")
                         .font(.headline)
@@ -101,14 +101,14 @@ struct TripView: View {
                 .padding()
                 
                 VStack {
-                    Button("Save Changes") {
-                        if trip != nil {
-                            vm.setStartLocation(new_start_location: GeneralLocation(address: startLocationAddress, name: startLocationName))
-                            vm.setEndLocation(new_end_location: GeneralLocation(address: endLocationAddress, name: endLocationName))
-                        }
-                    }
-                    .padding()
-                    .padding()
+//                    Button("Save Changes") {
+//                        if trip != nil {
+//                            vm.setStartLocation(new_start_location: GeneralLocation(address: startLocationAddress, name: startLocationName))
+//                            vm.setEndLocation(new_end_location: GeneralLocation(address: endLocationAddress, name: endLocationName))
+//                        }
+//                    }
+//                    .padding()
+//                    .padding()
                     
                     Text("Stops")
                         .font(.headline)
