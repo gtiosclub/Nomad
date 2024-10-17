@@ -44,12 +44,29 @@ class Trip: Identifiable, Equatable, ObservableObject {
                 }
             }
         }
-//        if coverImageURL.isEmpty {
-//            Task {
-//                self.coverImageURL = await Trip.getCityImageAsync(location: end_location)
-//            }
-//        }
     }
+        
+    init(id: String, start_location: any POI, end_location: any POI, start_date: String, end_date: String, created_date: String, modified_date: String, stops: [any POI], start_time: String, name: String, isPrivate: Bool) {
+        self.id = id
+        self.start_location = start_location
+        self.end_location = end_location
+        self.start_date = start_date
+        self.start_time = start_time
+        self.end_date = end_date
+        self.stops = stops
+        self.name = name
+        self.isPrivate = isPrivate
+        self.created_date = created_date
+        self.modified_date = modified_date
+        self.coverImageURL = ""
+    }
+
+    
+    //        if coverImageURL.isEmpty {
+    //            Task {
+    //                self.coverImageURL = await Trip.getCityImageAsync(location: end_location)
+    //            }
+    //        }
     
     func generateRoute() async {
         var pois = [self.getStartLocation()]

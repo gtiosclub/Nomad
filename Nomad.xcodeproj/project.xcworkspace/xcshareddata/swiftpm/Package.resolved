@@ -1,5 +1,5 @@
 {
-  "originHash" : "d192c34870751f3b0856659d90757d6bce7698edacf5445a575b7dfccd98fee3",
+  "originHash" : "c0bdf6344804cce2f5ea9e5762d5e316c70b8e5806f5c48fda84c927d052fe1e",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/google/app-check.git",
       "state" : {
-        "revision" : "21fe1af9be463a359aaf8d96789ef73fc3760d09",
-        "version" : "11.0.1"
+        "revision" : "87dd288fc792bf9751e522e171a47df5b783b0b8",
+        "version" : "11.1.0"
       }
     },
     {
@@ -148,10 +148,10 @@
     {
       "identity" : "mapbox-navigation-ios",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/mapbox/mapbox-navigation-ios",
+      "location" : "https://github.com/mapbox/mapbox-navigation-ios.git",
       "state" : {
-        "revision" : "529219294063617ab08a10ab967c0ac075367686",
-        "version" : "3.4.0"
+        "branch" : "main",
+        "revision" : "40be5e236430ca1033fd4c9a1ee6c05705decca5"
       }
     },
     {
@@ -159,8 +159,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/mapbox/mapbox-navigation-native-ios.git",
       "state" : {
-        "revision" : "82207e95e5513bb8978bdadccea49114224710d3",
-        "version" : "320.0.0"
+        "revision" : "a4a7c3436e5aea99a01bae633d792e9fc4a86334"
       }
     },
     {
@@ -321,8 +320,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-protobuf.git",
       "state" : {
-        "revision" : "edb6ed4919f7756157fe02f2552b7e3850a538e5",
-        "version" : "1.28.1"
+        "revision" : "ebc7251dd5b37f627c93698e4374084d98409633",
+        "version" : "1.28.2"
       }
     },
     {
