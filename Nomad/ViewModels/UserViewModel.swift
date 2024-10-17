@@ -484,6 +484,52 @@ class UserViewModel: ObservableObject {
         community_trips = UserViewModel.community_trips
     }
     
+    func updateTrip(trip: Trip) {
+        let trip_id = trip.id
+        for i in 0..<my_trips.count {
+            if my_trips[i].id == trip_id {
+                my_trips[i] = trip
+                print("updated my_trip \(i)")
+                return
+            }
+        }
+        for i in 0..<previous_trips.count {
+            if previous_trips[i].id == trip_id {
+                previous_trips[i] = trip
+                print("updated previous_trips \(i)")
+                return
+            }
+        }
+        for i in 0..<community_trips.count {
+            if community_trips[i].id == trip_id {
+                community_trips[i] = trip
+                print("updated community_trips \(i)")
+                return
+            }
+        }
+    }
+    func getTrip(trip_id: String) -> Trip? {
+        for i in 0..<my_trips.count {
+            if my_trips[i].id == trip_id {
+                print("found my_trip \(i)")
+                return my_trips[i]
+            }
+        }
+        for i in 0..<previous_trips.count {
+            if previous_trips[i].id == trip_id {
+                print("found previous_trips \(i)")
+                return previous_trips[i]
+            }
+        }
+        for i in 0..<community_trips.count {
+            if community_trips[i].id == trip_id {
+                print("found community_trips \(i)")
+                return community_trips[i]
+            }
+        }
+        return nil
+    }
+    
     static let community_trips = [
         Trip(start_location: Activity(address: "555 Favorite Rd", name: "Home", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "666 Favorite Ave", name: "Favorite Hotel 1", latitude: 34.0522, longitude: -118.2437, city: "Redwood"), name: "Redwood National Park", coverImageURL: "https://pixabay.com/get/g673050a33bee3cf92bec894e53c695a132e2a970d4f7d222d78b159fd1104eee8366931c93df76e5a40a270d2511770b03c239fcb15c83fdef1f7fa3e9642b86_640.jpg"),
         Trip(start_location: Restaurant(address: "777 Favorite Rd", name: "Lorum ipsum Pebble Beach", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "888 Favorite Ave", name: "Favorite Hotel 2", latitude: 34.0522, longitude: -118.2437, city: "San Francisco"), name: "LA to SF", coverImageURL: "https://pixabay.com/get/gef59add7afafe4b8e63759d2d0c8508b1f363e38a98223e996dead3532bca58282ea52ed2f01b1279904658ad34fcf6200724f2d7b8d926c60032636ac0868fe_640.jpg"),

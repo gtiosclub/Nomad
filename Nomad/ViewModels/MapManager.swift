@@ -115,7 +115,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     // generate routes for navigation (index 0 is main route, others are alternates)
     public func generateRoute(stop_coords: [CLLocationCoordinate2D]) async -> [NomadRoute]? {
-        print("fetching routes...")
+        // print("fetching routes...")
         var nomadRoutes = [NomadRoute]() // return variable
         var tripWaypoints: [Waypoint] = []
         for coord in stop_coords {
@@ -163,7 +163,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                 let nomadRoute = NomadRoute(route: route, steps: routeSteps)
                 nomadRoutes.append(nomadRoute)
             }
-            print("...routes fetched")
+            // print("...routes fetched")
             return nomadRoutes
             
         } else {

@@ -27,7 +27,7 @@ struct PreviewRouteView: View {
                     .padding(.leading)
                     .padding(.top)
                 
-                RoutePreviewView(trip: $trip)
+                RoutePreviewView(vm: vm, trip: $trip)
                     .frame(height: 300)
                 
                 Spacer().frame(height: 20)
@@ -58,11 +58,6 @@ struct PreviewRouteView: View {
                     .fontWeight(.bold)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.leading)
-                
-                RoutePlanListView(vm: vm)
-                    .frame(height: 200)
-                    .padding()
-                
                 
                 
                 Text("Finalize Your Route")
@@ -115,8 +110,12 @@ struct PreviewRouteView: View {
             }
         }
         .onAppear {
-            Task {
-                await updateTripRoute()
+            if let route = vm.getTrip(trip_id: trip.id)?.route {
+                trip.route = route
+            } else {
+                Task {
+                    await updateTripRoute()
+                }
             }
         }
     }
@@ -132,7 +131,8 @@ struct PreviewRouteView: View {
         
         if let newRoutes = await vm.mapManager.generateRoute(pois: all_pois) {
             print("setting new route")
-            trip.setRoute(route: newRoutes[0])
+            trip.route = newRoutes[0]
+            vm.updateTrip(trip: trip)
         }
     }
     
