@@ -124,7 +124,7 @@ struct ExploreTripsView: View {
                     Spacer()
                     HStack {
                         Spacer()
-                        NavigationLink(destination: ItineraryPlanningView(mapManager: mapManager, vm: vm)) {
+                        NavigationLink(destination: ItineraryPlanningView(vm: vm)) {
                             Image(systemName: "plus")
                                 .font(.system(size: 24))
                                 .padding()

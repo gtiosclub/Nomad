@@ -10,7 +10,6 @@ import CoreLocation
 import MapKit
 
 struct ItineraryPlanningView: View {
-    @ObservedObject var mapManager: MapManager
     @State var inputAddressStart: String = ""
     @State var inputAddressEnd: String = ""
     @State var inputNameStart: String = ""
@@ -192,37 +191,12 @@ struct ItineraryPlanningView: View {
                 }
                 .padding(.horizontal, 50)
                 .navigationDestination(isPresented: $editTrip, destination: {
-                    FindStopView(mapManager: mapManager, vm: vm)
+                    FindStopView(vm: vm)
                 })
                                 
                 Spacer()
                 
-                inputNameEnd = ""
-                inputNameStart = ""
-                inputAddressEnd = ""
-                inputAddressStart = ""
-                startDate = Date()
-                endDate = Date()
-                startTime = Date()
-                startLatitude = 0.0
-                startLongitude = 0.0
-                endLatitude = 0.0
-                endLongitude = 0.0
-                editTrip = true
-            }) {
-                Text("Continue").font(.headline)
-                    .foregroundColor(.black)
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color.gray.opacity(0.3))
-                    .cornerRadius(15)
-                    .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
             }
-            .padding(.horizontal, 50)
-            .navigationDestination(isPresented: $editTrip, destination: {TripView(vm: vm, trip: vm.current_trip)})
-            
-            Spacer()
-            
         }
         .onAppear() {
             vm.clearCurrentTrip()
@@ -318,5 +292,5 @@ struct ItineraryPlanningView: View {
 }
 
 #Preview {
-    ItineraryPlanningView(mapManager: MapManager(), vm: .init(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "177 North Avenue NW, Atlanta, GA 30332", name: "Georgia Tech", latitude: 33.771712, longitude: -84.392842), end_location: Hotel(address: "387 West Peachtree, Atlanta, GA", name: "Hilton", latitude: 33.763814, longitude: -84.387338))])))
+    ItineraryPlanningView(vm: .init(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "177 North Avenue NW, Atlanta, GA 30332", name: "Georgia Tech", latitude: 33.771712, longitude: -84.392842), end_location: Hotel(address: "387 West Peachtree, Atlanta, GA", name: "Hilton", latitude: 33.763814, longitude: -84.387338))])))
 }

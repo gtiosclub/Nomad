@@ -25,7 +25,7 @@ struct RoutePreviewView: View {
                         .stroke(.blue, lineWidth: 5)
                 }
                 ForEach(trip.getStops(), id: \.latitude) { stop in
-                    let stop_coord = CLLocationCoordinate2D(latitude: stop.getLatitude()!, longitude: stop.getLongitude()!)
+                    let stop_coord = CLLocationCoordinate2D(latitude: stop.getLatitude(), longitude: stop.getLongitude())
                     Marker("\(stop.getName())", coordinate: stop_coord)
                 }
             }

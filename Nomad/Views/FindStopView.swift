@@ -499,7 +499,7 @@ struct FindStopView: View {
                     }
                     .frame(height: 300)
                     
-                    NavigationLink(destination: PreviewRouteView(mapManager: mapManager, vm: vm, trip: vm.current_trip!)) {
+                    NavigationLink(destination: PreviewRouteView(vm: vm, trip: vm.current_trip!)) {
                         Text("Continue").font(.headline)
                             .foregroundColor(.black)
                             .padding()

@@ -51,15 +51,15 @@ class Trip: Identifiable, Equatable, ObservableObject {
 //        }
     }
     
-    func generateRoute() async {
-        var pois = [self.getStartLocation()]
-        pois.append(contentsOf: self.getStops())
-        pois.append(self.getEndLocation())
-        if let routes = await RootView.mapManager.generateRoute(pois: pois) {
-            self.setRoute(route: routes[0]) // set main route
-        }
-    }
-    
+//    func generateRoute() async {
+//        var pois = [self.getStartLocation()]
+//        pois.append(contentsOf: self.getStops())
+//        pois.append(self.getEndLocation())
+//        if let routes = await RootView.mapManager.generateRoute(pois: pois) {
+//            self.setRoute(route: routes[0]) // set main route
+//        }
+//    }
+//    
 //    func setCoverImageURL(newURL: String) {
 //        self.coverImageURL = newURL
 //        self.updateModifiedDate()

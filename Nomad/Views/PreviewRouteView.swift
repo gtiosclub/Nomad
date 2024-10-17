@@ -11,7 +11,7 @@ import MapKit
 @available(iOS 17.0, *)
 struct PreviewRouteView: View {
     @ObservedObject var vm: UserViewModel
-    @State private var title: String = ""
+    @State private var tripTitle: String = ""
     @State private var isPrivate: Bool = true
     @Environment(\.dismiss) var dismiss
     @State var trip: Trip
@@ -64,9 +64,8 @@ struct PreviewRouteView: View {
                             .overlay(Text("No Route Details Available").foregroundColor(.gray))
                             .padding()
                     }
-                    .frame(maxWidth: .infinity)
-                }
-                .padding(.horizontal)
+                    
+                
                 
                 Text("Route Details")
                     .font(.headline)
@@ -96,7 +95,7 @@ struct PreviewRouteView: View {
                         .padding(.leading)
                         .padding(.top)
                     
-                    TextField("Trip Title", text: $title)
+                    TextField("Trip Title", text: $tripTitle)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .padding()
                     
@@ -127,7 +126,7 @@ struct PreviewRouteView: View {
                         Spacer().frame(width: 60)
                         
                         Button("Save Route") {
-                            vm.setTripTitle(newTitle: $title.wrappedValue)
+                            vm.setTripTitle(newTitle: $tripTitle.wrappedValue)
                             vm.setIsPrivate(isPrivate: $isPrivate.wrappedValue)
                             
                             dismiss()
