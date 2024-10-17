@@ -32,12 +32,12 @@ struct PreviewRouteView: View {
                 Spacer().frame(height: 20)
                 
                 HStack {
-                        Text(formatTimeDuration(duration: trip.route?.getTotalTime() ?? TimeInterval(0)))
+                    Text(formatTimeDuration(duration: trip.route?.route?.expectedTravelTime ?? TimeInterval(0)))
                             .padding()
                             .fontWeight(.bold)
                             .background(Color.gray.opacity(0.2))
                             .cornerRadius(8)
-                        Text(formatDistance(distance: trip.route?.getTotalDistance() ?? 0))                            
+                    Text(formatDistance(distance: trip.route?.route?.distance ?? 0))                            
                             .padding()
                             .fontWeight(.bold)
                             .background(Color.gray.opacity(0.2))
