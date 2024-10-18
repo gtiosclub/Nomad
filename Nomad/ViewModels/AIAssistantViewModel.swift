@@ -10,7 +10,7 @@ import ChatGPTSwift
 
 class AIAssistantViewModel: ObservableObject {
     var openAIAPIKey = ChatGPTAPI(apiKey: "<PUT API KEY HERE>")
-    var currentLocationQuery: LocationInfo = LocationInfo(locationType: "", distance: 0.0, location: "", preferences: [])
+    var currentLocationQuery: LocationInfo = LocationInfo(locationType: "", locationInformation: "", distance: 0.0, location: "", preferences: [])
     var yelpAPIKey = "<PUT API KEY HERE>"
     var gasPricesAPIKey = "<PUT GAS KEY HERE>"
     let jsonResponseFormat = Components.Schemas.CreateChatCompletionRequest.response_formatPayload(_type: .json_object) // ensure that query returns json object
@@ -101,7 +101,8 @@ class AIAssistantViewModel: ObservableObject {
                 text: """
                     I will give you a question/statement. From this statement, extract the location type and distance I am looking for and put it in this JSON format. 
                     {
-                    locationType: <Restaurant/GasStation/Hotel/RestStop/Point of Interest/Activity>
+                    locationType: <Restaurant/Gas Station/Hotel/Rest Stop/Point of Interest/Activity>
+                    locationInformation: <String>
                     distance: <Double>
                     location: <String>
                     preferences: [String]
@@ -177,12 +178,13 @@ class AIAssistantViewModel: ObservableObject {
             return location
         } catch {
             print("Error decoding JSON: \(error)")
-            return LocationInfo(locationType: "", distance: -1, location: "", preferences: [])
+            return LocationInfo(locationType: "", locationInformation: "", distance: -1, location: "", preferences: [])
         }
     }
     
     struct LocationInfo: Codable, Equatable {
         let locationType: String
+        let locationInformation: String
         let distance: Double
         let location: String
         let preferences: [String]
@@ -216,10 +218,11 @@ class AIAssistantViewModel: ObservableObject {
             return "Error: Unable to parse JSON String"
         }
         let locationType = locationInfo.locationType
+        let locationInformation = locationInfo.locationInformation
         let distance = locationInfo.distance
         let location = locationInfo.location
         let preferences = locationInfo.preferences.joined(separator: ", ")
-        guard let businessInformation = await fetchSpecificBusinesses(locationType: locationType, distance: distance, location: location, preferences: preferences) else {
+        guard let businessInformation = await fetchSpecificBusinesses(locationType: (locationInformation == "") ? locationType : locationInformation, distance: distance, location: location, preferences: preferences) else {
             return "Error: Unable to access YELP API"
         }
         return businessInformation
@@ -257,6 +260,7 @@ class AIAssistantViewModel: ObservableObject {
     func converseAndGetInfoFromYelp(query: String) async -> String? {
         let jsonString = await queryChatGPT(query: query) ?? ""
         let yelpInfo = await queryYelpWithjSONString(jsonString: jsonString) ?? "!!!Failed!!!"
+        print(yelpInfo)
         let businessResponse = parseGetBusinessesIntoModel(yelpInfo: yelpInfo)
         
         let name = businessResponse?.businesses.first?.name ?? ""
