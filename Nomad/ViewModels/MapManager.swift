@@ -126,12 +126,13 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     public func generateRoute(pois: [any POI]) async -> [NomadRoute]? {
         let coords = pois.map { poi in
-            CLLocationCoordinate2D(latitude: poi.latitude!, longitude: poi.longitude!)
+            CLLocationCoordinate2D(latitude: poi.latitude, longitude: poi.longitude)
         }
         return await generateRoute(stop_coords: coords)
     }
     // generate routes for navigation (index 0 is main route, others are alternates)
     public func generateRoute(stop_coords: [CLLocationCoordinate2D]) async -> [NomadRoute]? {
+        // print("fetching routes...")
         var nomadRoutes = [NomadRoute]() // return variable
         var tripWaypoints: [Waypoint] = []
         for coord in stop_coords {
@@ -139,7 +140,6 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             tripWaypoints.append(Waypoint(coordinate: mapPoint.coordinate, name: mapPoint.name))
         }
         
-        print("update routes 2")
         var navRoutes: NavigationRoutes?
         if let provider = await core?.routingProvider() {
             let routeOptions = NavigationRouteOptions(
@@ -182,6 +182,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
                 nomadRoutes.append(nomadRoute)
             }
+            // print("...routes fetched")
             return nomadRoutes
             
         } else {
@@ -250,6 +251,16 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             legs.append(NomadLeg(leg: routeleg))
         }
         return legs
+    }
+    
+    private func getSteps(route: Route) -> [NomadStep] {
+        var steps = [NomadStep]()
+        for leg in route.legs {
+            for step in leg.steps {
+                steps.append(NomadStep(step: step))
+            }
+        }
+        return steps
     }
     
     /// WAYPOINT CRUD SECTION
@@ -339,15 +350,18 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func getFutureLocation(time: TimeInterval, route: NomadRoute) -> CLLocationCoordinate2D? {
         
         var currTime = 0.0
-        var currStepIndex = 0
         
-        while currTime < time && currStepIndex < route.steps.count - 1 {
-            let step = route.steps[currStepIndex]
-            currTime += step.direction.expectedTravelTime
-            currStepIndex += 1
+        for leg in route.legs {
+            for step in leg.steps {
+                if currTime < time {
+                    currTime += step.direction.expectedTravelTime
+                } else {
+                    return step.endCoordinate
+                }
+                
+            }
         }
-        
-        return route.steps[currStepIndex].endCoordinate
+        return nil
     }
     
 }

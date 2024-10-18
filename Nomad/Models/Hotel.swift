@@ -14,11 +14,11 @@ struct Hotel: POI, Identifiable, Ratable {
     var rating: Double?
     var website: String?
     var imageUrl: String?
-    var longitude: Double?
-    var latitude: Double?
+    var longitude: Double
+    var latitude: Double
     var city: String?
 
-    init(address: String, name: String, rating: Double? = nil, website: String? = nil, latitude: Double? = nil, longitude: Double? = nil, city: String? = nil) {
+    init(address: String, name: String, rating: Double? = nil, website: String? = nil, latitude: Double, longitude: Double, city: String? = nil) {
         self.id = UUID().uuidString
         self.address = address
         self.name = name
@@ -31,7 +31,7 @@ struct Hotel: POI, Identifiable, Ratable {
     
     init(from business: Business) {
         self.id = business.id
-        self.address = business.location.address1 ?? "No address"
+        self.address = business.location.display_address.joined(separator: ", ")
         self.name = business.name
         self.rating = business.rating
         self.website = business.url
@@ -89,11 +89,11 @@ struct Hotel: POI, Identifiable, Ratable {
         return self.website ?? ""
     }
     
-    func getLongitude() -> Double? {
+    func getLongitude() -> Double {
         return longitude
     }
     
-    func getLatitude() -> Double? {
+    func getLatitude() -> Double {
         return latitude
     }
     
