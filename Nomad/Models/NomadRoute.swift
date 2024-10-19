@@ -9,19 +9,23 @@ import MapKit
 import MapboxDirections
 
 struct NomadRoute: Codable {
-    let id = UUID()
+    var id = UUID()
     var route: Route? // mapbox object, not sure if we need anything from here yet.
     var legs: [NomadLeg]
     
     enum CodingKeys: String, CodingKey {
         case id
         case startCoordinate
-        case endCoordinate
-        case coordinates
+        case legs // TODO: Add to encoder/decoder
     }
     
+    // sets route to null, use [method name here] to generate route
     init(from decoder: Decoder) throws {
         // Set route to null initially, create separate method that actually generates route from MapBox
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        
+        id = try values.decode(UUID.self, forKey: .id)
+
     }
     
     func getStartLocation() -> CLLocationCoordinate2D {
@@ -53,8 +57,82 @@ struct NomadRoute: Codable {
         }
         return MKPolyline(coordinates: coordinates, count: coordinates.count)
     }
+
+
+        
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.id.uuidString, forKey: .id)
+        
+        try container.encode(getCoordinateString(coord: getStartLocation()), forKey: .startCoordinate)
+        try container.encode(getCoordinateString(coord: getEndLocation()), forKey: .endCoordinate)
+        
+        
+    }
+}
+
+struct NomadLeg {
+    let id = UUID()
+    var steps: [NomadStep]
+    var startCoordinate: CLLocationCoordinate2D
+    var endCoordinate: CLLocationCoordinate2D
     
-    func getJSONCoordinates() -> [CLLocationCoordinate2D] {
+    enum CodingKeys: String, CodingKey {
+        case id
+        case coordinates
+    }
+    
+    init(leg: MapboxDirections.RouteLeg) {
+        self.init(steps: legToSteps(leg: leg))
+    }
+    
+    init(steps: [NomadStep]) {
+        initWithSteps(steps: steps)
+    }
+    
+    init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        id = try values.decode(UUID.self, forKey: .id)
+        
+        let coordinatesStr = try values.decode(String.self, forKey: .coordinates)
+        let coordinates = coordinatesStr.split(separator: ";").map { parseCoordinateString(coordString: String($0)) }
+    }
+    
+    func getStartLocation() -> CLLocationCoordinate2D {
+        return startCoordinate
+    }
+    func getEndLocation() -> CLLocationCoordinate2D {
+        return endCoordinate
+    }
+    
+    func getShape() -> MKPolyline {
+        let coords = getCoordinates()
+        return NomadRoute.convertToMKPolyline(coords)
+    }
+    
+    func getCoordinates() -> [CLLocationCoordinate2D] {
+        var coords = [CLLocationCoordinate2D]()
+        for step in steps {
+            coords.append(contentsOf: step.getCoordinates())
+        }
+        return coords
+    }
+    
+    private func legToSteps(leg: MapboxDirections.RouteLeg) -> [NomadStep] {
+        var steps = [NomadStep]()
+        for step in leg.steps {
+            steps.append(NomadStep(step: step))
+        }
+        return steps
+    }
+    
+    private mutating func initWithSteps(steps: [NomadStep]) {
+        self.steps = steps
+        self.startCoordinate = steps.first?.startCoordinate ?? CLLocationCoordinate2D()
+        self.endCoordinate = steps.last?.endCoordinate ?? CLLocationCoordinate2D()
+    }
+    
+    private func getJSONCoordinates() -> [CLLocationCoordinate2D] {
         let origCoords = getCoordinates()
         if origCoords.count < 2 {
             return origCoords
@@ -77,62 +155,50 @@ struct NomadRoute: Codable {
         return jsonCoords
     }
     
+    private func coordinatesToLeg(coords: [CLLocationCoordinate2D]) async {
+        let options = MatchOptions(coordinates: coords)
+        options.includesSteps = true
+        
+        var steps = [NomadStep]()
+                
+        // TODO: Best determine way to get this async data
+        let directions = Directions.shared
+        let task = directions.calculate(options) { result in
+            switch result {
+            case .failure(let error):
+                print("Could not generate route from coordinates: \(error)")
+            case .success(let response):
+                steps = parseDirectionsResult(response: response)
+                // TODO: Determine how to set struct properties w/o mutation error
+                
+            }
+        }
+        task.resume()
+        
+    }
+    
+    private func parseDirectionsResult(response: MapMatchingResponse) -> [NomadStep] {
+        guard let match = response.matches?.first, let leg = match.legs.first else {
+            return []
+        }
+        return legToSteps(leg: leg)
+    }
+    
     private func getCoordinateString(coord: CLLocationCoordinate2D) -> String {
         return "\(coord.latitude),\(coord.longitude)"
     }
-        
+    
+    private func parseCoordinateString(coordString: String) -> CLLocationCoordinate2D {
+        let coords = coordString.split(separator: ",")
+        return CLLocationCoordinate2D(latitude: Double(coords[0]) ?? 0.0, longitude: Double(coords[1]) ?? 0.0)
+    }
+    
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(self.id.uuidString, forKey: .id)
         
-        try container.encode(getCoordinateString(coord: getStartLocation()), forKey: .startCoordinate)
-        try container.encode(getCoordinateString(coord: getEndLocation()), forKey: .endCoordinate)
-        
         let jsonCoordStrings = self.getJSONCoordinates().map { getCoordinateString(coord: $0) }
         try container.encode(jsonCoordStrings.joined(separator: ";"), forKey: .coordinates)
-    }
-}
-
-struct NomadLeg {
-    let id = UUID()
-    var steps: [NomadStep]
-    var startCoordinate: CLLocationCoordinate2D
-    var endCoordinate: CLLocationCoordinate2D
-    
-    init(leg: MapboxDirections.RouteLeg) {
-        var steps = [NomadStep]()
-        for step in leg.steps {
-            steps.append(NomadStep(step: step))
-        }
-        self.init(steps: steps)
-    }
-    
-    init(steps: [NomadStep]) {
-        self.steps = steps
-        self.startCoordinate = steps.first?.startCoordinate ?? CLLocationCoordinate2D()
-        self.endCoordinate = steps.last?.endCoordinate ?? CLLocationCoordinate2D()
-        
-        
-    }
-    
-    func getStartLocation() -> CLLocationCoordinate2D {
-        return startCoordinate
-    }
-    func getEndLocation() -> CLLocationCoordinate2D {
-        return endCoordinate
-    }
-    
-    func getShape() -> MKPolyline {
-        let coords = getCoordinates()
-        return NomadRoute.convertToMKPolyline(coords)
-    }
-    
-    func getCoordinates() -> [CLLocationCoordinate2D] {
-        var coords = [CLLocationCoordinate2D]()
-        for step in steps {
-            coords.append(contentsOf: step.getCoordinates())
-        }
-        return coords
     }
 }
 
