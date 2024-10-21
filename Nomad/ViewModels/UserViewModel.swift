@@ -373,18 +373,58 @@ class UserViewModel: ObservableObject {
 
 
     func fetchPlaces(location: String, stopType: String, rating: Double?, price: Int?, cuisine: String?) async {
-        let apiKey = "hpQdyXearQyP-ahpSeW2wDZvn-ljfmsGvN6RTKqo18I6R23ZB3dfbzAnEjvS8tWoPwyH9FFTGifdZ-n_qH80jbRuDbGb0dHu1qEPrLH-vqNq_d6TZdUaC_kZpwvqZnYx"
+        let apiKey = "6hYoc9qnxOWgzrfzI3eWBlM2e6eh8d1L_4A27ajUL5D7nEFyYNKMmhGMTsUsgbJZlMtlXsJDV7wK1lfstjqp9vHUxc-92IjLnk43fZnIfMfIfr5mFZ4bQ8hFUmISZ3Yx"
         let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
         guard let currentTrip = current_trip else { return }
         let startLocation = currentTrip.getStartLocation()
 
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
+        
+        var queryItems: [URLQueryItem] = []
 
-        var queryItems: [URLQueryItem] = [
-            URLQueryItem(name: "location", value: startLocation.getAddress()),
-            URLQueryItem(name: "term", value: stopType),
-            URLQueryItem(name: "sort_by", value: "best_match"),
-        ]
+        if (stopType == "Restaurants") {
+            queryItems = [
+                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "term", value: "restaurants"),
+                URLQueryItem(name: "sort_by", value: "rating"),
+                URLQueryItem(name: "limit", value: "50")
+            ]
+        } else if (stopType == "Activities") {
+            queryItems = [
+                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "catergories", value: "activelife"),
+                URLQueryItem(name: "sort_by", value: "rating"),
+                URLQueryItem(name: "limit", value: "50")
+            ]
+        } else if (stopType == "Scenic") {
+            queryItems = [
+                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "term", value: "scenic"),
+                URLQueryItem(name: "sort_by", value: "rating"),
+                URLQueryItem(name: "limit", value: "50")
+            ]
+        } else if (stopType == "Hotels") {
+            queryItems = [
+                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "term", value: "hotels"),
+                URLQueryItem(name: "sort_by", value: "rating"),
+                URLQueryItem(name: "limit", value: "50")
+            ]
+        } else if (stopType == "Tours and Landmarks") {
+            queryItems = [
+                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "term", value: "tours,landmarks"),
+                URLQueryItem(name: "sort_by", value: "rating"),
+                URLQueryItem(name: "limit", value: "50")
+            ]
+        } else { //entertainment
+            queryItems = [
+                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "term", value: "arts&entertainment"),
+                URLQueryItem(name: "sort_by", value: "rating"),
+                URLQueryItem(name: "limit", value: "50")
+            ]
+        }
 
         if let price = price, price > 0 {
             queryItems.append(URLQueryItem(name: "price", value: String(price)))
@@ -412,7 +452,7 @@ class UserViewModel: ObservableObject {
             
             DispatchQueue.main.async {
                 switch stopType {
-                case "Dining":
+                case "Restaurants":
                     self.restaurants = filteredBusinesses.map { Restaurant(from: $0) }
                 case "Hotels":
                     self.hotels = filteredBusinesses.map { Hotel(from: $0) }
@@ -425,26 +465,6 @@ class UserViewModel: ObservableObject {
             print("Response Data: \(String(data: data, encoding: .utf8) ?? "No data")")
         } catch {
             print("Error fetching data: \(error.localizedDescription)")
-        }
-    }
-
-    
-    func getCategoryForStopType(stopType: String) -> String {
-        switch stopType {
-        case "Dining":
-            return "restaurants"
-        case "Activities":
-            return "activities"
-        case "Scenic":
-            return "scenic"
-        case "Hotels":
-            return "hotels"
-        case "Tours and Landmarks":
-            return "tours,landmarks"
-        case "Entertainment":
-            return "entertainment"
-        default:
-            return "restaurants"
         }
     }
     

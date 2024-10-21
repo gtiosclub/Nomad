@@ -11,7 +11,7 @@ import CoreLocation
 struct FindStopView: View {
     @ObservedObject var mapManager: MapManager
     @ObservedObject var vm: UserViewModel
-    @State var selection: String = "Dining"
+    @State var selection: String = "Restaurants"
     @State private var searchTerm: String = ""
     @State private var price: Int = 0
     @State private var rating: Int = 0
@@ -24,7 +24,7 @@ struct FindStopView: View {
     @State private var isEditing: Bool = false
     @Environment(\.dismiss) var dismiss
     
-    let stop_types = ["Dining", "Activities", "Scenic", "Hotels", "Tours & Landmarks", "Entertainment"]
+    let stop_types = ["Restaurants", "Activities", "Scenic", "Hotels", "Tours & Landmarks", "Entertainment"]
     let cuisines = ["Chinese", "Italian", "Indian", "American", "Japanese", "Korean"]
     
     var body: some View {
@@ -111,7 +111,7 @@ struct FindStopView: View {
                     
                     VStack(alignment: .leading, spacing: 16) {
                         
-                        if selection == "Dining" {
+                        if selection == "Restaurants" {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Cuisine:")
                                     .font(.headline)
@@ -120,15 +120,15 @@ struct FindStopView: View {
                                     VStack(alignment: .leading, spacing: 4) {
                                         ForEach(cuisines, id: \.self) { cuisine in
                                             Button(action: {
-                                                if selectedCuisines.contains(cuisine) {
-                                                    selectedCuisines.removeAll { $0 == cuisine }
+                                                if selectedCuisines.contains(cuisine.lowercased()) {
+                                                    selectedCuisines.removeAll { $0 == cuisine.lowercased() }
                                                 } else {
-                                                    selectedCuisines.append(cuisine)
+                                                    selectedCuisines.append(cuisine.lowercased())
                                                 }
                                             }) {
                                                 HStack {
-                                                    Image(systemName: selectedCuisines.contains(cuisine) ? "checkmark.square.fill" : "square")
-                                                        .foregroundColor(selectedCuisines.contains(cuisine) ? .blue : .gray)
+                                                    Image(systemName: selectedCuisines.contains(cuisine.lowercased()) ? "checkmark.square.fill" : "square")
+                                                        .foregroundColor(selectedCuisines.contains(cuisine.lowercased()) ? .blue : .gray)
                                                     Text(cuisine)
                                                 }
                                                 .padding(.vertical, 4)
@@ -238,7 +238,7 @@ struct FindStopView: View {
                             ProgressView("Loading...")
                                 .padding()
                         } else {
-                            if selection == "Dining", !vm.restaurants.isEmpty {
+                            if selection == "Restaurants", !vm.restaurants.isEmpty {
                                 ForEach(vm.restaurants) { restaurant in
                                     HStack {
                                         Button(action: {
