@@ -145,7 +145,37 @@ class FirebaseViewModel: ObservableObject {
             return false
         }
     }
+    
+    func createCopyTrip(newTripID: String, oldTripID: String, createdDate: String) async -> Bool {
+            let db = Firestore.firestore()
+            
+            do {
+                let document = try await db.collection("TRIPS").document(oldTripID).getDocument()
+                let stopsDocs = try await db.collection("TRIPS").document(oldTripID).collection("STOPS").getDocuments()
 
+                if document.exists {
+                    var data = document.data() ?? [:]
+                    data["created_date"] = createdDate
+                    data["modified_date"] = createdDate
+
+                    try await db.collection("TRIPS").document(newTripID).setData(data)
+                    let newTripDoc = db.collection("TRIPS").document(newTripID).collection("STOPS")
+                    for document in stopsDocs.documents {
+                        let name = document.documentID
+                        let data = document.data()
+                        try await newTripDoc.document(name).setData(data)
+                    }
+                    return true
+                } else {
+                    print("Old trip document does not exist")
+                    return false
+                }
+                
+            } catch {
+                print(error)
+                return false
+            }
+        }
 
     func modifyStartDate(userID: String, tripID: String, newStartDate: String, modifiedDate: String) async -> Bool {
         do {
