@@ -11,7 +11,7 @@ import CoreLocation
 import MapKit
 
 struct LocationSearchBox: View {
-    @ObservedObject var mapManager: MapManager
+    @ObservedObject var vm: UserViewModel
     @StateObject private var mapSearch = MapSearch()
     // Form Variables
     
@@ -62,13 +62,13 @@ struct LocationSearchBox: View {
                 // add mapmarker
                 if let lat = selectedCoord?.coordinate.latitude {
                     if let long = selectedCoord?.coordinate.longitude {
-                        let markerTitle = "Marker \(mapManager.mapMarkers.count + 1)"
+                        let markerTitle = "Marker \(vm.mapManager.mapMarkers.count + 1)"
                         let coord = CLLocationCoordinate2D(latitude: lat, longitude: long)
-                        mapManager.showMarker(markerTitle, coordinate: coord, icon: nil)
+                        vm.mapManager.showMarker(markerTitle, coordinate: coord, icon: nil)
                         
                         Task {
                             do {
-                                try await mapManager.addWaypoint(to: coord)
+                                try await vm.mapManager.addWaypoint(to: coord)
                                 print("waypoint added")
                             } catch {
                                 print("could not add waypoint")
@@ -120,5 +120,5 @@ struct LocationSearchBox: View {
 } // End Struct
 
 #Preview {
-    LocationSearchBox(mapManager: MapManager())
+    LocationSearchBox(vm: UserViewModel())
 }

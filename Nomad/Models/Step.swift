@@ -8,10 +8,15 @@
 import MapKit
 import MapboxDirections
 
-struct NomadRoute {
+struct NomadRoute: Equatable {
+    static func == (lhs: NomadRoute, rhs: NomadRoute) -> Bool {
+        lhs.id == rhs.id
+    }
+    
     let id = UUID()
     var route: Route?
     var steps: [Step]
+    
     
     // returns an array of polylines for each step of the route.
     func getRoutePolyline() -> MKPolyline {
@@ -31,6 +36,15 @@ struct NomadRoute {
     
     func getEndLocation() -> CLLocationCoordinate2D? {
         steps[steps.count - 1].endCoordinate
+    }
+    
+    // meters converted to miles
+    func getTotalDistance() -> Double {
+        (route?.distance ?? 0)/1609.34
+    }
+    
+    func getTotalTime() -> TimeInterval {
+        route?.expectedTravelTime ?? 0
     }
 }
 

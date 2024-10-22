@@ -10,54 +10,38 @@ import MapKit
 
 @available(iOS 17.0, *)
 struct PreviewRouteView: View {
-    @ObservedObject var mapManager: MapManager
     @ObservedObject var vm: UserViewModel
-    @State private var title: String = ""
+    @State private var tripTitle: String = ""
     @State private var isPrivate: Bool = true
     @Environment(\.dismiss) var dismiss
-    @State var trip: Trip
+    @ObservedObject var trip: Trip
     
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack {
-                    Text("Preview Your Route")
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.leading)
-                        .padding(.top)
-                    
-                    if let trip = vm.current_trip {
-                        RoutePreviewView(mapManager: mapManager, trip: trip)
-                            .frame(height: 300)
-                    } else {
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.3))
-                            .frame(height: 300)
-                            .overlay(Text("No Trip Available").foregroundColor(.gray))
-                    }
-                    
-                    Spacer().frame(height: 20)
-                    
-                    HStack {
-                        VStack {
-                            Text("\(Int(vm.total_time / 60)) hr \(Int(vm.total_time.truncatingRemainder(dividingBy: 60))) min")
-                                .padding()
-                                .fontWeight(.bold)
-                                .background(Color.gray.opacity(0.2))
-                                .cornerRadius(8)
-                        }
-                        .frame(maxWidth: .infinity)
-                        
-                        VStack {
-                            Text("\(vm.total_distance, specifier: "%.0f") miles")
-                                .padding()
-                                .fontWeight(.bold)
-                                .background(Color.gray.opacity(0.2))
-                                .cornerRadius(8)
-                        }
-                        .frame(maxWidth: .infinity)
+        ScrollView {
+            VStack {
+                Text("Preview Your Route")
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.leading)
+                    .padding(.top)
+                
+                RoutePreviewView(vm: vm, trip: Binding.constant(trip))
+                    .frame(height: 300)
+                
+                Spacer().frame(height: 20)
+                
+                HStack {
+                    Text(formatTimeDuration(duration: trip.route?.route?.expectedTravelTime ?? TimeInterval(0)))
+                            .padding()
+                            .fontWeight(.bold)
+                            .background(Color.gray.opacity(0.2))
+                            .cornerRadius(8)
+                    Text(formatDistance(distance: trip.route?.route?.distance ?? 0))                            
+                            .padding()
+                            .fontWeight(.bold)
+                            .background(Color.gray.opacity(0.2))
+                            .cornerRadius(8)
                     }
                     .padding(.horizontal)
                     
@@ -68,7 +52,7 @@ struct PreviewRouteView: View {
                         .padding(.leading)
                         .padding(.top)
                         
-                    
+            
                     if let trip = vm.current_trip {
                         RoutePlanListView(vm: vm)
 //                            .frame(height: 100)
@@ -81,20 +65,37 @@ struct PreviewRouteView: View {
                             .padding()
                     }
                     
-                    Text("Finalize Your Route")
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.leading)
-                        .padding(.top)
-                    
-                    Text("Route Name")
+                
+                
+                Text("Route Details")
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.leading)
+                
+                
+                Text("Finalize Your Route")
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                
+                Text("Route Name")
+                    .font(.body)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 10)
+                
+                TextField("Trip Title", text: $tripTitle)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .padding()
+                
+                VStack {
+                    Text("Route Visibility")
                         .font(.body)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.leading)
                         .padding(.top)
                     
-                    TextField("Trip Title", text: $title)
+                    TextField("Trip Title", text: $tripTitle)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .padding()
                     
@@ -114,7 +115,7 @@ struct PreviewRouteView: View {
                     }
                     
                     HStack {
-                        NavigationLink(destination: FindStopView(mapManager: mapManager, vm: vm)) {
+                        NavigationLink(destination: FindStopView(vm: vm)) {
                             Text("Edit Route")
                                 .padding()
                                 .background(Color.gray.opacity(0.2))
@@ -125,7 +126,7 @@ struct PreviewRouteView: View {
                         Spacer().frame(width: 60)
                         
                         Button("Save Route") {
-                            vm.setTripTitle(newTitle: $title.wrappedValue)
+                            vm.setTripTitle(newTitle: $tripTitle.wrappedValue)
                             vm.setIsPrivate(isPrivate: $isPrivate.wrappedValue)
                             
                             dismiss()
@@ -140,28 +141,39 @@ struct PreviewRouteView: View {
             }
         }
         .onAppear {
-            vm.setCurrentTrip(trip: trip)
-            title = vm.current_trip?.getName() ?? ""
-            isPrivate = vm.current_trip?.isPrivate ?? true
-            Task {
-                await updateTripRoute()
+            if let route = vm.getTrip(trip_id: trip.id)?.route {
+                trip.route = route
+            } else {
+                Task {
+                    await updateTripRoute()
+                }
             }
         }
     }
     func updateTripRoute() async {
-        guard let start_loc = vm.current_trip?.getStartLocation() else { return }
-        guard let end_loc = vm.current_trip?.getEndLocation() else { return }
-        guard let all_stops = vm.current_trip?.getStops() else { return }
+        let start_loc = trip.getStartLocation()
+        let end_loc = trip.getEndLocation()
+        let all_stops = trip.getStops()
         
         var all_pois: [any POI] = []
         all_pois.append(start_loc)
         all_pois.append(contentsOf: all_stops)
         all_pois.append(end_loc)
         
-        if let newRoutes = await mapManager.generateRoute(pois: all_pois) {
-            
-            trip.setRoute(route: newRoutes[0])
+        if let newRoutes = await vm.mapManager.generateRoute(pois: all_pois) {
+            print("setting new route")
+            trip.route = newRoutes[0]
+            vm.updateTrip(trip: trip)
         }
+    }
+    
+    // duration is in seconds
+    func formatTimeDuration(duration: TimeInterval) -> String {
+        let minsLeft = Int(duration.truncatingRemainder(dividingBy: 3600))
+        return "\(Int(duration / 3600)) hr \(Int(minsLeft / 60)) min"
+    }
+    func formatDistance(distance: Double) -> String {
+        return String(format: "%.0f miles", distance)
     }
     
     struct RadioButton: View {
@@ -195,7 +207,7 @@ struct PreviewRouteView: View {
 }
 
 #Preview {
-    PreviewRouteView(mapManager: .init(), vm: .init(user: User(id: "sampleUserID", name: "Sample User", trips: [
+    PreviewRouteView(vm: .init(user: User(id: "sampleUserID", name: "Sample User", trips: [
         Trip(start_location: Restaurant(address: "848 Spring Street Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090),
              end_location: Hotel(address: "201 8th Ave S Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947),
              start_date: "10-05-2024", end_date: "10-05-2024", stops: [])
