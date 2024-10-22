@@ -10,19 +10,15 @@ import SwiftUI
 @available(iOS 17.0, *)
 
 struct RoutePreviewView: View {
-    @ObservedObject var mapManager: MapManager
-    @ObservedObject var trip: Trip
+    @ObservedObject var vm: UserViewModel
+    @Binding var trip: Trip
     @State var region: MKCoordinateRegion = MKCoordinateRegion()
     
-    init(mapManager: MapManager, trip: Trip) {
-        self.mapManager = mapManager
-        self.trip = trip
-    }
     
     var body: some View {
         VStack {
             Map(initialPosition: .automatic) {
-                if let route = vm.getTrip(trip_id: trip.id)?.route {
+                if let route = trip.route {
                     Marker("Start", coordinate: route.getStartLocation())
                     Marker("End", coordinate: route.getEndLocation())
                     
@@ -33,6 +29,12 @@ struct RoutePreviewView: View {
                     let stop_coord = CLLocationCoordinate2D(latitude: stop.getLatitude(), longitude: stop.getLongitude())
                     Marker("\(stop.getName())", coordinate: stop_coord)
                 }
+            }
+            .onChange(of: trip, initial: true) { oldTrip, newTrip in
+                let start_coord = self.trip.getRoute()?.getStartLocation() ?? CLLocationCoordinate2D()
+                let end_coord = self.trip.getRoute()?.getEndLocation() ?? CLLocationCoordinate2D()
+                
+                self.region = calculateRegion(for: [start_coord, end_coord])
             }
         }
     }
