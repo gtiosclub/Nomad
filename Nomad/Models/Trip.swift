@@ -17,10 +17,10 @@ class Trip: Identifiable, Equatable, ObservableObject {
     private var start_date: String
     private var end_date: String
     private var created_date: String
-    private var modified_date: String
+    @Published var modified_date: String
     private var start_time: String
     @Published var coverImageURL: String
-    var name: String
+    @Published var name: String
     var isPrivate: Bool = true
 
     init(route: NomadRoute? = nil, start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM", name: String = "", coverImageURL: String = "") {
@@ -41,6 +41,7 @@ class Trip: Identifiable, Equatable, ObservableObject {
             Trip.getCityImage(location: end_location) { imageURL in
                 DispatchQueue.main.async {
                     self.coverImageURL = imageURL
+                    self.updateModifiedDate()
                 }
             }
         }
