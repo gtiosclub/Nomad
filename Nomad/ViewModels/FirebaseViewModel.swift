@@ -217,15 +217,18 @@ class FirebaseViewModel: ObservableObject {
         }
     }
 
-    func getAllTrips(userID: String) async -> [Trip] {
-        var trips: [Trip] = []
+    func getAllTrips(userID: String) async -> [String: [Trip]] {
+//        var trips: [Trip] = []
+        var in_progress_trips : [Trip] = []
+        var driven_trips : [Trip] = []
+        var future_trips : [Trip] = []
         let user = db.collection("USERS").document(userID)
 
         do {
             let trip_document = try await user.getDocument()
             guard let tripDocs = trip_document.data()?["trips"] as? [String] else {
                 print("Unable to retrieve trips array from user document")
-                return []
+                return [:]
             }
 
             for tripID in tripDocs {
@@ -240,12 +243,11 @@ class FirebaseViewModel: ObservableObject {
 
                     let start_location_id = tripData["start_id"] as? String ?? ""
                     let end_location_id = tripData["end_id"] as? String ?? ""
+                    let hasDriven = tripData["hasDriven"] as? Int ?? 2
 
-                    // Initialize start_location and end_location variables as optional
                     var start_location: (any POI)?
                     var end_location: (any POI)?
 
-                    // Fetch start and end location data
                     let startRef = tripDoc.reference.collection("STOPS").document(start_location_id)
                     let endRef = tripDoc.reference.collection("STOPS").document(end_location_id)
                     do {
@@ -254,7 +256,7 @@ class FirebaseViewModel: ObservableObject {
 
                         guard let startData = startDoc.data() else {
                             print("Cannot find start point for trip \(tripID)")
-                            continue // Exit current iteration of loop if data is missing
+                            continue
                         }
                         guard let endData = endDoc.data() else {
                             print("Cannot find end point for trip \(tripID)")
@@ -369,7 +371,14 @@ class FirebaseViewModel: ObservableObject {
                         name: name,
                         isPrivate: isPrivate
                     )
-                    trips.append(newTrip)
+                    if (hasDriven == 0) {
+                        driven_trips.append(newTrip)
+                    } else if (hasDriven == 1) {
+                        in_progress_trips.append(newTrip)
+                    } else if (hasDriven == 2){
+                        future_trips.append(newTrip)
+                    }
+//                    trips.append(newTrip)
 
                 } catch {
                     print("Error fetching trip \(tripID): \(error)")
@@ -377,9 +386,9 @@ class FirebaseViewModel: ObservableObject {
             }
         } catch {
             print("Error fetching user document: \(error)")
-            return []
+            return [:]
         }
-        return trips
+        return ["past": driven_trips, "present": in_progress_trips, "future": future_trips]
     }
     
     private func getPOI(name: String, address: String, type: String, longitude: Double, latitude: Double, city: String?, cuisine: String? = nil, open_time: String? = nil, close_time: String? = nil, rating: Double? = nil, price: Int? = nil, website: String? = nil) -> any POI {
