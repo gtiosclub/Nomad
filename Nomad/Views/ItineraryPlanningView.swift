@@ -10,7 +10,6 @@ import CoreLocation
 import MapKit
 
 struct ItineraryPlanningView: View {
-    @ObservedObject var mapManager: MapManager
     @State var inputAddressStart: String = ""
     @State var inputAddressEnd: String = ""
     @State var inputNameStart: String = ""
@@ -192,7 +191,7 @@ struct ItineraryPlanningView: View {
                 }
                 .padding(.horizontal, 50)
                 .navigationDestination(isPresented: $editTrip, destination: {
-                    FindStopView(mapManager: mapManager, vm: vm)
+                    FindStopView(vm: vm)
                 })
                                 
                 Spacer()
@@ -293,5 +292,5 @@ struct ItineraryPlanningView: View {
 }
 
 #Preview {
-    ItineraryPlanningView(mapManager: MapManager(), vm: .init(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "177 North Avenue NW, Atlanta, GA 30332", name: "Georgia Tech", latitude: 33.771712, longitude: -84.392842), end_location: Hotel(address: "387 West Peachtree, Atlanta, GA", name: "Hilton", latitude: 33.763814, longitude: -84.387338))])))
+    ItineraryPlanningView(vm: .init(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "177 North Avenue NW, Atlanta, GA 30332", name: "Georgia Tech", latitude: 33.771712, longitude: -84.392842), end_location: Hotel(address: "387 West Peachtree, Atlanta, GA", name: "Hilton", latitude: 33.763814, longitude: -84.387338))])))
 }
