@@ -14,7 +14,7 @@ struct PreviewRouteView: View {
     @State private var tripTitle: String = ""
     @State private var isPrivate: Bool = true
     @Environment(\.dismiss) var dismiss
-    @State var trip: Trip
+    @ObservedObject var trip: Trip
     
     var body: some View {
         ScrollView {
@@ -26,18 +26,18 @@ struct PreviewRouteView: View {
                     .padding(.leading)
                     .padding(.top)
                 
-                RoutePreviewView(vm: vm, trip: $trip)
+                RoutePreviewView(vm: vm, trip: Binding.constant(trip))
                     .frame(height: 300)
                 
                 Spacer().frame(height: 20)
                 
                 HStack {
-                        Text(formatTimeDuration(duration: trip.route?.getTotalTime() ?? TimeInterval(0)))
+                    Text(formatTimeDuration(duration: trip.route?.route?.expectedTravelTime ?? TimeInterval(0)))
                             .padding()
                             .fontWeight(.bold)
                             .background(Color.gray.opacity(0.2))
                             .cornerRadius(8)
-                        Text(formatDistance(distance: trip.route?.getTotalDistance() ?? 0))                            
+                    Text(formatDistance(distance: trip.route?.route?.distance ?? 0))                            
                             .padding()
                             .fontWeight(.bold)
                             .background(Color.gray.opacity(0.2))
@@ -160,7 +160,7 @@ struct PreviewRouteView: View {
         all_pois.append(contentsOf: all_stops)
         all_pois.append(end_loc)
         
-        if let newRoutes = await vm.mapManager.generateRoute(pois: all_pois) {
+        if let newRoutes = await MapManager.manager.generateRoute(pois: all_pois) {
             print("setting new route")
             trip.route = newRoutes[0]
             vm.updateTrip(trip: trip)
