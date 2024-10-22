@@ -35,7 +35,7 @@ struct FindStopView: View {
                         .padding(.horizontal)
                   
                     if let trip = vm.current_trip {
-                        RoutePreviewView(vm: vm, trip: Binding.constant(trip))
+                        RoutePreviewView(mapManager: mapManager, trip: trip)
                             .frame(minHeight: 250.0)
                     } else {
                         Text("No current trip available")
