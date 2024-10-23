@@ -18,6 +18,7 @@
 		48BBC2D22C9CE5070093D9D0 /* DetailRecapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48BBC2D12C9CE5070093D9D0 /* DetailRecapView.swift */; };
 		599F66172C9CE4F90025A8F8 /* Motion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 599F66162C9CE4F90025A8F8 /* Motion.swift */; };
 		66443CD72CADDB77000D3F12 /* RoutePlanListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66443CD62CADDB77000D3F12 /* RoutePlanListView.swift */; };
+		6646001C2CC815A10033541C /* Shopping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6646001B2CC815A10033541C /* Shopping.swift */; };
 		6B3E9F682CAF60A100C24BDB /* ExploreTripsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B3E9F672CAF60A100C24BDB /* ExploreTripsView.swift */; };
 		8419ED6C2C99536E003AD5C2 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED6B2C99536E003AD5C2 /* FirebaseAnalytics */; };
 		8419ED6E2C99536E003AD5C2 /* FirebaseAnalyticsOnDeviceConversion in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED6D2C99536E003AD5C2 /* FirebaseAnalyticsOnDeviceConversion */; };
@@ -98,6 +99,7 @@
 		48BBC2D12C9CE5070093D9D0 /* DetailRecapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRecapView.swift; sourceTree = "<group>"; };
 		599F66162C9CE4F90025A8F8 /* Motion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Motion.swift; sourceTree = "<group>"; };
 		66443CD62CADDB77000D3F12 /* RoutePlanListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePlanListView.swift; sourceTree = "<group>"; };
+		6646001B2CC815A10033541C /* Shopping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shopping.swift; sourceTree = "<group>"; };
 		6B3E9F672CAF60A100C24BDB /* ExploreTripsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreTripsView.swift; sourceTree = "<group>"; };
 		944E9E9A2CACBBEC0032FD34 /* NomadRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NomadRoute.swift; sourceTree = "<group>"; };
 		9455F54A2C9F99F0006D03D6 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
@@ -282,6 +284,7 @@
 				B2F8F35C2C97BD3000B9618E /* GasStation.swift */,
 				599F66162C9CE4F90025A8F8 /* Motion.swift */,
 				48974B8E2CA0A6130057B073 /* GeneralLocation.swift */,
+				6646001B2CC815A10033541C /* Shopping.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -470,6 +473,7 @@
 				B2F8F3552C97BCBB00B9618E /* Trip.swift in Sources */,
 				48BBC2D22C9CE5070093D9D0 /* DetailRecapView.swift in Sources */,
 				C49A65522C9CE6D600A8B9BA /* LocationSearchBox.swift in Sources */,
+				6646001C2CC815A10033541C /* Shopping.swift in Sources */,
 				B2F8F34A2C97BC7700B9618E /* RecapView.swift in Sources */,
 				B2F8F35B2C97BD2200B9618E /* RestStop.swift in Sources */,
 				B2F8F3372C97BB3C00B9618E /* NomadApp.swift in Sources */,

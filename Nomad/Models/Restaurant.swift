@@ -40,7 +40,7 @@ struct Restaurant: POI, Identifiable, Ratable {
         self.address = business.location.display_address.joined(separator: ", ")
         self.name = business.name
         self.rating = business.rating
-        self.cuisine = business.categories.first?.title
+        self.cuisine = (business.categories ?? [Category(alias: "", title: "")]).first?.title
         self.price = business.price?.count
         self.website = business.url
         self.imageUrl = business.image_url

@@ -19,6 +19,7 @@ class UserViewModel: ObservableObject {
     @Published var restaurants: [Restaurant] = []
     @Published var hotels: [Hotel] = []
     @Published var activities: [Activity] = []
+    @Published var shopping: [Shopping] = []
     @Published var generalLocations: [GeneralLocation] = []
     @Published var distances: [Double] = []
     @Published var times: [Double] = []
@@ -388,53 +389,59 @@ class UserViewModel: ObservableObject {
         if (stopType == "Restaurants") {
             queryItems = [
                 URLQueryItem(name: "location", value: startLocation.getAddress()),
-                URLQueryItem(name: "term", value: "restaurants"),
+                URLQueryItem(name: "categories", value: "restaurants,food"),
                 URLQueryItem(name: "sort_by", value: "rating"),
                 URLQueryItem(name: "limit", value: "50")
             ]
+            if let cuisine = cuisine, cuisine != "All" && !cuisine.isEmpty {
+                queryItems.append(URLQueryItem(name: "categories", value: cuisine))
+            }
+            if let price = price, price > 0 {
+                queryItems.append(URLQueryItem(name: "price", value: String(price)))
+            }
         } else if (stopType == "Activities") {
             queryItems = [
                 URLQueryItem(name: "location", value: startLocation.getAddress()),
-                URLQueryItem(name: "catergories", value: "activelife"),
+
+                URLQueryItem(name: "categories", value: "activelife,nightlife,facepainting,photoboothrentals,photographers,silentdisco,videographers,triviahosts,teambuilding,massage,hotspring"),
                 URLQueryItem(name: "sort_by", value: "rating"),
                 URLQueryItem(name: "limit", value: "50")
             ]
         } else if (stopType == "Scenic") {
             queryItems = [
                 URLQueryItem(name: "location", value: startLocation.getAddress()),
-                URLQueryItem(name: "term", value: "scenic"),
+                URLQueryItem(name: "term", value: "sights"),
                 URLQueryItem(name: "sort_by", value: "rating"),
                 URLQueryItem(name: "limit", value: "50")
             ]
         } else if (stopType == "Hotels") {
             queryItems = [
                 URLQueryItem(name: "location", value: startLocation.getAddress()),
-                URLQueryItem(name: "term", value: "hotels"),
+                URLQueryItem(name: "categories", value: "hotels,hostels"),
                 URLQueryItem(name: "sort_by", value: "rating"),
                 URLQueryItem(name: "limit", value: "50")
             ]
         } else if (stopType == "Tours and Landmarks") {
             queryItems = [
                 URLQueryItem(name: "location", value: startLocation.getAddress()),
-                URLQueryItem(name: "term", value: "tours,landmarks"),
+                URLQueryItem(name: "categories", value: "tours,landmarks,collegeuniv,hotsprings"),
+                URLQueryItem(name: "sort_by", value: "rating"),
+                URLQueryItem(name: "limit", value: "50")
+            ]
+        } else if (stopType == "Shopping") {
+            queryItems = [
+                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "term", value: "shopping"),
                 URLQueryItem(name: "sort_by", value: "rating"),
                 URLQueryItem(name: "limit", value: "50")
             ]
         } else { //entertainment
             queryItems = [
                 URLQueryItem(name: "location", value: startLocation.getAddress()),
-                URLQueryItem(name: "term", value: "arts&entertainment"),
+                URLQueryItem(name: "categories", value: "arts,magicians,musicians"),
                 URLQueryItem(name: "sort_by", value: "rating"),
                 URLQueryItem(name: "limit", value: "50")
             ]
-        }
-
-        if let price = price, price > 0 {
-            queryItems.append(URLQueryItem(name: "price", value: String(price)))
-        }
-
-        if let cuisine = cuisine, cuisine != "All" && !cuisine.isEmpty {
-            queryItems.append(URLQueryItem(name: "categories", value: cuisine))
         }
 
         components.queryItems = queryItems
@@ -445,14 +452,18 @@ class UserViewModel: ObservableObject {
 
         do {
             let (data, _) = try await URLSession.shared.data(for: request)
+            print("Raw Response Data: \(String(data: data, encoding: .utf8) ?? "No data")")
             let decoder = JSONDecoder()
+            
             let response = try decoder.decode(YelpResponse.self, from: data)
             
             let filteredBusinesses = response.businesses.filter { business in
-                        guard let businessRating = business.rating else { return false }
-                        return rating == nil || businessRating >= rating!
-                    }
-            
+                guard let businessRating = business.rating else { return false }
+                let meetsRatingCriteria = rating == nil || businessRating >= rating!
+                let hasValidAddress = business.location.display_address.count >= 2
+                return meetsRatingCriteria && hasValidAddress
+            }
+
             DispatchQueue.main.async {
                 switch stopType {
                 case "Restaurants":
@@ -461,11 +472,19 @@ class UserViewModel: ObservableObject {
                     self.hotels = filteredBusinesses.map { Hotel(from: $0) }
                 case "Activities":
                     self.activities = filteredBusinesses.map { Activity(from: $0) }
+                case "Shopping":
+                    self.shopping = filteredBusinesses.map { Shopping(from: $0) }
                 default:
                     self.generalLocations = filteredBusinesses.map { GeneralLocation(from: $0) }
                 }
             }
             print("Response Data: \(String(data: data, encoding: .utf8) ?? "No data")")
+        } catch DecodingError.keyNotFound(let key, let context) {
+            print("Missing key: '\(key.stringValue)' in JSON data: \(context.debugDescription)")
+        } catch DecodingError.typeMismatch(let type, let context) {
+            print("Type mismatch for the \(type) with description: \(context.debugDescription)")
+        } catch DecodingError.valueNotFound(let type , let context) {
+            print("Value not ofund for the type \(type), \(context.debugDescription)")
         } catch {
             print("Error fetching data: \(error.localizedDescription)")
         }
@@ -624,14 +643,13 @@ struct Business: Codable {
     let coordinates: Coordinates
     let location: Location
     let rating: Double?
-    let categories: [Category]
+    let categories: [Category]?
     let price: String?
     let url: String?
     let image_url: String?
 }
 
 struct Location: Codable {
-    let address1: String
     let city: String
     let display_address: [String]
 }
@@ -642,6 +660,7 @@ struct Coordinates: Codable {
 }
 
 struct Category: Codable {
+    let alias: String
     let title: String
 }
 

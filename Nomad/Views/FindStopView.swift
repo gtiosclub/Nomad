@@ -23,7 +23,7 @@ struct FindStopView: View {
     @State private var isEditing: Bool = false
     @Environment(\.dismiss) var dismiss
     
-    let stop_types = ["Restaurants", "Activities", "Scenic", "Hotels", "Tours & Landmarks", "Entertainment"]
+    let stop_types = ["Restaurants", "Activities", "Scenic", "Hotels", "Tours & Landmarks", "Entertainment", "Shopping"]
     let cuisines = ["Chinese", "Italian", "Indian", "American", "Japanese", "Korean"]
     
     var body: some View {
@@ -80,7 +80,7 @@ struct FindStopView: View {
                                         .font(.system(size: 14))
                                 }
                                 .buttonStyle(PlainButtonStyle())
-                                .frame(width: 80, height: 30)
+                                .frame(width: 90, height: 30)
                                 .cornerRadius(20)
                             }
                         }
@@ -98,7 +98,7 @@ struct FindStopView: View {
                                         .font(.system(size: 14))
                                 }
                                 .buttonStyle(PlainButtonStyle())
-                                .frame(width: 150, height: 30)
+                                .frame(width: 100, height: 30)
                                 .cornerRadius(20)
                             }
                         }
@@ -397,11 +397,11 @@ struct FindStopView: View {
                                             image
                                                 .resizable()
                                                 .scaledToFill()
-                                                .frame(width: 50, height: 50)
+                                                .frame(width: 70, height: 70)
                                                 .cornerRadius(8)
                                         } placeholder: {
                                             ProgressView()
-                                                .frame(width: 50, height: 50)
+                                                .frame(width: 70, height: 70)
                                         }
                                         
                                         VStack(alignment: .leading, spacing: 4) {
@@ -428,6 +428,54 @@ struct FindStopView: View {
                                                         .font(.subheadline)
                                                         .foregroundColor(.secondary)
                                                 }
+                                            }
+                                        }
+                                        .padding(.vertical, 8)
+                                        Spacer()
+                                    }
+                                    .padding(2)
+                                    .frame(minHeight: 50)
+                                    .background(Color.white)
+                                    .cornerRadius(12)
+                                }
+                            } else if selection == "Shopping", !vm.shopping.isEmpty {
+                                ForEach(vm.shopping) { shop in
+                                    HStack {
+                                        Button(action: {
+                                            addStop(shop)
+                                        }) {
+                                            ZStack {
+                                                Circle()
+                                                    .fill(Color.white)
+                                                    .frame(width: 24, height: 24)
+                                                    .overlay(
+                                                        Circle()
+                                                            .stroke(Color.gray, lineWidth: 1)
+                                                    )
+                                                Image(systemName: "plus")
+                                                    .foregroundColor(.gray)
+                                                    .font(.system(size: 14))
+                                                    .bold()
+                                            }
+                                        }
+                                        AsyncImage(url: URL(string: shop.imageUrl ?? "")) { image in
+                                            image
+                                                .resizable()
+                                                .scaledToFill()
+                                                .frame(width: 70, height: 70)
+                                                .cornerRadius(8)
+                                        } placeholder: {
+                                            ProgressView()
+                                                .frame(width: 70, height: 70)
+                                        }
+                                        
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text(shop.name)
+                                                .font(.headline)
+                                            if let city = shop.city {
+                                                Text("\(city)")
+                                                    .font(.system(size: 16))
+                                                    .foregroundColor(.secondary)
                                             }
                                         }
                                         .padding(.vertical, 8)
