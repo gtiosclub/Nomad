@@ -167,9 +167,17 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
-    func modifyStartLocationAndDate(tripID: String, startLocName: String, startLocAddress: String, modifiedDate: String) async -> Bool {
+    func modifyStartLocationAndDate(tripID: String, start: any POI, modifiedDate: String) async -> Bool {
+        //modify start
         do {
-            try await db.collection("TRIPS").document(tripID).updateData(["start_location_address" : startLocAddress, "start_location_name" : startLocName, "modified_date" : modifiedDate])
+            try await db.collection("TRIPS").document(tripID).collection("STOPS").document("start").updateData(["address" : start.address, "name" : start.name, "city" : start.city ?? "", "latitude" : start.latitude, "longitude" : start.longitude])
+        } catch {
+            print(error)
+            return false
+        }
+        // modify date
+        do {
+            try await db.collection("TRIPS").document(tripID).updateData(["modified_date" : modifiedDate])
             return true
         } catch {
             print(error)
@@ -177,14 +185,107 @@ class FirebaseViewModel: ObservableObject {
         }
     }
 
-    func modifyEndLocationAndDate(tripID: String, endLocName: String, endLocAddress: String, modifiedDate: String) async -> Bool {
+    func modifyEndLocationAndDate(tripID: String, stop: any POI, modifiedDate: String) async -> Bool {
+        //modify start
         do {
-            try await db.collection("TRIPS").document(tripID).updateData(["end_location_address" : endLocAddress, "end_location_name" : endLocName, "modified_date" : modifiedDate])
+            try await db.collection("TRIPS").document(tripID).collection("STOPS").document("end").updateData(["address" : stop.address, "name" : stop.name, "city" : stop.city ?? "", "latitude" : stop.latitude, "longitude" : stop.longitude])
+        } catch {
+            print(error)
+            return false
+        }
+        // modify date
+        do {
+            try await db.collection("TRIPS").document(tripID).updateData(["modified_date" : modifiedDate])
             return true
         } catch {
             print(error)
             return false
         }
+    }
+    
+    func addStopToTrip(tripID: String, stop: any POI) async -> Bool {
+        // Add stop to tripID array
+        let docRef = db.collection("TRIPS").document(tripID)
+        do {
+            let document = try await docRef.getDocument()
+            guard var stops = document.data()?["stops"] as? [String] else {
+                print("Document does not exist or stops is not an array.")
+                return false
+            }
+            if (!stops.contains(stop.name)) {
+                stops.append(stop.name)
+                try await db.collection("TRIPS").document(tripID).updateData(["stops": stops])
+                    
+            } else {
+                print("Stop already in user stop list")
+                return false;
+            }
+        } catch {
+            print(error)
+            return false
+        }
+        
+        //add stop to collections
+        var closeTime: String = ""
+        var cuisine: String = ""
+        var openTime: String = ""
+        var price: Int = -1
+        var rating: Double = -1
+        var website: String = ""
+        if let restaurant = stop as? Restaurant {
+            closeTime = restaurant.close_time ?? ""
+            openTime = restaurant.open_time ?? ""
+            cuisine = restaurant.cuisine ?? ""
+            price = restaurant.price ?? -1
+            rating = restaurant.rating ?? -1.0
+            website = restaurant.website ?? ""
+        }
+        if let hotel = stop as? Hotel {
+            rating = hotel.rating ?? -1.0
+            website = hotel.website ?? ""
+        }
+        do {
+            try await db.collection("TRIPS").document(tripID).collection("STOPS").document(stop.name).setData(["name" : stop.name, "address" : stop.address, "type" : "\(type(of: stop))", "latitude" : stop.latitude, "longitude" : stop.longitude, "city" : stop.city ?? "", "close_time" : closeTime, "cuisine" : cuisine, "open_time" : openTime, "price" : price, "rating" : rating, "website" : website])
+            return true
+        } catch {
+            print(error)
+            return false
+        }
+    }
+    
+    func removeStopFromTrip(tripID: String, stop: any POI) async -> Bool {
+        // Remove stop from tripID array
+        let docRef = db.collection("TRIPS").document(tripID)
+        do {
+            let document = try await docRef.getDocument()
+            guard var stops = document.data()?["stops"] as? [String] else {
+                print("Document does not exist or stops is not an array.")
+                return false
+            }
+            if (stops.contains(stop.name)) {
+                if let index = stops.firstIndex(of: stop.name) {
+                    stops.remove(at: index)
+                } else {
+                    return false;
+                }
+                try await db.collection("TRIPS").document(tripID).updateData(["stops": stops])
+            } else {
+                print("Stop not in user stop list")
+                return false;
+            }
+        } catch {
+            print(error)
+            return false
+        }
+        do {
+            try await db.collection("TRIPS").document(tripID).collection("STOPS").document(stop.name).delete()
+            return true
+        } catch {
+            print(error)
+            return false
+        }
+        //remove stop from collection
+        
     }
 
     func getAllTrips(userID: String) async -> [Trip] {

@@ -76,6 +76,65 @@ final class FirebaseTesting: XCTestCase {
         XCTAssertTrue(trip1count, "First trip should have 2 stops.")
         XCTAssertTrue(trip2count, "Second trip should have 0 stops.")
     }
+    
+    func testAddStopToTrip() async throws {
+        var result: Bool = await vm.addStopToTrip(tripID: "testTrip", stop: GasStation(name: "Gas Station", address: "gass street", longitude: 20.5, latitude: 30.3))
+        print("done")
+        XCTAssertTrue(result)
+    }
+        
+    func testRemoveStopFromTrip() async throws {
+        var result: Bool = await vm.removeStopFromTrip(tripID: "testTrip", stop: GasStation(name: "Gas Station", address: "gass street", longitude: 20.5, latitude: 30.3))
+        print("done")
+        XCTAssertTrue(result)
+    }
+        
+    func testUpdateStart() async throws{
+        var result: Bool = await vm.modifyStartLocationAndDate(tripID: "testTrip", start: GeneralLocation(address: "North Ave", name: "Marta", latitude: 30.3, longitude: 40.2), modifiedDate: "10/22/24")
+        print("done")
+        XCTAssertTrue(result)
+    }
+        
+    func testUpdateEnd() async throws{
+        var result: Bool = await vm.modifyEndLocationAndDate(tripID: "testTrip", stop: GasStation(name: "quicktrip", address: "broadway", longitude: 50.1, latitude: 0.53), modifiedDate: "10/22/24")
+        print("done")
+        XCTAssertTrue(result)
+    }
+    
+    func testAddStopNoTrip() async throws {
+        var result: Bool = await vm.addStopToTrip(tripID: "madeUpTrip", stop: GasStation(name: "Gas Station", address: "gass street", longitude: 20.5, latitude: 30.3))
+        XCTAssertFalse(result)
+    }
+    
+    func testAddStopDuplicate() async throws {
+        var result: Bool = await vm.addStopToTrip(tripID: "testTrip", stop: GasStation(name: "Gas Station", address: "gass street", longitude: 20.5, latitude: 30.3))
+        var result2: Bool = await vm.addStopToTrip(tripID: "testTrip", stop: GasStation(name: "Gas Station", address: "gass street", longitude: 20.5, latitude: 30.3))
+        XCTAssertFalse(result2)
+    }
+    
+    func testRemoveStopNoTrip() async throws {
+        var result: Bool = await vm.removeStopFromTrip(tripID: "madeUpStop", stop: GasStation(name: "Gas Station", address: "gass street", longitude: 20.5, latitude: 30.3))
+        print("done")
+        XCTAssertFalse(result)
+    }
+    
+    func testRemoveStopNoStop() async throws {
+        var result: Bool = await vm.removeStopFromTrip(tripID: "testTrip", stop: GasStation(name: "madeUpStop", address: "gass street", longitude: 20.5, latitude: 30.3))
+        print("done")
+        XCTAssertFalse(result)
+    }
+    
+    func testModifyStartNoTrip() async throws {
+        var result: Bool = await vm.modifyStartLocationAndDate(tripID: "noTrip", start: GeneralLocation(address: "North Ave", name: "Marta", latitude: 30.3, longitude: 40.2), modifiedDate: "10/22/24")
+        print("done")
+        XCTAssertFalse(result)
+    }
+    
+    func testModifyEndNoTrip() async throws {
+        var result: Bool = await vm.modifyEndLocationAndDate(tripID: "noTrip", stop: GasStation(name: "quicktrip", address: "broadway", longitude: 50.1, latitude: 0.53), modifiedDate: "10/22/24")
+        print("done")
+        XCTAssertFalse(result)
+    }
 //
 //    // 3. Test Case: Trip with Missing Stop Data
 //    func testGetAllTrips_tripWithMissingStopData() async {
