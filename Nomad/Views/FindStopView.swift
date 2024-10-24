@@ -21,6 +21,11 @@ struct FindStopView: View {
     @State private var stopAddress: String = ""
     @State private var selectedStop: (any POI)?
     @State private var isEditing: Bool = false
+    @State private var routeProgress: Double = 0.0
+    @State private var markerCoordinate: CLLocationCoordinate2D = .init(latitude: 0, longitude: 0)
+    @State private var filterRating: String = "4 ★ and up"
+    @State private var filterCuisine: String = "American"
+    @State private var filterPrice: String = "$$"
     @Environment(\.dismiss) var dismiss
     
     let stop_types = ["Dining", "Activities", "Scenic", "Hotels", "Tours & Landmarks", "Entertainment"]
@@ -35,7 +40,7 @@ struct FindStopView: View {
                         .padding(.horizontal)
                   
                     if let trip = vm.current_trip {
-                        RoutePreviewView(vm: vm, trip: Binding.constant(trip))
+                        RoutePreviewView(vm: vm, trip: Binding.constant(trip), currentLocation: markerCoordinate)
                             .frame(minHeight: 250.0)
                     } else {
                         Text("No current trip available")
@@ -44,6 +49,13 @@ struct FindStopView: View {
                 }
                 
                 VStack(alignment: .leading, spacing: 15) {
+                    /*Slider(value: $routeProgress, in: 0...1, step: 0.01) {
+                            Text("Route Progress")
+                        }
+                        .padding()
+                        .onChange(of: routeProgress) { newValue in
+                            updateMarkerPosition(progress: newValue)
+                        }*/
                     HStack {
                         ZStack {
                             Circle()
@@ -113,7 +125,8 @@ struct FindStopView: View {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("Cuisine:")
                                     .font(.headline)
-                                
+                                FilterView(selectedRating: rating, selectedCuisine: cuisines, selectedPrice: price)
+                                /*
                                 HStack(alignment: .top, spacing: 16) {
                                     VStack(alignment: .leading, spacing: 4) {
                                         ForEach(cuisines, id: \.self) { cuisine in
@@ -174,7 +187,7 @@ struct FindStopView: View {
                                             }
                                         }
                                     }
-                                }
+                                }*/
                             }
                             .padding(.bottom, 10)
                         }
@@ -514,6 +527,7 @@ struct FindStopView: View {
                 Task {
                     await updateTripRoute()
                 }
+                //markerCoordinate = vm.current_trip?.getStartLocationCoordinates()
         }
     }
     
@@ -550,9 +564,65 @@ struct FindStopView: View {
             await self.updateTripRoute()
         }
     }
+    
+    /*func updateMarkerPosition(progress: Double) {
+
+        let totalTime = vm.total_time
+        let targetTime = totalTime * progress
+
+        Task {
+            if let newPosition = try? await vm.mapManager.getFutureLocation(time: targetTime) {
+                markerCoordinate = newPosition
+            }
+        }
+    }*/
+
 }
 
 
-#Preview {
-    FindStopView(vm: .init(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: [Trip(start_location: Restaurant(address: "848 Spring Street, Atlanta, GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)])])))
+struct FindStopView_Previews: PreviewProvider {
+    static var previews: some View {
+        let userViewModel = UserViewModel(user: User(
+            id: "austinhuguenard",
+            name: "Austin Huguenard",
+            trips: [
+                Trip(
+                    start_location: Restaurant(
+                        address: "848 Spring Street, Atlanta, GA 30308",
+                        name: "Tiff's Cookies",
+                        rating: 4.5,
+                        price: 1,
+                        latitude: 33.778033,
+                        longitude: -84.389090
+                    ),
+                    end_location: Hotel(
+                        address: "201 8th Ave S, Nashville, TN 37203 United States",
+                        name: "JW Marriott",
+                        latitude: 36.156627,
+                        longitude: -86.780947
+                    ),
+                    start_date: "10-05-2024",
+                    end_date: "10-05-2024",
+                    stops: [
+                        Activity(
+                            address: "1720 S Scenic Hwy Chattanooga, TN 37409 United States",
+                            name: "Ruby Falls",
+                            latitude: 35.018901,
+                            longitude: -85.339367
+                        )
+                    ]
+                )
+            ]
+        ))
+
+        userViewModel.current_trip = userViewModel.user!.trips.first
+
+        return FindStopView(vm: userViewModel)
+    }
 }
+
+
+ /*#Preview {
+     FindStopView(vm: .init(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: [Trip(start_location: Restaurant(address: "848 Spring Street, Atlanta, GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)])])))
+ }
+ */
