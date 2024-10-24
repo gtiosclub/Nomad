@@ -227,4 +227,8 @@ struct Trip: Identifiable, Equatable, Observable {
     mutating func setVisibility(isPrivate: Bool) {
         self.visibility = isPrivate
     }
+    
+    mutating func reorderStops(fromOffsets: IndexSet, toOffset: Int) {
+        stops.move(fromOffsets: fromOffsets, toOffset: toOffset)
+    }
 }

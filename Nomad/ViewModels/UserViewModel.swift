@@ -464,6 +464,10 @@ class UserViewModel: ObservableObject {
     func getTripVisibility() -> Bool {
         return current_trip?.isPrivate() ?? true
     }
+    
+    func reorderStops(fromOffsets: IndexSet, toOffset: Int) {
+        current_trip?.reorderStops(fromOffsets: fromOffsets, toOffset: toOffset)
+    }
 
 }
 
