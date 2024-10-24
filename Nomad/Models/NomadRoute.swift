@@ -8,7 +8,7 @@
 import MapKit
 import MapboxDirections
 
-struct NomadRoute: Codable {
+struct NomadRoute {
     var id = UUID()
     var route: Route? // mapbox object, not sure if we need anything from here yet.
     var legs: [NomadLeg]
@@ -16,18 +16,6 @@ struct NomadRoute: Codable {
     enum CodingKeys: String, CodingKey {
         case id
         case legs // TODO: Add to encoder/decoder
-    }
-    
-    // sets route to null, use [method name here] to generate route
-    init(from decoder: Decoder) throws {
-        
-        // Set route to null initially, create separate method that actually generates route from MapBox
-        let values = try decoder.container(keyedBy: CodingKeys.self)
-        
-        id = try values.decode(UUID.self, forKey: .id)
-        
-        // TODO: Finish this
-
     }
     
     func getStartLocation() -> CLLocationCoordinate2D {
@@ -59,19 +47,9 @@ struct NomadRoute: Codable {
         }
         return MKPolyline(coordinates: coordinates, count: coordinates.count)
     }
-
-
-        
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(self.id.uuidString, forKey: .id)
-        
-        // TODO: parseCoordinates
-        
-    }
 }
 
-struct NomadLeg {
+struct NomadLeg: Codable {
     var id: UUID = UUID()
     var steps: [NomadStep]
     var startCoordinate: CLLocationCoordinate2D
@@ -96,7 +74,7 @@ struct NomadLeg {
         self.endCoordinate = steps.last?.endCoordinate ?? CLLocationCoordinate2D()
     }
     
-    init(from decoder: Decoder) async throws {
+    init(from decoder: Decoder) throws {
         self.steps = [NomadStep]()
         self.startCoordinate = CLLocationCoordinate2D()
         self.endCoordinate = CLLocationCoordinate2D()
@@ -104,13 +82,11 @@ struct NomadLeg {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         id = try values.decode(UUID.self, forKey: .id)
         
-        let coordinatesStr = try values.decode(String.self, forKey: .coordinates)
-        let coordinates = coordinatesStr.split(separator: ";").map {
-            let coords = $0.split(separator: ",")
-            return CLLocationCoordinate2D(latitude: Double(coords[0]) ?? 0.0, longitude: Double(coords[1]) ?? 0.0)
-        }
-        if let steps = await coordinatesToLeg(coords: coordinates) {
-            initWithSteps(steps: steps)
+
+        Task {
+            if let steps = await coordinatesToLeg(coords: coordinates) {
+                initWithSteps(steps: steps)
+            }
         }
     }
     
