@@ -10,8 +10,8 @@ import Foundation
 struct GasStation: POI {
     var name: String
     var address: String
-    var longitude: Double?
-    var latitude: Double?
+    var longitude: Double
+    var latitude: Double
     var city: String?
     
     static func == (lhs: GasStation, rhs: GasStation) -> Bool {
@@ -46,11 +46,11 @@ struct GasStation: POI {
         name
     }
     
-    func getLongitude() -> Double? {
+    func getLongitude() -> Double {
         return longitude
     }
     
-    func getLatitude() -> Double? {
+    func getLatitude() -> Double {
         return latitude
     }
     
