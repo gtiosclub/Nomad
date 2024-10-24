@@ -35,3 +35,9 @@ protocol Ratable {
     func getRating() -> Double
 }
 
+protocol Imagable {
+    var imageUrl: String? { get set }
+
+    func getImageUrl() -> String?
+    
+}
