@@ -289,4 +289,8 @@ class Trip: Identifiable, Equatable, ObservableObject {
     func getEndLocationCoordinates() -> CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: end_location.latitude, longitude: end_location.longitude)
     }
+    
+    mutating func reorderStops(fromOffsets: IndexSet, toOffset: Int) {
+        stops.move(fromOffsets: fromOffsets, toOffset: toOffset)
+    }
 }

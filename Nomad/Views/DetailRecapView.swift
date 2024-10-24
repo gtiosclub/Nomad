@@ -15,6 +15,7 @@ struct DetailRecapView: View {
     @ObservedObject var vm: UserViewModel
     @State var trip: Trip
     @State private var totalDist: Double = 0.0
+    var route: NomadRoute
     
     var body: some View {
         ScrollView {
@@ -52,7 +53,7 @@ struct DetailRecapView: View {
                             .foregroundColor(.gray.opacity(0.5))
                             .frame(width: 155, height: 87)
                         VStack {
-                            Text(String(round(vm.total_distance)))
+                            Text(String(round(route.totalDistance())))
                                 .font(.system(size: 30))
                             Text("miles traveled")
                         }
@@ -63,7 +64,7 @@ struct DetailRecapView: View {
                             .foregroundColor(.gray.opacity(0.5))
                             .frame(width: 155, height: 87)
                         VStack {
-                            Text(String(round(vm.total_time / 60)))
+                            Text(String(round(route.totalTime() / 60)))
                                 .font(.system(size: 30))
                             Text("hours spent")
                         }
@@ -98,8 +99,8 @@ struct DetailRecapView: View {
                 .padding(.bottom, 30)
         }.onAppear{
             Task {
-                await vm.getTotalDistance()
-                await vm.getTotalTime()
+                let totalDistance = route.totalDistance()
+                let totalTime = route.totalTime()
             }
             vm.setCurrentTrip(trip: trip)
         }
