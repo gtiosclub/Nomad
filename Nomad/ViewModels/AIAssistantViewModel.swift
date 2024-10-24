@@ -10,7 +10,7 @@ import ChatGPTSwift
 
 class AIAssistantViewModel: ObservableObject {
     var openAIAPIKey = ChatGPTAPI(apiKey: "<PUT API KEY HERE>")
-    var currentLocationQuery: LocationInfo = LocationInfo(locationType: "", locationInformation: "", distance: 0.0, location: "", preferences: [])
+    var currentLocationQuery: LocationInfo = LocationInfo(locationType: "", locationInformation: "", distance: 0.0, price: "1,2,3,4", location: "", preferences: [])
     var yelpAPIKey = "<PUT API KEY HERE>"
     var gasPricesAPIKey = "<PUT GAS KEY HERE>"
     let jsonResponseFormat = Components.Schemas.CreateChatCompletionRequest.response_formatPayload(_type: .json_object) // ensure that query returns json object
@@ -99,11 +99,12 @@ class AIAssistantViewModel: ObservableObject {
         do {
             let response = try await openAIAPIKey.sendMessage(
                 text: """
-                    I will give you a question/statement. From this statement, extract the location type and distance I am looking for and put it in this JSON format. 
+                    I will give you a question/statement. From this statement, extract the location type and distance I am looking for and put it in this JSON format. Price is default "1,2,3,4", and should only include upper or lower ranges based on user price preference. You do not need to include price related information in preferences field.
                     {
                     locationType: <Restaurant/Gas Station/Hotel/Rest Stop/Point of Interest/Activity>
                     locationInformation: <String>
                     distance: <Double>
+                    price: <1,2,3,4>
                     location: <String>
                     preferences: [String]
                     }
@@ -178,7 +179,7 @@ class AIAssistantViewModel: ObservableObject {
             return location
         } catch {
             print("Error decoding JSON: \(error)")
-            return LocationInfo(locationType: "", locationInformation: "", distance: -1, location: "", preferences: [])
+            return LocationInfo(locationType: "", locationInformation: "", distance: -1, price: "1,2,3,4", location: "", preferences: [])
         }
     }
     
@@ -186,16 +187,18 @@ class AIAssistantViewModel: ObservableObject {
         let locationType: String
         let locationInformation: String
         let distance: Double
+        let price: String
         let location: String
         let preferences: [String]
     }
     
-    func fetchSpecificBusinesses(locationType: String, distance: Double, location: String, preferences: String) async -> String? {
+    func fetchSpecificBusinesses(locationType: String, distance: Double, price: String, location: String, preferences: String) async -> String? {
         let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
         let queryItems: [URLQueryItem] = [
             URLQueryItem(name: "location", value: location),
             URLQueryItem(name: "term", value: "\(preferences)  \(locationType)"),
+            URLQueryItem(name: "price", value: price),
             URLQueryItem(name: "radius", value: "\(Int(distance * 1609))"), //Because the parameter takes in meters, we convert miles to meters (1 mile = 1608.34 meters)
             URLQueryItem(name: "limit", value: "1"),
         ]
@@ -221,8 +224,9 @@ class AIAssistantViewModel: ObservableObject {
         let locationInformation = locationInfo.locationInformation
         let distance = locationInfo.distance
         let location = locationInfo.location
+        let price = locationInfo.price
         let preferences = locationInfo.preferences.joined(separator: ", ")
-        guard let businessInformation = await fetchSpecificBusinesses(locationType: (locationInformation == "") ? locationType : locationInformation, distance: distance, location: location, preferences: preferences) else {
+        guard let businessInformation = await fetchSpecificBusinesses(locationType: (locationInformation == "") ? locationType : locationInformation, distance: distance, price: price, location: location, preferences: preferences) else {
             return "Error: Unable to access YELP API"
         }
         return businessInformation

@@ -586,7 +586,7 @@ struct FindStopView: View {
         all_pois.append(contentsOf: all_stops)
         all_pois.append(end_loc)
         
-        if let newRoutes = await vm.mapManager.generateRoute(pois: all_pois) {
+        if let newRoutes = await MapManager.manager.generateRoute(pois: all_pois) {
             
             vm.setTripRoute(route: newRoutes[0])
         }

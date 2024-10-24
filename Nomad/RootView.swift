@@ -37,7 +37,7 @@ struct RootView: View {
             .task {
                 if !mapboxSetUp {
                     self.mapboxSetUp = true
-                    await vm.mapManager.setupMapbox()
+                    await MapManager.manager.setupMapbox()
                 }
             }
     }

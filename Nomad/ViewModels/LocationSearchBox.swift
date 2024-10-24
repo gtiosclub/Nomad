@@ -62,13 +62,13 @@ struct LocationSearchBox: View {
                 // add mapmarker
                 if let lat = selectedCoord?.coordinate.latitude {
                     if let long = selectedCoord?.coordinate.longitude {
-                        let markerTitle = "Marker \(vm.mapManager.mapMarkers.count + 1)"
+                        let markerTitle = "Marker"
                         let coord = CLLocationCoordinate2D(latitude: lat, longitude: long)
-                        vm.mapManager.showMarker(markerTitle, coordinate: coord, icon: nil)
+//                        vm.mapManager.showMarker(markerTitle, coordinate: coord, icon: nil)
                         
                         Task {
                             do {
-                                try await vm.mapManager.addWaypoint(to: coord)
+//                                try await vm.mapManager.addWaypoint(to: coord)
                                 print("waypoint added")
                             } catch {
                                 print("could not add waypoint")
