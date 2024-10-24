@@ -19,6 +19,15 @@ class ChatViewModel: ObservableObject {
         Message(content: "Hi! I'm Atlas, your AI assistant", sender: "AI")
     ]
     
+    @Published var pois: [POIDetail] = []
+
+    //For Testing the Horizontal Scroll View
+//    @Published var pois: [POIDetail] = [
+//        POIDetail(name: "Speedway", address: "901 Gas Station Avenue, Duluth GA", distance: "in 30 mi"),
+//        POIDetail(name: "Shell", address: "123 Main Street, Atlanta GA", distance: "in 40 mi"),
+//        POIDetail(name: "BP", address: "456 Elm Street, Lawrenceville GA", distance: "in 20 mi")
+//    ]
+    
     func sendMessage(_ content: String) {
         let newMessage = Message(content: content, sender: "User")
         messages.append(newMessage)
@@ -30,6 +39,7 @@ class ChatViewModel: ObservableObject {
                 DispatchQueue.main.async {
                     let aiMessage = Message(content: aiResponse, sender: "AI")
                     self.messages.append(aiMessage)
+                    self.pois = self.generateSamplePOIs()  // Populate with sample POIs after query
                 }
             } else {
                 DispatchQueue.main.async {
@@ -39,6 +49,23 @@ class ChatViewModel: ObservableObject {
             }
         }
     }
+    
+    // Example function to generate sample POIs (you would use real data here)
+    func generateSamplePOIs() -> [POIDetail] {
+        return [
+            POIDetail(name: "Speedway", address: "901 Gas Station Avenue, Duluth GA", distance: "in 30 mi"),
+            POIDetail(name: "Shell", address: "123 Main Street, Atlanta GA", distance: "in 40 mi"),
+            POIDetail(name: "BP", address: "456 Elm Street, Lawrenceville GA", distance: "in 20 mi")
+        ]
+    }
+}
+
+// Add a model for POI details
+struct POIDetail: Identifiable {
+    var id = UUID()
+    var name: String
+    var address: String
+    var distance: String
 }
 
 struct AIAssistantView: View {
@@ -48,6 +75,7 @@ struct AIAssistantView: View {
     @State private var isMicrophone = false
 
     @State private var currentMessage: String = ""
+    
 
     var body: some View {
         VStack {
@@ -79,6 +107,20 @@ struct AIAssistantView: View {
             }
             .listStyle(PlainListStyle())
             .background(Color.clear)
+            
+            // Horizontal scroll view for POIs
+            if !viewModel.pois.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 20) {
+                        ForEach(viewModel.pois) { poi in
+                            POIDetailView(name: poi.name, address: poi.address, distance: poi.distance)
+                                .frame(width: 400) // Adjust width as necessary
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+                .frame(height: 150)  // Adjust height as needed
+            }
             
             HStack {
                 Button(action: {

@@ -8,6 +8,12 @@
 import SwiftUI
 
 struct POIDetailView: View {
+    
+    var name = "Speedway"
+    var address = "901 Gas Station Avenue, Duluth GA"
+    var distance = "in 30 mi"
+    
+    
     var body: some View {
         VStack(spacing: 10) {
             // Top part: Image and POI Information
@@ -27,11 +33,11 @@ struct POIDetailView: View {
                 
                 // POI Information
                 VStack(alignment: .leading, spacing: 5) {
-                    Text("Speedway")
+                    Text(name)
                         .font(.title)
                         .fontWeight(.bold)
                     
-                    Text("901 Gas Station Avenue, Duluth GA")
+                    Text(address)
                         .font(.subheadline)
                         .foregroundColor(.gray)
                     
@@ -50,7 +56,7 @@ struct POIDetailView: View {
                 VStack {
                     Text("+ 2 min")
                         .font(.headline)
-                    Text("in 30 mi")
+                    Text(distance)
                         .font(.subheadline)
                         .foregroundColor(.gray)
                 }
