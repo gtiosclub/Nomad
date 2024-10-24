@@ -18,6 +18,7 @@ struct TripView: View {
     @State var endDate: Date = Date()
     @State var startTime: Date = Date()
     @State private static var dateformatter = DateFormatter()
+    var route: NomadRoute
  
     var body: some View {
         NavigationStack {
@@ -127,12 +128,12 @@ struct TripView: View {
                 HStack{
                     Text("Total Time").frame(alignment: .leading)
                     Spacer()
-                    Text("\(vm.total_time)")
+                    Text("\(route.totalTime)")
                 }
                 HStack{
                     Text("Total Distance").frame(alignment: .leading)
                     Spacer()
-                    Text("\(vm.total_distance)")
+                    Text("\(route.totalDistance)")
                 }
             }
             .frame(minWidth: UIScreen.main.bounds.width - 20)
@@ -215,6 +216,6 @@ struct TripView: View {
 }
 
 #Preview {
-    TripView(vm: .init(user: User(id: "89379", name: "austin", trips: UserViewModel.my_trips)), trip:  UserViewModel.my_trips[0])
+    TripView(vm: .init(user: User(id: "89379", name: "austin", trips: UserViewModel.my_trips)), trip:  UserViewModel.my_trips[0], route: <#NomadRoute#>)
 }
 
