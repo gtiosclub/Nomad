@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Hotel: POI, Identifiable, Ratable {
+struct Hotel: POI, Identifiable, Ratable, Imagable {
     var id: String
     var address: String
     var name: String
@@ -99,6 +99,10 @@ struct Hotel: POI, Identifiable, Ratable {
     
     func getCity() -> String? {
         return city
+    }
+    
+    func getImageUrl() -> String?  {
+        return imageUrl
     }
 }
 
