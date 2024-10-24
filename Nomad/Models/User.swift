@@ -7,10 +7,10 @@
 
 import Foundation
 
-class User: Identifiable {
+class User: Identifiable, ObservableObject {
     var id: String
     private var name: String
-    private var trips: [Trip]
+    @Published var trips: [Trip]
     
     init(id: String, name: String, trips: [Trip] = []) {
         self.id = id

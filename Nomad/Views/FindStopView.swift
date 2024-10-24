@@ -9,7 +9,6 @@ import SwiftUI
 import CoreLocation
 
 struct FindStopView: View {
-    @ObservedObject var mapManager: MapManager
     @ObservedObject var vm: UserViewModel
     @State var selection: String = "Dining"
     @State private var searchTerm: String = ""
@@ -22,12 +21,12 @@ struct FindStopView: View {
     @State private var stopAddress: String = ""
     @State private var selectedStop: (any POI)?
     @State private var isEditing: Bool = false
+    @Environment(\.dismiss) var dismiss
     
     let stop_types = ["Dining", "Activities", "Scenic", "Hotels", "Tours & Landmarks", "Entertainment"]
     let cuisines = ["Chinese", "Italian", "Indian", "American", "Japanese", "Korean"]
     
     var body: some View {
-        NavigationStack {
             ScrollView {
                 VStack(alignment: .leading) {
                     Text("Let's Plan Your New Trip")
@@ -36,7 +35,7 @@ struct FindStopView: View {
                         .padding(.horizontal)
                   
                     if let trip = vm.current_trip {
-                        RoutePreviewView(mapManager: mapManager, trip: trip)
+                        RoutePreviewView(vm: vm, trip: Binding.constant(trip))
                             .frame(minHeight: 250.0)
                     } else {
                         Text("No current trip available")
@@ -506,7 +505,7 @@ struct FindStopView: View {
                     }
                     .frame(height: 300)
                     
-                    NavigationLink(destination: PreviewRouteView(mapManager: mapManager, vm: vm, trip: vm.current_trip!)) {
+                    NavigationLink(destination: PreviewRouteView(vm: vm, trip: vm.current_trip!)) {
                         Text("Continue").font(.headline)
                             .foregroundColor(.black)
                             .padding()
@@ -517,12 +516,10 @@ struct FindStopView: View {
                     }
                 }
                 .padding(.top, 20)
-            }
-        }
-        .onAppear() {
-            Task {
-                await updateTripRoute()
-            }
+            }.onAppear() {
+                Task {
+                    await updateTripRoute()
+                }
         }
     }
     
@@ -547,7 +544,7 @@ struct FindStopView: View {
         all_pois.append(contentsOf: all_stops)
         all_pois.append(end_loc)
         
-        if let newRoutes = await mapManager.generateRoute(pois: all_pois) {
+        if let newRoutes = await vm.mapManager.generateRoute(pois: all_pois) {
             
             vm.setTripRoute(route: newRoutes[0])
         }
@@ -563,7 +560,7 @@ struct FindStopView: View {
 
 
 #Preview {
-    FindStopView(mapManager: MapManager(), vm: .init(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: [Trip(start_location: Restaurant(address: "848 Spring Street, Atlanta, GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)])])))
+    FindStopView(vm: .init(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: [Trip(start_location: Restaurant(address: "848 Spring Street, Atlanta, GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)])])))
 }
 
 // be able to swipe entire vstack out to enhancedrouteplanlistview and back / using tab view perhaps

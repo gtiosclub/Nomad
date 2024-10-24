@@ -24,6 +24,10 @@ class UserViewModel: ObservableObject {
     @Published var times: [Double] = []
     @Published var currentCity: String?
     
+    @Published var previous_trips: [Trip] = []
+    @Published var community_trips: [Trip] = []
+
+    
     init(user: User? = nil) {
         self.user = user
 //        if user?.getTrips().count ?? 0 >= 1 {
@@ -44,8 +48,12 @@ class UserViewModel: ObservableObject {
     @MainActor
     func createTrip(start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM") async -> Trip {
         let route = await getRoute()
+//        let cityImageURL = await Trip.getCityImageAsync(location: end_location)
+//        print(cityImageURL)
         self.current_trip = Trip(route: route, start_location: start_location, end_location: end_location, start_date: start_date, end_date: end_date, stops: stops, start_time: start_time)
+        
         self.user?.addTrip(trip: self.current_trip!)
+                
         return current_trip!
     }
     
@@ -308,12 +316,12 @@ class UserViewModel: ObservableObject {
         
         guard let currentTrip = current_trip else { return }
         let stops = currentTrip.getStops()
-
+        
         let startLocation = currentTrip.getStartLocation()
         let startAddress = startLocation.address
         let endLocation = currentTrip.getEndLocation()
         let endAddress = endLocation.address
-
+        
         if !stops.isEmpty {
             let firstStopAddress = stops[0].address
             
@@ -352,21 +360,20 @@ class UserViewModel: ObservableObject {
                 }
             }
         }
-
+        
         if let lastStop = stops.last {
             let lastStopAddress = lastStop.address
             let estimatedTimeToEnd = await getTime(fromAddress: lastStopAddress, toAddress: endAddress)
             DispatchQueue.main.async {
                 self.times.append(estimatedTimeToEnd / 60)
             }
-
+            
             let estimatedDistanceToEnd = await getDistance(fromAddress: lastStopAddress, toAddress: endAddress)
             DispatchQueue.main.async {
                 self.distances.append(estimatedDistanceToEnd * 0.000621371)
             }
         }
     }
-
 
     func fetchPlaces(location: String, stopType: String, rating: Double?, price: Int?, cuisine: String?) async {
         let apiKey = "hpQdyXearQyP-ahpSeW2wDZvn-ljfmsGvN6RTKqo18I6R23ZB3dfbzAnEjvS8tWoPwyH9FFTGifdZ-n_qH80jbRuDbGb0dHu1qEPrLH-vqNq_d6TZdUaC_kZpwvqZnYx"
@@ -479,20 +486,101 @@ class UserViewModel: ObservableObject {
         return nil
     }
     
+//    func populate_my_trips() {
+//        my_trips = user?.trips ?? []
+//    }
+    
+    func populate_previous_trips() {
+        previous_trips = UserViewModel.previous_trips
+    }
+    
+    func populate_community_trips() {
+        community_trips = UserViewModel.community_trips
+    }
+    
+//    func updateTrip(trip: Trip) {
+//        let trip_id = trip.id
+//        for i in 0..<my_trips.count {
+//            if my_trips[i].id == trip_id {
+//                my_trips[i] = trip
+//                print("updated my_trip \(i)")
+//                return
+//            }
+//        }
+//        for i in 0..<previous_trips.count {
+//            if previous_trips[i].id == trip_id {
+//                previous_trips[i] = trip
+//                print("updated previous_trips \(i)")
+//                return
+//            }
+//        }
+//        for i in 0..<community_trips.count {
+//            if community_trips[i].id == trip_id {
+//                community_trips[i] = trip
+//                print("updated community_trips \(i)")
+//                return
+//            }
+//        }
+//    }
+//    func getTrip(trip_id: String) -> Trip? {
+//        for i in 0..<my_trips.count {
+//            if my_trips[i].id == trip_id {
+//                print("found my_trip \(i)")
+//                return my_trips[i]
+//            }
+//        }
+//        for i in 0..<previous_trips.count {
+//            if previous_trips[i].id == trip_id {
+//                print("found previous_trips \(i)")
+//                return previous_trips[i]
+//            }
+//        }
+//        for i in 0..<community_trips.count {
+//            if community_trips[i].id == trip_id {
+//                print("found community_trips \(i)")
+//                return community_trips[i]
+//            }
+//        }
+//        return nil
+//    }
+    
+    static let community_trips = [
+        Trip(start_location: Activity(address: "555 Favorite Rd", name: "Home", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "666 Favorite Ave", name: "Favorite Hotel 1", latitude: 34.0522, longitude: -118.2437, city: "Redwood"), name: "Redwood National Park"),
+        Trip(start_location: Restaurant(address: "777 Favorite Rd", name: "Lorum ipsum Pebble Beach", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "888 Favorite Ave", name: "Favorite Hotel 2", latitude: 34.0522, longitude: -118.2437, city: "San Francisco"), name: "LA to SF"),
+        Trip(start_location: Restaurant(address: "333 Old Rd", name: "Lorum Ipsum Pebble Beach, CA", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "444 Old Ave", name: "Previous Hotel 2", latitude: 34.0522, longitude: -118.2437, city: "Boulder"), name: "Colorado Mountains")
+    ]
+    
+    static let previous_trips = [
+        Trip(start_location: Activity(address: "111 Old Rd", name: "Scenic California Mountain Route", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "222 Old Ave", name: "Previous Hotel 1", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), name: "Cool Restaurants"),
+        Trip(start_location: Restaurant(address: "333 Old Rd", name: "Lorum Ipsum Pebble Beach, CA", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "444 Old Ave", name: "Previous Hotel 2", latitude: 34.0522, longitude: -118.2437, city: "Orlando"), name: "ATL to Orlando"),
+        Trip(start_location: Restaurant(address: "333 Old Rd", name: "Lorum Ipsum Pebble Beach, CA", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "444 Old Ave", name: "Previous Hotel 2", latitude: 34.0522, longitude: -118.2437, city: "Boston"), name: "Northeast States")
+    ]
+    
+    static let my_trips = [
+        Trip(start_location: Restaurant(address: "848 Spring Street, Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy, Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)], name: "ATL to Nashville"),
+        Trip(start_location: Activity(address: "123 Start St", name: "Scenic California Mountain Route", latitude: 34.0522, longitude: -118.2437, city: "Boston"), end_location: Hotel(address: "456 End Ave", name: "End Hotel", latitude: 34.0522, longitude: -118.2437, city: "Seattle"), name: "Cross Country"),
+        Trip(start_location: Activity(address: "789 Another St", name: "Johnson Family Spring Retreat", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "123 Another Ave", name: "Another Hotel", latitude: 34.0522, longitude: -118.2437, city: "Blue Ridge"), name: "GA Mountains")
+    ]
+
     func setTripTitle(newTitle: String) {
-        current_trip?.setTitle(newTitle: newTitle)
+        current_trip?.setName(newName: newTitle)
+        user?.updateTrip(trip: current_trip!)
+        self.user = user
+        
     }
 
     func getTripTitle() -> String {
-        return current_trip?.getTitle() ?? "Untitled Trip"
+        return current_trip?.getName() ?? "Unnamed Trip"
     }
 
-    func setTripVisibility(isPrivate: Bool) {
+    func setIsPrivate(isPrivate: Bool) {
         current_trip?.setVisibility(isPrivate: isPrivate)
+        user?.updateTrip(trip: current_trip!)
+        self.user = user
     }
 
     func getTripVisibility() -> Bool {
-        return current_trip?.isPrivate() ?? true
+        return current_trip?.setIsPrivate() ?? true
     }
     
     func reorderStops(fromOffsets: IndexSet, toOffset: Int) {
@@ -503,6 +591,10 @@ class UserViewModel: ObservableObject {
         current_trip = nil
         total_time = 0
         total_distance = 0
+    }
+    
+    func getUser() -> User? {
+        user
     }
 }
 
