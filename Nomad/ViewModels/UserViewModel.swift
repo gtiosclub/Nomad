@@ -375,7 +375,7 @@ class UserViewModel: ObservableObject {
         }
     }
 
-    func fetchPlaces(location: String, stopType: String, rating: Double?, price: Int?, cuisine: String?) async {
+    func fetchPlaces(location: String, stopType: String, rating: Double?, price: Int?, cuisine: String?, searchString: String) async {
         let apiKey = "6hYoc9qnxOWgzrfzI3eWBlM2e6eh8d1L_4A27ajUL5D7nEFyYNKMmhGMTsUsgbJZlMtlXsJDV7wK1lfstjqp9vHUxc-92IjLnk43fZnIfMfIfr5mFZ4bQ8hFUmISZ3Yx"
         let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
         guard let currentTrip = current_trip else { return }
@@ -384,8 +384,18 @@ class UserViewModel: ObservableObject {
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
         
         var queryItems: [URLQueryItem] = []
-
-        if (stopType == "Restaurants") {
+        
+        print(searchString)
+        
+        if (searchString != "") {
+            print("Searching via search bar")
+            queryItems = [
+                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "term", value: searchString),
+                URLQueryItem(name: "sort_by", value: "rating"),
+                URLQueryItem(name: "limit", value: "50")
+            ]
+        } else if (stopType == "Restaurants") {
             queryItems = [
                 URLQueryItem(name: "location", value: startLocation.getAddress()),
                 URLQueryItem(name: "categories", value: "restaurants,food"),

@@ -12,6 +12,7 @@ struct FindStopView: View {
     @ObservedObject var vm: UserViewModel
     @State var selection: String = "Restaurants"
     @State private var searchTerm: String = ""
+    @State private var searchString: String = ""
     @State private var price: Int = 0
     @State private var rating: Int = 0
     @State private var selectedCuisines: [String] = []
@@ -201,6 +202,26 @@ struct FindStopView: View {
                     }
                     .padding(.horizontal)
                     
+                    HStack {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundColor(.gray)
+                            .padding(.leading, 10)
+                        TextField("Search stops...", text: $searchString)
+                            .padding(.vertical, 10)
+                            .padding(.horizontal, 10)
+                            .background(.white)
+                            .cornerRadius(8)
+                            .padding(.trailing, 10)
+                    }
+                    .padding(.horizontal, 30)
+                    .background(.white)
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.gray, lineWidth: 1)
+                            .padding(.horizontal, 30)
+                    )
+                    
                     Button(action: {
                         isLoading = true
                         hasSearched = true
@@ -208,11 +229,13 @@ struct FindStopView: View {
                         Task {
                             do {
                                 await vm.fetchPlaces(
-                                    location: "177 North Avenue NW, Atlanta, GA 30332",
+                                    location: //vm.current_trip?.getStartLocation() ??
+                                    "177 North Avenue NW, Atlanta, GA 30332",
                                     stopType: selection,
                                     rating: Double(rating),
                                     price: price,
-                                    cuisine: selectedCuisines.joined(separator: ",")
+                                    cuisine: selectedCuisines.joined(separator: ","),
+                                    searchString: searchString
                                 )
                             }
                             isLoading = false
