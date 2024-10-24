@@ -10,7 +10,7 @@ import MapKit
 
 class Trip: Identifiable, Equatable, ObservableObject {
     var id: String
-    var route: NomadRoute?
+    @Published var route: NomadRoute?
     private var stops: [any POI]
     private var start_location: any POI
     private var end_location: any POI
@@ -290,7 +290,7 @@ class Trip: Identifiable, Equatable, ObservableObject {
         CLLocationCoordinate2D(latitude: end_location.latitude, longitude: end_location.longitude)
     }
     
-    mutating func reorderStops(fromOffsets: IndexSet, toOffset: Int) {
+    func reorderStops(fromOffsets: IndexSet, toOffset: Int) {
         stops.move(fromOffsets: fromOffsets, toOffset: toOffset)
     }
 }

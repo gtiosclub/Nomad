@@ -593,7 +593,6 @@ struct FindStopView: View {
         all_pois.append(end_loc)
         
         if let newRoutes = await MapManager.manager.generateRoute(pois: all_pois) {
-            
             vm.setTripRoute(route: newRoutes[0])
         }
     }
