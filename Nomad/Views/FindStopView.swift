@@ -111,7 +111,7 @@ struct FindStopView: View {
                         TabView {
                             VStack(alignment: .leading, spacing: 16) {
                                 
-                                if selection == "Dining" {
+                                if selection == "Restaurants" {
                                     VStack(alignment: .leading, spacing: 8) {
                                         Text("Cuisine:")
                                             .font(.headline)
