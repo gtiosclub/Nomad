@@ -19,6 +19,8 @@ class ChatViewModel: ObservableObject {
         Message(content: "Hi! I'm Atlas, your AI assistant", sender: "AI")
     ]
     
+    @Published var latestAIResponse: String?
+    
     func sendMessage(_ content: String) {
         let newMessage = Message(content: content, sender: "User")
         messages.append(newMessage)
@@ -30,11 +32,13 @@ class ChatViewModel: ObservableObject {
                 DispatchQueue.main.async {
                     let aiMessage = Message(content: aiResponse, sender: "AI")
                     self.messages.append(aiMessage)
+                    self.latestAIResponse = aiResponse
                 }
             } else {
                 DispatchQueue.main.async {
                     let errorMessage = Message(content: "Sorry, I couldn't find any restaurants", sender: "AI")
                     self.messages.append(errorMessage)
+                    self.latestAIResponse = "Sorry, I couldn't find any restaurants"
                 }
             }
         }
