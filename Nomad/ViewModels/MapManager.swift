@@ -191,6 +191,36 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         return nil
     }
     
+    // regenerate route from saved coordinates
+    public func generateRoute(coords: [[CLLocationCoordinate2D]]) async -> NomadRoute? {
+        var legs = [NomadLeg]()
+        let directions = Directions.shared
+        
+        for legCoords in coords {
+            let options = MatchOptions(coordinates: legCoords)
+            options.includesSteps = true
+            
+            let directions = Directions.shared
+            
+            let result = await withCheckedContinuation { continuation in
+                directions.calculate(options) { result in
+                    continuation.resume(returning: result)
+                }
+            }
+            
+            switch result {
+            case .failure(let error):
+                print("Could not generate route from coordinates: \(error)")
+            case .success(let response):
+                if let leg = response.matches?.first?.legs.first {
+                    legs.append(NomadLeg(leg: leg))
+                }
+            }
+        }
+        
+        return NomadRoute(legs: legs)
+    }
+    
     func getDirections() {
         
         // Check if there is a selected result'
@@ -241,6 +271,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             currentPreviewRoutes = await previewRoutes.selecting(alternativeRoute: alternativeRoute)
         }
     }
+
     
     // ROUTE GENERATION HELPERS
     
@@ -262,6 +293,21 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
         return steps
     }
+    
+    private func parseCoordinateString(coordString: String) -> CLLocationCoordinate2D {
+        let coords = coordString.split(separator: ",")
+        return CLLocationCoordinate2D(latitude: Double(coords[0]) ?? 0.0, longitude: Double(coords[1]) ?? 0.0)
+    }
+    
+    private func jsonToCoordinates(values: KeyedDecodingContainer<MapManager.CodingKeys>) throws -> [CLLocationCoordinate2D] {
+        let coordinatesJSON = try values.decode(String.self, forKey: .coordinates)
+        let coordinates = coordinatesJSON.split(separator: ";").map { coord in
+            return parseCoordinateString(coordString: String(coord))
+        }
+        
+        return coordinates
+    }
+
     
     /// WAYPOINT CRUD SECTION
     private var waypoints: [Waypoint] = []
@@ -362,6 +408,11 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             }
         }
         return nil
+    }
+    
+    // TODO: Convert to JSON
+    func encode(to encoder: Encoder) throws {
+        
     }
     
 }

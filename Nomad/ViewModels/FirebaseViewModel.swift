@@ -109,6 +109,31 @@ class FirebaseViewModel: ObservableObject {
             return false
         }
     }
+    
+    // Converts NomadRoute coordinates (use jsonCoordinates) method and store in firebase
+    func storeRoute(route: NomadRoute) async -> Bool {
+        do {
+            let data = route.getJsonCoordinatesMap()
+            try await db.collection("ROUTES").document(route.id.uuidString).setData(data)
+            return true
+        } catch {
+            print(error)
+            return false
+        }
+    }
+    
+    // Fetch coordinates JSON from firebase and convert to coordinates
+    func fetchRoutes() async throws {
+        // TODO: Get this done
+        var routesmap: [String: NomadRoute] = [:]
+        
+        let getdocs = try await db.collection("ROUTES").getDocuments() // TODO: Change this
+            
+        for doc in getdocs.documents {
+            // Decode json
+        }
+        
+    }
 
     func modifyStartDate(userID: String, tripID: String, newStartDate: String, modifiedDate: String) async -> Bool {
         do {

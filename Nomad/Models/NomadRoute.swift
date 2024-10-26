@@ -40,6 +40,18 @@ struct NomadRoute {
         return coords
     }
     
+    func getJsonCoordinatesMap() -> [String : String] {
+        var legCoordsMap: [String : String] = [:]
+        
+        for leg in legs {
+            let coords = leg.getJSONCoordinates()
+            let coordsStr = coords.map { coord in "\(coord.latitude),\(coord.longitude)" }.joined(separator: ";")
+            legCoordsMap[leg.id.uuidString] = coordsStr
+        }
+        
+        return legCoordsMap
+    }
+    
     static func convertToMKPolyline(_ coords: [LocationCoordinate2D]) -> MKPolyline {
         var coordinates = [CLLocationCoordinate2D]()
         for coord in coords {
@@ -49,7 +61,7 @@ struct NomadRoute {
     }
 }
 
-struct NomadLeg: Codable {
+struct NomadLeg {
     var id: UUID = UUID()
     var steps: [NomadStep]
     var startCoordinate: CLLocationCoordinate2D
@@ -72,22 +84,6 @@ struct NomadLeg: Codable {
         self.steps = steps
         self.startCoordinate = steps.first?.startCoordinate ?? CLLocationCoordinate2D()
         self.endCoordinate = steps.last?.endCoordinate ?? CLLocationCoordinate2D()
-    }
-    
-    init(from decoder: Decoder) throws {
-        self.steps = [NomadStep]()
-        self.startCoordinate = CLLocationCoordinate2D()
-        self.endCoordinate = CLLocationCoordinate2D()
-        
-        let values = try decoder.container(keyedBy: CodingKeys.self)
-        id = try values.decode(UUID.self, forKey: .id)
-        
-
-        Task {
-            if let steps = await coordinatesToLeg(coords: coordinates) {
-                initWithSteps(steps: steps)
-            }
-        }
     }
     
     func getStartLocation() -> CLLocationCoordinate2D {
@@ -124,7 +120,7 @@ struct NomadLeg: Codable {
         self.endCoordinate = steps.last?.endCoordinate ?? CLLocationCoordinate2D()
     }
     
-    private func getJSONCoordinates() -> [CLLocationCoordinate2D] {
+    public func getJSONCoordinates() -> [CLLocationCoordinate2D] {
         let origCoords = getCoordinates()
         if origCoords.count < 2 {
             return origCoords
@@ -180,13 +176,6 @@ struct NomadLeg: Codable {
         return CLLocationCoordinate2D(latitude: Double(coords[0]) ?? 0.0, longitude: Double(coords[1]) ?? 0.0)
     }
     
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(self.id.uuidString, forKey: .id)
-        
-        let jsonCoordStrings = self.getJSONCoordinates().map { getCoordinateString(coord: $0) }
-        try container.encode(jsonCoordStrings.joined(separator: ";"), forKey: .coordinates)
-    }
 }
 
 struct NomadStep {
