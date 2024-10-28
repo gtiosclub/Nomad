@@ -59,13 +59,14 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             self.navigating = false
         } else {
             // ui changes here
+            self.navigatingLeg = navigatingRoute!.legs[0]
             self.navigatingStep  = navigatingRoute!.legs[0].steps[0]
+            self.showPolyline(route: navigatingRoute!)
             self.navigating = true
         }
     }
     func setNavigatingRoute(route: NomadRoute) {
         self.navigatingRoute = route
-        self.mapPolylines.append(route.getShape())
     }
     func setNavigatingLeg(leg: NomadLeg) {
         self.navigatingLeg = leg
@@ -150,7 +151,6 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
         return 0
     }
-    
     // MAPMARKER CRUD
     func showMarker(_ title: String, coordinate: CLLocationCoordinate2D, icon: MapMarker.MapMarkerIcon?) {
         mapMarkers.append(MapMarker(coordinate: coordinate, title: title, icon: icon ?? .pin))
@@ -180,6 +180,15 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func removePolyline(leg: NomadLeg) {
         mapPolylines.removeAll { polyline in
             polyline == leg.getShape() // might not work if polyline is not equatable by geometry
+        }
+    }
+    
+    func showPolyline(route: NomadRoute) {
+        mapPolylines.append(route.getShape())
+    }
+    func removePolyline(route: NomadRoute) {
+        mapPolylines.removeAll { polyline in
+            polyline == route.getShape() // might not work if polyline is not equatable by geometry
         }
     }
 }
