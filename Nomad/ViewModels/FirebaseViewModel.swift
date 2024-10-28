@@ -117,7 +117,7 @@ class FirebaseViewModel: ObservableObject {
             var data = route.getJsonCoordinatesMap()
             // TODO: Add expectedTravelTime and distance, look @ mapManager
             data["expectedTravelTime"] = route.route?.expectedTravelTime.description ?? "0"
-            data[""]
+            data["distance"] = route.route?.distance.description ?? "0"
             
             try await db.collection("ROUTES").document(route.id.uuidString).setData(data)
             return true
@@ -133,7 +133,7 @@ class FirebaseViewModel: ObservableObject {
         
         // TODO: Integrate UserViewModel to use its mapmanager
         let mapManager = MapManager()
-        return await mapManager.docsToNomadRoute(docs: getdocs.documents)
+        return try await mapManager.docsToNomadRoute(docs: getdocs.documents)
     }
 
     func modifyStartDate(userID: String, tripID: String, newStartDate: String, modifiedDate: String) async -> Bool {
