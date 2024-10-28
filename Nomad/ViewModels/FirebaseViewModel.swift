@@ -9,6 +9,7 @@ import Firebase
 import FirebaseAuth
 import FirebaseFirestore
 import FirebaseStorage
+import MapKit
 import SwiftUI
 
 class FirebaseViewModel: ObservableObject {
@@ -108,6 +109,31 @@ class FirebaseViewModel: ObservableObject {
             print(error)
             return false
         }
+    }
+    
+    // Converts NomadRoute coordinates (use jsonCoordinates) method and store in firebase
+    func storeRoute(route: NomadRoute) async -> Bool {
+        do {
+            var data = route.getJsonCoordinatesMap()
+            // TODO: Add expectedTravelTime and distance, look @ mapManager
+            data["expectedTravelTime"] = route.route?.expectedTravelTime.description ?? "0"
+            data["distance"] = route.route?.distance.description ?? "0"
+            
+            try await db.collection("ROUTES").document(route.id.uuidString).setData(data)
+            return true
+        } catch {
+            print(error)
+            return false
+        }
+    }
+    
+    // Fetch coordinates JSON from firebase and convert to coordinates
+    func fetchRoutes() async throws -> [String: NomadRoute] {
+        let getdocs = try await db.collection("ROUTES").getDocuments() // TODO: Change this
+        
+        // TODO: Integrate UserViewModel to use its mapmanager
+        let mapManager = MapManager.manager
+        return try await mapManager.docsToNomadRoute(docs: getdocs.documents)
     }
 
     func modifyStartDate(userID: String, tripID: String, newStartDate: String, modifiedDate: String) async -> Bool {

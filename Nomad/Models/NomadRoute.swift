@@ -9,10 +9,9 @@ import MapKit
 import MapboxDirections
 
 struct NomadRoute {
-    let id = UUID()
+    var id = UUID()
     var route: Route? // mapbox object, not sure if we need anything from here yet.
     var legs: [NomadLeg]
-    
     
     func getStartLocation() -> CLLocationCoordinate2D {
         return legs.first?.startCoordinate ?? CLLocationCoordinate2D()
@@ -36,6 +35,18 @@ struct NomadRoute {
         return coords
     }
     
+    func getJsonCoordinatesMap() -> [String : String] {
+        var legCoordsMap: [String : String] = [:]
+        
+        for (i, leg) in legs.enumerated() {
+            let coords = leg.getJSONCoordinates()
+            let coordsStr = coords.map { coord in "\(coord.latitude),\(coord.longitude)" }.joined(separator: ";")
+            legCoordsMap[String(i)] = coordsStr
+        }
+        
+        return legCoordsMap
+    }
+    
     static func convertToMKPolyline(_ coords: [LocationCoordinate2D]) -> MKPolyline {
         var coordinates = [CLLocationCoordinate2D]()
         for coord in coords {
@@ -46,7 +57,7 @@ struct NomadRoute {
 }
 
 struct NomadLeg {
-    let id = UUID()
+    var id: UUID = UUID()
     var steps: [NomadStep]
     var startCoordinate: CLLocationCoordinate2D
     var endCoordinate: CLLocationCoordinate2D
@@ -63,8 +74,6 @@ struct NomadLeg {
         self.steps = steps
         self.startCoordinate = steps.first?.startCoordinate ?? CLLocationCoordinate2D()
         self.endCoordinate = steps.last?.endCoordinate ?? CLLocationCoordinate2D()
-        
-        
     }
     
     func getStartLocation() -> CLLocationCoordinate2D {
@@ -86,6 +95,54 @@ struct NomadLeg {
         }
         return coords
     }
+    
+    private func legToSteps(leg: MapboxDirections.RouteLeg) -> [NomadStep] {
+        var steps = [NomadStep]()
+        for step in leg.steps {
+            steps.append(NomadStep(step: step))
+        }
+        return steps
+    }
+    
+    private mutating func initWithSteps(steps: [NomadStep]) {
+        self.steps = steps
+        self.startCoordinate = steps.first?.startCoordinate ?? CLLocationCoordinate2D()
+        self.endCoordinate = steps.last?.endCoordinate ?? CLLocationCoordinate2D()
+    }
+    
+    public func getJSONCoordinates() -> [CLLocationCoordinate2D] {
+        let origCoords = getCoordinates()
+        if origCoords.count < 2 {
+            return origCoords
+        }
+        
+        let MAX_COORDS: Double = 100
+        var jsonCoords = [CLLocationCoordinate2D]()
+        let stepSize = Int(ceil(Double(origCoords.count + 1) / MAX_COORDS))
+        for i in stride(from: 0, to:origCoords.count - 1, by: stepSize) {
+            jsonCoords.append(origCoords[i])
+        }
+        if (jsonCoords.last! != origCoords[origCoords.count - 1]) {
+            if (jsonCoords.count < Int(MAX_COORDS)) {
+                jsonCoords.append(origCoords[origCoords.count - 1])
+            } else {
+                jsonCoords[jsonCoords.count - 1] = origCoords[origCoords.count - 1]
+            }
+        }
+        
+        return jsonCoords
+    }
+    
+    
+    private func getCoordinateString(coord: CLLocationCoordinate2D) -> String {
+        return "\(coord.latitude),\(coord.longitude)"
+    }
+    
+    private func parseCoordinateString(coordString: String) -> CLLocationCoordinate2D {
+        let coords = coordString.split(separator: ",")
+        return CLLocationCoordinate2D(latitude: Double(coords[0]) ?? 0.0, longitude: Double(coords[1]) ?? 0.0)
+    }
+    
 }
 
 struct NomadStep {

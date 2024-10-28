@@ -12,6 +12,7 @@ import SwiftUI
 
 import MapboxNavigationCore
 import MapboxDirections
+import FirebaseFirestore
 
 // TODO: Update public methods from Mapbox params to MapKit params
 class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
@@ -135,8 +136,60 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
         return nil
     }
+    // regenerate route from saved coordinates
+    public func generateRoute(coords: [[CLLocationCoordinate2D]], expectedTravelTime: TimeInterval, distance: CLLocationDistance) async -> NomadRoute? {
+        var legs = [NomadLeg]()
+        var mapboxLegs = [MapboxDirections.RouteLeg]()
+        
+        if let provider = await core?.routingProvider() {
+            for legCoords in coords {
+                let options = MatchOptions(coordinates: legCoords)
+                options.includesSteps = true
+                
+                switch await provider.calculateRoutes(options: options).result {
+                        case .failure(let error):
+                            print("Could not generate route from coordinates: \(error)")
+                        case .success(let response):
+                            if let leg = response.mainRoute.route.legs.first {
+                                legs.append(NomadLeg(leg: leg))
+                                mapboxLegs.append(leg)
+                            }
+                    }
+            }
+        }
+        
+        print("generateRoute \(legs)")
+        
+        // TODO: Put distance and expectedTravelTime in firestore
+        let mapboxRoute = Route.init(legs: mapboxLegs, shape: nil, distance: distance, expectedTravelTime: expectedTravelTime)
+        return NomadRoute(route: mapboxRoute, legs: legs)
+    }
     
-    
+    public func docsToNomadRoute(docs: [QueryDocumentSnapshot]) async throws -> [String: NomadRoute] {
+        var routesmap: [String: NomadRoute] = [:]
+        for doc in docs {
+            // Decode json
+            let data = doc.data()
+            var routeCoords: [[CLLocationCoordinate2D]] = [[CLLocationCoordinate2D]]()
+            
+            let expectedTravelTime = data["expectedTravelTime"] as? TimeInterval ?? 0.0
+            let distance  = data["distance"] as? CLLocationDistance ?? 0.0
+            
+            for (id, legData) in data {
+                if id == "expectedTravelTime" || id == "distance" { continue }
+                if let legCoords = legData as? String {
+                    let legCoordsList = legCoords.split(separator: ";")
+                    routeCoords.append(legCoordsList.map { coord in
+                        let values = String(coord).split(separator: ",")
+                        return CLLocationCoordinate2D(latitude: Double(values[0]) ?? 0.0, longitude: Double(values[1]) ?? 0.0)
+                    })
+                }
+            }            
+            let route = await generateRoute(coords: routeCoords, expectedTravelTime: expectedTravelTime, distance: distance)
+            routesmap[doc.documentID] = route
+        }
+        return routesmap
+    }
     
     // ROUTE GENERATION HELPERS
     // Generate legs with Step structs
@@ -156,6 +209,11 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             }
         }
         return steps
+    }
+    
+    private func parseCoordinateString(coordString: String) -> CLLocationCoordinate2D {
+        let coords = coordString.split(separator: ",")
+        return CLLocationCoordinate2D(latitude: Double(coords[0]) ?? 0.0, longitude: Double(coords[1]) ?? 0.0)
     }
     
     /// WAYPOINT CRUD SECTION
@@ -258,8 +316,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
         return nil
     }
-    
-    
+        
     func checkOnRoute(step: NomadStep) -> Bool {
         guard let userLocation = self.userLocation else { return false }
         let stepCoordinates = step.getCoordinates()
@@ -297,5 +354,9 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         } else {
             return nil
         }
+    }
+    // TODO: Convert to JSON
+    func encode(to encoder: Encoder) throws {
+        
     }
 }
