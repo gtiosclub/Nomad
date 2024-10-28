@@ -260,6 +260,29 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     
+    func checkIfOffPath(currentLocation: CLLocation) -> Bool {
+        let routeCoordinates = currentStep.getCoordinates()
+        let thresholdDistance: CLLocationDistance = 50
+        
+        var closestDistance = CLLocationDistanceMax
+        var closestCoordinate: CLLocationCoordinate2D?
+        
+        for coord in routeCoordinates {
+            let routeLocation = CLLocation(latitude: coord.latitude, longitude: coord.longitude)
+            let distance = currentLocation.distance(from: routeLocation)
+            
+            if distance < closestDistance {
+                closestDistance = distance
+                closestCoordinate = coord
+            }
+        }
+        
+        if closestDistance > thresholdDistance {
+            return true
+        }
+        return false
+    }
+ 
     func getExampleRoute() async -> NomadRoute? {
         let trip = UserViewModel.my_trips.first!
         var coords = [CLLocationCoordinate2D]()
