@@ -128,7 +128,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         let coords = pois.map { poi in
             CLLocationCoordinate2D(latitude: poi.latitude, longitude: poi.longitude)
         }
-        return await generateRoute(stop_c`oords: coords)
+        return await generateRoute(stop_coords: coords)
     }
     // generate routes for navigation (index 0 is main route, others are alternates)
     public func generateRoute(stop_coords: [CLLocationCoordinate2D]) async -> [NomadRoute]? {
@@ -192,7 +192,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     // regenerate route from saved coordinates
-    public func generateRoute(coords: [[CLLocationCoordinate2D]]) async -> NomadRoute? {
+    public static func generateRoute(coords: [[CLLocationCoordinate2D]]) async -> NomadRoute? {
         var legs = [NomadLeg]()
         let directions = Directions.shared
         

@@ -124,8 +124,7 @@ class FirebaseViewModel: ObservableObject {
     }
     
     // Fetch coordinates JSON from firebase and convert to coordinates
-    func fetchRoutes() async throws {
-        // TODO: Get this done
+    func fetchRoutes() async throws -> [String: NomadRoute] {
         var routesmap: [String: NomadRoute] = [:]
         
         let getdocs = try await db.collection("ROUTES").getDocuments() // TODO: Change this
@@ -145,11 +144,11 @@ class FirebaseViewModel: ObservableObject {
                 }
             }
             
-            // TODO: Move coordinatesToLeg to MapManager and call it here
-            let route = NomadRoute(
-
+            let route = await MapManager.generateRoute(coords: routeCoords)
+            routesmap[doc.documentID] = route
         }
         
+        return routesmap
     }
 
     func modifyStartDate(userID: String, tripID: String, newStartDate: String, modifiedDate: String) async -> Bool {

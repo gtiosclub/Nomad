@@ -43,10 +43,10 @@ struct NomadRoute {
     func getJsonCoordinatesMap() -> [String : String] {
         var legCoordsMap: [String : String] = [:]
         
-        for i, leg in legs.enumerated() {
+        for (i, leg) in legs.enumerated() {
             let coords = leg.getJSONCoordinates()
             let coordsStr = coords.map { coord in "\(coord.latitude),\(coord.longitude)" }.joined(separator: ";")
-            legCoordsMap[i] = coordsStr
+            legCoordsMap[String(i)] = coordsStr
         }
         
         return legCoordsMap
@@ -143,29 +143,6 @@ struct NomadLeg {
         return jsonCoords
     }
     
-    private mutating func coordinatesToLeg(coords: [CLLocationCoordinate2D]) async -> [NomadStep]? {
-        let options = MatchOptions(coordinates: coords)
-        options.includesSteps = true
-        
-        let directions = Directions.shared
-        let result = await withCheckedContinuation { continuation in
-            directions.calculate(options) { result in
-                continuation.resume(returning: result)
-            }
-        }
-        
-        switch result {
-        case .failure(let error):
-            print("Could not generate route from coordinates: \(error)")
-        case .success(let response):
-            guard let match = response.matches?.first, let leg = match.legs.first else {
-                return []
-            }
-            return legToSteps(leg: leg)
-        }
-        
-        return nil
-    }
     
     private func getCoordinateString(coord: CLLocationCoordinate2D) -> String {
         return "\(coord.latitude),\(coord.longitude)"
