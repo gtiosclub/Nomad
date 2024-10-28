@@ -9,6 +9,7 @@ import Firebase
 import FirebaseAuth
 import FirebaseFirestore
 import FirebaseStorage
+import MapKit
 import SwiftUI
 
 class FirebaseViewModel: ObservableObject {
@@ -131,6 +132,22 @@ class FirebaseViewModel: ObservableObject {
             
         for doc in getdocs.documents {
             // Decode json
+            let data = doc.data()
+            var routeCoords: [[CLLocationCoordinate2D]] = [[CLLocationCoordinate2D]]()
+            
+            for (i, legData) in data {
+                if let legCoords = legData as? String {
+                    let legCoordsList = legCoords.split(separator: ";")
+                    routeCoords.append(legCoords.map { coord in
+                        let values = String(coord).split(separator: ",")
+                        return CLLocationCoordinate2D(latitude: Double(values[0]) ?? 0.0, longitude: Double(values[1]) ?? 0.0)
+                    })
+                }
+            }
+            
+            // TODO: Move coordinatesToLeg to MapManager and call it here
+            let route = NomadRoute(
+
         }
         
     }

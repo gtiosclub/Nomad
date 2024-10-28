@@ -43,10 +43,10 @@ struct NomadRoute {
     func getJsonCoordinatesMap() -> [String : String] {
         var legCoordsMap: [String : String] = [:]
         
-        for leg in legs {
+        for i, leg in legs.enumerated() {
             let coords = leg.getJSONCoordinates()
             let coordsStr = coords.map { coord in "\(coord.latitude),\(coord.longitude)" }.joined(separator: ";")
-            legCoordsMap[leg.id.uuidString] = coordsStr
+            legCoordsMap[i] = coordsStr
         }
         
         return legCoordsMap
