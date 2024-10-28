@@ -11,18 +11,25 @@ import MapKit
 struct MapView: View {
     @ObservedObject var vm: UserViewModel
     @ObservedObject var navManager: NavigationManager = NavigationManager()
+    @ObservedObject var mapManager = MapManager.manager
     var body: some View {
         ZStack {
             // All views within Map
             Map(position: $navManager.mapPosition) {
                 // Adding markers for the start and finish points
-                if let userLocation = MapManager.manager.userLocation {
-                    Marker("Your Location", coordinate: userLocation)
+                Annotation("", coordinate: mapManager.userLocation ?? CLLocationCoordinate2D()) {
+                    Image("nav_user_icon")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 50)
+                        .background(.white)
+                        .clipShape(Circle())
+                        .rotationEffect(.degrees(mapManager.motion.direction ?? 0))
                 }
                 
                 //show all markers
                 ForEach(navManager.mapMarkers) { marker in
-                    Marker(marker.title, systemImage: marker.icon.image_path, coordinate: marker.coordinate)
+                    Marker(marker.title, coordinate: marker.coordinate)
                 }
                 // show all polylines
                 ForEach(navManager.mapPolylines, id:\.self) { polyline in
@@ -30,28 +37,48 @@ struct MapView: View {
                         .stroke(.blue, lineWidth: 5)
                 }
                 
-                
-                
-            }.mapStyle(getMapStyle())
-                .onTapGesture {
-                    print("Moving map")
-                    navManager.movingMap = true
+            }
+//            .onMapCameraChange { mapCameraUpdateContext in
+//                let camera = mapCameraUpdateContext.camera
+//                let movingMap = navManager.movingMap(camera: camera.centerCoordinate)
+//                print("Moving map camera change: \(movingMap)")
+//                if !movingMap {
+//                    withAnimation {
+//                        navManager.updateMapPosition(camera.centerCoordinate)
+//                    }
+//                }
+//            }
+            .onChange(of: mapManager.motion, initial: true) { oldMotion, newMotion in
+                if let newLoc = newMotion.coordinate {
+                    print("New Location: \(newLoc.latitude), \(newLoc.longitude)")
+                    if let camera = navManager.mapPosition.camera {
+                        let movingMap = navManager.movingMap(camera: camera.centerCoordinate)
+                        print("Moving map user change: \(movingMap)")
+                        if !movingMap {
+                            withAnimation {
+                                navManager.updateMapPosition(newMotion)
+                            }
+                        }
+                    }
                 }
+            }
+            .onAppear() {
+                let motion = mapManager.motion
+                navManager.updateMapPosition(motion)
+            }
             
             // All Map HUD
             VStack {
+                if navManager.navigating {
+                    DirectionView(step: $navManager.navigatingStep)
+                }
                 HStack {
                     Spacer()
                     VStack {
-                        CompassView(bearing: $navManager.bearing)
+                        CompassView(bearing: navManager.mapPosition.camera?.heading ?? 0)
                             .frame(width: 50, height: 50)
                         RecenterMapView(recenterMap: {
-                            let mapManager = MapManager.manager
-                            if let userLocation = mapManager.userLocation {
-                                navManager.mapPosition = .camera(MapCamera(centerCoordinate: userLocation, distance: navManager.navigating ? 1000 : 5000, heading: (navManager.navigating ? mapManager.motion.direction : 0) ?? 0, pitch: navManager.navigating ? 80 : 0))
-                                navManager.movingMap = false
-                                
-                            }
+                            navManager.recenterMap()
                         })
                         .frame(width: 50, height: 50)
                         ChangeMapTypeButtonView(selectedMapType: $navManager.mapType)
@@ -59,12 +86,38 @@ struct MapView: View {
                     }
                 }
                 Spacer()
-                LocationSearchBox(vm: vm)
-                    .padding()
-            }
-        }.onChange(of: MapManager.manager.userLocation, initial: true) { oldLocation, newLocation in
-            if let newLoc = newLocation {
-                updateMapPosition(newLoc)
+                VStack {
+                    Text("Location Info")
+                    Text(mapManager.motion.toString())
+                }
+                HStack {
+                    Button {
+                        // set example route
+                        Task {
+                            if let route = await mapManager.getExampleRoute() {
+                                navManager.setNavigatingRoute(route: route)
+                            }
+                            
+                        }
+                    } label: {
+                        Text("Generate Route")
+                            .padding()
+                            .background(.blue)
+                            .foregroundStyle(.white)
+                            .padding()
+                    }
+                    Button {
+                        navManager.startNavigating()
+                    } label: {
+                        Text("Start Navigating")
+                            .padding()
+                            .background(.blue)
+                            .foregroundStyle(.white)
+                            .padding()
+                    }
+
+
+                }
             }
         }
     }
@@ -79,18 +132,7 @@ struct MapView: View {
             return .hybrid
         }
     }
-    func updateMapPosition(_ userLocation: CLLocationCoordinate2D) {
-        print("update map position")
-        if (!navManager.movingMap) {
-            navManager.mapPosition = .camera(MapCamera(centerCoordinate: userLocation, distance: navManager.navigating ? 1000 : 5000, heading: (navManager.navigating ? MapManager.manager.motion.direction : 0) ?? 0, pitch: navManager.navigating ? 80 : 0))
-        }
-        navManager.region = MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: userLocation.latitude, longitude: userLocation.longitude),
-            span: .init(latitudeDelta: 0.01, longitudeDelta: 0.01)
-        )
-    }
 }
-
 
 #Preview {
     MapView(vm: UserViewModel())
