@@ -51,6 +51,8 @@
 		B28668172CB309250095F653 /* MapManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B28668162CB309150095F653 /* MapManager.swift */; };
 		B298EB552C98F9DE0078696A /* (null) in Sources */ = {isa = PBXBuildFile; };
 		B29D04012CB0B48B00524D8B /* MapMarker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B29D04002CB0B48700524D8B /* MapMarker.swift */; };
+		B2DE8FD52CC81C7000EEDE37 /* NavigationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2DE8FD42CC81C6C00EEDE37 /* NavigationManager.swift */; };
+		B2F34D582CC95B8D0098F652 /* DirectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F34D572CC95B8A0098F652 /* DirectionView.swift */; };
 		B2F8F3372C97BB3C00B9618E /* NomadApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F3362C97BB3C00B9618E /* NomadApp.swift */; };
 		B2F8F33D2C97BB3E00B9618E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2F8F33C2C97BB3E00B9618E /* Assets.xcassets */; };
 		B2F8F3402C97BB3E00B9618E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B2F8F33F2C97BB3E00B9618E /* Preview Assets.xcassets */; };
@@ -108,6 +110,8 @@
 		B2154CD32C9E333700A6F238 /* ChangeMapTypeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangeMapTypeView.swift; sourceTree = "<group>"; };
 		B28668162CB309150095F653 /* MapManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapManager.swift; sourceTree = "<group>"; };
 		B29D04002CB0B48700524D8B /* MapMarker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapMarker.swift; sourceTree = "<group>"; };
+		B2DE8FD42CC81C6C00EEDE37 /* NavigationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationManager.swift; sourceTree = "<group>"; };
+		B2F34D572CC95B8A0098F652 /* DirectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectionView.swift; sourceTree = "<group>"; };
 		B2F8F3332C97BB3C00B9618E /* Nomad.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Nomad.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2F8F3362C97BB3C00B9618E /* NomadApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NomadApp.swift; sourceTree = "<group>"; };
 		B2F8F33C2C97BB3E00B9618E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -250,6 +254,7 @@
 				B2F8F3492C97BC7700B9618E /* RecapView.swift */,
 				48BBC2D12C9CE5070093D9D0 /* DetailRecapView.swift */,
 				B2F8F34B2C97BC7F00B9618E /* MapView.swift */,
+				B2F34D572CC95B8A0098F652 /* DirectionView.swift */,
 				B2F8F34D2C97BC8A00B9618E /* AIAssistantView.swift */,
 				B2F8F34F2C97BC9600B9618E /* ItineraryPlanningView.swift */,
 				B2154CCE2C9E2DE500A6F238 /* MapButtons */,
@@ -291,6 +296,7 @@
 			children = (
 				B2F8F35F2C97BD6200B9618E /* FirebaseViewModel.swift */,
 				B28668162CB309150095F653 /* MapManager.swift */,
+				B2DE8FD42CC81C6C00EEDE37 /* NavigationManager.swift */,
 				B2F8F3612C97BD8900B9618E /* AIAssistantViewModel.swift */,
 				B2F8F3632C97BD9B00B9618E /* UserViewModel.swift */,
 				C49A654F2C9CE53400A8B9BA /* MapSearch.swift */,
@@ -472,12 +478,14 @@
 				C49A65522C9CE6D600A8B9BA /* LocationSearchBox.swift in Sources */,
 				B2F8F34A2C97BC7700B9618E /* RecapView.swift in Sources */,
 				B2F8F35B2C97BD2200B9618E /* RestStop.swift in Sources */,
+				B2F34D582CC95B8D0098F652 /* DirectionView.swift in Sources */,
 				B2F8F3372C97BB3C00B9618E /* NomadApp.swift in Sources */,
 				66443CD72CADDB77000D3F12 /* RoutePlanListView.swift in Sources */,
 				B2F8F3532C97BCAB00B9618E /* User.swift in Sources */,
 				48974B862C9A44A30057B073 /* Hotel.swift in Sources */,
 				B2F8F3642C97BD9B00B9618E /* UserViewModel.swift in Sources */,
 				391165FA2CB53542004B8695 /* PreviewRouteView.swift in Sources */,
+				B2DE8FD52CC81C7000EEDE37 /* NavigationManager.swift in Sources */,
 				E90E9AB82CAF5C1F00A7C4FA /* SpeechRecognizer.swift in Sources */,
 				B2F8F3622C97BD8900B9618E /* AIAssistantViewModel.swift in Sources */,
 			);
