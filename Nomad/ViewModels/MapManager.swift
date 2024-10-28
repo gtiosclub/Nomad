@@ -12,6 +12,7 @@ import SwiftUI
 
 import MapboxNavigationCore
 import MapboxDirections
+import FirebaseFirestore
 
 
 // TODO: Update public methods from Mapbox params to MapKit params
@@ -192,33 +193,45 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     // regenerate route from saved coordinates
-    public static func generateRoute(coords: [[CLLocationCoordinate2D]]) async -> NomadRoute? {
+    public func generateRoute(coords: [[CLLocationCoordinate2D]]) async -> NomadRoute? {
         var legs = [NomadLeg]()
-        let directions = Directions.shared
+        var mapboxLegs = [MapboxDirections.RouteLeg]()
+//        let directions = Directions.shared
         
-        for legCoords in coords {
-            let options = MatchOptions(coordinates: legCoords)
-            options.includesSteps = true
-            
-            let directions = Directions.shared
-            
-            let result = await withCheckedContinuation { continuation in
-                directions.calculate(options) { result in
-                    continuation.resume(returning: result)
-                }
-            }
-            
-            switch result {
-            case .failure(let error):
-                print("Could not generate route from coordinates: \(error)")
-            case .success(let response):
-                if let leg = response.matches?.first?.legs.first {
-                    legs.append(NomadLeg(leg: leg))
-                }
+        if let provider = await core?.routingProvider() {
+            for legCoords in coords {
+                let options = MatchOptions(coordinates: legCoords)
+                options.includesSteps = true
+                
+                //            let directions = mapMa
+                
+                // TODO: May have to just use start of each
+//                let result = await withCheckedContinuation { continuation in
+                switch await provider.calculateRoutes(options: options).result {
+                        case .failure(let error):
+                            print("Could not generate route from coordinates: \(error)")
+                        case .success(let response):
+//                            if let leg = response.matches?.first?.legs.first {
+//                                legs.append(NomadLeg(leg: leg))
+//                            }
+                    print("generateRoute \(response.mainRoute.route.legs)")
+                            if let leg = response.mainRoute.route.legs.first {
+                                legs.append(NomadLeg(leg: leg))
+                                mapboxLegs.append(leg)
+                            }
+//                        }
+                    }
+//                }
+                
+
             }
         }
         
-        return NomadRoute(legs: legs)
+        print("generateRoute \(legs)")
+        
+        // TODO: Put distance and expectedTravelTime in firestore
+        let mapboxRoute = Route.init(legs: mapboxLegs, shape: nil, distance: CLLocationDistance(), expectedTravelTime: TimeInterval())
+        return NomadRoute(route: mapboxRoute, legs: legs)
     }
     
     func getDirections() {
@@ -235,6 +248,30 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         for leg in newRoute.legs {
             showPolyline(leg: leg)
         }
+    }
+    
+    public func docsToNomadRoute(docs: [QueryDocumentSnapshot]) async -> [String: NomadRoute] {
+        var routesmap: [String: NomadRoute] = [:]
+        for doc in docs {
+            // Decode json
+            let data = doc.data()
+            var routeCoords: [[CLLocationCoordinate2D]] = [[CLLocationCoordinate2D]]()
+            
+            for (i, legData) in data {
+                if let legCoords = legData as? String {
+                    let legCoordsList = legCoords.split(separator: ";")
+                    routeCoords.append(legCoordsList.map { coord in
+                        let values = String(coord).split(separator: ",")
+                        return CLLocationCoordinate2D(latitude: Double(values[0]) ?? 0.0, longitude: Double(values[1]) ?? 0.0)
+                    })
+                }
+            }
+            print("docsToNomadRoute: \(routeCoords)")
+            
+            let route = await generateRoute(coords: routeCoords)
+            routesmap[doc.documentID] = route
+        }
+        return routesmap
     }
     
     // Update generated route based on changes to waypoints
@@ -298,16 +335,6 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         let coords = coordString.split(separator: ",")
         return CLLocationCoordinate2D(latitude: Double(coords[0]) ?? 0.0, longitude: Double(coords[1]) ?? 0.0)
     }
-    
-    private func jsonToCoordinates(values: KeyedDecodingContainer<MapManager.CodingKeys>) throws -> [CLLocationCoordinate2D] {
-        let coordinatesJSON = try values.decode(String.self, forKey: .coordinates)
-        let coordinates = coordinatesJSON.split(separator: ";").map { coord in
-            return parseCoordinateString(coordString: String(coord))
-        }
-        
-        return coordinates
-    }
-
     
     /// WAYPOINT CRUD SECTION
     private var waypoints: [Waypoint] = []

@@ -114,7 +114,11 @@ class FirebaseViewModel: ObservableObject {
     // Converts NomadRoute coordinates (use jsonCoordinates) method and store in firebase
     func storeRoute(route: NomadRoute) async -> Bool {
         do {
-            let data = route.getJsonCoordinatesMap()
+            var data = route.getJsonCoordinatesMap()
+            // TODO: Add expectedTravelTime and distance, look @ mapManager
+            data["expectedTravelTime"] = route.route?.expectedTravelTime.description ?? "0"
+            data[""]
+            
             try await db.collection("ROUTES").document(route.id.uuidString).setData(data)
             return true
         } catch {
@@ -125,30 +129,11 @@ class FirebaseViewModel: ObservableObject {
     
     // Fetch coordinates JSON from firebase and convert to coordinates
     func fetchRoutes() async throws -> [String: NomadRoute] {
-        var routesmap: [String: NomadRoute] = [:]
-        
         let getdocs = try await db.collection("ROUTES").getDocuments() // TODO: Change this
-            
-        for doc in getdocs.documents {
-            // Decode json
-            let data = doc.data()
-            var routeCoords: [[CLLocationCoordinate2D]] = [[CLLocationCoordinate2D]]()
-            
-            for (i, legData) in data {
-                if let legCoords = legData as? String {
-                    let legCoordsList = legCoords.split(separator: ";")
-                    routeCoords.append(legCoords.map { coord in
-                        let values = String(coord).split(separator: ",")
-                        return CLLocationCoordinate2D(latitude: Double(values[0]) ?? 0.0, longitude: Double(values[1]) ?? 0.0)
-                    })
-                }
-            }
-            
-            let route = await MapManager.generateRoute(coords: routeCoords)
-            routesmap[doc.documentID] = route
-        }
         
-        return routesmap
+        // TODO: Integrate UserViewModel to use its mapmanager
+        let mapManager = MapManager()
+        return await mapManager.docsToNomadRoute(docs: getdocs.documents)
     }
 
     func modifyStartDate(userID: String, tripID: String, newStartDate: String, modifiedDate: String) async -> Bool {
