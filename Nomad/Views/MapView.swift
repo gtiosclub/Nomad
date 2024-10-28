@@ -60,6 +60,9 @@ struct MapView: View {
                             }
                         }
                     }
+                    if let step = navManager.navigatingStep {
+                        print("On current step? \(mapManager.checkOnRoute(step: step))")
+                    }
                 }
             }
             .onAppear() {
