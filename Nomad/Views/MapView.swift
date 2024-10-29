@@ -6,12 +6,60 @@
 //
 import SwiftUI
 import MapKit
+import AVFoundation
+
+// Voice Button View
+struct VoiceAnnouncerButtonView: View {
+    let onPress: () -> Void
+    @Binding var isVoiceEnabled: Bool
+    
+    var body: some View {
+        Button(action: {
+            isVoiceEnabled.toggle()
+            if isVoiceEnabled {
+                onPress()
+            }
+        }) {
+            ZStack {
+                Circle()
+                    .fill(.white)
+                    .shadow(radius: 4)
+                Image(systemName: isVoiceEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill")
+                    .foregroundColor(.blue)
+            }
+        }
+    }
+}
+
+// Voice Manager
+class LocationVoiceManager: ObservableObject {
+    static let shared = LocationVoiceManager()
+    private let synthesizer = AVSpeechSynthesizer()
+    
+    func announceLocation(_ locationDescription: String) {
+        // Stop any ongoing speech
+        if synthesizer.isSpeaking {
+            synthesizer.stopSpeaking(at: .immediate)
+        }
+        
+        let utterance = AVSpeechUtterance(string: locationDescription)
+        utterance.rate = 0.5
+        utterance.volume = 1.0
+        utterance.pitchMultiplier = 1.0
+        utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
+        
+        synthesizer.speak(utterance)
+    }
+}
 
 @available(iOS 17.0, *)
 struct MapView: View {
     @ObservedObject var vm: UserViewModel
     @ObservedObject var navManager: NavigationManager = NavigationManager()
     @ObservedObject var mapManager = MapManager.manager
+    @StateObject private var voiceManager = LocationVoiceManager.shared
+    @State private var isVoiceEnabled: Bool = false
+
     var body: some View {
         ZStack {
             // All views within Map
@@ -86,6 +134,9 @@ struct MapView: View {
                         .frame(width: 50, height: 50)
                         ChangeMapTypeButtonView(selectedMapType: $navManager.mapType)
                             .frame(width: 50, height: 50)
+                        // Add Voice Announcer Button
+                        VoiceAnnouncerButtonView(onPress: announceCurrentLocation, isVoiceEnabled: $isVoiceEnabled)
+                            .frame(width: 50, height: 50)
                     }
                 }
                 Spacer()
@@ -121,6 +172,49 @@ struct MapView: View {
 
 
                 }
+            }
+        }
+    }
+    
+    // Function to announce current location
+    private func announceCurrentLocation() {
+        guard let userLocation = MapManager.manager.userLocation else { return }
+        
+        // Create a CLGeocoder instance
+        let geocoder = CLGeocoder()
+        let location = CLLocation(latitude: userLocation.latitude, longitude: userLocation.longitude)
+        
+        // Reverse geocode the location
+        geocoder.reverseGeocodeLocation(location) { placemarks, error in
+            if let error = error {
+                print("Reverse geocoding error: \(error.localizedDescription)")
+                // If geocoding fails, announce coordinates
+                let announcement = "You are currently at latitude \(String(format: "%.4f", userLocation.latitude)) and longitude \(String(format: "%.4f", userLocation.longitude))"
+                voiceManager.announceLocation(announcement)
+                return
+            }
+            
+            if let placemark = placemarks?.first {
+                // Build location description
+                var locationDescription = "You are currently at"
+                
+                if let streetNumber = placemark.subThoroughfare {
+                    locationDescription += " \(streetNumber)"
+                }
+                
+                if let street = placemark.thoroughfare {
+                    locationDescription += " \(street)"
+                }
+                
+                if let city = placemark.locality {
+                    locationDescription += " in \(city)"
+                }
+                
+                if let state = placemark.administrativeArea {
+                    locationDescription += ", \(state)"
+                }
+                
+                voiceManager.announceLocation(locationDescription)
             }
         }
     }
