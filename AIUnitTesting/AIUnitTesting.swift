@@ -60,15 +60,15 @@ final class AIUnitTesting: XCTestCase {
     }
         
     func testYelpLocationInitialization() async {
-        let location = AIAssistantViewModel.LocationInfo(locationType: "Restaurant", distance: 1200, location: "123 Main St", preferences: [])
+        let location = AIAssistantViewModel.LocationInfo(locationType: "Restaurant", locationInformation: "", distance: 1200, price: "1,2,3,4", location: "123 Main St", preferences: [])
         XCTAssertEqual(location.locationType, "Restaurant")
         XCTAssertEqual(location.distance, 1200)
         XCTAssertEqual(location.location, "123 Main St")
     }
     
     func testConvertStringToStruct() {
-        let expectedLocation = AIAssistantViewModel.LocationInfo(locationType: "Restaurant", distance: 1200, location: "123 Main St", preferences: [])
-        let emptyLocation = AIAssistantViewModel.LocationInfo(locationType: "", distance: -1, location: "", preferences: [])
+        let expectedLocation = AIAssistantViewModel.LocationInfo(locationType: "Restaurant", locationInformation: "", distance: 1200, price: "1,2,3,4", location: "123 Main St", preferences: [])
+        let emptyLocation = AIAssistantViewModel.LocationInfo(locationType: "", locationInformation: "", distance: -1, price: "1,2,3,4", location: "", preferences: [])
 
         let jsonString = """
         {

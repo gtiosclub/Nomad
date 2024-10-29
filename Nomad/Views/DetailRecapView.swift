@@ -52,7 +52,7 @@ struct DetailRecapView: View {
                             .foregroundColor(.gray.opacity(0.5))
                             .frame(width: 155, height: 87)
                         VStack {
-                            Text(String(round(vm.total_distance)))
+                            Text(String(round(trip.route?.totalDistance() ?? 0.0)))
                                 .font(.system(size: 30))
                             Text("miles traveled")
                         }
@@ -63,7 +63,7 @@ struct DetailRecapView: View {
                             .foregroundColor(.gray.opacity(0.5))
                             .frame(width: 155, height: 87)
                         VStack {
-                            Text(String(round(vm.total_time / 60)))
+                            Text(String(round(trip.route?.totalTime() ?? 0.0 / 60)))
                                 .font(.system(size: 30))
                             Text("hours spent")
                         }
@@ -98,8 +98,8 @@ struct DetailRecapView: View {
                 .padding(.bottom, 30)
         }.onAppear{
             Task {
-                await vm.getTotalDistance()
-                await vm.getTotalTime()
+                let totalDistance = trip.route?.totalDistance()
+                let totalTime = trip.route?.totalTime()
             }
             vm.setCurrentTrip(trip: trip)
         }

@@ -189,7 +189,9 @@ struct ExploreTripsView: View {
                             .cornerRadius(10)
                             .padding(.horizontal, 10)
                     }
-                    
+                    .onChange(of: trip.coverImageURL, initial: true) { old, new in
+                        // print("changing image url \(old) \(new)")
+                    }
                 }
                 
                 Text(trip.name)

@@ -11,7 +11,6 @@ import CoreLocation
 import Combine
 
 class UserViewModel: ObservableObject {
-    @Published var mapManager = MapManager()
     @Published var user: User?
     @Published var current_trip: Trip?
     @Published var total_distance: Double = 0
@@ -19,6 +18,7 @@ class UserViewModel: ObservableObject {
     @Published var restaurants: [Restaurant] = []
     @Published var hotels: [Hotel] = []
     @Published var activities: [Activity] = []
+    @Published var shopping: [Shopping] = []
     @Published var generalLocations: [GeneralLocation] = []
     @Published var distances: [Double] = []
     @Published var times: [Double] = []
@@ -46,15 +46,13 @@ class UserViewModel: ObservableObject {
     }
     
     @MainActor
-    func createTrip(start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM") async -> Trip {
+    func createTrip(start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM") async {
         let route = await getRoute()
 //        let cityImageURL = await Trip.getCityImageAsync(location: end_location)
 //        print(cityImageURL)
         self.current_trip = Trip(route: route, start_location: start_location, end_location: end_location, start_date: start_date, end_date: end_date, stops: stops, start_time: start_time)
         
         self.user?.addTrip(trip: self.current_trip!)
-                
-        return current_trip!
     }
     
     func addTripToUser(trip: Trip) {
@@ -141,7 +139,7 @@ class UserViewModel: ObservableObject {
             var pois = [trip.getStartLocation()]
             pois.append(contentsOf: trip.getStops())
             pois.append(trip.getEndLocation())
-            if let routes = await mapManager.generateRoute(pois: pois) {
+            if let routes = await MapManager.manager.generateRoute(pois: pois) {
                 trip.setRoute(route: routes[0]) // set main route
             }
         }
@@ -152,7 +150,7 @@ class UserViewModel: ObservableObject {
             var pois = [trip.getStartLocation()]
             pois.append(contentsOf: trip.getStops())
             pois.append(trip.getEndLocation())
-            if let routes = await mapManager.generateRoute(pois: pois) {
+            if let routes = await MapManager.manager.generateRoute(pois: pois) {
                 print("found route: \(routes[0])")
                 return routes[0]
             }
@@ -376,25 +374,71 @@ class UserViewModel: ObservableObject {
     }
 
     func fetchPlaces(location: String, stopType: String, rating: Double?, price: Int?, cuisine: String?) async {
-        let apiKey = "hpQdyXearQyP-ahpSeW2wDZvn-ljfmsGvN6RTKqo18I6R23ZB3dfbzAnEjvS8tWoPwyH9FFTGifdZ-n_qH80jbRuDbGb0dHu1qEPrLH-vqNq_d6TZdUaC_kZpwvqZnYx"
+        let apiKey = "6hYoc9qnxOWgzrfzI3eWBlM2e6eh8d1L_4A27ajUL5D7nEFyYNKMmhGMTsUsgbJZlMtlXsJDV7wK1lfstjqp9vHUxc-92IjLnk43fZnIfMfIfr5mFZ4bQ8hFUmISZ3Yx"
         let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
         guard let currentTrip = current_trip else { return }
         let startLocation = currentTrip.getStartLocation()
 
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
+        
+        var queryItems: [URLQueryItem] = []
 
-        var queryItems: [URLQueryItem] = [
-            URLQueryItem(name: "location", value: startLocation.getAddress()),
-            URLQueryItem(name: "term", value: stopType),
-            URLQueryItem(name: "sort_by", value: "best_match"),
-        ]
+        if (stopType == "Restaurants") {
+            queryItems = [
+                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "categories", value: "restaurants,food"),
+                URLQueryItem(name: "sort_by", value: "rating"),
+                URLQueryItem(name: "limit", value: "50")
+            ]
+            if let cuisine = cuisine, cuisine != "All" && !cuisine.isEmpty {
+                queryItems.append(URLQueryItem(name: "categories", value: cuisine))
+            }
+            if let price = price, price > 0 {
+                queryItems.append(URLQueryItem(name: "price", value: String(price)))
+            }
+        } else if (stopType == "Activities") {
+            queryItems = [
+                URLQueryItem(name: "location", value: startLocation.getAddress()),
 
-        if let price = price, price > 0 {
-            queryItems.append(URLQueryItem(name: "price", value: String(price)))
-        }
-
-        if let cuisine = cuisine, cuisine != "All" && !cuisine.isEmpty {
-            queryItems.append(URLQueryItem(name: "categories", value: cuisine))
+                URLQueryItem(name: "categories", value: "activelife,nightlife,facepainting,photoboothrentals,photographers,silentdisco,videographers,triviahosts,teambuilding,massage,hotspring"),
+                URLQueryItem(name: "sort_by", value: "rating"),
+                URLQueryItem(name: "limit", value: "50")
+            ]
+        } else if (stopType == "Scenic") {
+            queryItems = [
+                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "term", value: "sights"),
+                URLQueryItem(name: "sort_by", value: "rating"),
+                URLQueryItem(name: "limit", value: "50")
+            ]
+        } else if (stopType == "Hotels") {
+            queryItems = [
+                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "categories", value: "hotels,hostels"),
+                URLQueryItem(name: "sort_by", value: "rating"),
+                URLQueryItem(name: "limit", value: "50")
+            ]
+        } else if (stopType == "Tours and Landmarks") {
+            queryItems = [
+                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "categories", value: "tours,landmarks,collegeuniv,hotsprings"),
+                URLQueryItem(name: "sort_by", value: "rating"),
+                URLQueryItem(name: "limit", value: "50")
+            ]
+        } else if (stopType == "Shopping") {
+            queryItems = [
+                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "term", value: "shopping"),
+                URLQueryItem(name: "sort_by", value: "rating"),
+                URLQueryItem(name: "limit", value: "50")
+            ]
+        } else { //entertainment
+            queryItems = [
+                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "categories", value: "arts,magicians,musicians"),
+                URLQueryItem(name: "sort_by", value: "rating"),
+                URLQueryItem(name: "limit", value: "50")
+            ]
         }
 
         components.queryItems = queryItems
@@ -405,49 +449,41 @@ class UserViewModel: ObservableObject {
 
         do {
             let (data, _) = try await URLSession.shared.data(for: request)
+            print("Raw Response Data: \(String(data: data, encoding: .utf8) ?? "No data")")
             let decoder = JSONDecoder()
+            
             let response = try decoder.decode(YelpResponse.self, from: data)
             
             let filteredBusinesses = response.businesses.filter { business in
-                        guard let businessRating = business.rating else { return false }
-                        return rating == nil || businessRating >= rating!
-                    }
-            
+                guard let businessRating = business.rating else { return false }
+                let meetsRatingCriteria = rating == nil || businessRating >= rating!
+                let hasValidAddress = business.location.display_address.count >= 2
+                return meetsRatingCriteria && hasValidAddress
+            }
+
             DispatchQueue.main.async {
                 switch stopType {
-                case "Dining":
+                case "Restaurants":
                     self.restaurants = filteredBusinesses.map { Restaurant(from: $0) }
                 case "Hotels":
                     self.hotels = filteredBusinesses.map { Hotel(from: $0) }
                 case "Activities":
                     self.activities = filteredBusinesses.map { Activity(from: $0) }
+                case "Shopping":
+                    self.shopping = filteredBusinesses.map { Shopping(from: $0) }
                 default:
                     self.generalLocations = filteredBusinesses.map { GeneralLocation(from: $0) }
                 }
             }
             print("Response Data: \(String(data: data, encoding: .utf8) ?? "No data")")
+        } catch DecodingError.keyNotFound(let key, let context) {
+            print("Missing key: '\(key.stringValue)' in JSON data: \(context.debugDescription)")
+        } catch DecodingError.typeMismatch(let type, let context) {
+            print("Type mismatch for the \(type) with description: \(context.debugDescription)")
+        } catch DecodingError.valueNotFound(let type , let context) {
+            print("Value not ofund for the type \(type), \(context.debugDescription)")
         } catch {
             print("Error fetching data: \(error.localizedDescription)")
-        }
-    }
-
-    
-    func getCategoryForStopType(stopType: String) -> String {
-        switch stopType {
-        case "Dining":
-            return "restaurants"
-        case "Activities":
-            return "activities"
-        case "Scenic":
-            return "scenic"
-        case "Hotels":
-            return "hotels"
-        case "Tours and Landmarks":
-            return "tours,landmarks"
-        case "Entertainment":
-            return "entertainment"
-        default:
-            return "restaurants"
         }
     }
     
@@ -545,21 +581,21 @@ class UserViewModel: ObservableObject {
 //    }
     
     static let community_trips = [
-        Trip(start_location: Activity(address: "555 Favorite Rd", name: "Home", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "666 Favorite Ave", name: "Favorite Hotel 1", latitude: 34.0522, longitude: -118.2437, city: "Redwood"), name: "Redwood National Park"),
-        Trip(start_location: Restaurant(address: "777 Favorite Rd", name: "Lorum ipsum Pebble Beach", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "888 Favorite Ave", name: "Favorite Hotel 2", latitude: 34.0522, longitude: -118.2437, city: "San Francisco"), name: "LA to SF"),
-        Trip(start_location: Restaurant(address: "333 Old Rd", name: "Lorum Ipsum Pebble Beach, CA", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "444 Old Ave", name: "Previous Hotel 2", latitude: 34.0522, longitude: -118.2437, city: "Boulder"), name: "Colorado Mountains")
+        Trip(start_location: Activity(address: "555 Favorite Rd", name: "Home", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "666 Favorite Ave", name: "Favorite Hotel 1", latitude: 34.0522, longitude: -118.2437, city: "Redwood"), name: "Redwood National Park", coverImageURL: ""),
+        Trip(start_location: Restaurant(address: "777 Favorite Rd", name: "Lorum ipsum Pebble Beach", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "888 Favorite Ave", name: "Favorite Hotel 2", latitude: 34.0522, longitude: -118.2437, city: "San Francisco"), name: "LA to SF", coverImageURL: ""),
+        Trip(start_location: Restaurant(address: "333 Old Rd", name: "Lorum Ipsum Pebble Beach, CA", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "444 Old Ave", name: "Previous Hotel 2", latitude: 34.0522, longitude: -118.2437, city: "Boulder"), name: "Colorado Mountains", coverImageURL: "")
     ]
     
     static let previous_trips = [
-        Trip(start_location: Activity(address: "111 Old Rd", name: "Scenic California Mountain Route", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "222 Old Ave", name: "Previous Hotel 1", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), name: "Cool Restaurants"),
-        Trip(start_location: Restaurant(address: "333 Old Rd", name: "Lorum Ipsum Pebble Beach, CA", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "444 Old Ave", name: "Previous Hotel 2", latitude: 34.0522, longitude: -118.2437, city: "Orlando"), name: "ATL to Orlando"),
-        Trip(start_location: Restaurant(address: "333 Old Rd", name: "Lorum Ipsum Pebble Beach, CA", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "444 Old Ave", name: "Previous Hotel 2", latitude: 34.0522, longitude: -118.2437, city: "Boston"), name: "Northeast States")
-    ]
+        Trip(start_location: Activity(address: "111 Old Rd", name: "Scenic California Mountain Route", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "222 Old Ave", name: "Previous Hotel 1", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), name: "Cool Restaurants", coverImageURL: ""),
+        Trip(start_location: Restaurant(address: "333 Old Rd", name: "Lorum Ipsum Pebble Beach, CA", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "444 Old Ave", name: "Previous Hotel 2", latitude: 34.0522, longitude: -118.2437, city: "Orlando"), name: "ATL to Orlando", coverImageURL: ""),
+        Trip(start_location: Restaurant(address: "333 Old Rd", name: "Lorum Ipsum Pebble Beach, CA", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "444 Old Ave", name: "Previous Hotel 2", latitude: 34.0522, longitude: -118.2437, city: "Boston"), name: "Northeast States", coverImageURL: "")
+             ]
     
     static let my_trips = [
-        Trip(start_location: Restaurant(address: "848 Spring Street, Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy, Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)], name: "ATL to Nashville"),
-        Trip(start_location: Activity(address: "123 Start St", name: "Scenic California Mountain Route", latitude: 34.0522, longitude: -118.2437, city: "Boston"), end_location: Hotel(address: "456 End Ave", name: "End Hotel", latitude: 34.0522, longitude: -118.2437, city: "Seattle"), name: "Cross Country"),
-        Trip(start_location: Activity(address: "789 Another St", name: "Johnson Family Spring Retreat", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "123 Another Ave", name: "Another Hotel", latitude: 34.0522, longitude: -118.2437, city: "Blue Ridge"), name: "GA Mountains")
+        Trip(start_location: Restaurant(address: "848 Spring Street, Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy, Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)], name: "ATL to Nashville", coverImageURL: ""),
+        Trip(start_location: Activity(address: "123 Start St", name: "Scenic California Mountain Route", latitude: 34.0522, longitude: -118.2437, city: "Boston"), end_location: Hotel(address: "456 End Ave", name: "End Hotel", latitude: 34.0522, longitude: -118.2437, city: "Seattle"), name: "Cross Country", coverImageURL: ""),
+        Trip(start_location: Activity(address: "789 Another St", name: "Johnson Family Spring Retreat", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "123 Another Ave", name: "Another Hotel", latitude: 34.0522, longitude: -118.2437, city: "Blue Ridge"), name: "GA Mountains", coverImageURL: "")
     ]
 
     func setTripTitle(newTitle: String) {
@@ -581,6 +617,10 @@ class UserViewModel: ObservableObject {
 
     func getTripVisibility() -> Bool {
         return current_trip?.setIsPrivate() ?? true
+    }
+    
+    func reorderStops(fromOffsets: IndexSet, toOffset: Int) {
+        current_trip?.reorderStops(fromOffsets: fromOffsets, toOffset: toOffset)
     }
 
     func clearCurrentTrip() {
@@ -604,14 +644,13 @@ struct Business: Codable {
     let coordinates: Coordinates
     let location: Location
     let rating: Double?
-    let categories: [Category]
+    let categories: [Category]?
     let price: String?
     let url: String?
     let image_url: String?
 }
 
 struct Location: Codable {
-    let address1: String
     let city: String
     let display_address: [String]
 }
@@ -622,6 +661,7 @@ struct Coordinates: Codable {
 }
 
 struct Category: Codable {
+    let alias: String
     let title: String
 }
 
