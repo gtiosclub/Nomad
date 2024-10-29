@@ -163,9 +163,9 @@ actor SpeechRecognizer: ObservableObject {
             
             //start monitoring for silence
             Task { @MainActor in
-                //print("New transcription received: \(transcription)")
+                print("New transcription received: \(transcription)")
                 // self.silenceTimer?.invalidate()  // Invalidate any previous timer
-                //await self.startSilenceTimer()         // Start a new silence timer
+                await self.startSilenceTimer()         // Start a new silence timer
             }
             
             // Check if the word "done" was spoken
