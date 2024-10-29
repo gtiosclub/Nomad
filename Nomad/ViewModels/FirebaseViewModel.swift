@@ -146,6 +146,52 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    func modifyCreateTrip(tripID: String, createdDate: String, modifiedDate: String, startDate: String, startTime: String, endDate: String, isPrivate: Bool,  startLocation: any POI , endLocation: any POI) async -> Bool {
+           
+           let tripDocRef = db.collection("TRIPS").document(tripID)
+
+           let tripData: [String: Any] = [
+               "created_date": createdDate,
+               "end_date" : endDate,
+               "end_id" : "end",
+               "isPrivate" : true,
+               "modified_date": modifiedDate,
+               "name" : "",
+               "start_date" : startDate,
+               "start_id" : "start",
+               "start_time" : startTime
+           ]
+           do {
+               try await tripDocRef.setData(tripData)
+
+               let stopsCollection = tripDocRef.collection("STOPS")
+
+               let startData: [String: Any] = [
+                   "name": startLocation.getName(),
+                   "address": startLocation.getAddress(),
+                   "city" : startLocation.getCity() ?? "",
+                   "latitude" : startLocation.getLatitude(),
+                   "longitude" : startLocation.getLongitude(),
+                   "type": "GeneralLocation"
+               ]
+               try await stopsCollection.document("start").setData(startData)
+
+               let endData: [String: Any] = [
+                   "name": endLocation.getName(),
+                   "address": endLocation.getAddress(),
+                   "city" : endLocation.getCity() ?? "",
+                   "latitude" : endLocation.getLatitude(),
+                   "longitude" : endLocation.getLongitude(),
+                   "type": "GeneralLocation"
+               ]
+               try await stopsCollection.document("end").setData(endData)
+               return true
+           } catch {
+               print("Error creating trip or stops: \(error)")
+               return false
+           }
+       }
+    
     func createCopyTrip(newTripID: String, oldTripID: String, createdDate: String) async -> Bool {
             let db = Firestore.firestore()
             
