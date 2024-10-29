@@ -30,6 +30,8 @@ struct AtlasNavigationView: View {
     @State private var currentMessage: String = ""
     //@State private var AIResponse: String = ""
     
+    @State private var isLoading: Bool = false
+
     let speechSynthesizer = AVSpeechSynthesizer()
     
     func speak(text: String) {
@@ -70,6 +72,21 @@ struct AtlasNavigationView: View {
 //                    .foregroundColor(.gray)
 //                    .underline()
 //            }
+            Text(currentMessage)
+                .padding(10)
+                .background(Color.gray.opacity(0.2))
+                .cornerRadius(10)
+                .padding(.horizontal, 10)
+                .onChange(of: speechRecognizer.transcript) { newTranscript in
+                    currentMessage = newTranscript
+                }
+            
+            if isLoading {
+                ProgressView("Loading...")
+                    .progressViewStyle(CircularProgressViewStyle())
+                    .foregroundColor(.white)
+                    .scaleEffect(1.5) // Adjust the size of the loading circle
+            }
             
             if let response = ChatVM.latestAIResponse, !response.isEmpty {
                 HStack {
@@ -81,6 +98,7 @@ struct AtlasNavigationView: View {
                     Spacer()
                 }
                 .transition(.opacity)
+                            
             }
 
             
@@ -91,6 +109,7 @@ struct AtlasNavigationView: View {
         .onChange(of: ChatVM.latestAIResponse) { response in
             if let response = response, !response.isEmpty {
                 speak(text: response)
+                toggleIsLoading()
             }
         }
     }
@@ -106,6 +125,7 @@ struct AtlasNavigationView: View {
             if !transcript.isEmpty {
                 currentMessage = transcript
                 ChatVM.sendMessage(currentMessage)
+                isLoading = true
             }
 
             isMicrophone = false
@@ -113,6 +133,10 @@ struct AtlasNavigationView: View {
             speechRecognizer.startTranscribing()
             isMicrophone = true
         }
+    }
+    
+    func toggleIsLoading() {
+        isLoading.toggle()
     }
 }
 
