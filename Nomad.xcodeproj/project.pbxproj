@@ -143,7 +143,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		846DAB0C2CC1D33800CFFDA0 /* FirebaseTesting */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = FirebaseTesting; sourceTree = "<group>"; };
 		84FC27152CAC741D008C8339 /* Onboarding */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Onboarding; sourceTree = "<group>"; };
 		B35B62202C9A444700AB215E /* AIUnitTesting */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = AIUnitTesting; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -214,7 +213,6 @@
 		B2F8F32A2C97BB3C00B9618E = {
 			isa = PBXGroup;
 			children = (
-				846DAB0C2CC1D33800CFFDA0 /* FirebaseTesting */,
 				B2F8F3352C97BB3C00B9618E /* Nomad */,
 				B35B62202C9A444700AB215E /* AIUnitTesting */,
 				9455F5492C9F99F0006D03D6 /* Frameworks */,
@@ -379,7 +377,6 @@
 				B35B62242C9A444700AB215E /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				846DAB0C2CC1D33800CFFDA0 /* FirebaseTesting */,
 				B35B62202C9A444700AB215E /* AIUnitTesting */,
 			);
 			name = AIUnitTesting;
