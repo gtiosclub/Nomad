@@ -152,6 +152,13 @@ struct NomadStep {
         var distance: CLLocationDistance
         var instructions: String
         var expectedTravelTime: TimeInterval
+        var exitCodes: [String]?
+        var exitIndex: Int?
+        let instructionsDisplayedAlongStep: [VisualInstructionBanner]?
+        let maneuverDirection: ManeuverDirection?
+        let maneuverType: ManeuverType
+        let intersections: [Intersection]?
+        let names: [String]? //The names of the road or path leading from this step’s maneuver to the next step’s maneuver.
     }
     
     struct Exit {
