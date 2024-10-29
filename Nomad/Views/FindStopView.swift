@@ -22,6 +22,11 @@ struct FindStopView: View {
     @State private var stopAddress: String = ""
     @State private var selectedStop: (any POI)?
     @State private var isEditing: Bool = false
+    @State private var routeProgress: Double = 0.0
+    @State private var markerCoordinate: CLLocationCoordinate2D = .init(latitude: 0, longitude: 0)
+    @State private var filterRating: String = "4 ★ and up"
+    @State private var filterCuisine: String = "American"
+    @State private var filterPrice: String = "$$"
     @Environment(\.dismiss) var dismiss
     
     let stop_types = ["Restaurants", "Activities", "Scenic", "Hotels", "Tours & Landmarks", "Entertainment", "Shopping"]
@@ -36,7 +41,7 @@ struct FindStopView: View {
                     .padding(.horizontal)
                 
                 if let trip = vm.current_trip {
-                    RoutePreviewView(vm: vm, trip: Binding.constant(trip))
+                    RoutePreviewView(vm: vm, trip: Binding.constant(trip), currentLocation: markerCoordinate)
                         .frame(minHeight: 250.0)
                 } else {
                     Text("No current trip available")
@@ -45,6 +50,13 @@ struct FindStopView: View {
             }
             
             VStack(alignment: .leading, spacing: 15) {
+                /*Slider(value: $routeProgress, in: 0...1, step: 0.01) {
+                 Text("Route Progress")
+                 }
+                 .padding()
+                 .onChange(of: routeProgress) { newValue in
+                 updateMarkerPosition(progress: newValue)
+                 }*/
                 HStack {
                     ZStack {
                         Circle()
@@ -73,11 +85,13 @@ struct FindStopView: View {
                 .padding(5)
                 
                 Divider()
-                // this
+                
                 TabView {
                     VStack(alignment: .leading, spacing: 16) {
                         if selection == "Restaurants" {
-                            RestaurantFiltersView(selectedCuisines: $selectedCuisines, cuisines: cuisines, price: $price, rating: $rating)
+                            Text("Cuisine:")
+                                .font(.headline)
+                            FilterView(selectedRating: $rating, selectedCuisine: $selectedCuisines, selectedPrice: $price)
                         } else if selection == "Activities" || selection == "Hotels" {
                             RatingUI(rating: $rating)
                                 .padding(.top, 10)
@@ -90,8 +104,9 @@ struct FindStopView: View {
                         EnhancedRoutePlanListView(vm: vm)
                     }
                 }
-                .frame(height: selection == "Activities" || selection == "Hotels" ? 80 : 250)
+                .frame(height: selection == "Restaurants" ? 250 : (selection == "Activities" || selection == "Hotels" ? 80 : 300))
                 .tabViewStyle(PageTabViewStyle())
+                .indexViewStyle(PageIndexViewStyle())
                 
                 HStack {
                     Image(systemName: "magnifyingglass")
@@ -209,6 +224,7 @@ struct FindStopView: View {
                     .cornerRadius(10)
                 Spacer()
             }
+                //markerCoordinate = vm.current_trip?.getStartLocationCoordinates()
         }
         .padding()
     }
@@ -261,66 +277,6 @@ struct FindStopView: View {
         }
     }
     
-    struct RestaurantFiltersView: View {
-        @Binding var selectedCuisines: [String]
-        var cuisines: [String]
-        @Binding var price: Int
-        @Binding var rating: Int
-
-        var body: some View {
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Cuisine:")
-                    .font(.headline)
-                
-                HStack(alignment: .top, spacing: 16) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        ForEach(cuisines, id: \.self) { cuisine in
-                            Button(action: {
-                                if selectedCuisines.contains(cuisine) {
-                                    selectedCuisines.removeAll { $0 == cuisine }
-                                } else {
-                                    selectedCuisines.append(cuisine)
-                                }
-                            }) {
-                                HStack {
-                                    Image(systemName: selectedCuisines.contains(cuisine) ? "checkmark.square.fill" : "square")
-                                        .foregroundColor(selectedCuisines.contains(cuisine) ? .blue : .gray)
-                                    Text(cuisine)
-                                }
-                                .padding(.vertical, 4)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        }
-                    }
-                    
-                    Spacer()
-                    
-                    VStack(alignment: .leading, spacing: 16) {
-                        VStack(alignment: .leading) {
-                            Text("Maximum Price:")
-                                .font(.subheadline)
-                                .bold()
-                            
-                            HStack(spacing: 8) {
-                                ForEach(1...4, id: \.self) { index in
-                                    Image(systemName: index <= price ? "dollarsign.circle.fill" : "dollarsign.circle")
-                                        .resizable()
-                                        .frame(width: 24, height: 24)
-                                        .foregroundColor(index <= price ? .green : .gray)
-                                        .onTapGesture {
-                                            price = index
-                                        }
-                                }
-                            }
-                        }
-                        RatingUI(rating: $rating) // Ensure RatingUI accepts a Binding
-                    }
-                }
-            }
-            .padding(.bottom, 10)
-        }
-    }
-    
     struct RatingUI: View {
         @Binding var rating: Int
         
@@ -363,7 +319,7 @@ struct FindStopView: View {
                             .foregroundColor(.secondary)
                     }
                 } else {
-                    Text("N/A")
+                    Text("Rating: N/A")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
@@ -402,29 +358,30 @@ struct FindStopView: View {
                     Text(stop.name)
                         .font(.headline)
                         .lineLimit(1)
-
+                    
                     Text(stop.address)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
-
-                    if let restaurant = stop as? Restaurant {
-                        Text(restaurant.cuisine ?? "")
-                            .font(.system(size: 16))
-                            .foregroundColor(.secondary)
-                        
-                        if let city = restaurant.city {
-                            Text(" • \(city) • ")
+                    HStack {
+                        if let restaurant = stop as? Restaurant {
+                            Text(restaurant.cuisine ?? "")
                                 .font(.system(size: 16))
                                 .foregroundColor(.secondary)
-                        }
-                        
-                        if let price = restaurant.price {
-                            Text(String(repeating: "$", count: price))
-                                .font(.system(size: 16))
-                                .foregroundColor(.secondary)
+                            
+                            if let city = restaurant.city {
+                                Text(" • \(city) • ")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            if let price = restaurant.price {
+                                Text(String(repeating: "$", count: price))
+                                    .font(.system(size: 16))
+                                    .foregroundColor(.secondary)
+                            }
                         }
                     }
-
+                    
                     if let restaurant = stop as? Restaurant {
                         showRating(restaurant.rating)
                     } else if let activity = stop as? Activity {
@@ -442,6 +399,17 @@ struct FindStopView: View {
             .cornerRadius(12)
         }
     }
+    /*func updateMarkerPosition(progress: Double) {
+
+        let totalTime = vm.total_time
+        let targetTime = totalTime * progress
+
+        Task {
+            if let newPosition = try? await vm.mapManager.getFutureLocation(time: targetTime) {
+                markerCoordinate = newPosition
+            }
+        }
+    }*/
 }
 
 extension Array {
@@ -453,317 +421,11 @@ extension Array {
 }
 
 #Preview {
-    FindStopView(vm: .init(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: [Trip(start_location: Restaurant(address: "848 Spring Street, Atlanta, GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)])])))
+    var current_trip = Trip(start_location: Restaurant(address: "848 Spring Street, Atlanta, GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)])
+    
+    var vm: UserViewModel = UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: [current_trip]))
+    
+    vm.setCurrentTrip(trip: current_trip)
+    
+    return FindStopView(vm: vm)
 }
-
-// be able to swipe entire vstack out to enhancedrouteplanlistview and back / using tab view perhaps
-
-
-//                            if selection == "Restaurants", !vm.restaurants.isEmpty {
-//                                ForEach(vm.restaurants) { restaurant in
-//                                    HStack {
-//                                        Button(action: {
-//                                            addStop(restaurant)
-//                                        }) {
-//                                            ZStack {
-//                                                Circle()
-//                                                    .fill(Color.white)
-//                                                    .frame(width: 24, height: 24)
-//                                                    .overlay(
-//                                                        Circle()
-//                                                            .stroke(Color.gray, lineWidth: 1)
-//                                                    )
-//                                                Image(systemName: "plus")
-//                                                    .foregroundColor(.gray)
-//                                                    .font(.system(size: 18))
-//                                                    .bold()
-//                                            }
-//                                        }
-//
-//                                        AsyncImage(url: URL(string: restaurant.imageUrl ?? "")) { image in
-//                                            image
-//                                                .resizable()
-//                                                .frame(width: 70, height: 70)
-//                                                .cornerRadius(10)
-//                                                .clipped()
-//                                        } placeholder: {
-//                                            ProgressView()
-//                                                .frame(width: 70, height: 70)
-//                                        }
-//
-//                                        VStack(alignment: .leading, spacing: 0) {
-//                                            Text(restaurant.name)
-//                                                .font(.headline)
-//                                                .lineLimit(1)
-//                                            HStack(spacing: 1) {
-//                                                Text(restaurant.cuisine ?? "")
-//                                                    .font(.system(size: 16))
-//                                                    .foregroundColor(.secondary)
-//
-//                                                if let city = restaurant.city {
-//                                                    Text(" • \(city) • ")
-//                                                        .font(.system(size: 16))
-//                                                        .foregroundColor(.secondary)
-//                                                }
-//
-//                                                if let price = restaurant.price {
-//                                                    Text(String(repeating: "$", count: price))
-//                                                        .font(.system(size: 16))
-//                                                        .foregroundColor(.secondary)
-//                                                }
-//                                            }
-//                                            if let rating = restaurant.rating {
-//                                                HStack(spacing: 1) {
-//                                                    Text("\(String(format: "%.1f", rating))")
-//                                                        .font(.subheadline)
-//                                                        .foregroundColor(.secondary)
-//                                                    Image(systemName: "star")
-//                                                        .resizable()
-//                                                        .frame(width: 14, height: 14)
-//                                                        .foregroundColor(.secondary)
-//                                                }
-//                                            } else {
-//                                                Text("N/A")
-//                                                    .font(.subheadline)
-//                                                    .foregroundColor(.secondary)
-//                                            }
-//                                        }
-//                                        .padding(.vertical, 12)
-//                                        Spacer()
-//                                    }
-//                                    .padding(2)
-//                                    .frame(minHeight: 50)
-//                                    .background(Color.white)
-//                                    .cornerRadius(12)
-//                                }
-//                            } else if selection == "Hotels", !vm.hotels.isEmpty {
-//                                ForEach(vm.hotels) { hotel in
-//                                    HStack {
-//                                        Button(action: {
-//                                            addStop(hotel)
-//                                        }) {
-//                                            ZStack {
-//                                                Circle()
-//                                                    .fill(Color.white)
-//                                                    .frame(width: 24, height: 24)
-//                                                    .overlay(
-//                                                        Circle()
-//                                                            .stroke(Color.gray, lineWidth: 1)
-//                                                    )
-//                                                Image(systemName: "plus")
-//                                                    .foregroundColor(.gray)
-//                                                    .font(.system(size: 14))
-//                                                    .bold()
-//                                            }
-//                                        }
-//                                        AsyncImage(url: URL(string: hotel.imageUrl ?? "")) { image in
-//                                            image
-//                                                .resizable()
-//                                                .scaledToFill()
-//                                                .frame(width: 70, height: 70)
-//                                                .cornerRadius(8)
-//                                        } placeholder: {
-//                                            ProgressView()
-//                                                .frame(width: 70, height:70)
-//                                        }
-//
-//                                        VStack(alignment: .leading, spacing: 4) {
-//                                            Text(hotel.name)
-//                                                .font(.headline)
-//                                            Text(hotel.address)
-//                                                .font(.subheadline)
-//                                            if let rating = hotel.rating {
-//                                                HStack(spacing: 1) {
-//                                                    Text("\(String(format: "%.1f", rating))")
-//                                                        .font(.subheadline)
-//                                                        .foregroundColor(.secondary)
-//                                                    Image(systemName: "star")
-//                                                        .resizable()
-//                                                        .frame(width: 14, height: 14)
-//                                                        .foregroundColor(.secondary)
-//                                                }
-//                                            } else {
-//                                                Text("N/A")
-//                                                    .font(.subheadline)
-//                                                    .foregroundColor(.secondary)
-//                                            }
-//                                        }
-//                                        .padding(.vertical, 8)
-//                                        Spacer()
-//                                    }
-//                                    .padding(2)
-//                                    .frame(minHeight: 50)
-//                                    .background(Color.white)
-//                                    .cornerRadius(12)
-//                                }
-//                            } else if selection == "Activities", !vm.activities.isEmpty {
-//                                ForEach(vm.activities) { activity in
-//                                    HStack() {
-//                                        Button(action: {
-//                                            addStop(activity)
-//                                        }) {
-//                                            ZStack {
-//                                                Circle()
-//                                                    .fill(Color.white)
-//                                                    .frame(width: 24, height: 24)
-//                                                    .overlay(
-//                                                        Circle()
-//                                                            .stroke(Color.gray, lineWidth: 1)
-//                                                    )
-//                                                Image(systemName: "plus")
-//                                                    .foregroundColor(.gray)
-//                                                    .font(.system(size: 14))
-//                                                    .bold()
-//                                            }
-//                                        }
-//                                        AsyncImage(url: URL(string: activity.imageUrl ?? "")) { image in
-//                                            image
-//                                                .resizable()
-//                                                .scaledToFill()
-//                                                .frame(width: 70, height: 70)
-//                                                .cornerRadius(8)
-//                                        } placeholder: {
-//                                            ProgressView()
-//                                                .frame(width: 70, height: 70)
-//                                        }
-//
-//                                        VStack(alignment: .leading, spacing: 4) {
-//                                            Text(activity.name)
-//                                                .font(.headline)
-//                                            HStack(spacing: 1) {
-//                                                if let city = activity.city {
-//                                                    Text("\(city) • ")
-//                                                        .font(.system(size: 16))
-//                                                        .foregroundColor(.secondary)
-//                                                }
-//                                                if let rating = activity.rating {
-//                                                    HStack(spacing: 1) {
-//                                                        Text("\(String(format: "%.1f", rating))")
-//                                                            .font(.subheadline)
-//                                                            .foregroundColor(.secondary)
-//                                                        Image(systemName: "star")
-//                                                            .resizable()
-//                                                            .frame(width: 14, height: 14)
-//                                                            .foregroundColor(.secondary)
-//                                                    }
-//                                                } else {
-//                                                    Text("N/A")
-//                                                        .font(.subheadline)
-//                                                        .foregroundColor(.secondary)
-//                                                }
-//                                            }
-//                                        }
-//                                        .padding(.vertical, 8)
-//                                        Spacer()
-//                                    }
-//                                    .padding(2)
-//                                    .frame(minHeight: 50)
-//                                    .background(Color.white)
-//                                    .cornerRadius(12)
-//                                }
-//                            } else if selection == "Shopping", !vm.shopping.isEmpty {
-//                                ForEach(vm.shopping) { shop in
-//                                    HStack {
-//                                        Button(action: {
-//                                            addStop(shop)
-//                                        }) {
-//                                            ZStack {
-//                                                Circle()
-//                                                    .fill(Color.white)
-//                                                    .frame(width: 24, height: 24)
-//                                                    .overlay(
-//                                                        Circle()
-//                                                            .stroke(Color.gray, lineWidth: 1)
-//                                                    )
-//                                                Image(systemName: "plus")
-//                                                    .foregroundColor(.gray)
-//                                                    .font(.system(size: 14))
-//                                                    .bold()
-//                                            }
-//                                        }
-//                                        AsyncImage(url: URL(string: shop.imageUrl ?? "")) { image in
-//                                            image
-//                                                .resizable()
-//                                                .scaledToFill()
-//                                                .frame(width: 70, height: 70)
-//                                                .cornerRadius(8)
-//                                        } placeholder: {
-//                                            ProgressView()
-//                                                .frame(width: 70, height: 70)
-//                                        }
-//
-//                                        VStack(alignment: .leading, spacing: 4) {
-//                                            Text(shop.name)
-//                                                .font(.headline)
-//                                            if let city = shop.city {
-//                                                Text("\(city)")
-//                                                    .font(.system(size: 16))
-//                                                    .foregroundColor(.secondary)
-//                                            }
-//                                        }
-//                                        .padding(.vertical, 8)
-//                                        Spacer()
-//                                    }
-//                                    .padding(2)
-//                                    .frame(minHeight: 50)
-//                                    .background(Color.white)
-//                                    .cornerRadius(12)
-//                                }
-//                            } else if !vm.generalLocations.isEmpty {
-//                                ForEach(vm.generalLocations) { generalLocation in
-//                                    HStack {
-//                                        Button(action: {
-//                                            addStop(generalLocation)
-//                                        }) {
-//                                            ZStack {
-//                                                Circle()
-//                                                    .fill(Color.white)
-//                                                    .frame(width: 24, height: 24)
-//                                                    .overlay(
-//                                                        Circle()
-//                                                            .stroke(Color.gray, lineWidth: 1)
-//                                                    )
-//                                                Image(systemName: "plus")
-//                                                    .foregroundColor(.gray)
-//                                                    .font(.system(size: 14))
-//                                                    .bold()
-//                                            }
-//                                        }
-//                                        AsyncImage(url: URL(string: generalLocation.imageUrl ?? "")) { image in
-//                                            image
-//                                                .resizable()
-//                                                .scaledToFill()
-//                                                .frame(width: 70, height: 70)
-//                                                .cornerRadius(8)
-//                                        } placeholder: {
-//                                            ProgressView()
-//                                                .frame(width: 70, height: 70)
-//                                        }
-//
-//                                        VStack(alignment: .leading, spacing: 4) {
-//                                            Text(generalLocation.name)
-//                                                .font(.headline)
-//                                            if let city = generalLocation.city {
-//                                                Text("\(city)")
-//                                                    .font(.system(size: 16))
-//                                                    .foregroundColor(.secondary)
-//                                            }
-//                                        }
-//                                        .padding(.vertical, 8)
-//                                        Spacer()
-//                                    }
-//                                    .padding(2)
-//                                    .frame(minHeight: 50)
-//                                    .background(Color.white)
-//                                    .cornerRadius(12)
-//                                }
-//                            } else if hasSearched {
-//                                Text("No results found.")
-//                                    .foregroundColor(.secondary)
-//                                    .padding(.top)
-//                            } else {
-//                                Text("Search for \(selection)")
-//                                    .foregroundColor(.secondary)
-//                                    .padding(.top)
-//                            }
-//                        }
