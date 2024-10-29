@@ -9,9 +9,8 @@ import SwiftUI
 import CoreLocation
 
 struct FindStopView: View {
-    @ObservedObject var mapManager: MapManager
     @ObservedObject var vm: UserViewModel
-    @State var selection: String = "Dining"
+    @State var selection: String = "Restaurants"
     @State private var searchTerm: String = ""
     @State private var price: Int = 0
     @State private var rating: Int = 0
@@ -22,20 +21,21 @@ struct FindStopView: View {
     @State private var stopAddress: String = ""
     @State private var selectedStop: (any POI)?
     @State private var isEditing: Bool = false
+    @Environment(\.dismiss) var dismiss
     
-    let stop_types = ["Dining", "Activities", "Scenic", "Hotels", "Tours & Landmarks", "Entertainment"]
+    let stop_types = ["Restaurants", "Activities", "Scenic", "Hotels", "Tours & Landmarks", "Entertainment", "Shopping"]
     let cuisines = ["Chinese", "Italian", "Indian", "American", "Japanese", "Korean"]
     
     var body: some View {
-        NavigationStack {
             ScrollView {
                 VStack(alignment: .leading) {
                     Text("Let's Plan Your New Trip")
                         .font(.headline)
-                        .padding(.bottom, 5)
+                        .padding(.vertical, 5)
+                        .padding(.horizontal)
                   
                     if let trip = vm.current_trip {
-                        RoutePreviewView(mapManager: mapManager, trip: Binding.constant(trip))
+                        RoutePreviewView(vm: vm, trip: Binding.constant(trip))
                             .frame(minHeight: 250.0)
                     } else {
                         Text("No current trip available")
@@ -58,6 +58,7 @@ struct FindStopView: View {
                                 .font(.system(size: 16))
                                 .foregroundColor(.gray)
                         }
+                        .padding(.leading)
                         
                         Text("Explore Stops")
                             .font(.headline)
@@ -79,7 +80,7 @@ struct FindStopView: View {
                                         .font(.system(size: 14))
                                 }
                                 .buttonStyle(PlainButtonStyle())
-                                .frame(width: 80, height: 30)
+                                .frame(width: 90, height: 30)
                                 .cornerRadius(20)
                             }
                         }
@@ -97,7 +98,7 @@ struct FindStopView: View {
                                         .font(.system(size: 14))
                                 }
                                 .buttonStyle(PlainButtonStyle())
-                                .frame(width: 150, height: 30)
+                                .frame(width: 100, height: 30)
                                 .cornerRadius(20)
                             }
                         }
@@ -105,100 +106,105 @@ struct FindStopView: View {
                     .padding(5)
                     
                     Divider()
-                    
-                    VStack(alignment: .leading, spacing: 16) {
-                        
-                        if selection == "Dining" {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("Cuisine:")
-                                    .font(.headline)
+                   // this
+                        TabView {
+                            VStack(alignment: .leading, spacing: 16) {
                                 
-                                HStack(alignment: .top, spacing: 16) {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        ForEach(cuisines, id: \.self) { cuisine in
-                                            Button(action: {
-                                                if selectedCuisines.contains(cuisine) {
-                                                    selectedCuisines.removeAll { $0 == cuisine }
-                                                } else {
-                                                    selectedCuisines.append(cuisine)
-                                                }
-                                            }) {
-                                                HStack {
-                                                    Image(systemName: selectedCuisines.contains(cuisine) ? "checkmark.square.fill" : "square")
-                                                        .foregroundColor(selectedCuisines.contains(cuisine) ? .blue : .gray)
-                                                    Text(cuisine)
-                                                }
-                                                .padding(.vertical, 4)
-                                            }
-                                            .buttonStyle(PlainButtonStyle())
-                                        }
-                                    }
-                                    
-                                    Spacer()
-                                    
-                                    VStack(alignment: .leading, spacing: 16) {
-                                        VStack(alignment: .leading) {
-                                            Text("Maximum Price:")
-                                                .font(.subheadline)
-                                                .bold()
-                                            
-                                            HStack(spacing: 8) {
-                                                ForEach(1...4, id: \.self) { index in
-                                                    Image(systemName: index <= price ? "dollarsign.circle.fill" : "dollarsign.circle")
-                                                        .resizable()
-                                                        .frame(width: 24, height: 24)
-                                                        .foregroundColor(index <= price ? .green : .gray)
-                                                        .onTapGesture {
-                                                            price = index
-                                                        }
-                                                }
-                                            }
-                                        }
+                                if selection == "Dining" {
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        Text("Cuisine:")
+                                            .font(.headline)
                                         
-                                        VStack(alignment: .leading) {
-                                            Text("Minimum Rating:")
-                                                .font(.subheadline)
-                                                .bold()
-                                            
-                                            HStack(spacing: 8) {
-                                                ForEach(1...5, id: \.self) { index in
-                                                    Image(systemName: index <= rating ? "star.fill" : "star")
-                                                        .resizable()
-                                                        .frame(width: 24, height: 24)
-                                                        .foregroundColor(index <= rating ? .yellow : .gray)
-                                                        .onTapGesture {
-                                                            rating = index
+                                        HStack(alignment: .top, spacing: 16) {
+                                            VStack(alignment: .leading, spacing: 4) {
+                                                ForEach(cuisines, id: \.self) { cuisine in
+                                                    Button(action: {
+                                                        if selectedCuisines.contains(cuisine) {
+                                                            selectedCuisines.removeAll { $0 == cuisine }
+                                                        } else {
+                                                            selectedCuisines.append(cuisine)
                                                         }
+                                                    }) {
+                                                        HStack {
+                                                            Image(systemName: selectedCuisines.contains(cuisine) ? "checkmark.square.fill" : "square")
+                                                                .foregroundColor(selectedCuisines.contains(cuisine) ? .blue : .gray)
+                                                            Text(cuisine)
+                                                        }
+                                                        .padding(.vertical, 4)
+                                                    }
+                                                    .buttonStyle(PlainButtonStyle())
+                                                }
+                                            }
+                                            
+                                            Spacer()
+                                            
+                                            VStack(alignment: .leading, spacing: 16) {
+                                                VStack(alignment: .leading) {
+                                                    Text("Maximum Price:")
+                                                        .font(.subheadline)
+                                                        .bold()
+                                                    
+                                                    HStack(spacing: 8) {
+                                                        ForEach(1...4, id: \.self) { index in
+                                                            Image(systemName: index <= price ? "dollarsign.circle.fill" : "dollarsign.circle")
+                                                                .resizable()
+                                                                .frame(width: 24, height: 24)
+                                                                .foregroundColor(index <= price ? .green : .gray)
+                                                                .onTapGesture {
+                                                                    price = index
+                                                                }
+                                                        }
+                                                    }
+                                                }
+                                                
+                                                VStack(alignment: .leading) {
+                                                    Text("Minimum Rating:")
+                                                        .font(.subheadline)
+                                                        .bold()
+                                                    
+                                                    HStack(spacing: 8) {
+                                                        ForEach(1...5, id: \.self) { index in
+                                                            Image(systemName: index <= rating ? "star.fill" : "star")
+                                                                .resizable()
+                                                                .frame(width: 24, height: 24)
+                                                                .foregroundColor(index <= rating ? .yellow : .gray)
+                                                                .onTapGesture {
+                                                                    rating = index
+                                                                }
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
                                     }
+                                    .padding(.bottom, 10)
                                 }
-                            }
-                            .padding(.bottom, 10)
-                        }
-                        
-                        if selection == "Activities" || selection == "Hotels" {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("Minimum Rating:")
-                                    .font(.headline)
                                 
-                                HStack(spacing: 12) {
-                                    ForEach(1...5, id: \.self) { index in
-                                        Image(systemName: index <= rating ? "star.fill" : "star")
-                                            .resizable()
-                                            .frame(width: 24, height: 24)
-                                            .foregroundColor(index <= rating ? .yellow : .gray)
-                                            .onTapGesture {
-                                                rating = index
+                                if selection == "Activities" || selection == "Hotels" {
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        Text("Minimum Rating:")
+                                            .font(.headline)
+                                        
+                                        HStack(spacing: 12) {
+                                            ForEach(1...5, id: \.self) { index in
+                                                Image(systemName: index <= rating ? "star.fill" : "star")
+                                                    .resizable()
+                                                    .frame(width: 24, height: 24)
+                                                    .foregroundColor(index <= rating ? .yellow : .gray)
+                                                    .onTapGesture {
+                                                        rating = index
+                                                    }
                                             }
+                                        }
                                     }
+                                    .padding(.top, 10)
                                 }
                             }
-                            .padding(.top, 10)
+                            .padding(.horizontal)
+                            EnhancedRoutePlanListView(vm: vm)
                         }
-                    }
-                    .padding(.horizontal)
+                        .frame(height: 300)
+                    .tabViewStyle(PageTabViewStyle())
                     
                     Button(action: {
                         isLoading = true
@@ -229,13 +235,14 @@ struct FindStopView: View {
                         }
                     }
                     .padding()
-                    
+             
+                   
                     ScrollView {
                         if isLoading {
                             ProgressView("Loading...")
                                 .padding()
                         } else {
-                            if selection == "Dining", !vm.restaurants.isEmpty {
+                            if selection == "Restaurants", !vm.restaurants.isEmpty {
                                 ForEach(vm.restaurants) { restaurant in
                                     HStack {
                                         Button(action: {
@@ -396,11 +403,11 @@ struct FindStopView: View {
                                             image
                                                 .resizable()
                                                 .scaledToFill()
-                                                .frame(width: 50, height: 50)
+                                                .frame(width: 70, height: 70)
                                                 .cornerRadius(8)
                                         } placeholder: {
                                             ProgressView()
-                                                .frame(width: 50, height: 50)
+                                                .frame(width: 70, height: 70)
                                         }
                                         
                                         VStack(alignment: .leading, spacing: 4) {
@@ -427,6 +434,54 @@ struct FindStopView: View {
                                                         .font(.subheadline)
                                                         .foregroundColor(.secondary)
                                                 }
+                                            }
+                                        }
+                                        .padding(.vertical, 8)
+                                        Spacer()
+                                    }
+                                    .padding(2)
+                                    .frame(minHeight: 50)
+                                    .background(Color.white)
+                                    .cornerRadius(12)
+                                }
+                            } else if selection == "Shopping", !vm.shopping.isEmpty {
+                                ForEach(vm.shopping) { shop in
+                                    HStack {
+                                        Button(action: {
+                                            addStop(shop)
+                                        }) {
+                                            ZStack {
+                                                Circle()
+                                                    .fill(Color.white)
+                                                    .frame(width: 24, height: 24)
+                                                    .overlay(
+                                                        Circle()
+                                                            .stroke(Color.gray, lineWidth: 1)
+                                                    )
+                                                Image(systemName: "plus")
+                                                    .foregroundColor(.gray)
+                                                    .font(.system(size: 14))
+                                                    .bold()
+                                            }
+                                        }
+                                        AsyncImage(url: URL(string: shop.imageUrl ?? "")) { image in
+                                            image
+                                                .resizable()
+                                                .scaledToFill()
+                                                .frame(width: 70, height: 70)
+                                                .cornerRadius(8)
+                                        } placeholder: {
+                                            ProgressView()
+                                                .frame(width: 70, height: 70)
+                                        }
+                                        
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text(shop.name)
+                                                .font(.headline)
+                                            if let city = shop.city {
+                                                Text("\(city)")
+                                                    .font(.system(size: 16))
+                                                    .foregroundColor(.secondary)
                                             }
                                         }
                                         .padding(.vertical, 8)
@@ -498,66 +553,21 @@ struct FindStopView: View {
                     }
                     .frame(height: 300)
                     
-                    //                    TextField("Stop Name", text: $stopName)
-                    //                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    //                        .padding(.bottom, 5)
-                    //
-                    //                    TextField("Stop Address", text: $stopAddress)
-                    //                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    //                        .padding(.bottom, 10)
-
-                    //                    Button(isEditing ? "Update Stop" : "Add Stop") {
-                    //                        let newStop = GeneralLocation(address: stopAddress, name: stopName)
-                    //
-                    //                        if isEditing, let stop = selectedStop {
-                    //                            vm.current_trip?.removeStops(removedStops: [stop])
-                    //                            vm.current_trip?.addStops(additionalStops: [newStop])
-                    //                        } else {
-                    //                            vm.current_trip?.addStops(additionalStops: [newStop])
-                    //                        }
-                    //
-                    //                        stopName = ""
-                    //                        stopAddress = ""
-                    //                        isEditing = false
-                    //                        selectedStop = nil
-                    //                    }
-                    //                    .padding(.bottom, 10)
-                    
-                    //                    List {
-                    //                        ForEach(vm.current_trip?.getStops().filter { $0.name.contains(selection) } ?? [], id: \.address) { stop in
-                    //                            HStack {
-                    //                                Text("\(stop.name) - \(stop.address)")
-                    //                                Spacer()
-                    //                                Button("Edit") {
-                    //                                    stopName = stop.name
-                    //                                    stopAddress = stop.address
-                    //                                    selectedStop = stop
-                    //                                    isEditing = true
-                    //                                }
-                    //                                .padding(.leading)
-                    //
-                    //                                Button("Delete") {
-                    //                                    vm.current_trip?.removeStops(removedStops: [stop])
-                    //                                }
-                    //                                .foregroundColor(.red)
-                    //                            }
-                    //                        }
-                    //                        .onDelete(perform: { indexSet in
-                    //                            if let index = indexSet.first {
-                    //                                let stopToDelete = vm.current_trip?.getStops().filter { $0.name.contains(selection) }[index]
-                    //                                if let stopToDelete = stopToDelete {
-                    //                                    vm.current_trip?.removeStops(removedStops: [stopToDelete])
-                    //                                }
-                    //                            }
-                    //                        })
-                    //                    }
+                    NavigationLink(destination: PreviewRouteView(vm: vm, trip: vm.current_trip!)) {
+                        Text("Continue").font(.headline)
+                            .foregroundColor(.black)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.gray.opacity(0.3))
+                            .cornerRadius(15)
+                            .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
+                    }
                 }
                 .padding(.top, 20)
-            }
-        }.onAppear() {
-            Task {
-                await updateTripRoute()
-            }
+            }.onAppear() {
+                Task {
+                    await updateTripRoute()
+                }
         }
     }
     
@@ -582,8 +592,7 @@ struct FindStopView: View {
         all_pois.append(contentsOf: all_stops)
         all_pois.append(end_loc)
         
-        if let newRoutes = await mapManager.generateRoute(pois: all_pois) {
-            
+        if let newRoutes = await MapManager.manager.generateRoute(pois: all_pois) {
             vm.setTripRoute(route: newRoutes[0])
         }
     }
@@ -598,5 +607,7 @@ struct FindStopView: View {
 
 
 #Preview {
-    FindStopView(mapManager: MapManager(), vm: .init(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: [Trip(start_location: Restaurant(address: "848 Spring Street, Atlanta, GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)])])))
+    FindStopView(vm: .init(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: [Trip(start_location: Restaurant(address: "848 Spring Street, Atlanta, GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)])])))
 }
+
+// be able to swipe entire vstack out to enhancedrouteplanlistview and back / using tab view perhaps

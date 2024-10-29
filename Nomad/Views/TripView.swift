@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct TripView: View {
-    @ObservedObject var mapManager: MapManager
     @ObservedObject var vm: UserViewModel
     @State var trip: Trip?    
     @State private var startLocationName: String = ""
@@ -71,7 +70,7 @@ struct TripView: View {
                     Text("Stops")
                         .font(.headline)
 
-                    NavigationLink("Add a Stop", destination: { FindStopView(mapManager: mapManager, vm: vm)} )
+                    NavigationLink("Add a Stop", destination: { FindStopView(vm: vm)} )
 
                     ForEach(vm.current_trip?.getStops() ?? [], id: \.address) { stop in
                         Text("\(stop.name)")
@@ -114,7 +113,7 @@ struct TripView: View {
                     Text("Stops")
                         .font(.headline)
                     
-                    NavigationLink("Add a Stop", destination: { FindStopView(mapManager: mapManager, vm: vm)} )
+                    NavigationLink("Add a Stop", destination: { FindStopView(vm: vm)} )
                     
                     ForEach(vm.current_trip?.getStops() ?? [], id: \.address) { stop in
                         Text("\(stop.name)")
@@ -128,12 +127,12 @@ struct TripView: View {
                 HStack{
                     Text("Total Time").frame(alignment: .leading)
                     Spacer()
-                    Text("\(vm.total_time)")
+                    Text("\(String(describing: vm.current_trip?.route?.totalTime))")
                 }
                 HStack{
                     Text("Total Distance").frame(alignment: .leading)
                     Spacer()
-                    Text("\(vm.total_distance)")
+                    Text("\(String(describing: vm.current_trip?.route?.totalDistance))")
                 }
             }
             .frame(minWidth: UIScreen.main.bounds.width - 20)
@@ -183,7 +182,7 @@ struct TripView: View {
             Text("Stops")
                 .font(.headline)
             
-            NavigationLink("Add a Stop", destination: { FindStopView(mapManager: mapManager, vm: vm)} )
+            NavigationLink("Add a Stop", destination: { FindStopView(vm: vm)} )
             
             ForEach(vm.current_trip?.getStops() ?? [], id: \.address) { stop in
                 Text("\(stop.name)")
@@ -216,6 +215,6 @@ struct TripView: View {
 }
 
 #Preview {
-    TripView(mapManager: MapManager(), vm: .init(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "123 5th Street, Atlanta, GA", name: "Georgia Tech", latitude: 33.777048, longitude: -84.391808), end_location: Hotel(address: "387 West Peachtree, Atlanta, GA", name: "Hilton", latitude: 33.763814, longitude: -84.387338))])), trip: Trip(start_location: GeneralLocation(address: "123 5th Street, Atlanta, GA", name: "Georgia Tech", latitude: 33.777048, longitude: -84.391808), end_location: Hotel(address: "387 West Peachtree, Atlanta, GA", name: "Hilton", latitude: 33.763814, longitude: -84.387338)))
+    TripView(vm: .init(user: User(id: "89379", name: "austin", trips: UserViewModel.my_trips)), trip:  UserViewModel.my_trips[0])
 }
 

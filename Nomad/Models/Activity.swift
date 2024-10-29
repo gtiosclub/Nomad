@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Activity: POI, Identifiable, Ratable {
+struct Activity: POI, Identifiable, Ratable, Imagable {
     var id: String
     var address: String
     var name: String
@@ -31,7 +31,7 @@ struct Activity: POI, Identifiable, Ratable {
 
     init(from business: Business) {
         self.id = business.id
-        self.address = business.location.address1 ?? "No address"
+        self.address = business.location.display_address.joined(separator: ", ")
         self.name = business.name
         self.rating = business.rating
         self.website = business.url
@@ -99,5 +99,9 @@ struct Activity: POI, Identifiable, Ratable {
     
     func getCity() -> String? {
         return city
+    }
+    
+    func getImageUrl() -> String? {
+        return imageUrl
     }
 }

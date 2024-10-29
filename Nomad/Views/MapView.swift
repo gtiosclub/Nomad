@@ -9,57 +9,68 @@ import MapKit
 
 @available(iOS 17.0, *)
 struct MapView: View {
-    @ObservedObject var mapManager: MapManager
-        
+    @ObservedObject var vm: UserViewModel
+    @ObservedObject var navManager: NavigationManager = NavigationManager()
     var body: some View {
         ZStack {
             // All views within Map
-            Map(position: $mapManager.mapPosition, interactionModes: MapInteractionModes.all) {
+            Map(position: $navManager.mapPosition) {
                 // Adding markers for the start and finish points
-                if let userLocation = mapManager.userLocation {
+                if let userLocation = MapManager.manager.userLocation {
                     Marker("Your Location", coordinate: userLocation)
                 }
                 
                 //show all markers
-                ForEach(mapManager.mapMarkers) { marker in
+                ForEach(navManager.mapMarkers) { marker in
                     Marker(marker.title, systemImage: marker.icon.image_path, coordinate: marker.coordinate)
                 }
                 // show all polylines
-                ForEach(mapManager.mapPolylines, id:\.self) { polyline in
+                ForEach(navManager.mapPolylines, id:\.self) { polyline in
                     MapPolyline(polyline)
                         .stroke(.blue, lineWidth: 5)
                 }
-            
+                
                 
                 
             }.mapStyle(getMapStyle())
-          
+                .onTapGesture {
+                    print("Moving map")
+                    navManager.movingMap = true
+                }
+            
             // All Map HUD
             VStack {
                 HStack {
                     Spacer()
                     VStack {
-                        CompassView(bearing: $mapManager.bearing)
+                        CompassView(bearing: $navManager.bearing)
                             .frame(width: 50, height: 50)
                         RecenterMapView(recenterMap: {
+                            let mapManager = MapManager.manager
                             if let userLocation = mapManager.userLocation {
-                                mapManager.mapPosition = .camera(MapCamera(centerCoordinate: userLocation, distance: 5000, heading: 0, pitch: 0))
+                                navManager.mapPosition = .camera(MapCamera(centerCoordinate: userLocation, distance: navManager.navigating ? 1000 : 5000, heading: (navManager.navigating ? mapManager.motion.direction : 0) ?? 0, pitch: navManager.navigating ? 80 : 0))
+                                navManager.movingMap = false
+                                
                             }
                         })
                         .frame(width: 50, height: 50)
-                        ChangeMapTypeButtonView(selectedMapType: $mapManager.mapType)
+                        ChangeMapTypeButtonView(selectedMapType: $navManager.mapType)
                             .frame(width: 50, height: 50)
                     }
                 }
                 Spacer()
-                LocationSearchBox(mapManager: mapManager)
+                LocationSearchBox(vm: vm)
                     .padding()
+            }
+        }.onChange(of: MapManager.manager.userLocation, initial: true) { oldLocation, newLocation in
+            if let newLoc = newLocation {
+                updateMapPosition(newLoc)
             }
         }
     }
     
     func getMapStyle() -> MapStyle {
-        switch mapManager.mapType {
+        switch navManager.mapType {
         case .defaultMap:
             return .standard
         case .satellite:
@@ -68,9 +79,19 @@ struct MapView: View {
             return .hybrid
         }
     }
+    func updateMapPosition(_ userLocation: CLLocationCoordinate2D) {
+        print("update map position")
+        if (!navManager.movingMap) {
+            navManager.mapPosition = .camera(MapCamera(centerCoordinate: userLocation, distance: navManager.navigating ? 1000 : 5000, heading: (navManager.navigating ? MapManager.manager.motion.direction : 0) ?? 0, pitch: navManager.navigating ? 80 : 0))
+        }
+        navManager.region = MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: userLocation.latitude, longitude: userLocation.longitude),
+            span: .init(latitudeDelta: 0.01, longitudeDelta: 0.01)
+        )
+    }
 }
 
 
 #Preview {
-    MapView(mapManager: MapManager())
+    MapView(vm: UserViewModel())
 }

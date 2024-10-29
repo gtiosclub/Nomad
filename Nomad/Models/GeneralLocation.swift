@@ -27,7 +27,7 @@ struct GeneralLocation: POI, Identifiable {
     
     init(from business: Business) {
         self.id = business.id
-        self.address = business.location.address1 ?? "No address"
+        self.address = business.location.display_address.joined(separator: ", ")
         self.name = business.name
         self.imageUrl = business.image_url
         self.latitude = business.coordinates.latitude

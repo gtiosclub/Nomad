@@ -10,11 +10,11 @@ import MapKit
 
 @available(iOS 17.0, *)
 struct PreviewRouteView: View {
-    @ObservedObject var mapManager: MapManager
     @ObservedObject var vm: UserViewModel
     @State private var tripTitle: String = ""
-    @State private var isPublic: Bool = true
-    @State var trip: Trip
+    @State private var isPrivate: Bool = true
+    @Environment(\.dismiss) var dismiss
+    @ObservedObject var trip: Trip
     
     var body: some View {
         ScrollView {
@@ -26,103 +26,132 @@ struct PreviewRouteView: View {
                     .padding(.leading)
                     .padding(.top)
                 
-                RoutePreviewView(mapManager: mapManager, trip: $trip)
+                RoutePreviewView(vm: vm, trip: Binding.constant(trip))
                     .frame(height: 300)
                 
                 Spacer().frame(height: 20)
                 
                 HStack {
-                    VStack {
-                        Text("\(Int(vm.total_time / 60)) hr \(Int(vm.total_time.truncatingRemainder(dividingBy: 60))) min")
+                    Text(formatTimeDuration(duration: trip.route?.route?.expectedTravelTime ?? TimeInterval(0)))
+                            .padding()
+                            .fontWeight(.bold)
+                            .background(Color.gray.opacity(0.2))
+                            .cornerRadius(8)
+                    Text(formatDistance(distance: trip.route?.route?.distance ?? 0))                            
                             .padding()
                             .fontWeight(.bold)
                             .background(Color.gray.opacity(0.2))
                             .cornerRadius(8)
                     }
-                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal)
                     
-                    VStack {
-                        Text("\(vm.total_distance, specifier: "%.0f") miles")
-                            .padding()
-                            .fontWeight(.bold)
-                            .background(Color.gray.opacity(0.2))
-                            .cornerRadius(8)
-                    }
-                    .frame(maxWidth: .infinity)
-                }
-                .padding(.horizontal)
-                
-                Text("Route Details")
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.leading)
-                
-                if let trip = vm.current_trip {
-                    RoutePlanListView(vm: vm)
-                        .frame(height: 200)
-                        .padding()
-                } else {
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(height: 200)
-                        .overlay(Text("No Route Details Available").foregroundColor(.gray))
-                        .padding()
-                }
-                
-                Text("Finalize Your Route")
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                
-                Text("Route Name")
-                    .font(.body)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 10)
-                
-                TextField("Trip Title", text: $tripTitle)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding()
-                
-                VStack {
-                    Text("Route Visibility")
-                        .font(.body)
+                    Text("Route Details")
+                        .font(.headline)
+                        .fontWeight(.bold)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.leading)
-                    
-                    VStack {
-                        RadioButton(text: "Public", isSelected: $isPublic, value: true)
-                        RadioButton(text: "Private", isSelected: $isPublic, value: false)
+                        .padding(.top)
+                        
+            
+                    if vm.current_trip != nil {
+                        RoutePlanListView(vm: vm)
+                            .padding()
+                    } else {
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.3))
+                            .frame(height: 200)
+                            .overlay(Text("No Route Details Available").foregroundColor(.gray))
+                            .padding()
                     }
-                }
                 
-                HStack {
-                    NavigationLink(destination: TripView(mapManager: mapManager, vm: vm)) {
-                        Button("Edit Route") {
+                VStack {
+                    if !isCommunityTrip {
+                        VStack(alignment: .leading) {
+                            Text("Finalize Your Route")
+                                .font(.headline)
+                                .fontWeight(.bold)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.leading)
                             
+                            Text("Route Name")
+                                .font(.body)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.top, 10)
+                                .padding(.leading)
+                            
+                            TextField("Trip Title", text: $tripTitle)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .padding()
+                            
+                            Text("Route Visibility")
+                                .font(.body)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.leading)
+                            
+                            
+                            VStack(alignment: .leading) {
+                                RadioButton(text: "Public", isSelected: $isPrivate, value: false)
+                                RadioButton(text: "Private", isSelected: $isPrivate, value: true)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.leading, 30)
+                        }
+                        
+                        HStack {
+                            NavigationLink(destination: FindStopView(vm: vm)) {
+                                Text("Edit Route")
+                                    .padding()
+                                    .background(Color.gray.opacity(0.2))
+                                    .cornerRadius(8)
+                                    .foregroundColor(Color.black)
+                            }
+                            
+                            Spacer().frame(width: 60)
+                            
+                            Button("Save Route") {
+                                vm.setTripTitle(newTitle: $tripTitle.wrappedValue)
+                                vm.setIsPrivate(isPrivate: $isPrivate.wrappedValue)
+                                
+                                dismiss()
+                            }
+                            .padding()
+                            .background(Color.gray.opacity(0.2))
+                            .foregroundColor(.black)
+                            .cornerRadius(8)
+                        }
+                        .padding(.horizontal)
+                    } else {
+                        Button("Copy to My Trips") {
+                            Task {
+                                await vm.createTrip(
+                                    start_location: trip.getStartLocation(),
+                                    end_location: trip.getEndLocation(),
+                                    start_date: trip.getStartDate() ?? "",
+                                    end_date: trip.getEndDate() ?? "",
+                                    stops: trip.getStops()
+                                )
+                            }
+                            dismiss()
                         }
                         .padding()
                         .background(Color.gray.opacity(0.2))
                         .cornerRadius(8)
+                        .foregroundColor(.black)
+                        .padding(.horizontal)
                     }
-                    
-                    Spacer(minLength: 10)
-                    
-                    Button("Save Route") {
-                        
-                    }
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
                 }
-                .padding(.horizontal)
             }
         }
         .onAppear {
             vm.setCurrentTrip(trip: trip)
-            Task {
-                await updateTripRoute()
+            tripTitle = vm.current_trip?.getName() ?? ""
+            isPrivate = vm.current_trip?.isPrivate ?? true
+            if let route = trip.route {
+                trip.route = route
+            } else {
+                Task {
+                    await updateTripRoute()
+                }
             }
         }
     }
@@ -136,11 +165,25 @@ struct PreviewRouteView: View {
         all_pois.append(contentsOf: all_stops)
         all_pois.append(end_loc)
         
-        if let newRoutes = await mapManager.generateRoute(pois: all_pois) {
-            
-            trip.setRoute(route: newRoutes[0])
+        if let newRoutes = await MapManager.manager.generateRoute(pois: all_pois) {
+            print("setting new route")
+            trip.route = newRoutes[0]
+//            vm.updateTrip(trip: trip)
         }
     }
+    
+    // duration is in seconds
+    func formatTimeDuration(duration: TimeInterval) -> String {
+        let minsLeft = Int(duration.truncatingRemainder(dividingBy: 3600))
+        return "\(Int(duration / 3600)) hr \(Int(minsLeft / 60)) min"
+    }
+    func formatDistance(distance: Double) -> String {
+        return String(format: "%.0f miles", distance)
+    }
+    
+    private var isCommunityTrip: Bool {
+            return vm.community_trips.contains(where: { $0.id == trip.id })
+        }
     
     struct RadioButton: View {
         var text: String
@@ -173,7 +216,7 @@ struct PreviewRouteView: View {
 }
 
 #Preview {
-    PreviewRouteView(mapManager: .init(), vm: .init(user: User(id: "sampleUserID", name: "Sample User", trips: [
+    PreviewRouteView(vm: .init(user: User(id: "sampleUserID", name: "Sample User", trips: [
         Trip(start_location: Restaurant(address: "848 Spring Street Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090),
              end_location: Hotel(address: "201 8th Ave S Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947),
              start_date: "10-05-2024", end_date: "10-05-2024", stops: [])
