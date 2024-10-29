@@ -1,7 +1,7 @@
 //
 //  MapManager.swift
 //  Nomad
-//
+//  SINGLETON CLASS
 //  Created by Nicholas Candello on 9/16/24.
 //
 
@@ -17,63 +17,20 @@ import MapboxDirections
 // TODO: Update public methods from Mapbox params to MapKit params
 class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
-    // Data populated on MapView
-    @Published var mapMarkers: [MapMarker] = []
-    @Published var mapPolylines: [MKPolyline] = []
-    
+    static let manager = MapManager()
     
     // Map State/Settings
-    @Published var mapPosition: MapCameraPosition = .userLocation(fallback: .camera(MapCamera(centerCoordinate: CLLocationCoordinate2D(latitude: .zero, longitude: .zero), distance: 0)))
-    @Published var bearing: Double = 0.0
-    @Published var mapType: MapTypes = .defaultMap
     @Published var userLocation: CLLocationCoordinate2D?
     @Published var motion = Motion()
-    @Published var region = MKCoordinateRegion()
-    @Published var navigating = false
-    @Published var movingMap = false
     
     // Route Data
-    @Published var routes: [NomadRoute] = []
-    @Published private(set) var currentPreviewRoutes: NavigationRoutes?
     
-    override init() {
+    private override init() {
         super.init()
         self.locationManager.delegate = self
         self.locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation
         self.locationManager.requestWhenInUseAuthorization()
         self.locationManager.startUpdatingLocation()
-    }
-    
-    // MAPMARKER CRUD
-    func showMarker(_ title: String, coordinate: CLLocationCoordinate2D, icon: MapMarker.MapMarkerIcon?) {
-        mapMarkers.append(MapMarker(coordinate: coordinate, title: title, icon: icon ?? .pin))
-    }
-    
-    func removeMarker(markerId: UUID) {
-        mapMarkers.removeAll { marker in
-            marker.id == markerId
-        }
-    }
-    
-    // MAPPOLYLINE CRUD
-    func showPolyline(step: NomadStep) {
-        mapPolylines.append(step.getShape())
-    }
-    
-    func removePolyline(step: NomadStep) {
-        mapPolylines.removeAll { polyline in
-            polyline == step.getShape() // might not work if polyline is not equatable by geometry
-        }
-    }
-    
-    func showPolyline(leg: NomadLeg) {
-        mapPolylines.append(leg.getShape())
-    }
-    
-    func removePolyline(leg: NomadLeg) {
-        mapPolylines.removeAll { polyline in
-            polyline == leg.getShape() // might not work if polyline is not equatable by geometry
-        }
     }
     
     /// LOCATION MANAGER FUNCTIONS
@@ -88,17 +45,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                 self.motion.speed = location.speed
                 self.motion.direction = location.course
                 // print(self.motion.toString())
-                
-                if let userLocation = self.userLocation {
-                    if (!self.movingMap) {
-                        self.mapPosition = .camera(MapCamera(centerCoordinate: userLocation, distance: self.navigating ? 1000 : 5000, heading: (self.navigating ? self.motion.direction : 0) ?? 0, pitch: self.navigating ? 80 : 0))
-                    }
-                }
-                // Update the region for the map
-                self.region = MKCoordinateRegion(
-                    center: location.coordinate,
-                    span: .init(latitudeDelta: 0.01, longitudeDelta: 0.01)
-                )
+
             }
         }
     }
@@ -191,59 +138,9 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         return nil
     }
     
-    func getDirections() {
-        
-        // Check if there is a selected result'
-        guard let previewRoutes = currentPreviewRoutes else { return }
-        let mainRoute = previewRoutes.mainRoute.route
-        print(mainRoute.legs.count)
-                        
-        let routeLegs = getLegs(route: mainRoute)
-        let newRoute = NomadRoute(route: mainRoute, legs: routeLegs)
-      
-        self.routes.append(newRoute)
-        for leg in newRoute.legs {
-            showPolyline(leg: leg)
-        }
-    }
     
-    // Update generated route based on changes to waypoints
-    private func updateRoutes() async throws {
-        print("update routes")
-        if let provider = await core?.routingProvider() {
-            let routeOptions = NavigationRouteOptions(
-                waypoints: waypoints,
-                profileIdentifier: profileIdentifier
-            )
-            
-            
-            switch await provider.calculateRoutes(options: routeOptions).result {
-            case .success(let previewRoutes):
-                currentPreviewRoutes = previewRoutes
-            case.failure(let e):
-                print(e)
-            }
-            
-            // Create MKRoute for each leg
-            //
-            
-            let previewRoutes = try await provider.calculateRoutes(options: routeOptions).value
-            currentPreviewRoutes = previewRoutes
-            getDirections()
-        } else {
-            print("error: no routing provider")
-        }
-    }
-    
-    // Make an alternative route the main route
-    func selectAlternativeRoute(_ alternativeRoute: AlternativeRoute) async {
-        if let previewRoutes = currentPreviewRoutes {
-            currentPreviewRoutes = await previewRoutes.selecting(alternativeRoute: alternativeRoute)
-        }
-    }
     
     // ROUTE GENERATION HELPERS
-    
     // Generate legs with Step structs
     private func getLegs(route: Route) -> [NomadLeg] {
         var legs = [NomadLeg]()
@@ -267,85 +164,85 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private var waypoints: [Waypoint] = []
     private var core: MapboxNavigation? = nil
     
-    // Add waypoint to route
-    func addWaypoint(to coords: CLLocationCoordinate2D) async throws {
-        let mapPoint = toMapPoint(coordinates: coords)
-        waypoints.append(Waypoint(coordinate: mapPoint.coordinate, name: mapPoint.name))
-        if waypoints.count > 1 {
-            try await updateRoutes()
-        }
-        
-    }
-    // Add current location as waypoint to route
-    func addCurrentLocationWaypoint(currentLocation: CLLocation, isFirst: Bool) async throws {
-        var userWaypoint = Waypoint(location: currentLocation)
-        if currentLocation.course >= 0 {
-            userWaypoint.heading = currentLocation.course
-            userWaypoint.headingAccuracy = 90
-        }
-        if isFirst {
-            waypoints.insert(userWaypoint, at: 0)
-        } else {
-            waypoints.append(userWaypoint)
-        }
-    }
-    func modifyWaypointsOrdering(newWaypoints: [Waypoint]) async throws {
-        waypoints = newWaypoints
-        if waypoints.count > 1 {
-            try await updateRoutes()
-        }
-    }
-    // Remove waypoint on route
-    func removeWayPoint(waypoint: Waypoint) async throws {
-        if let index = waypoints.firstIndex(of: waypoint) {
-            waypoints.remove(at: index)
-        }
-        try await updateRoutes()
-    }
+//    // Add waypoint to route
+//    func addWaypoint(to coords: CLLocationCoordinate2D) async throws {
+//        let mapPoint = toMapPoint(coordinates: coords)
+//        waypoints.append(Waypoint(coordinate: mapPoint.coordinate, name: mapPoint.name))
+//        if waypoints.count > 1 {
+//            try await updateRoutes()
+//        }
+//        
+//    }
+//    // Add current location as waypoint to route
+//    func addCurrentLocationWaypoint(currentLocation: CLLocation, isFirst: Bool) async throws {
+//        var userWaypoint = Waypoint(location: currentLocation)
+//        if currentLocation.course >= 0 {
+//            userWaypoint.heading = currentLocation.course
+//            userWaypoint.headingAccuracy = 90
+//        }
+//        if isFirst {
+//            waypoints.insert(userWaypoint, at: 0)
+//        } else {
+//            waypoints.append(userWaypoint)
+//        }
+//    }
+//    func modifyWaypointsOrdering(newWaypoints: [Waypoint]) async throws {
+//        waypoints = newWaypoints
+//        if waypoints.count > 1 {
+//            try await updateRoutes()
+//        }
+//    }
+//    // Remove waypoint on route
+//    func removeWayPoint(waypoint: Waypoint) async throws {
+//        if let index = waypoints.firstIndex(of: waypoint) {
+//            waypoints.remove(at: index)
+//        }
+//        try await updateRoutes()
+//    }
     // TODO: Update MapPoint name
     private func toMapPoint(coordinates: CLLocationCoordinate2D) -> MapPoint {
         return MapPoint(name: "", coordinate: coordinates)
     }
     
     // Route progress functions
-    func getFutureLocation(time: TimeInterval) async throws -> CLLocationCoordinate2D {
-        var routeProgress: RouteProgress
-        
-        if let rp = await self.core?.navigation().currentRouteProgress?.routeProgress {
-            routeProgress = rp
-            if routeProgress.durationRemaining <= time {
-                return self.mapMarkers.last?.coordinate ?? CLLocationCoordinate2D()
-            }
-        } else { // Creating a RouteProgress if this function called for a route that hasn't been started
-            getDirections()
-            if let currRoutes = self.currentPreviewRoutes {
-                routeProgress = RouteProgress(navigationRoutes: currRoutes, waypoints: self.waypoints)
-                // A newly-generated RouteProgress has no expected travel time in it
-                if currRoutes.mainRoute.route.expectedTravelTime <= time {
-                    return self.mapMarkers.last?.coordinate ?? CLLocationCoordinate2D()
-                }
-            } else {
-                throw("Cannot get future location with no routes")
-            }
-        }
-        
-        var currTime = 0.0
-        var currStep = routeProgress.currentLegProgress.currentStep
-        var remainingSteps = routeProgress.currentLegProgress.remainingSteps
-        var remainingLegs = routeProgress.remainingLegs
-        
-        while currTime < time {
-            if remainingSteps.isEmpty && !remainingLegs.isEmpty {
-                let newLeg = remainingLegs.removeFirst()
-                remainingSteps = newLeg.steps
-            }
-            
-            currStep = remainingSteps.removeFirst()
-            currTime += currStep.typicalTravelTime ?? currStep.expectedTravelTime
-        }
-        
-        return currStep.shape?.coordinates.last ?? CLLocationCoordinate2D()
-    }
+//    func getFutureLocation(time: TimeInterval) async throws -> CLLocationCoordinate2D {
+//        var routeProgress: RouteProgress
+//        
+//        if let rp = await self.core?.navigation().currentRouteProgress?.routeProgress {
+//            routeProgress = rp
+//            if routeProgress.durationRemaining <= time {
+//                return self.mapMarkers.last?.coordinate ?? CLLocationCoordinate2D()
+//            }
+//        } else { // Creating a RouteProgress if this function called for a route that hasn't been started
+//            getDirections()
+//            if let currRoutes = self.currentPreviewRoutes {
+//                routeProgress = RouteProgress(navigationRoutes: currRoutes, waypoints: self.waypoints)
+//                // A newly-generated RouteProgress has no expected travel time in it
+//                if currRoutes.mainRoute.route.expectedTravelTime <= time {
+//                    return self.mapMarkers.last?.coordinate ?? CLLocationCoordinate2D()
+//                }
+//            } else {
+//                throw("Cannot get future location with no routes")
+//            }
+//        }
+//        
+//        var currTime = 0.0
+//        var currStep = routeProgress.currentLegProgress.currentStep
+//        var remainingSteps = routeProgress.currentLegProgress.remainingSteps
+//        var remainingLegs = routeProgress.remainingLegs
+//        
+//        while currTime < time {
+//            if remainingSteps.isEmpty && !remainingLegs.isEmpty {
+//                let newLeg = remainingLegs.removeFirst()
+//                remainingSteps = newLeg.steps
+//            }
+//            
+//            currStep = remainingSteps.removeFirst()
+//            currTime += currStep.typicalTravelTime ?? currStep.expectedTravelTime
+//        }
+//        
+//        return currStep.shape?.coordinates.last ?? CLLocationCoordinate2D()
+//    }
     
     func getFutureLocation(time: TimeInterval, route: NomadRoute) -> CLLocationCoordinate2D? {
         

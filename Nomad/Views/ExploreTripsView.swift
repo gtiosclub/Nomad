@@ -74,7 +74,7 @@ struct ExploreTripsView: View {
                                         NavigationLink(destination: {
                                             PreviewRouteView(vm: vm, trip: trip)
                                         }, label: {
-                                            TripGridView(trip: trip)
+                                            TripGridView(trip: Binding.constant(trip))
                                                 .frame(alignment: .top)
                                         })
                                     }
@@ -92,7 +92,7 @@ struct ExploreTripsView: View {
                                         NavigationLink(destination: {
                                             PreviewRouteView(vm: vm, trip: trip)
                                         }, label: {
-                                            TripGridView(trip: trip)
+                                            TripGridView(trip: Binding.constant(trip))
                                                 .frame(alignment: .top)
                                         })
                                     }
@@ -110,7 +110,7 @@ struct ExploreTripsView: View {
                                         NavigationLink(destination: {
                                             PreviewRouteView(vm: vm, trip: trip)
                                         }, label: {
-                                            TripGridView(trip: trip)
+                                            TripGridView(trip: Binding.constant(trip))
                                                 .frame(alignment: .top)
                                         })
                                     }
@@ -164,7 +164,7 @@ struct ExploreTripsView: View {
     }
     
     struct TripGridView: View {
-        @ObservedObject var trip: Trip
+        @Binding var trip: Trip
         
         var body: some View {
             VStack {
@@ -189,7 +189,7 @@ struct ExploreTripsView: View {
                             .padding(.horizontal, 10)
                     }
                     .onChange(of: trip.coverImageURL, initial: true) { old, new in
-                        print("changing image url \(old) \(new)")
+                        // print("changing image url \(old) \(new)")
                     }
                 }
                 
