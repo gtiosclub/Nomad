@@ -78,7 +78,7 @@
 ////    }
 ////    
 //    func testAddStopToTrip() async throws {
-//        var result: Bool = await vm.addStopToTrip(tripID: "testTrip", stop: GasStation(name: "Gas Station", address: "gass street", longitude: 20.5, latitude: 30.3))
+//        var result: Bool = await vm.addStopToTrip(tripID: "testTrip", stop: GasStation(name: "Gas Station", address: "gass street", longitude: 20.5, latitude: 30.3), index: 0)
 //        print("done")
 //        XCTAssertTrue(result)
 //    }
@@ -102,13 +102,13 @@
 //    }
 //    
 //    func testAddStopNoTrip() async throws {
-//        var result: Bool = await vm.addStopToTrip(tripID: "madeUpTrip", stop: GasStation(name: "Gas Station", address: "gass street", longitude: 20.5, latitude: 30.3))
+//        var result: Bool = await vm.addStopToTrip(tripID: "madeUpTrip", stop: GasStation(name: "Gas Station", address: "gass street", longitude: 20.5, latitude: 30.3), index: 0)
 //        XCTAssertFalse(result)
 //    }
 //    
 //    func testAddStopDuplicate() async throws {
-//        var result: Bool = await vm.addStopToTrip(tripID: "testTrip", stop: GasStation(name: "Gas Station", address: "gass street", longitude: 20.5, latitude: 30.3))
-//        var result2: Bool = await vm.addStopToTrip(tripID: "testTrip", stop: GasStation(name: "Gas Station", address: "gass street", longitude: 20.5, latitude: 30.3))
+//        var result: Bool = await vm.addStopToTrip(tripID: "testTrip", stop: GasStation(name: "Gas Station", address: "gass street", longitude: 20.5, latitude: 30.3), index: 0)
+//        var result2: Bool = await vm.addStopToTrip(tripID: "testTrip", stop: GasStation(name: "Gas Station", address: "gass street", longitude: 20.5, latitude: 30.3), index: 0)
 //        XCTAssertFalse(result2)
 //    }
 //    
@@ -133,6 +133,69 @@
 //    func testModifyEndNoTrip() async throws {
 //        var result: Bool = await vm.modifyEndLocationAndDate(tripID: "noTrip", stop: GasStation(name: "quicktrip", address: "broadway", longitude: 50.1, latitude: 0.53), modifiedDate: "10/22/24")
 //        print("done")
+//        XCTAssertFalse(result)
+//    }
+//    
+//    func testReorderStopArray() async throws {
+//        var stop1 = Restaurant(address: "London Ave", name: "Five Guys", latitude: 20, longitude: 20)
+//        var stop2 = GeneralLocation(address: "Moreland Ave", name: "Target", latitude: 20, longitude: 20)
+//        var stop3 = RestStop(address: "I85 Exit 2", name: "Welcome Stop", latitude: 20, longitude: 20)
+//        var tripID = "testTrip"
+//        await vm.addStopToTrip(tripID: tripID, stop: stop1, index: 0)
+//        await vm.addStopToTrip(tripID: tripID, stop: stop2, index: 1)
+//        await vm.addStopToTrip(tripID: tripID, stop: stop3, index: 2)
+//        var stopReordered = [stop3.name, stop2.name, stop1.name]
+//        var result = await vm.updateStopArray(tripID: tripID, stops: stopReordered)
+//        XCTAssertTrue(result)
+//    }
+//    
+//    func testReorderStopArrayExtraStop() async throws {
+//        var stop1 = Restaurant(address: "London Ave", name: "Five Guys", latitude: 20, longitude: 20)
+//        var stop2 = GeneralLocation(address: "Moreland Ave", name: "Target", latitude: 20, longitude: 20)
+//        var stop3 = RestStop(address: "I85 Exit 2", name: "Welcome Stop", latitude: 20, longitude: 20)
+//        var stop4 = GasStation(name: "not added", address: "irrelevant", longitude: 20, latitude: 20, city: "makebelieveland")
+//        var tripID = "testTrip"
+//        await vm.addStopToTrip(tripID: tripID, stop: stop1, index: 0)
+//        await vm.addStopToTrip(tripID: tripID, stop: stop2, index: 1)
+//        await vm.addStopToTrip(tripID: tripID, stop: stop3, index: 2)
+//        var stopReordered = [stop3.name, stop2.name, stop1.name, stop4.name]
+//        var result = await vm.updateStopArray(tripID: tripID, stops: stopReordered)
+//        XCTAssertFalse(result)
+//    }
+//    
+//    func testReorderStopArrayMissingStop() async throws {
+//        var stop1 = Restaurant(address: "London Ave", name: "Five Guys", latitude: 20, longitude: 20)
+//        var stop2 = GeneralLocation(address: "Moreland Ave", name: "Target", latitude: 20, longitude: 20)
+//        var stop3 = RestStop(address: "I85 Exit 2", name: "Welcome Stop", latitude: 20, longitude: 20)
+//        var tripID = "testTrip"
+//        await vm.addStopToTrip(tripID: tripID, stop: stop1, index: 0)
+//        await vm.addStopToTrip(tripID: tripID, stop: stop2, index: 1)
+//        await vm.addStopToTrip(tripID: tripID, stop: stop3, index: 2)
+//        var stopReordered = [stop3.name, stop2.name]
+//        var result = await vm.updateStopArray(tripID: tripID, stops: stopReordered)
+//        XCTAssertFalse(result)
+//    }
+//    
+//    func testReorderStopArrayDuplicates() async throws {
+//        var stop1 = Restaurant(address: "London Ave", name: "Five Guys", latitude: 20, longitude: 20)
+//        var stop2 = GeneralLocation(address: "Moreland Ave", name: "Target", latitude: 20, longitude: 20)
+//        var stop3 = RestStop(address: "I85 Exit 2", name: "Welcome Stop", latitude: 20, longitude: 20)
+//        var tripID = "testTrip"
+//        await vm.addStopToTrip(tripID: tripID, stop: stop1, index: 0)
+//        await vm.addStopToTrip(tripID: tripID, stop: stop2, index: 1)
+//        await vm.addStopToTrip(tripID: tripID, stop: stop3, index: 2)
+//        var stopReordered = [stop3.name, stop2.name, stop1.name, stop2.name]
+//        var result = await vm.updateStopArray(tripID: tripID, stops: stopReordered)
+//        XCTAssertFalse(result)
+//    }
+//
+//func testAddStopNegIndex() async throws {
+//        var result: Bool = await vm.addStopToTrip(tripID: "testTrip", stop: GasStation(name: "Gas Station", address: "gass street", longitude: 20.5, latitude: 30.3), index: -1)
+//        XCTAssertFalse(result)
+//    }
+//    
+//    func testAddStopInvalidIndex() async throws {
+//        var result: Bool = await vm.addStopToTrip(tripID: "testTrip", stop: GasStation(name: "Gas Station", address: "gass street", longitude: 20.5, latitude: 30.3), index: 10)
 //        XCTAssertFalse(result)
 //    }
 ////
