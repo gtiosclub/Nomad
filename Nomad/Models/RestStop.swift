@@ -7,14 +7,16 @@
 
 import Foundation
 
-struct RestStop: POI {
+struct RestStop: POI, Identifiable {
+    var id: String
     var address: String
     var name: String
     var longitude: Double
     var latitude: Double
     var city: String?
     
-    init(address: String, name: String, latitude: Double, longitude: Double, city: String? = nil) {
+    init(id: String, address: String, name: String, latitude: Double, longitude: Double, city: String? = nil) {
+        self.id = UUID().uuidString
         self.address = address
         self.name = name
         self.latitude = latitude
@@ -64,6 +66,10 @@ struct RestStop: POI {
     
     func getCity() -> String? {
         return city
+    }
+    
+    func getId() -> String {
+        return id
     }
 }
 
