@@ -24,6 +24,16 @@ struct RestStop: POI, Identifiable {
         self.city = city
     }
     
+    init(from business: Business) {
+        self.id = business.id
+        self.address = business.location.display_address.joined(separator: ", ")
+        self.name = business.name
+        self.latitude = business.coordinates.latitude
+        self.longitude = business.coordinates.longitude
+        self.city = business.location.city
+    }
+
+    
     static func == (lhs: RestStop, rhs: RestStop) -> Bool {
         return lhs.name == rhs.name && lhs.address == rhs.address
     }

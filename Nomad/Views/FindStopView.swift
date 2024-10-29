@@ -27,6 +27,7 @@ struct FindStopView: View {
     @State private var filterRating: String = "4 ★ and up"
     @State private var filterCuisine: String = "American"
     @State private var filterPrice: String = "$$"
+    @State var selectedTab = 1
     @Environment(\.dismiss) var dismiss
     
     let stop_types = ["Restaurants", "Activities", "Scenic", "Hotels", "Tours & Landmarks", "Entertainment", "Shopping"]
@@ -86,6 +87,7 @@ struct FindStopView: View {
                 
                 Divider()
                 
+                //selection: $selectedTab
                 TabView {
                     VStack(alignment: .leading, spacing: 16) {
                         if selection == "Restaurants" {

@@ -30,7 +30,7 @@ struct ExploreTripsView: View {
                             Spacer()
                         }
                         .task {
-                            await vm.getCurrentCity()
+                            //await vm.getCurrentCity()
                         }
                         
                         //TEMPORARY JUST FOR MID SEM DEMO
