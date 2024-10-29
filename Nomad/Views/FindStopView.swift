@@ -21,6 +21,11 @@ struct FindStopView: View {
     @State private var stopAddress: String = ""
     @State private var selectedStop: (any POI)?
     @State private var isEditing: Bool = false
+    @State private var routeProgress: Double = 0.0
+    @State private var markerCoordinate: CLLocationCoordinate2D = .init(latitude: 0, longitude: 0)
+    @State private var filterRating: String = "4 ★ and up"
+    @State private var filterCuisine: String = "American"
+    @State private var filterPrice: String = "$$"
     @Environment(\.dismiss) var dismiss
     
     let stop_types = ["Restaurants", "Activities", "Scenic", "Hotels", "Tours & Landmarks", "Entertainment", "Shopping"]
@@ -35,7 +40,7 @@ struct FindStopView: View {
                         .padding(.horizontal)
                   
                     if let trip = vm.current_trip {
-                        RoutePreviewView(vm: vm, trip: Binding.constant(trip))
+                        RoutePreviewView(vm: vm, trip: Binding.constant(trip), currentLocation: markerCoordinate)
                             .frame(minHeight: 250.0)
                     } else {
                         Text("No current trip available")
@@ -44,6 +49,13 @@ struct FindStopView: View {
                 }
                 
                 VStack(alignment: .leading, spacing: 15) {
+                    /*Slider(value: $routeProgress, in: 0...1, step: 0.01) {
+                            Text("Route Progress")
+                        }
+                        .padding()
+                        .onChange(of: routeProgress) { newValue in
+                            updateMarkerPosition(progress: newValue)
+                        }*/
                     HStack {
                         ZStack {
                             Circle()
@@ -106,6 +118,29 @@ struct FindStopView: View {
                     .padding(5)
                     
                     Divider()
+                  
+                    VStack(alignment: .leading, spacing: 16) {
+                        
+                        if selection == "Dining" {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Cuisine:")
+                                    .font(.headline)
+                                FilterView(selectedRating: rating, selectedCuisine: cuisines, selectedPrice: price)
+                                /*
+                                HStack(alignment: .top, spacing: 16) {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        ForEach(cuisines, id: \.self) { cuisine in
+                                            Button(action: {
+                                                if selectedCuisines.contains(cuisine) {
+                                                    selectedCuisines.removeAll { $0 == cuisine }
+                                                } else {
+                                                    selectedCuisines.append(cuisine)
+                                                }
+                                            }) {
+                                                HStack {
+                                                    Image(systemName: selectedCuisines.contains(cuisine) ? "checkmark.square.fill" : "square")
+                                                        .foregroundColor(selectedCuisines.contains(cuisine) ? .blue : .gray)
+                                                    Text(cuisine)
                    // this
                         TabView {
                             VStack(alignment: .leading, spacing: 16) {
@@ -177,8 +212,15 @@ struct FindStopView: View {
                                             }
                                         }
                                     }
-                                    .padding(.bottom, 10)
-                                }
+                                }*/
+                            }
+                            .padding(.bottom, 10)
+                        }
+                        
+                        if selection == "Activities" || selection == "Hotels" {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Minimum Rating:")
+                                    .font(.headline)
                                 
                                 if selection == "Activities" || selection == "Hotels" {
                                     VStack(alignment: .leading, spacing: 8) {
@@ -569,6 +611,7 @@ struct FindStopView: View {
                 Task {
                     await updateTripRoute()
                 }
+                //markerCoordinate = vm.current_trip?.getStartLocationCoordinates()
         }
     }
     
@@ -604,6 +647,19 @@ struct FindStopView: View {
             await self.updateTripRoute()
         }
     }
+    
+    /*func updateMarkerPosition(progress: Double) {
+
+        let totalTime = vm.total_time
+        let targetTime = totalTime * progress
+
+        Task {
+            if let newPosition = try? await vm.mapManager.getFutureLocation(time: targetTime) {
+                markerCoordinate = newPosition
+            }
+        }
+    }*/
+
 }
 
 
@@ -616,5 +672,3 @@ struct FindStopView: View {
     
     return FindStopView(vm: vm)
 }
-
-// be able to swipe entire vstack out to enhancedrouteplanlistview and back / using tab view perhaps
