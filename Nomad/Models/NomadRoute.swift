@@ -193,10 +193,10 @@ struct NomadStep {
     
     
     func getStartLocation() -> CLLocationCoordinate2D {
-        return startCoordinate ?? CLLocationCoordinate2D()
+        return startCoordinate
     }
     func getEndLocation() -> CLLocationCoordinate2D {
-        return endCoordinate ?? CLLocationCoordinate2D()
+        return endCoordinate
     }
     
     func getShape() -> MKPolyline {

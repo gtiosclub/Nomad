@@ -37,15 +37,22 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private var locationManager = CLLocationManager()
     // Continuously update user location
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        if let location = locations.last {
+        if let newLoc = locations.last {
             DispatchQueue.main.async {
-                withAnimation(.easeInOut(duration: 0.5)) {
-                    self.userLocation = location.coordinate // Update user location
-                    self.motion.coordinate = location.coordinate
-                    self.motion.altitude = location.altitude
-                    self.motion.speed = location.speed
-                    self.motion.direction = location.course
-                }                
+                let MIN_DIST_TO_UPDATE = 50.0 // in m
+                let MIN_SPEED_TO_UPDATE = 1.5 // in m/s
+                let speed = newLoc.speed
+                let distance = self.userLocation?.distance(to: LocationCoordinate2D(latitude: newLoc.coordinate.latitude, longitude: newLoc.coordinate.longitude)) ?? 40000000
+                if speed >= MIN_SPEED_TO_UPDATE || distance >= MIN_DIST_TO_UPDATE {
+                    
+                    withAnimation(.easeInOut(duration: 0.5)) {
+                        self.userLocation = newLoc.coordinate // Update user location
+                        self.motion.coordinate = newLoc.coordinate
+                        self.motion.altitude = newLoc.altitude
+                        self.motion.speed = newLoc.speed
+                        self.motion.direction = newLoc.course
+                    }
+                }
             }
         }
     }
@@ -316,11 +323,19 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
         return nil
     }
-        
-    func checkOnRoute(step: NomadStep) -> Bool {
-        guard let userLocation = self.userLocation else { return false }
+    
+    func determineCurrentStep(leg: NomadLeg) -> NomadStep? {
+        for step in leg.steps {
+            if checkOnRoute(step: step) {
+                return step
+            }
+        }
+        return nil
+    }
+    
+    func getClosestCoordinate(step: NomadStep) -> CLLocationCoordinate2D {
+        guard let userLocation = self.userLocation else { return CLLocationCoordinate2D() }
         let stepCoordinates = step.getCoordinates()
-        let thresholdDistance: CLLocationDistance = 50  // maximum allowed distance from route (in m)
         
         var closestDistance = CLLocationDistanceMax
         var closestCoordinate: CLLocationCoordinate2D?
@@ -333,7 +348,14 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                 closestCoordinate = coord
             }
         }
-        if closestDistance <= thresholdDistance {
+        return closestCoordinate ?? CLLocationCoordinate2D()
+    }
+    func checkOnRoute(step: NomadStep) -> Bool {
+        guard let userLocation = self.userLocation else { return false }
+        let closest_coord = getClosestCoordinate(step: step)
+        let measured_distance = userLocation.distance(to: closest_coord)
+        let thresholdDistance: CLLocationDistance = 50  // maximum allowed distance from route (in m)
+        if measured_distance <= thresholdDistance {
             return true
         } else {
             return false

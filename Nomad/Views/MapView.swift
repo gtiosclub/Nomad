@@ -24,7 +24,7 @@ struct MapView: View {
                         .frame(width: 50)
                         .background(.white)
                         .clipShape(Circle())
-                        .rotationEffect(.degrees(mapManager.motion.direction ?? 0))
+                        .rotationEffect(.degrees((mapManager.motion.direction ?? navManager.mapPosition.camera?.heading) ?? 0))
                 }
                 
                 //show all markers
@@ -38,30 +38,18 @@ struct MapView: View {
                 }
                 
             }
-//            .onMapCameraChange { mapCameraUpdateContext in
-//                let camera = mapCameraUpdateContext.camera
-//                let movingMap = navManager.movingMap(camera: camera.centerCoordinate)
-//                print("Moving map camera change: \(movingMap)")
-//                if !movingMap {
-//                    withAnimation {
-//                        navManager.updateMapPosition(camera.centerCoordinate)
-//                    }
-//                }
-//            }
             .onChange(of: mapManager.motion, initial: true) { oldMotion, newMotion in
                 if let newLoc = newMotion.coordinate {
-                    print("New Location: \(newLoc.latitude), \(newLoc.longitude)")
+                    print("New User Location")
+                    navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
+                    navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
                     if let camera = navManager.mapPosition.camera {
                         let movingMap = navManager.movingMap(camera: camera.centerCoordinate)
-                        print("Moving map user change: \(movingMap)")
                         if !movingMap {
                             withAnimation {
                                 navManager.updateMapPosition(newMotion)
                             }
                         }
-                    }
-                    if let step = navManager.navigatingStep {
-                        print("On current step? \(mapManager.checkOnRoute(step: step))")
                     }
                 }
             }
@@ -73,25 +61,21 @@ struct MapView: View {
             // All Map HUD
             VStack {
                 if navManager.navigating {
-                    DirectionView(step: $navManager.navigatingStep)
+                    DirectionView(distance: $navManager.distanceToNextManeuver, nextStep: navManager.nextStepManeuver)
                 }
                 HStack {
                     Spacer()
                     VStack {
-                        CompassView(bearing: navManager.mapPosition.camera?.heading ?? 0)
-                            .frame(width: 50, height: 50)
                         RecenterMapView(recenterMap: {
                             navManager.recenterMap()
                         })
                         .frame(width: 50, height: 50)
-                        ChangeMapTypeButtonView(selectedMapType: $navManager.mapType)
-                            .frame(width: 50, height: 50)
                     }
                 }
                 Spacer()
                 VStack {
-                    Text("Location Info")
-                    Text(mapManager.motion.toString())
+                    Text("Add debugging info below:")
+                    Text("ENTER HERE")
                 }
                 HStack {
                     Button {
@@ -118,21 +102,8 @@ struct MapView: View {
                             .foregroundStyle(.white)
                             .padding()
                     }
-
-
                 }
             }
-        }
-    }
-    
-    func getMapStyle() -> MapStyle {
-        switch navManager.mapType {
-        case .defaultMap:
-            return .standard
-        case .satellite:
-            return .imagery
-        case .terrain:
-            return .hybrid
         }
     }
 }
