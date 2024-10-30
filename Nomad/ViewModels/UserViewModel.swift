@@ -27,6 +27,8 @@ class UserViewModel: ObservableObject {
     
     @Published var previous_trips: [Trip] = []
     @Published var community_trips: [Trip] = []
+    
+    var aiVM = AIAssistantViewModel()
 
     
     init(user: User? = nil) {
@@ -375,7 +377,7 @@ class UserViewModel: ObservableObject {
     }
 
     func fetchPlaces(location: String, stopType: String, rating: Double?, price: Int?, cuisine: String?, searchString: String) async {
-        let apiKey = "6hYoc9qnxOWgzrfzI3eWBlM2e6eh8d1L_4A27ajUL5D7nEFyYNKMmhGMTsUsgbJZlMtlXsJDV7wK1lfstjqp9vHUxc-92IjLnk43fZnIfMfIfr5mFZ4bQ8hFUmISZ3Yx"
+        let apiKey = aiVM.yelpAPIKey
         let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
         guard let currentTrip = current_trip else { return }
         let startLocation = currentTrip.getStartLocation()
