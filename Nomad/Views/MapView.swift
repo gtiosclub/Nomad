@@ -119,8 +119,6 @@ struct MapView: View {
                         })
                         .frame(width: 50, height: 50)
                       
-                        ChangeMapTypeButtonView(selectedMapType: $navManager.mapType)
-                            .frame(width: 50, height: 50)
                         // Add Voice Announcer Button
                         VoiceAnnouncerButtonView(onPress: announceCurrentLocation, isVoiceEnabled: $isVoiceEnabled)
                             .frame(width: 50, height: 50)
@@ -200,17 +198,6 @@ struct MapView: View {
                 
                 voiceManager.announceLocation(locationDescription)
             }
-        }
-    }
-    
-    func getMapStyle() -> MapStyle {
-        switch navManager.mapType {
-        case .defaultMap:
-            return .standard
-        case .satellite:
-            return .imagery
-        case .terrain:
-            return .hybrid
         }
     }
 }

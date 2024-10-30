@@ -159,6 +159,32 @@ struct NomadStep {
         let maneuverType: ManeuverType
         let intersections: [Intersection]?
         let names: [String]? //The names of the road or path leading from this step’s maneuver to the next step’s maneuver.
+        
+        init(step: RouteStep) {
+            self.distance = step.distance
+            self.instructions = step.instructions
+            self.expectedTravelTime = step.expectedTravelTime
+            self.exitCodes = step.exitCodes
+            self.exitIndex = step.exitIndex
+            self.instructionsDisplayedAlongStep = step.instructionsDisplayedAlongStep
+            self.maneuverDirection = step.maneuverDirection
+            self.maneuverType = step.maneuverType
+            self.intersections = step.intersections
+            self.names = step.names
+        }
+        
+        init() {
+            self.distance = 500
+            self.instructions = "Turn right in 0.4 miles"
+            self.expectedTravelTime = TimeInterval(50)
+            self.exitCodes = nil
+            self.exitIndex = nil
+            self.instructionsDisplayedAlongStep = nil
+            self.maneuverDirection = nil
+            self.maneuverType = .turn
+            self.intersections = nil
+            self.names = nil
+        }
     }
     
     struct Exit {
@@ -180,7 +206,7 @@ struct NomadStep {
         self.endCoordinate = step.shape?.coordinates.last ?? CLLocationCoordinate2D()
         self.coords = step.shape?.coordinates ?? []
         self.routeShape = NomadRoute.convertToMKPolyline(step.shape?.coordinates ?? [])
-        self.direction = Direction(distance: step.distance, instructions: step.instructions, expectedTravelTime: step.expectedTravelTime)
+        self.direction = Direction(step: step)
         if step.destinations != nil || step.exitCodes != nil || step.exitNames != nil {
             self.exit = Exit(destinations: step.destinations, exitCodes: step.exitCodes, exitNames: step.exitNames)
         } else {
@@ -194,7 +220,7 @@ struct NomadStep {
         self.endCoordinate = CLLocationCoordinate2D(latitude: 32.7501, longitude: 83.3885)
         self.coords = []
         self.routeShape = NomadRoute.convertToMKPolyline([startCoordinate, endCoordinate])
-        self.direction = Direction(distance: 100, instructions: "Turn right in 100 miles", expectedTravelTime: TimeInterval(5000))
+        self.direction = Direction()
         self.exit = Exit(destinations: ["Atlanta", "New York"], exitCodes: ["78", "79"], exitNames: ["Georgia Ave.","Peachtree St."])
     }
     
