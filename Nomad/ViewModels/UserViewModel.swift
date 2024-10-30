@@ -20,6 +20,7 @@ class UserViewModel: ObservableObject {
     @Published var activities: [Activity] = []
     @Published var shopping: [Shopping] = []
     @Published var generalLocations: [GeneralLocation] = []
+    @Published var reststops: [RestStop] = []
     @Published var distances: [Double] = []
     @Published var times: [Double] = []
     @Published var currentCity: String?
@@ -373,7 +374,7 @@ class UserViewModel: ObservableObject {
         }
     }
 
-    func fetchPlaces(location: String, stopType: String, rating: Double?, price: Int?, cuisine: String?) async {
+    func fetchPlaces(location: String, stopType: String, rating: Double?, price: Int?, cuisine: String?, searchString: String) async {
         let apiKey = "6hYoc9qnxOWgzrfzI3eWBlM2e6eh8d1L_4A27ajUL5D7nEFyYNKMmhGMTsUsgbJZlMtlXsJDV7wK1lfstjqp9vHUxc-92IjLnk43fZnIfMfIfr5mFZ4bQ8hFUmISZ3Yx"
         let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
         guard let currentTrip = current_trip else { return }
@@ -382,8 +383,18 @@ class UserViewModel: ObservableObject {
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
         
         var queryItems: [URLQueryItem] = []
-
-        if (stopType == "Restaurants") {
+        
+        print(searchString)
+        
+        if (searchString != "") {
+            print("Searching via search bar")
+            queryItems = [
+                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "term", value: searchString),
+                URLQueryItem(name: "sort_by", value: "rating"),
+                URLQueryItem(name: "limit", value: "50")
+            ]
+        } else if (stopType == "Restaurants") {
             queryItems = [
                 URLQueryItem(name: "location", value: startLocation.getAddress()),
                 URLQueryItem(name: "categories", value: "restaurants,food"),
@@ -487,24 +498,52 @@ class UserViewModel: ObservableObject {
         }
     }
     
-    func getCurrentCity() async {
-        let locationManager = CLLocationManager()
-        guard let userLocation = locationManager.location else {
-            return
-        }
+    func fetchRestStops(location: String) async {
+        let apiKey = "6hYoc9qnxOWgzrfzI3eWBlM2e6eh8d1L_4A27ajUL5D7nEFyYNKMmhGMTsUsgbJZlMtlXsJDV7wK1lfstjqp9vHUxc-92IjLnk43fZnIfMfIfr5mFZ4bQ8hFUmISZ3Yx"
+        let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
+
+        var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
         
-        let geoCoder = CLGeocoder()
+        let queryItems: [URLQueryItem] = [
+          URLQueryItem(name: "term", value: "reststops"),
+          URLQueryItem(name: "location", value: location),
+          URLQueryItem(name: "sort_by", value: "rating"),
+          URLQueryItem(name: "limit", value: "50"),
+        ]
+
+        components.queryItems = queryItems
+        var request = URLRequest(url: components.url!)
+        request.httpMethod = "GET"
+        request.timeoutInterval = 10
+        request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+
         do {
-            if let placemark = try await geoCoder.reverseGeocodeLocation(userLocation).first {
-                DispatchQueue.main.async {
-                    self.currentCity = placemark.locality!
-                }
+            let (data, _) = try await URLSession.shared.data(for: request)
+            print("Raw Response Data: \(String(data: data, encoding: .utf8) ?? "No data")")
+            let decoder = JSONDecoder()
+            
+            let response = try decoder.decode(YelpResponse.self, from: data)
+            
+            let filteredBusinesses = response.businesses.filter { business in
+                let hasValidAddress = business.location.display_address.count >= 2
+                return hasValidAddress
             }
+            
+            self.reststops = response.businesses.compactMap { business -> RestStop? in
+                guard business.location.display_address.count >= 2 else { return nil }
+                return RestStop(from: business)
+            }
+            
+            print("Response Data: \(String(data: data, encoding: .utf8) ?? "No data")")
+        } catch DecodingError.keyNotFound(let key, let context) {
+            print("Missing key: '\(key.stringValue)' in JSON data: \(context.debugDescription)")
+        } catch DecodingError.typeMismatch(let type, let context) {
+            print("Type mismatch for the \(type) with description: \(context.debugDescription)")
+        } catch DecodingError.valueNotFound(let type , let context) {
+            print("Value not ofund for the type \(type), \(context.debugDescription)")
         } catch {
-            print("Error during reverse geocoding: \(error)")
+            print("Error fetching data: \(error.localizedDescription)")
         }
-        
-        return
     }
     
     func getCoordinates(for address: String) async -> (latitude: Double, longitude: Double)? {

@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Shopping: POI, Identifiable {
+struct Shopping: POI, Identifiable, Imagable {
     var id: String
     var address: String
     var name: String
@@ -67,6 +67,10 @@ struct Shopping: POI, Identifiable {
     mutating func setCity(newCity: String) {
         self.city = newCity
     }
+    
+    mutating func setImageUrl(newUrl: String) {
+        self.imageUrl = newUrl
+    }
 
     func getAddress() -> String {
         return address
@@ -90,5 +94,13 @@ struct Shopping: POI, Identifiable {
     
     func getCity() -> String? {
         return city
+    }
+    
+    func getId() -> String {
+        return id
+    }
+    
+    func getImageUrl() -> String?  {
+        return imageUrl
     }
 }

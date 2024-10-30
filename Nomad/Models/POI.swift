@@ -7,7 +7,8 @@
 
 import Foundation
 
-protocol POI: Equatable {
+protocol POI: Equatable, Identifiable {
+    var id: String { get }
     var address: String { get set }
     var name: String { get set }
     var latitude: Double { get set }
@@ -26,6 +27,8 @@ protocol POI: Equatable {
     
     mutating func setCity(newCity: String)
     func getCity() -> String?
+    
+    func getId() -> String
 }
 
 protocol Ratable {
