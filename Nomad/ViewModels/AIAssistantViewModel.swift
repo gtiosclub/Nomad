@@ -193,29 +193,7 @@ class AIAssistantViewModel: ObservableObject {
         let location: String
         let preferences: [String]
     }
-    
-    func fetchSpecificBusinesses(locationType: String, distance: Double, price: String, location: String, preferences: String) async -> String? {
-        let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
-        var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
-        let queryItems: [URLQueryItem] = [
-            URLQueryItem(name: "location", value: location),
-            URLQueryItem(name: "term", value: "\(preferences)  \(locationType)"),
-            URLQueryItem(name: "price", value: price),
-            URLQueryItem(name: "radius", value: "\(Int(distance * 1609))"), //Because the parameter takes in meters, we convert miles to meters (1 mile = 1608.34 meters)
-            URLQueryItem(name: "limit", value: "1"),
-        ]
-        components.queryItems = components.queryItems.map { $0 + queryItems } ?? queryItems
-        var request = URLRequest(url: components.url!)
-        request.httpMethod = "GET"
-        request.timeoutInterval = 10
-        request.addValue("Bearer \(yelpAPIKey)", forHTTPHeaderField: "Authorization")
-        do {
-            let (data, _) = try await URLSession.shared.data(for: request)
-            return String(decoding: data, as: UTF8.self)
-        } catch {
-            return "Error fetching data: \(error.localizedDescription)"
-        }
-    }
+
     
     
     
@@ -228,26 +206,52 @@ class AIAssistantViewModel: ObservableObject {
         let distance = locationInfo.distance
         let location = locationInfo.location
         let time = locationInfo.time
-        
         let price = locationInfo.price
         let preferences = locationInfo.preferences.joined(separator: ", ")
-        guard let businessInformation = await fetchSpecificBusinesses(locationType: (locationInformation == "") ? locationType : locationInformation, distance: distance, price: price, location: location, preferences: preferences) else {
-            return "Error: Unable to access YELP API"
+        
+        if(time != -1) {
+            var sampleRoute = await MapManager.manager.getExampleRoute()!
+            
+            var coords = MapManager.manager.getFutureLocation(time: time, route: sampleRoute)
+            
+            guard let businessInformation = await fetchSpecificBusinesses(locationType: (locationInformation == "") ? locationType : locationInformation, distance: distance, price: price, location: "UseCoords", preferences: preferences, latitude: coords?.latitude ?? 0, longitutde: coords?.longitude ?? 0) else {
+                return "Error: Unable to access YELP API"
+            }
+            return businessInformation
+            
+        } else {
+            guard let businessInformation = await fetchSpecificBusinesses(locationType: (locationInformation == "") ? locationType : locationInformation, distance: distance, price: price, location: location, preferences: preferences, latitude: 0.0, longitutde: 0.0) else {
+                return "Error: Unable to access YELP API"
+            }
+            return businessInformation
         }
-        return businessInformation
     }
     
-    func parseGetBusinessesIntoModel(yelpInfo: String) -> BusinessResponse? {
-        let jsonData = yelpInfo.data(using: .utf8)! // Convert the string to Data
-        
+    func fetchSpecificBusinesses(locationType: String, distance: Double, price: String, location: String, preferences: String, latitude: Double, longitutde: Double) async -> String? {
+        let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
+        var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
+        var queryItems: [URLQueryItem] = [
+            URLQueryItem(name: "term", value: "\(preferences)  \(locationType)"),
+            URLQueryItem(name: "price", value: price),
+            URLQueryItem(name: "radius", value: "\(Int(distance * 1609))"), //Because the parameter takes in meters, we convert miles to meters (1 mile = 1608.34 meters)
+            URLQueryItem(name: "limit", value: "1"),
+        ]
+        if(location == "UseCoords") {
+            queryItems.append(URLQueryItem(name: "latitude", value: String(latitude)))
+            queryItems.append(URLQueryItem(name: "longitude", value: String(longitutde)))
+        } else {
+            queryItems.append(URLQueryItem(name: "location", value: location))
+        }
+        components.queryItems = components.queryItems.map { $0 + queryItems } ?? queryItems
+        var request = URLRequest(url: components.url!)
+        request.httpMethod = "GET"
+        request.timeoutInterval = 10
+        request.addValue("Bearer \(yelpAPIKey)", forHTTPHeaderField: "Authorization")
         do {
-            // Decode the JSON data into a YelpLocation instance
-            let decoder = JSONDecoder()
-            let businessesResponse = try decoder.decode(BusinessResponse.self, from: jsonData)
-            return businessesResponse
+            let (data, _) = try await URLSession.shared.data(for: request)
+            return String(decoding: data, as: UTF8.self)
         } catch {
-            print("Error decoding JSON: \(error)")
-            return nil
+            return "Error fetching data: \(error.localizedDescription)"
         }
     }
     
@@ -263,6 +267,21 @@ class AIAssistantViewModel: ObservableObject {
             return response
         } catch {
             return "Send OpenAI Query Error: \(error.localizedDescription)"
+        }
+    }
+    
+    
+    func parseGetBusinessesIntoModel(yelpInfo: String) -> BusinessResponse? {
+        let jsonData = yelpInfo.data(using: .utf8)! // Convert the string to Data
+        
+        do {
+            // Decode the JSON data into a YelpLocation instance
+            let decoder = JSONDecoder()
+            let businessesResponse = try decoder.decode(BusinessResponse.self, from: jsonData)
+            return businessesResponse
+        } catch {
+            print("Error decoding JSON: \(error)")
+            return nil
         }
     }
     
