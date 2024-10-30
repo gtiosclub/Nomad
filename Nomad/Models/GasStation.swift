@@ -15,6 +15,15 @@ struct GasStation: POI {
     var latitude: Double
     var city: String?
     
+    init(address: String, name: String, latitude: Double, longitude: Double, city: String? = nil) {
+        self.id = UUID().uuidString
+        self.address = address
+        self.name = name
+        self.latitude = latitude
+        self.longitude = longitude
+        self.city = city
+    }
+    
     static func == (lhs: GasStation, rhs: GasStation) -> Bool {
         return lhs.name == rhs.name && lhs.address == rhs.address
     }

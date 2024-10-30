@@ -15,7 +15,7 @@ struct RestStop: POI, Identifiable {
     var latitude: Double
     var city: String?
     
-    init(id: String, address: String, name: String, latitude: Double, longitude: Double, city: String? = nil) {
+    init(address: String, name: String, latitude: Double, longitude: Double, city: String? = nil) {
         self.id = UUID().uuidString
         self.address = address
         self.name = name
