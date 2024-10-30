@@ -77,6 +77,7 @@
 		E90E9AB82CAF5C1F00A7C4FA /* SpeechRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90E9AB72CAF5C1400A7C4FA /* SpeechRecognizer.swift */; };
 		E90E9ABA2CAF5C7000A7C4FA /* VoiceInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90E9AB92CAF5C6900A7C4FA /* VoiceInput.swift */; };
 		E93AD24C2CC9A17400D1B27C /* AtlasNavigationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93AD24B2CC9A16800D1B27C /* AtlasNavigationView.swift */; };
+		F7C4929A2CD1988D00E8F255 /* ItineraryParentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7C492992CD1988D00E8F255 /* ItineraryParentView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -138,6 +139,7 @@
 		E90E9AB72CAF5C1400A7C4FA /* SpeechRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognizer.swift; sourceTree = "<group>"; };
 		E90E9AB92CAF5C6900A7C4FA /* VoiceInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceInput.swift; sourceTree = "<group>"; };
 		E93AD24B2CC9A16800D1B27C /* AtlasNavigationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlasNavigationView.swift; sourceTree = "<group>"; };
+		F7C492992CD1988D00E8F255 /* ItineraryParentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItineraryParentView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -261,6 +263,7 @@
 				B2F8F34F2C97BC9600B9618E /* ItineraryPlanningView.swift */,
 				B2154CCE2C9E2DE500A6F238 /* MapButtons */,
 				48974B8A2C9F72700057B073 /* TripView.swift */,
+				F7C492992CD1988D00E8F255 /* ItineraryParentView.swift */,
 				48974B8C2CA0A3CB0057B073 /* FindStopView.swift */,
 				6B3E9F672CAF60A100C24BDB /* ExploreTripsView.swift */,
 				391165F92CB53542004B8695 /* PreviewRouteView.swift */,
@@ -489,6 +492,7 @@
 				48974B862C9A44A30057B073 /* Hotel.swift in Sources */,
 				B2F8F3642C97BD9B00B9618E /* UserViewModel.swift in Sources */,
 				391165FA2CB53542004B8695 /* PreviewRouteView.swift in Sources */,
+				F7C4929A2CD1988D00E8F255 /* ItineraryParentView.swift in Sources */,
 				B2DE8FD52CC81C7000EEDE37 /* NavigationManager.swift in Sources */,
 				E90E9AB82CAF5C1F00A7C4FA /* SpeechRecognizer.swift in Sources */,
 				B2F8F3622C97BD8900B9618E /* AIAssistantViewModel.swift in Sources */,
