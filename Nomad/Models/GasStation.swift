@@ -8,6 +8,7 @@
 import Foundation
 
 struct GasStation: POI {
+    var id: String
     var name: String
     var address: String
     var longitude: Double
@@ -39,11 +40,11 @@ struct GasStation: POI {
     }
     
     func getAddress() -> String {
-        address
+        return address
     }
     
     func getName() -> String {
-        name
+        return name
     }
     
     func getLongitude() -> Double {
@@ -56,5 +57,9 @@ struct GasStation: POI {
     
     func getCity() -> String? {
         return city
+    }
+    
+    func getId() -> String {
+        return id
     }
 }

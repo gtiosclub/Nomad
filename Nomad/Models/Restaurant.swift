@@ -90,6 +90,10 @@ struct Restaurant: POI, Identifiable, Ratable, Imagable {
         self.city = newCity
     }
     
+    mutating func setImageUrl(newUrl: String) {
+        self.imageUrl = newUrl
+    }
+    
     func getAddress() -> String {
         return address
     }
@@ -136,5 +140,9 @@ struct Restaurant: POI, Identifiable, Ratable, Imagable {
     
     func getCloseTime() -> String? {
         return close_time
+    }
+    
+    func getId() -> String {
+        return id
     }
 }

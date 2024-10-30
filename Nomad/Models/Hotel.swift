@@ -72,6 +72,10 @@ struct Hotel: POI, Identifiable, Ratable, Imagable {
     mutating func setCity(newCity: String) {
         self.city = newCity
     }
+    
+    mutating func setImageUrl(newUrl: String) {
+        self.imageUrl = newUrl
+    }
 
     func getAddress() -> String {
         return self.address
@@ -101,8 +105,12 @@ struct Hotel: POI, Identifiable, Ratable, Imagable {
         return city
     }
     
-    func getImageUrl() -> String?  {
+    func getImageUrl() -> String? {
         return imageUrl
+    }
+    
+    func getId() -> String {
+        return id
     }
 }
 
