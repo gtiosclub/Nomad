@@ -326,7 +326,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     func determineCurrentStep(leg: NomadLeg) -> NomadStep? {
         for step in leg.steps {
-            if checkOnRoute(step: step) {
+            if checkOnRouteDistance(step: step, thresholdDistance: 50) {
                 return step
             }
         }
@@ -350,16 +350,34 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
         return closestCoordinate ?? CLLocationCoordinate2D()
     }
-    func checkOnRoute(step: NomadStep) -> Bool {
+    func checkOnRouteDistance(step: NomadStep, thresholdDistance: CLLocationDistance) -> Bool {
         guard let userLocation = self.userLocation else { return false }
         let closest_coord = getClosestCoordinate(step: step)
         let measured_distance = userLocation.distance(to: closest_coord)
-        let thresholdDistance: CLLocationDistance = 50  // maximum allowed distance from route (in m)
         if measured_distance <= thresholdDistance {
             return true
         } else {
             return false
         }
+    }
+    
+    func checkOnRouteDirection(step: NomadStep) -> Bool {
+        guard let userLocation = self.userLocation else { return false }
+        let coords = step.getCoordinates()
+
+        let closest_coord = getClosestCoordinate(step: step)
+        let next_coord_index = Int(coords.firstIndex(of: closest_coord) ?? coords.endIndex) + 1
+        guard let next_closest_coord = coords.dropFirst(next_coord_index).first else { return false }
+        
+        // arcsin(x coord diff / distance between coords)
+        var expected_direction = asin((next_closest_coord.latitude - closest_coord.latitude) / next_closest_coord.distance(to: closest_coord)) * (180 / .pi)
+        if expected_direction < 0 {
+            expected_direction = 360 + expected_direction // Convert westward directions to 180+ degs isntead of negative
+        }
+        let user_direction = userLocation.direction(to: next_closest_coord)
+        
+        let thresholdDirection: Double = 90.0
+        return abs(expected_direction - user_direction) < thresholdDirection
     }
  
     func getExampleRoute() async -> NomadRoute? {
