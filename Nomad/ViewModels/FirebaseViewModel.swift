@@ -63,23 +63,8 @@ class FirebaseViewModel: ObservableObject {
             }
             
             if authResult?.user != nil {
-                db.collection("USERS").document((authResult?.user.uid)!).getDocument { (document, error) in
-                    if let document = document, document.exists {
-                        if let age = document.data()?["age"] as? Int {
-                            print("User's age: \(age)")
-                            self.errorText = nil
-                            completion(true)
-                        } else {
-                            print("Age field not found or not an integer")
-                            self.errorText = "Failed to retrieve user data"
-                            completion(false)
-                        }
-                    } else {
-                        print("Document does not exist")
-                        self.errorText = "User document not found"
-                        completion(false)
-                    }
-                }
+                self.errorText = nil
+                completion(true)
             } else {
                 self.errorText = "Failed to log in. Please try again."
                 completion(false)
