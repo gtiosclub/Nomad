@@ -191,7 +191,7 @@ struct ItineraryPlanningView: View {
                 }
                 .padding(.horizontal, 50)
                 .navigationDestination(isPresented: $editTrip, destination: {
-                    FindStopView(vm: vm)
+                    ItineraryParentView(vm: vm)
                 })
                                 
                 Spacer()

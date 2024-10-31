@@ -8,7 +8,7 @@
 import Foundation
 import CoreLocation
 
-struct Motion {
+struct Motion: Equatable {
     var coordinate: CLLocationCoordinate2D?
     var direction: CLLocationDirection?
     var altitude: CLLocationDistance?

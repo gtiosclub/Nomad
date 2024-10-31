@@ -9,6 +9,7 @@ import Firebase
 import FirebaseAuth
 import FirebaseFirestore
 import FirebaseStorage
+import MapKit
 import SwiftUI
 
 class FirebaseViewModel: ObservableObject {
@@ -17,7 +18,7 @@ class FirebaseViewModel: ObservableObject {
     @Published var errorText: String? = nil
     @Published var isLoading: Bool = false
     
-    func firebase_email_password_sign_up(email: String, password: String, completion: @escaping (Bool) -> Void) {
+    func firebase_email_password_sign_up(email: String, password: String, name: String, completion: @escaping (Bool) -> Void) {
         isLoading = true
         auth.createUser(withEmail: email, password: password) { [weak self] authResult, error in
             guard let self = self else { return }
@@ -36,7 +37,7 @@ class FirebaseViewModel: ObservableObject {
             }
             
             db.collection("USERS").document(user.uid).setData([
-                "email": email
+                "email": email, "name": name
             ]) { error in
                 if let error = error {
                     self.errorText = "Failed to save user data: \(error.localizedDescription)"
@@ -62,23 +63,8 @@ class FirebaseViewModel: ObservableObject {
             }
             
             if authResult?.user != nil {
-                db.collection("USERS").document((authResult?.user.uid)!).getDocument { (document, error) in
-                    if let document = document, document.exists {
-                        if let age = document.data()?["age"] as? Int {
-                            print("User's age: \(age)")
-                            self.errorText = nil
-                            completion(true)
-                        } else {
-                            print("Age field not found or not an integer")
-                            self.errorText = "Failed to retrieve user data"
-                            completion(false)
-                        }
-                    } else {
-                        print("Document does not exist")
-                        self.errorText = "User document not found"
-                        completion(false)
-                    }
-                }
+                self.errorText = nil
+                completion(true)
             } else {
                 self.errorText = "Failed to log in. Please try again."
                 completion(false)
@@ -110,6 +96,32 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    // Converts NomadRoute coordinates (use jsonCoordinates) method and store in firebase
+//    func storeRoute(route: NomadRoute) async -> Bool {
+//        do {
+//            try await tripDocRef.setData(tripData)
+//            
+//            let stopsCollection = tripDocRef.collection("STOPS")
+//            
+//            let startData: [String: Any] = [
+//                "name": startLocationName,
+//                "address": startLocationAddress,
+//                "type": "GeneralLocation"
+//            ]
+//            try await stopsCollection.document("start").setData(startData)
+//            
+//            let endData: [String: Any] = [
+//                "name": endLocationName,
+//                "address": endLocationAddress,
+//                "type": "GeneralLocation"
+//            ]
+//            try await stopsCollection.document("end").setData(endData)
+//            return true
+//        } catch {
+//            print("Error creating trip or stops: \(error)")
+//            return false
+//        }
+//    }
     func createTrip(tripID: String, startLocationName: String, startLocationAddress: String, endLocationName: String, endLocationAddress: String, createdDate: String, modifiedDate: String) async -> Bool {
         let tripDocRef = db.collection("TRIPS").document(tripID)
         
@@ -175,7 +187,15 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
-    
+    // Fetch coordinates JSON from firebase and convert to coordinates
+    func fetchRoutes() async throws -> [String: NomadRoute] {
+        let getdocs = try await db.collection("ROUTES").getDocuments() // TODO: Change this
+        
+        // TODO: Integrate UserViewModel to use its mapmanager
+        let mapManager = MapManager.manager
+        return try await mapManager.docsToNomadRoute(docs: getdocs.documents)
+    }
+
     func modifyStartDate(userID: String, tripID: String, newStartDate: String, modifiedDate: String) async -> Bool {
         do {
             try await db.collection("TRIPS").document(tripID).updateData(["start_date" : newStartDate, "modified_date" : modifiedDate])
@@ -322,7 +342,6 @@ class FirebaseViewModel: ObservableObject {
         //remove stop from collection
         
     }
-    
     
     
     func updateStopArray(tripID: String, stops: [String]) async -> Bool {

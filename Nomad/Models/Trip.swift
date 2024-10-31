@@ -37,7 +37,7 @@ class Trip: Identifiable, Equatable, ObservableObject {
         self.coverImageURL = coverImageURL
         self.name = name
         if coverImageURL.isEmpty {
-            print("find image for \(end_location.name)")
+            //print("find image for \(end_location.name)")
             Trip.getCityImage(location: end_location) { imageURL in
                 DispatchQueue.main.async {
                     self.coverImageURL = imageURL
@@ -171,7 +171,7 @@ class Trip: Identifiable, Equatable, ObservableObject {
                 let pixabayResponse = try JSONDecoder().decode(PixabayResponse.self, from: data)
                 let hits = pixabayResponse.hits
                 let firstImageURL = hits.first?.webformatURL ?? ""
-                print("Found image for \(search_city): \(firstImageURL)")
+                // print("Found image for \(search_city): \(firstImageURL)")
                 DispatchQueue.main.async {
                     completion(firstImageURL)
                 }
