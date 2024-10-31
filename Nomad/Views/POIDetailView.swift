@@ -12,6 +12,9 @@ struct POIDetailView: View {
     var name = "Speedway"
     var address = "901 Gas Station Avenue, Duluth GA"
     var distance = "in 30 mi"
+    var phoneNumber = "4044315072"
+//    var rating = "3.4"
+//    var price = ""
     
     
     var body: some View {
@@ -49,6 +52,17 @@ struct POIDetailView: View {
                             }
                         }
                         Spacer() // Keep stars centered
+                    }
+                    
+                    // Phone Button
+                    Button(action: {
+                        if let phoneURL = URL(string: "tel://\(phoneNumber)") {
+                            UIApplication.shared.open(phoneURL)
+                        }
+                    }) {
+                        Text(phoneNumber)
+                            .foregroundColor(.blue)
+                            .underline()
                     }
                 }
                 
