@@ -93,10 +93,13 @@ class UserViewModel: ObservableObject {
         }
     }
     
-    func removeStop(stop: any POI) {
-        current_trip?.removeStops(removedStops: [stop])
-        user?.updateTrip(trip: current_trip!)
-        self.user = user
+    func removeStop(stop: any POI) async {
+        let firebaseViewModel = FirebaseViewModel()
+        if await firebaseViewModel.removeStopFromTrip(tripID: current_trip!.id, stop: stop) {
+            current_trip?.removeStops(removedStops: [stop])
+            user?.updateTrip(trip: current_trip!)
+            self.user = user
+        }
     }
     
     func setCurrentTrip(trip: Trip) {
@@ -501,7 +504,7 @@ class UserViewModel: ObservableObject {
     }
     
     func fetchRestStops(location: String) async {
-        let apiKey = "6hYoc9qnxOWgzrfzI3eWBlM2e6eh8d1L_4A27ajUL5D7nEFyYNKMmhGMTsUsgbJZlMtlXsJDV7wK1lfstjqp9vHUxc-92IjLnk43fZnIfMfIfr5mFZ4bQ8hFUmISZ3Yx"
+        let apiKey = aiVM.yelpAPIKey
         let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
 
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
@@ -634,9 +637,9 @@ class UserViewModel: ObservableObject {
              ]
     
     static let my_trips = [
-        Trip(start_location: Restaurant(address: "848 Spring Street, Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy, Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)], name: "ATL to Nashville", coverImageURL: ""),
-        Trip(start_location: Activity(address: "123 Start St", name: "Scenic California Mountain Route", latitude: 34.0522, longitude: -118.2437, city: "Boston"), end_location: Hotel(address: "456 End Ave", name: "End Hotel", latitude: 34.0522, longitude: -118.2437, city: "Seattle"), name: "Cross Country", coverImageURL: ""),
-        Trip(start_location: Activity(address: "789 Another St", name: "Johnson Family Spring Retreat", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "123 Another Ave", name: "Another Hotel", latitude: 34.0522, longitude: -118.2437, city: "Blue Ridge"), name: "GA Mountains", coverImageURL: "")
+        Trip(id: "austintrip1", start_location: Restaurant(address: "848 Spring Street, Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", created_date: "10-1-2024", modified_date: "10-1-2024", stops: [Activity(address: "1720 S Scenic Hwy, Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)], start_time: "10:00:00", name: "ATL to Nashville", isPrivate: true),
+        Trip(id: "austintrip2", start_location: Activity(address: "123 Start St", name: "Scenic California Mountain Route", latitude: 34.0522, longitude: -118.2437, city: "Boston"), end_location: Hotel(address: "456 End Ave", name: "End Hotel", latitude: 34.0522, longitude: -118.2437, city: "Seattle"), start_date: "10-12-2024", end_date: "10-12-2024", created_date: "10-1-2024", modified_date: "10-1-2024", stops: [Activity(address: "Grand Canyon, Tusayan, AZ 86023 United States", name: "Grand Canyon", latitude: 36.2679, longitude: -112.3535)], start_time: "10:00:00", name: "Cross Country", isPrivate: true),
+        Trip(id: "austintrip3", start_location: Activity(address: "789 Another St", name: "Johnson Family Spring Retreat", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "123 Another Ave", name: "Another Hotel", latitude: 34.0522, longitude: -118.2437, city: "Blue Ridge"), start_date: "10-19-2024", end_date: "10-19-2024", created_date: "10-1-2024", modified_date: "10-1-2024", stops: [Activity(address: "727 N Broadway, Los Angeles, CA 90012", name: "Chinatown", latitude: 40.7158, longitude: -73.9970)], start_time: "10:00:00", name: "GA Mountains", isPrivate: true)
     ]
 
     func setTripTitle(newTitle: String) {
