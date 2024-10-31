@@ -19,6 +19,7 @@ struct SignUpView: View {
     @State private var email = ""
     @State private var password = ""
     @State private var repeatPassword = ""
+    @State private var name = ""
     private let screenWidth = UIScreen.main.bounds.size.width
     private let screenHeight = UIScreen.main.bounds.size.height
     @State private var navigateToHome = false
@@ -26,18 +27,18 @@ struct SignUpView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                ZStack {
-                    Image("") // Background Image
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: screenWidth, height: screenHeight / 4)
-                        .padding(.top, -8)
-                    Image("") // Title Image
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: screenWidth * 2 / 3, height: screenHeight / 5)
-                }
-                
+//                ZStack {
+//                    Image("") // Background Image
+//                        .resizable()
+//                        .aspectRatio(contentMode: .fit)
+//                        .frame(width: screenWidth, height: screenHeight / 4)
+//                        .padding(.top, -8)
+//                    Image("") // Title Image
+//                        .resizable()
+//                        .aspectRatio(contentMode: .fit)
+//                        .frame(width: screenWidth * 2 / 3, height: screenHeight / 5)
+//                }
+                Spacer()
                 Text("Create Account")
                     .font(Font.custom("Quicksand-Medium", size: 32))
                     .foregroundColor(Color.gray)
@@ -58,6 +59,29 @@ struct SignUpView: View {
                             .frame(width: 21, height: 17)
                             .padding([.leading, .trailing], 16)
                         TextField("", text: $email, prompt: Text("Email Address").foregroundColor(Color.gray))
+                            .foregroundColor(.black)
+                            .textInputAutocapitalization(.never)
+                            .textContentType(.emailAddress)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 52)
+                    .background(Color.gray.opacity(0.2))
+                    .cornerRadius(14)
+                    .padding(.bottom, 15)
+                    
+                    HStack {
+                        Text("Name")
+                            .foregroundColor(Color.gray)
+                            .font(.system(size: 16))
+                            .padding(.bottom, -5)
+                        Spacer()
+                    }
+                    
+                    HStack {
+                        Image(systemName: "person")
+                            .resizable()
+                            .frame(width: 21, height: 17)
+                            .padding([.leading, .trailing], 16)
+                        TextField("", text: $name, prompt: Text("Name").foregroundColor(Color.gray))
                             .foregroundColor(.black)
                             .textInputAutocapitalization(.never)
                             .textContentType(.emailAddress)
@@ -136,7 +160,7 @@ struct SignUpView: View {
                     Text("Already have an account?")
                         .foregroundColor(Color.gray)
                     Spacer()
-                    NavigationLink(destination: LogInView(vm: vm)) {
+                    NavigationLink(destination: LogInView(vm: vm).navigationBarBackButtonHidden(true) ) {
                         Text("Log In")
                             .foregroundColor(Color.gray)
                             .underline()
@@ -152,7 +176,7 @@ struct SignUpView: View {
 
     private func signUp() {
         vm.errorText = nil
-        guard !email.isEmpty && !password.isEmpty && !repeatPassword.isEmpty else {
+        guard !email.isEmpty && !password.isEmpty && !repeatPassword.isEmpty && !name.isEmpty else {
             vm.errorText = "Please fill in all fields"
             return
         }
@@ -162,7 +186,7 @@ struct SignUpView: View {
             return
         }
 
-        vm.firebase_email_password_sign_up(email: email, password: password) { success in
+        vm.firebase_email_password_sign_up(email: email, password: password, name: name) { success in
             if success {
                 navigateToHome = true
             }

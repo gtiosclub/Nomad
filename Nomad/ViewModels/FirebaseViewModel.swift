@@ -18,7 +18,7 @@ class FirebaseViewModel: ObservableObject {
     @Published var errorText: String? = nil
     @Published var isLoading: Bool = false
     
-    func firebase_email_password_sign_up(email: String, password: String, completion: @escaping (Bool) -> Void) {
+    func firebase_email_password_sign_up(email: String, password: String, name: String, completion: @escaping (Bool) -> Void) {
         isLoading = true
         auth.createUser(withEmail: email, password: password) { [weak self] authResult, error in
             guard let self = self else { return }
@@ -37,7 +37,7 @@ class FirebaseViewModel: ObservableObject {
             }
             
             db.collection("USERS").document(user.uid).setData([
-                "email": email
+                "email": email, "name": name
             ]) { error in
                 if let error = error {
                     self.errorText = "Failed to save user data: \(error.localizedDescription)"
