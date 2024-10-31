@@ -1,10 +1,3 @@
-//
-//  AIAssistantView.swift
-//  Nomad
-//
-//  Created by Nicholas Candello on 9/15/24.
-//
-
 import SwiftUI
 
 struct Message: Identifiable {
@@ -16,10 +9,8 @@ struct Message: Identifiable {
 class ChatViewModel: ObservableObject {
     @ObservedObject private var aiViewModel = AIAssistantViewModel()
     @Published var messages: [Message] = [
-        Message(content: "Hi! I'm Atlas, your AI assistant", sender: "AI")
+        Message(content: "Where would you like to go?", sender: "AI")
     ]
-    
-    @Published var latestAIResponse: String?
     
     func sendMessage(_ content: String) {
         let newMessage = Message(content: content, sender: "User")
@@ -27,18 +18,15 @@ class ChatViewModel: ObservableObject {
         
         // Simulate AI response asynchronously
         Task {
-            // Call your Yelp-related function
             if let aiResponse = await aiViewModel.converseAndGetInfoFromYelp(query: content) {
                 DispatchQueue.main.async {
                     let aiMessage = Message(content: aiResponse, sender: "AI")
                     self.messages.append(aiMessage)
-                    self.latestAIResponse = aiResponse
                 }
             } else {
                 DispatchQueue.main.async {
                     let errorMessage = Message(content: "Sorry, I couldn't find any restaurants", sender: "AI")
                     self.messages.append(errorMessage)
-                    self.latestAIResponse = "Sorry, I couldn't find any restaurants"
                 }
             }
         }
@@ -50,40 +38,56 @@ struct AIAssistantView: View {
     @StateObject private var viewModel = ChatViewModel()
     @StateObject var speechRecognizer = SpeechRecognizer()
     @State private var isMicrophone = false
-
     @State private var currentMessage: String = ""
 
     var body: some View {
         VStack {
+            // Header
             HStack {
-                Text("Let's plan your new trip")
+                Circle()
+                    .frame(width: 40, height: 40)
+                    .foregroundColor(.gray) // Placeholder for Atlas icon
+                Text("Let me help you plan your trip!")
                     .font(.title2)
-                    .padding()
+                    .padding(.leading, 8)
                 Spacer()
             }
-            
-            List(viewModel.messages) { message in
-                HStack {
-                    if message.sender == "AI" {
-                        Text(message.content)
-                            .padding()
-                            .background(Color.green.opacity(0.1))
-                            .cornerRadius(10)
-                        Spacer()
-                    } else {
-                        Spacer()
-                        
-                        Text(message.content)
-                            .padding()
-                            .background(Color.blue.opacity(0.1))
-                            .cornerRadius(10)
+            .padding()
+
+            // Chat messages
+            ScrollView {
+                ForEach(viewModel.messages) { message in
+                    HStack {
+                        if message.sender == "AI" {
+                            HStack {
+                                Circle()
+                                    .frame(width: 30, height: 30)
+                                    .foregroundColor(.gray) // Placeholder for AI avatar
+                                Text(message.content)
+                                    .padding()
+                                    .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                            Spacer()
+                        } else {
+                            Spacer()
+                            HStack {
+                                Text(message.content)
+                                    .padding()
+                                    .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+                                    .frame(maxWidth: .infinity, alignment: .trailing)
+                                Circle()
+                                    .frame(width: 30, height: 30)
+                                    .foregroundColor(.blue) // Placeholder for User avatar
+                            }
+                        }
                     }
+                    .padding(.horizontal)
                 }
-                .listRowBackground(Color.clear)
             }
-            .listStyle(PlainListStyle())
             .background(Color.clear)
-            
+
+            // Bottom input field
             HStack {
                 Button(action: {
                     // Microphone action if necessary
@@ -92,8 +96,8 @@ struct AIAssistantView: View {
                         let transcript = speechRecognizer.transcript
                         
                         if !transcript.isEmpty {
-                            //viewModel.sendMessage(transcript)
-                            //currentMessage = transcript
+                            viewModel.sendMessage(transcript)
+                            currentMessage = transcript
                         }
                         
                         isMicrophone = false
@@ -109,6 +113,7 @@ struct AIAssistantView: View {
                         .clipShape(Circle())
                         .foregroundColor(isMicrophone ? .red : .gray)
                 }
+
                 TextField("Ask me anything...", text: $currentMessage)
                     .padding()
                     .background(Color.gray.opacity(0.2))
@@ -118,14 +123,13 @@ struct AIAssistantView: View {
                         currentMessage = newTranscript
                     }
 
-
                 Button(action: {
                     if !currentMessage.isEmpty {
                         viewModel.sendMessage(currentMessage)
                         currentMessage = ""
                     }
                 }) {
-                    Text("Send")
+                    Image(systemName: "paperplane.fill")
                         .padding()
                         .background(Color.blue)
                         .foregroundColor(.white)
