@@ -97,7 +97,40 @@ class FirebaseViewModel: ObservableObject {
     }
     
     // Converts NomadRoute coordinates (use jsonCoordinates) method and store in firebase
-    func storeRoute(route: NomadRoute) async -> Bool {
+//    func storeRoute(route: NomadRoute) async -> Bool {
+//        do {
+//            try await tripDocRef.setData(tripData)
+//            
+//            let stopsCollection = tripDocRef.collection("STOPS")
+//            
+//            let startData: [String: Any] = [
+//                "name": startLocationName,
+//                "address": startLocationAddress,
+//                "type": "GeneralLocation"
+//            ]
+//            try await stopsCollection.document("start").setData(startData)
+//            
+//            let endData: [String: Any] = [
+//                "name": endLocationName,
+//                "address": endLocationAddress,
+//                "type": "GeneralLocation"
+//            ]
+//            try await stopsCollection.document("end").setData(endData)
+//            return true
+//        } catch {
+//            print("Error creating trip or stops: \(error)")
+//            return false
+//        }
+//    }
+    func createTrip(tripID: String, startLocationName: String, startLocationAddress: String, endLocationName: String, endLocationAddress: String, createdDate: String, modifiedDate: String) async -> Bool {
+        let tripDocRef = db.collection("TRIPS").document(tripID)
+        
+        let tripData: [String: Any] = [
+            "created_date": createdDate,
+            "modified_date": modifiedDate,
+            "start_id": "start",
+            "end_id": "end"
+        ]
         do {
             try await tripDocRef.setData(tripData)
             
@@ -309,7 +342,6 @@ class FirebaseViewModel: ObservableObject {
         //remove stop from collection
         
     }
-    
     
     
     func updateStopArray(tripID: String, stops: [String]) async -> Bool {
