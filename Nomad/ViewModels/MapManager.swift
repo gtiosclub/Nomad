@@ -369,6 +369,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         let next_coord_index = Int(coords.firstIndex(of: closest_coord) ?? coords.endIndex) + 1
         guard let next_closest_coord = coords.dropFirst(next_coord_index).first else { return false }
         
+        // TODO: Verify that this method words
         // arcsin(x coord diff / distance between coords)
         var expected_direction = asin((next_closest_coord.latitude - closest_coord.latitude) / next_closest_coord.distance(to: closest_coord)) * (180 / .pi)
         if expected_direction < 0 {
