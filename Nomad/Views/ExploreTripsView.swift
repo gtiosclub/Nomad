@@ -34,7 +34,7 @@ struct ExploreTripsView: View {
                         }
                         
                         //TEMPORARY JUST FOR MID SEM DEMO
-                        NavigationLink(destination: AIAssistantView()) {
+                        NavigationLink(destination: AIAssistantView(vm: vm)) {
                             Text("Consult Atlas")
                                 .font(.headline)
                                 .foregroundColor(.white)

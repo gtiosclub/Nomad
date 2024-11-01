@@ -9,18 +9,18 @@ struct Message: Identifiable {
 class ChatViewModel: ObservableObject {
     @ObservedObject private var aiViewModel = AIAssistantViewModel()
     @Published var messages: [Message] = [
-        Message(content: "Where would you like to go?", sender: "AI")
+        Message(content: "Let me help you find a stop!", sender: "AI")
     ]
     
     @Published var latestAIResponse: String?
     
-    func sendMessage(_ content: String) {
+    func sendMessage(_ content: String, vm: UserViewModel) {
         let newMessage = Message(content: content, sender: "User")
         messages.append(newMessage)
         
         // Simulate AI response asynchronously
         Task {
-            if let aiResponse = await aiViewModel.converseAndGetInfoFromYelp(query: content) {
+            if let aiResponse = await aiViewModel.converseAndGetInfoFromYelp(query: content, userVM: vm) {
                 DispatchQueue.main.async {
                     let aiMessage = Message(content: aiResponse, sender: "AI")
                     self.messages.append(aiMessage)
@@ -38,6 +38,7 @@ class ChatViewModel: ObservableObject {
 }
 
 struct AIAssistantView: View {
+    @ObservedObject var vm: UserViewModel
     @StateObject var aiViewModel = AIAssistantViewModel()
     @StateObject private var viewModel = ChatViewModel()
     @StateObject var speechRecognizer = SpeechRecognizer()
@@ -47,16 +48,7 @@ struct AIAssistantView: View {
     var body: some View {
         VStack {
             // Header
-            HStack {
-                Circle()
-                    .frame(width: 40, height: 40)
-                    .foregroundColor(.gray) // Placeholder for Atlas icon
-                Text("Let me help you plan your trip!")
-                    .font(.title2)
-                    .padding(.leading, 8)
-                Spacer()
-            }
-            .padding()
+            Spacer().frame(height: 100)
 
             // Chat messages
             ScrollView {
@@ -70,7 +62,7 @@ struct AIAssistantView: View {
                                 Text(message.content)
                                     .padding()
                                     .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
-                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .frame(maxWidth: 270, alignment: .leading)
                             }
                             Spacer()
                         } else {
@@ -79,7 +71,7 @@ struct AIAssistantView: View {
                                 Text(message.content)
                                     .padding()
                                     .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
-                                    .frame(maxWidth: .infinity, alignment: .trailing)
+                                    .frame(maxWidth: 270, alignment: .trailing)
                                 Circle()
                                     .frame(width: 30, height: 30)
                                     .foregroundColor(.blue) // Placeholder for User avatar
@@ -100,7 +92,7 @@ struct AIAssistantView: View {
                         let transcript = speechRecognizer.transcript
                         
                         if !transcript.isEmpty {
-                            viewModel.sendMessage(transcript)
+                            viewModel.sendMessage(transcript, vm: vm)
                             currentMessage = transcript
                         }
                         
@@ -129,7 +121,7 @@ struct AIAssistantView: View {
 
                 Button(action: {
                     if !currentMessage.isEmpty {
-                        viewModel.sendMessage(currentMessage)
+                        viewModel.sendMessage(currentMessage, vm: vm)
                         currentMessage = ""
                     }
                 }) {
@@ -143,10 +135,9 @@ struct AIAssistantView: View {
             .padding()
         }
         .background(Color.clear)
-        .navigationTitle("Plan a New Trip (AI)")
     }
 }
 
 #Preview {
-    AIAssistantView()
+    AIAssistantView(vm: UserViewModel())
 }

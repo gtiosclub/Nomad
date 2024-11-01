@@ -9,7 +9,7 @@ struct ItineraryParentView: View {
         ZStack {
             // Background views that will transition
             if showAtlas {
-                AIAssistantView()
+                AIAssistantView(vm: vm)
                     .transition(.identity) // No animation on the content itself
             } else {
                 FindStopView(vm: vm)
