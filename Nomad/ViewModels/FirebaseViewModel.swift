@@ -564,7 +564,7 @@ class FirebaseViewModel: ObservableObject {
         case "RestStop":
             return RestStop(address: address, name: name, latitude: latitude, longitude: longitude, city: city)
         case "GasStation":
-            return GasStation(name: name, address: address, longitude: longitude, latitude: latitude, city: city)
+            return GasStation(address: address, name: name, latitude: latitude, longitude: longitude, city: city)
         case "GeneralLocation":
             return GeneralLocation(address: address, name: name, latitude: latitude, longitude: longitude, city: city)
         case "Hotel":
