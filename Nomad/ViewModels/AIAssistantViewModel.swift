@@ -121,9 +121,9 @@ class AIAssistantViewModel: ObservableObject {
      -----------------------------------------------------
      */
 
-    func converseAndGetInfoFromYelp(query: String) async -> String? {
+    func converseAndGetInfoFromYelp(query: String, userVM: UserViewModel) async -> String? {
         let jsonString = await queryChatGPT(query: query) ?? ""
-        let yelpInfo = await queryYelpWithjSONString(jsonString: jsonString) ?? "!!!Failed!!!"
+        let yelpInfo = await queryYelpWithjSONString(jsonString: jsonString, userVM: userVM) ?? "!!!Failed!!!"
         print(yelpInfo)
         let businessResponse = parseGetBusinessesIntoModel(yelpInfo: yelpInfo)
         
@@ -175,7 +175,7 @@ class AIAssistantViewModel: ObservableObject {
     //First converts the GPT JSON into a struct that is then parsed
     //The parsed information is used as parameters to call Yelp API
     //The function returns a JSON consisting of all the stops that fit the user's criteria
-    func queryYelpWithjSONString(jsonString: String) async -> String? {
+    func queryYelpWithjSONString(jsonString: String, userVM: UserViewModel) async -> String? {
         guard let locationInfo = convertStringToStruct(jsonString: jsonString) else {
             return "Error: Unable to parse JSON String"
         }
@@ -187,10 +187,12 @@ class AIAssistantViewModel: ObservableObject {
         let price = locationInfo.price
         let preferences = locationInfo.preferences.joined(separator: ", ")
         
-        if(time != -1) {
+        if(time != -1 && location == "MyLocation") {
             var sampleRoute = await MapManager.manager.getExampleRoute()!
             
-            var coords = MapManager.manager.getFutureLocation(time: time, route: sampleRoute)
+            var route = userVM.current_trip?.route
+            
+            var coords = MapManager.manager.getFutureLocation(time: time, route: route ?? sampleRoute)
             
             guard let businessInformation = await fetchSpecificBusinesses(locationType: (locationInformation == "") ? locationType : locationInformation, distance: distance, price: price, location: "UseCoords", preferences: preferences, latitude: coords?.latitude ?? 0, longitutde: coords?.longitude ?? 0) else {
                 return "Error: Unable to access YELP API"
