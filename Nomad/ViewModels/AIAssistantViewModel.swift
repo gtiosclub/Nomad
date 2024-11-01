@@ -9,7 +9,6 @@ import Foundation
 import ChatGPTSwift
 
 class AIAssistantViewModel: ObservableObject {
-    var currentLocationQuery: LocationInfo = LocationInfo(locationType: "", locationInformation: "", distance: 0.0, price: "1,2,3,4", location: "", preferences: [])
     var openAIAPIKey = ChatGPTAPI(apiKey: "<PUT API KEY HERE>")
     var yelpAPIKey = "<PUT API KEY HERE>"
     var gasPricesAPIKey = "<PUT GAS KEY HERE>"
@@ -121,6 +120,46 @@ class AIAssistantViewModel: ObservableObject {
      Parent Function
      -----------------------------------------------------
      */
+    
+    
+    func getPOIDetails(query: String, vm: UserViewModel) async -> [POIDetail]? {
+        let jsonString = await queryChatGPT(query: query) ?? ""
+        let yelpInfo = await queryYelpWithjSONString(jsonString: jsonString, userVM: vm) ?? "!!!Failed!!!"
+        print(yelpInfo)
+        
+        guard let businessResponse = parseGetBusinessesIntoModel(yelpInfo: yelpInfo) else {
+            return [POIDetail.null]
+        }
+        
+        print(businessResponse)
+        
+        // Collect information for the first three businesses (or fewer if less are available)
+        var businessDetails: [(name: String, address: String, price: String, rating: Double, phoneNumber: String)] = []
+        for i in 0..<min(3, businessResponse.businesses.count) {
+            let business = businessResponse.businesses[i]
+            let name = business.name
+            let address = business.location.address1
+            let price = business.price ?? ""
+            let rating = business.rating ?? -1
+            let phoneNumber = business.phone
+            businessDetails.append((name, address, price, rating, phoneNumber))
+        }
+        
+        // Collect POI details for the first three businesses (or fewer if less are available)
+        let poiDetails = (0..<min(3, businessResponse.businesses.count)).compactMap { i -> POIDetail? in
+            let business = businessResponse.businesses[i]
+            return POIDetail(
+                name: business.name,
+                address: business.location.address1,
+                distance: "",  // Assuming distance will be calculated or provided elsewhere
+                phoneNumber: business.phone,
+                rating: "\(business.rating ?? -1)",
+                price: business.price ?? ""
+            )
+        }
+        
+        return poiDetails
+    }
 
      //-------------------------------------------------
     
@@ -165,6 +204,7 @@ class AIAssistantViewModel: ObservableObject {
         guard let locationInfo = convertStringToStruct(jsonString: jsonString) else {
             return "Error: Unable to parse JSON String"
         }
+        currentLocationQuery = locationInfo
         let locationType = locationInfo.locationType
         let locationInformation = locationInfo.locationInformation
         let distance = locationInfo.distance
@@ -237,35 +277,7 @@ class AIAssistantViewModel: ObservableObject {
         }
     }
     
-    func formatResponseToUser(name: String, address: String, price: String, rating: Double, phoneNumber: String) async -> String? {
-        do {
-            let response = try await openAIAPIKey.sendMessage(
-                text: """
-                    I will give you data about a business. Give the data back to the user in a concise yet friendly manner. Ensure you write in complete sentences. Although I say I will give you data, it doesn't mean the data is valid. Use discretion on whether the data is valid, and if none of the data is valid, then say there are no restaurants in the area. Note that the price will be a symbol "$", and the number of dollar signs will be out of four. For example, $$$$ = most expensive. Rating is out of 5.0.
-                
-                    Here is the data: <<<Name: \(name), Address: \(address), Price: \(price), Rating: \(rating), Phone Number: \(phoneNumber)
-                """,
-                model: gptModel!)
-            return response
-        } catch {
-            return "Send OpenAI Query Error: \(error.localizedDescription)"
-        }
-    }
-    func converseAndGetInfoFromYelp(query: String) async -> String? {
-        let jsonString = await queryChatGPT(query: query) ?? ""
-        let yelpInfo = await queryYelpWithjSONString(jsonString: jsonString) ?? "!!!Failed!!!"
-        print(yelpInfo)
-        let businessResponse = parseGetBusinessesIntoModel(yelpInfo: yelpInfo)
-        
-        let name_0 = businessResponse?.businesses.first?.name ?? ""
-        let address_0 = businessResponse?.businesses.first?.location.address1 ?? ""
-        let price_0 = businessResponse?.businesses.first?.price ?? ""
-        let rating_0 = businessResponse?.businesses.first?.rating ?? -1
-        let phoneNumber_0 = businessResponse?.businesses.first?.phone ?? ""
-        
-        let response = await formatResponseToUser(name: name_0, address: address_0, price: price_0, rating: rating_0, phoneNumber: phoneNumber_0)
-        return response
-    }
+
     // Helper function that will take in a JSON formatted String and turn it into an accessible Swift Data Structure
     func convertStringToStruct(jsonString: String) -> LocationInfo? {
         let jsonData = jsonString.data(using: .utf8)! // Convert the string to Data
@@ -284,46 +296,6 @@ class AIAssistantViewModel: ObservableObject {
     }
     //-------------------------------------------------
     
-
-    
-    func getPOIDetails(query: String) async -> [POIDetail]? {
-        let jsonString = await queryChatGPT(query: query) ?? ""
-        let yelpInfo = await queryYelpWithjSONString(jsonString: jsonString) ?? "!!!Failed!!!"
-        print(yelpInfo)
-        
-        guard let businessResponse = parseGetBusinessesIntoModel(yelpInfo: yelpInfo) else {
-            return [POIDetail.null]
-        }
-        
-        print(businessResponse)
-        
-        // Collect information for the first three businesses (or fewer if less are available)
-        var businessDetails: [(name: String, address: String, price: String, rating: Double, phoneNumber: String)] = []
-        for i in 0..<min(3, businessResponse.businesses.count) {
-            let business = businessResponse.businesses[i]
-            let name = business.name
-            let address = business.location.address1
-            let price = business.price ?? ""
-            let rating = business.rating ?? -1
-            let phoneNumber = business.phone
-            businessDetails.append((name, address, price, rating, phoneNumber))
-        }
-        
-        // Collect POI details for the first three businesses (or fewer if less are available)
-        let poiDetails = (0..<min(3, businessResponse.businesses.count)).compactMap { i -> POIDetail? in
-            let business = businessResponse.businesses[i]
-            return POIDetail(
-                name: business.name,
-                address: business.location.address1,
-                distance: "",  // Assuming distance will be calculated or provided elsewhere
-                phoneNumber: business.phone,
-                rating: "\(business.rating ?? -1)",
-                price: business.price ?? ""
-            )
-        }
-        
-        return poiDetails
-    }
 
     
     // Note: this is for text to speech functionality
