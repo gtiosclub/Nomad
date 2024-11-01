@@ -80,33 +80,33 @@ struct FindStopView: View {
                         .offset(x: 12, y: 3)
                 }
                 
-                VStack(spacing: 8) {
-                    listCuisines //Lists out stops type that can be selected
+                if (selectedTab == 1) {
+                    VStack(spacing: 8) {
+                        listCuisines //Lists out stops type that can be selected
+                    }
+                    .padding(5)
                 }
-                .padding(5)
                 
                 Divider()
                 
-                //selection: $selectedTab
-                TabView {
+                TabView(selection: $selectedTab) {
                     VStack(alignment: .leading, spacing: 16) {
                         if selection == "Restaurants" {
                             Text("Cuisine:")
                                 .font(.headline)
                             FilterView(selectedRating: $rating, selectedCuisine: $selectedCuisines, selectedPrice: $price)
+                            Spacer()
                         } else if selection == "Activities" || selection == "Hotels" {
                             RatingUI(rating: $rating)
-                                .padding(.top, 10)
-                        } else {
-                            EnhancedRoutePlanListView(vm: vm)
                         }
                     }
                     .padding(.horizontal)
-                    if selection == "Restaurants" || selection == "Activities" || selection == "Hotels" {
-                        EnhancedRoutePlanListView(vm: vm)
-                    }
+                    .tag(1)
+                    
+                    EnhancedRoutePlanListView(vm: vm)
+                        .tag(2)
                 }
-                .frame(height: selection == "Restaurants" ? 250 : (selection == "Activities" || selection == "Hotels" ? 80 : 300))
+                .frame(height: dynamicHeight(for: selectedTab))
                 .tabViewStyle(PageTabViewStyle())
                 .indexViewStyle(PageIndexViewStyle())
                 
@@ -174,6 +174,23 @@ struct FindStopView: View {
         }
     }
     
+    private func dynamicHeight(for tab: Int) -> CGFloat {
+        switch tab {
+        case 1:
+            if selection == "Restaurants" {
+                return 250
+            } else if selection == "Activities" || selection == "Hotels" {
+                return 80
+            } else {
+                return 30
+            }
+        case 2:
+            return 200 + CGFloat((vm.current_trip?.getStops().count ?? 0) * 100)
+        default:
+            return 300
+        }
+    }
+
     private var listCuisines: some View {
         let rows = stop_types.chunked(into: 4)
         return ForEach(rows, id: \.self) { row in
@@ -204,8 +221,7 @@ struct FindStopView: View {
             Task {
                 do {
                     await vm.fetchPlaces(
-                        location: //vm.current_trip?.getStartLocation() ??
-                        "177 North Avenue NW, Atlanta, GA 30332",
+                        location: vm.current_trip?.getStartLocation().getAddress() ?? "",
                         stopType: selection,
                         rating: Double(rating),
                         price: price,
