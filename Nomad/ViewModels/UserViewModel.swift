@@ -18,14 +18,17 @@ class UserViewModel: ObservableObject {
     @Published var restaurants: [Restaurant] = []
     @Published var hotels: [Hotel] = []
     @Published var activities: [Activity] = []
+    @Published var shopping: [Shopping] = []
     @Published var generalLocations: [GeneralLocation] = []
+    @Published var reststops: [RestStop] = []
     @Published var distances: [Double] = []
     @Published var times: [Double] = []
     @Published var currentCity: String?
     
-    @Published var my_trips: [Trip] = []
     @Published var previous_trips: [Trip] = []
     @Published var community_trips: [Trip] = []
+    
+    var aiVM = AIAssistantViewModel()
 
     
     init(user: User? = nil) {
@@ -46,15 +49,13 @@ class UserViewModel: ObservableObject {
     }
     
     @MainActor
-    func createTrip(start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM") async -> Trip {
+    func createTrip(start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM") async {
         let route = await getRoute()
-        let cityImageURL = await Trip.getCityImageAsync(location: end_location)
-        print(cityImageURL)
-        self.current_trip = Trip(route: route, start_location: start_location, end_location: end_location, start_date: start_date, end_date: end_date, stops: stops, start_time: start_time, coverImageURL: cityImageURL)
+//        let cityImageURL = await Trip.getCityImageAsync(location: end_location)
+//        print(cityImageURL)
+        self.current_trip = Trip(route: route, start_location: start_location, end_location: end_location, start_date: start_date, end_date: end_date, stops: stops, start_time: start_time)
         
         self.user?.addTrip(trip: self.current_trip!)
-                
-        return current_trip!
     }
     
     func addTripToUser(trip: Trip) {
@@ -92,10 +93,13 @@ class UserViewModel: ObservableObject {
         }
     }
     
-    func removeStop(stop: any POI) {
-        current_trip?.removeStops(removedStops: [stop])
-        user?.updateTrip(trip: current_trip!)
-        self.user = user
+    func removeStop(stop: any POI) async {
+        let firebaseViewModel = FirebaseViewModel()
+        if await firebaseViewModel.removeStopFromTrip(tripID: current_trip!.id, stop: stop) {
+            current_trip?.removeStops(removedStops: [stop])
+            user?.updateTrip(trip: current_trip!)
+            self.user = user
+        }
     }
     
     func setCurrentTrip(trip: Trip) {
@@ -375,26 +379,82 @@ class UserViewModel: ObservableObject {
         }
     }
 
-    func fetchPlaces(location: String, stopType: String, rating: Double?, price: Int?, cuisine: String?) async {
-        let apiKey = "hpQdyXearQyP-ahpSeW2wDZvn-ljfmsGvN6RTKqo18I6R23ZB3dfbzAnEjvS8tWoPwyH9FFTGifdZ-n_qH80jbRuDbGb0dHu1qEPrLH-vqNq_d6TZdUaC_kZpwvqZnYx"
+    func fetchPlaces(location: String, stopType: String, rating: Double?, price: Int?, cuisine: String?, searchString: String) async {
+        let apiKey = aiVM.yelpAPIKey
         let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
         guard let currentTrip = current_trip else { return }
         let startLocation = currentTrip.getStartLocation()
 
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
+        
+        var queryItems: [URLQueryItem] = []
+        
+        print(searchString)
+        
+        if (searchString != "") {
+            print("Searching via search bar")
+            queryItems = [
+                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "term", value: searchString),
+                URLQueryItem(name: "sort_by", value: "rating"),
+                URLQueryItem(name: "limit", value: "50")
+            ]
+        } else if (stopType == "Restaurants") {
+            queryItems = [
+                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "categories", value: "restaurants,food"),
+                URLQueryItem(name: "sort_by", value: "rating"),
+                URLQueryItem(name: "limit", value: "50")
+            ]
+            if let cuisine = cuisine, cuisine != "All" && !cuisine.isEmpty {
+                queryItems.append(URLQueryItem(name: "categories", value: cuisine))
+            }
+            if let price = price, price > 0 {
+                queryItems.append(URLQueryItem(name: "price", value: String(price)))
+            }
+        } else if (stopType == "Activities") {
+            queryItems = [
+                URLQueryItem(name: "location", value: startLocation.getAddress()),
 
-        var queryItems: [URLQueryItem] = [
-            URLQueryItem(name: "location", value: startLocation.getAddress()),
-            URLQueryItem(name: "term", value: stopType),
-            URLQueryItem(name: "sort_by", value: "best_match"),
-        ]
-
-        if let price = price, price > 0 {
-            queryItems.append(URLQueryItem(name: "price", value: String(price)))
-        }
-
-        if let cuisine = cuisine, cuisine != "All" && !cuisine.isEmpty {
-            queryItems.append(URLQueryItem(name: "categories", value: cuisine))
+                URLQueryItem(name: "categories", value: "activelife,nightlife,facepainting,photoboothrentals,photographers,silentdisco,videographers,triviahosts,teambuilding,massage,hotspring"),
+                URLQueryItem(name: "sort_by", value: "rating"),
+                URLQueryItem(name: "limit", value: "50")
+            ]
+        } else if (stopType == "Scenic") {
+            queryItems = [
+                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "term", value: "sights"),
+                URLQueryItem(name: "sort_by", value: "rating"),
+                URLQueryItem(name: "limit", value: "50")
+            ]
+        } else if (stopType == "Hotels") {
+            queryItems = [
+                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "categories", value: "hotels,hostels"),
+                URLQueryItem(name: "sort_by", value: "rating"),
+                URLQueryItem(name: "limit", value: "50")
+            ]
+        } else if (stopType == "Tours and Landmarks") {
+            queryItems = [
+                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "categories", value: "tours,landmarks,collegeuniv,hotsprings"),
+                URLQueryItem(name: "sort_by", value: "rating"),
+                URLQueryItem(name: "limit", value: "50")
+            ]
+        } else if (stopType == "Shopping") {
+            queryItems = [
+                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "term", value: "shopping"),
+                URLQueryItem(name: "sort_by", value: "rating"),
+                URLQueryItem(name: "limit", value: "50")
+            ]
+        } else { //entertainment
+            queryItems = [
+                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "categories", value: "arts,magicians,musicians"),
+                URLQueryItem(name: "sort_by", value: "rating"),
+                URLQueryItem(name: "limit", value: "50")
+            ]
         }
 
         components.queryItems = queryItems
@@ -405,70 +465,90 @@ class UserViewModel: ObservableObject {
 
         do {
             let (data, _) = try await URLSession.shared.data(for: request)
+            print("Raw Response Data: \(String(data: data, encoding: .utf8) ?? "No data")")
             let decoder = JSONDecoder()
+            
             let response = try decoder.decode(YelpResponse.self, from: data)
             
             let filteredBusinesses = response.businesses.filter { business in
-                        guard let businessRating = business.rating else { return false }
-                        return rating == nil || businessRating >= rating!
-                    }
-            
+                guard let businessRating = business.rating else { return false }
+                let meetsRatingCriteria = rating == nil || businessRating >= rating!
+                let hasValidAddress = business.location.display_address.count >= 2
+                return meetsRatingCriteria && hasValidAddress
+            }
+
             DispatchQueue.main.async {
                 switch stopType {
-                case "Dining":
+                case "Restaurants":
                     self.restaurants = filteredBusinesses.map { Restaurant(from: $0) }
                 case "Hotels":
                     self.hotels = filteredBusinesses.map { Hotel(from: $0) }
                 case "Activities":
                     self.activities = filteredBusinesses.map { Activity(from: $0) }
+                case "Shopping":
+                    self.shopping = filteredBusinesses.map { Shopping(from: $0) }
                 default:
                     self.generalLocations = filteredBusinesses.map { GeneralLocation(from: $0) }
                 }
             }
             print("Response Data: \(String(data: data, encoding: .utf8) ?? "No data")")
+        } catch DecodingError.keyNotFound(let key, let context) {
+            print("Missing key: '\(key.stringValue)' in JSON data: \(context.debugDescription)")
+        } catch DecodingError.typeMismatch(let type, let context) {
+            print("Type mismatch for the \(type) with description: \(context.debugDescription)")
+        } catch DecodingError.valueNotFound(let type , let context) {
+            print("Value not ofund for the type \(type), \(context.debugDescription)")
         } catch {
             print("Error fetching data: \(error.localizedDescription)")
         }
     }
+    
+    func fetchRestStops(location: String) async {
+        let apiKey = aiVM.yelpAPIKey
+        let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
 
-    
-    func getCategoryForStopType(stopType: String) -> String {
-        switch stopType {
-        case "Dining":
-            return "restaurants"
-        case "Activities":
-            return "activities"
-        case "Scenic":
-            return "scenic"
-        case "Hotels":
-            return "hotels"
-        case "Tours and Landmarks":
-            return "tours,landmarks"
-        case "Entertainment":
-            return "entertainment"
-        default:
-            return "restaurants"
-        }
-    }
-    
-    func getCurrentCity() async {
-        let locationManager = CLLocationManager()
-        guard let userLocation = locationManager.location else {
-            return
-        }
+        var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
         
-        let geoCoder = CLGeocoder()
+        let queryItems: [URLQueryItem] = [
+          URLQueryItem(name: "term", value: "reststops"),
+          URLQueryItem(name: "location", value: location),
+          URLQueryItem(name: "sort_by", value: "rating"),
+          URLQueryItem(name: "limit", value: "50"),
+        ]
+
+        components.queryItems = queryItems
+        var request = URLRequest(url: components.url!)
+        request.httpMethod = "GET"
+        request.timeoutInterval = 10
+        request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+
         do {
-            if let placemark = try await geoCoder.reverseGeocodeLocation(userLocation).first {
-                DispatchQueue.main.async {
-                    self.currentCity = placemark.locality!
-                }
+            let (data, _) = try await URLSession.shared.data(for: request)
+            print("Raw Response Data: \(String(data: data, encoding: .utf8) ?? "No data")")
+            let decoder = JSONDecoder()
+            
+            let response = try decoder.decode(YelpResponse.self, from: data)
+            
+            let filteredBusinesses = response.businesses.filter { business in
+                let hasValidAddress = business.location.display_address.count >= 2
+                return hasValidAddress
             }
+            
+            self.reststops = response.businesses.compactMap { business -> RestStop? in
+                guard business.location.display_address.count >= 2 else { return nil }
+                return RestStop(from: business)
+            }
+            
+            print("Response Data: \(String(data: data, encoding: .utf8) ?? "No data")")
+        } catch DecodingError.keyNotFound(let key, let context) {
+            print("Missing key: '\(key.stringValue)' in JSON data: \(context.debugDescription)")
+        } catch DecodingError.typeMismatch(let type, let context) {
+            print("Type mismatch for the \(type) with description: \(context.debugDescription)")
+        } catch DecodingError.valueNotFound(let type , let context) {
+            print("Value not ofund for the type \(type), \(context.debugDescription)")
         } catch {
-            print("Error during reverse geocoding: \(error)")
+            print("Error fetching data: \(error.localizedDescription)")
         }
-        
-        return
     }
     
     func getCoordinates(for address: String) async -> (latitude: Double, longitude: Double)? {
@@ -486,9 +566,9 @@ class UserViewModel: ObservableObject {
         return nil
     }
     
-    func populate_my_trips() {
-        my_trips = UserViewModel.my_trips
-    }
+//    func populate_my_trips() {
+//        my_trips = user?.trips ?? []
+//    }
     
     func populate_previous_trips() {
         previous_trips = UserViewModel.previous_trips
@@ -498,51 +578,51 @@ class UserViewModel: ObservableObject {
         community_trips = UserViewModel.community_trips
     }
     
-    func updateTrip(trip: Trip) {
-        let trip_id = trip.id
-        for i in 0..<my_trips.count {
-            if my_trips[i].id == trip_id {
-                my_trips[i] = trip
-                print("updated my_trip \(i)")
-                return
-            }
-        }
-        for i in 0..<previous_trips.count {
-            if previous_trips[i].id == trip_id {
-                previous_trips[i] = trip
-                print("updated previous_trips \(i)")
-                return
-            }
-        }
-        for i in 0..<community_trips.count {
-            if community_trips[i].id == trip_id {
-                community_trips[i] = trip
-                print("updated community_trips \(i)")
-                return
-            }
-        }
-    }
-    func getTrip(trip_id: String) -> Trip? {
-        for i in 0..<my_trips.count {
-            if my_trips[i].id == trip_id {
-                print("found my_trip \(i)")
-                return my_trips[i]
-            }
-        }
-        for i in 0..<previous_trips.count {
-            if previous_trips[i].id == trip_id {
-                print("found previous_trips \(i)")
-                return previous_trips[i]
-            }
-        }
-        for i in 0..<community_trips.count {
-            if community_trips[i].id == trip_id {
-                print("found community_trips \(i)")
-                return community_trips[i]
-            }
-        }
-        return nil
-    }
+//    func updateTrip(trip: Trip) {
+//        let trip_id = trip.id
+//        for i in 0..<my_trips.count {
+//            if my_trips[i].id == trip_id {
+//                my_trips[i] = trip
+//                print("updated my_trip \(i)")
+//                return
+//            }
+//        }
+//        for i in 0..<previous_trips.count {
+//            if previous_trips[i].id == trip_id {
+//                previous_trips[i] = trip
+//                print("updated previous_trips \(i)")
+//                return
+//            }
+//        }
+//        for i in 0..<community_trips.count {
+//            if community_trips[i].id == trip_id {
+//                community_trips[i] = trip
+//                print("updated community_trips \(i)")
+//                return
+//            }
+//        }
+//    }
+//    func getTrip(trip_id: String) -> Trip? {
+//        for i in 0..<my_trips.count {
+//            if my_trips[i].id == trip_id {
+//                print("found my_trip \(i)")
+//                return my_trips[i]
+//            }
+//        }
+//        for i in 0..<previous_trips.count {
+//            if previous_trips[i].id == trip_id {
+//                print("found previous_trips \(i)")
+//                return previous_trips[i]
+//            }
+//        }
+//        for i in 0..<community_trips.count {
+//            if community_trips[i].id == trip_id {
+//                print("found community_trips \(i)")
+//                return community_trips[i]
+//            }
+//        }
+//        return nil
+//    }
     
     static let community_trips = [
         Trip(start_location: Activity(address: "555 Favorite Rd", name: "Home", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "666 Favorite Ave", name: "Favorite Hotel 1", latitude: 34.0522, longitude: -118.2437, city: "Redwood"), name: "Redwood National Park", coverImageURL: ""),
@@ -557,14 +637,15 @@ class UserViewModel: ObservableObject {
              ]
     
     static let my_trips = [
-        Trip(start_location: Restaurant(address: "848 Spring Street, Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy, Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)], name: "ATL to Nashville", coverImageURL: ""),
-        Trip(start_location: Activity(address: "123 Start St", name: "Scenic California Mountain Route", latitude: 34.0522, longitude: -118.2437, city: "Boston"), end_location: Hotel(address: "456 End Ave", name: "End Hotel", latitude: 34.0522, longitude: -118.2437, city: "Seattle"), name: "Cross Country", coverImageURL: ""),
-        Trip(start_location: Activity(address: "789 Another St", name: "Johnson Family Spring Retreat", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "123 Another Ave", name: "Another Hotel", latitude: 34.0522, longitude: -118.2437, city: "Blue Ridge"), name: "GA Mountains", coverImageURL: "")
+        Trip(id: "austintrip1", start_location: Restaurant(address: "848 Spring Street, Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", created_date: "10-1-2024", modified_date: "10-1-2024", stops: [Activity(address: "1720 S Scenic Hwy, Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)], start_time: "10:00:00", name: "ATL to Nashville", isPrivate: true),
+        Trip(id: "austintrip2", start_location: Activity(address: "123 Start St", name: "Scenic California Mountain Route", latitude: 34.0522, longitude: -118.2437, city: "Boston"), end_location: Hotel(address: "456 End Ave", name: "End Hotel", latitude: 34.0522, longitude: -118.2437, city: "Seattle"), start_date: "10-12-2024", end_date: "10-12-2024", created_date: "10-1-2024", modified_date: "10-1-2024", stops: [Activity(address: "Grand Canyon, Tusayan, AZ 86023 United States", name: "Grand Canyon", latitude: 36.2679, longitude: -112.3535)], start_time: "10:00:00", name: "Cross Country", isPrivate: true),
+        Trip(id: "austintrip3", start_location: Activity(address: "789 Another St", name: "Johnson Family Spring Retreat", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "123 Another Ave", name: "Another Hotel", latitude: 34.0522, longitude: -118.2437, city: "Blue Ridge"), start_date: "10-19-2024", end_date: "10-19-2024", created_date: "10-1-2024", modified_date: "10-1-2024", stops: [Activity(address: "727 N Broadway, Los Angeles, CA 90012", name: "Chinatown", latitude: 40.7158, longitude: -73.9970)], start_time: "10:00:00", name: "GA Mountains", isPrivate: true)
     ]
 
     func setTripTitle(newTitle: String) {
         current_trip?.setName(newName: newTitle)
         user?.updateTrip(trip: current_trip!)
+        self.user = user
         
     }
 
@@ -575,10 +656,15 @@ class UserViewModel: ObservableObject {
     func setIsPrivate(isPrivate: Bool) {
         current_trip?.setVisibility(isPrivate: isPrivate)
         user?.updateTrip(trip: current_trip!)
+        self.user = user
     }
 
     func getTripVisibility() -> Bool {
         return current_trip?.setIsPrivate() ?? true
+    }
+    
+    func reorderStops(fromOffsets: IndexSet, toOffset: Int) {
+        current_trip?.reorderStops(fromOffsets: fromOffsets, toOffset: toOffset)
     }
 
     func clearCurrentTrip() {
@@ -602,14 +688,13 @@ struct Business: Codable {
     let coordinates: Coordinates
     let location: Location
     let rating: Double?
-    let categories: [Category]
+    let categories: [Category]?
     let price: String?
     let url: String?
     let image_url: String?
 }
 
 struct Location: Codable {
-    let address1: String
     let city: String
     let display_address: [String]
 }
@@ -620,6 +705,7 @@ struct Coordinates: Codable {
 }
 
 struct Category: Codable {
+    let alias: String
     let title: String
 }
 

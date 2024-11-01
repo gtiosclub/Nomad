@@ -1,50 +1,50 @@
-//
-//  AIAssistantView.swift
-//  Nomad
-//
-//  Created by Nicholas Candello on 9/15/24.
-//
-
 import SwiftUI
 
 struct AIAssistantView: View {
+    @ObservedObject var vm: UserViewModel
     @StateObject var aiViewModel = AIAssistantViewModel()
     @StateObject private var chatViewModel = ChatViewModel()
     @StateObject var speechRecognizer = SpeechRecognizer()
     @State private var isMicrophone = false
-
     @State private var currentMessage: String = ""
     
 
     var body: some View {
         VStack {
-            HStack {
-                Text("Let's plan your new trip")
-                    .font(.title2)
-                    .padding()
-                Spacer()
-            }
-            
-            List(chatViewModel.messages) { message in
-                HStack {
-                    if message.sender == "AI" {
-                        Text(message.content)
-                            .padding()
-                            .background(Color.green.opacity(0.1))
-                            .cornerRadius(10)
-                        Spacer()
-                    } else {
-                        Spacer()
-                        
-                        Text(message.content)
-                            .padding()
-                            .background(Color.blue.opacity(0.1))
-                            .cornerRadius(10)
+            // Header
+            Spacer().frame(height: 100)
+
+            // Chat messages
+            ScrollView {
+                ForEach(viewModel.messages) { message in
+                    HStack {
+                        if message.sender == "AI" {
+                            HStack {
+                                Circle()
+                                    .frame(width: 30, height: 30)
+                                    .foregroundColor(.gray) // Placeholder for AI avatar
+                                Text(message.content)
+                                    .padding()
+                                    .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+                                    .frame(maxWidth: 270, alignment: .leading)
+                            }
+                            Spacer()
+                        } else {
+                            Spacer()
+                            HStack {
+                                Text(message.content)
+                                    .padding()
+                                    .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+                                    .frame(maxWidth: 270, alignment: .trailing)
+                                Circle()
+                                    .frame(width: 30, height: 30)
+                                    .foregroundColor(.blue) // Placeholder for User avatar
+                            }
+                        }
                     }
+                    .padding(.horizontal)
                 }
-                .listRowBackground(Color.clear)
             }
-            .listStyle(PlainListStyle())
             .background(Color.clear)
             
             // Horizontal scroll view for POIs
@@ -61,6 +61,7 @@ struct AIAssistantView: View {
                 .frame(height: 150)  // Adjust height as needed
             }
             
+
             HStack {
                 Button(action: {
                     // Microphone action if necessary
@@ -69,8 +70,8 @@ struct AIAssistantView: View {
                         let transcript = speechRecognizer.transcript
                         
                         if !transcript.isEmpty {
-                            //viewModel.sendMessage(transcript)
-                            //currentMessage = transcript
+                            viewModel.sendMessage(transcript, vm: vm)
+                            currentMessage = transcript
                         }
                         
                         isMicrophone = false
@@ -86,6 +87,7 @@ struct AIAssistantView: View {
                         .clipShape(Circle())
                         .foregroundColor(isMicrophone ? .red : .gray)
                 }
+
                 TextField("Ask me anything...", text: $currentMessage)
                     .padding()
                     .background(Color.gray.opacity(0.2))
@@ -95,14 +97,13 @@ struct AIAssistantView: View {
                         currentMessage = newTranscript
                     }
 
-
                 Button(action: {
                     if !currentMessage.isEmpty {
                         chatViewModel.sendMessage(currentMessage)
                         currentMessage = ""
                     }
                 }) {
-                    Text("Send")
+                    Image(systemName: "paperplane.fill")
                         .padding()
                         .background(Color.blue)
                         .foregroundColor(.white)
@@ -112,10 +113,9 @@ struct AIAssistantView: View {
             .padding()
         }
         .background(Color.clear)
-        .navigationTitle("Plan a New Trip (AI)")
     }
 }
 
 #Preview {
-    AIAssistantView()
+    AIAssistantView(vm: UserViewModel())
 }

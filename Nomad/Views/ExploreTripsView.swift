@@ -30,11 +30,11 @@ struct ExploreTripsView: View {
                             Spacer()
                         }
                         .task {
-                            await vm.getCurrentCity()
+                            //await vm.getCurrentCity()
                         }
                         
                         //TEMPORARY JUST FOR MID SEM DEMO
-                        NavigationLink(destination: AIAssistantView()) {
+                        NavigationLink(destination: AIAssistantView(vm: vm)) {
                             Text("Consult Atlas")
                                 .font(.headline)
                                 .foregroundColor(.white)
@@ -70,11 +70,11 @@ struct ExploreTripsView: View {
                             
                             ScrollView(.horizontal) {
                                 HStack {
-                                    ForEach(vm.my_trips) { trip in
+                                    ForEach(vm.user?.trips ?? []) { trip in
                                         NavigationLink(destination: {
                                             PreviewRouteView(vm: vm, trip: trip)
                                         }, label: {
-                                            TripGridView(trip: Binding.constant(trip))
+                                            TripGridView(trip: trip)
                                                 .frame(alignment: .top)
                                         })
                                     }
@@ -92,7 +92,7 @@ struct ExploreTripsView: View {
                                         NavigationLink(destination: {
                                             PreviewRouteView(vm: vm, trip: trip)
                                         }, label: {
-                                            TripGridView(trip: Binding.constant(trip))
+                                            TripGridView(trip: trip)
                                                 .frame(alignment: .top)
                                         })
                                     }
@@ -110,7 +110,7 @@ struct ExploreTripsView: View {
                                         NavigationLink(destination: {
                                             PreviewRouteView(vm: vm, trip: trip)
                                         }, label: {
-                                            TripGridView(trip: Binding.constant(trip))
+                                            TripGridView(trip: trip)
                                                 .frame(alignment: .top)
                                         })
                                     }
@@ -140,7 +140,7 @@ struct ExploreTripsView: View {
             }
         }.onAppear() {
             print("populating trips")
-            vm.populate_my_trips()
+//            vm.populate_my_trips()
             vm.populate_previous_trips()
             vm.populate_community_trips()
         }
@@ -164,7 +164,7 @@ struct ExploreTripsView: View {
     }
     
     struct TripGridView: View {
-        @Binding var trip: Trip
+        @StateObject var trip: Trip
         
         var body: some View {
             VStack {
@@ -182,6 +182,7 @@ struct ExploreTripsView: View {
                             .frame(width: 120, height: 120)
                             .cornerRadius(10)
                             .padding(.horizontal, 10)
+//                            .id($trip.coverImageURL.wrappedValue)
                     } placeholder: {
                         ProgressView()
                             .frame(width: 120, height: 120)
@@ -193,7 +194,7 @@ struct ExploreTripsView: View {
                     }
                 }
                 
-                Text(trip.getName())
+                Text(trip.name)
                     .lineLimit(3)
                     .multilineTextAlignment(.center)
                     .frame(width: 120)
@@ -201,6 +202,9 @@ struct ExploreTripsView: View {
                     .foregroundStyle(.black)
             }
             .padding(.vertical, 5)
+            .onChange(of: trip, initial: true) { old, new in
+                print("changing trip info \(old.coverImageURL) \(new.coverImageURL)")
+            }
         }
     }
 }

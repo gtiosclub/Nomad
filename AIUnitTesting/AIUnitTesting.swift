@@ -29,20 +29,6 @@ final class AIUnitTesting: XCTestCase {
         // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
     }
     
-    func testFetchBusinesses() async {
-        await vm.fetchBusinesses()
-    }
-    
-    func testChatGPT() async {
-        await print("Test testChatGPT: \(vm.getChatGPT())")
-    }
-    
-    
-    func testJsonOutput() async {
-        let query = "What are the seven wonders of the world?"
-        await print(vm.getJsonOutput(query: query)!)
-    }
-    
     func testParseInputIntoJson() async {
         let query = "What are some restuarants in Atlanta that are near the Atlanta Aquarium?"
         await print(vm.queryChatGPT(query: query)!)
@@ -61,15 +47,15 @@ final class AIUnitTesting: XCTestCase {
     }
         
     func testYelpLocationInitialization() async {
-        let location = AIAssistantViewModel.LocationInfo(locationType: "Restaurant", locationInformation: "", distance: 1200, price: "1,2,3,4", location: "123 Main St", preferences: [])
+        let location = AIAssistantViewModel.LocationInfo(locationType: "Restaurant", locationInformation: "", distance: 1200, time: 0.0, price: "1,2,3,4", location: "123 Main St", preferences: [])
         XCTAssertEqual(location.locationType, "Restaurant")
         XCTAssertEqual(location.distance, 1200)
         XCTAssertEqual(location.location, "123 Main St")
     }
     
     func testConvertStringToStruct() {
-        let expectedLocation = AIAssistantViewModel.LocationInfo(locationType: "Restaurant", locationInformation: "", distance: 1200, price: "1,2,3,4", location: "123 Main St", preferences: [])
-        let emptyLocation = AIAssistantViewModel.LocationInfo(locationType: "", locationInformation: "", distance: -1, price: "1,2,3,4", location: "", preferences: [])
+        let expectedLocation = AIAssistantViewModel.LocationInfo(locationType: "Restaurant", locationInformation: "", distance: 1200, time: 0.0, price: "1,2,3,4", location: "123 Main St", preferences: [])
+        let emptyLocation = AIAssistantViewModel.LocationInfo(locationType: "", locationInformation: "", distance: -1, time: 0.0, price: "1,2,3,4", location: "", preferences: [])
 
         let jsonString = """
         {
