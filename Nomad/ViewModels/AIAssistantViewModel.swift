@@ -9,6 +9,7 @@ import Foundation
 import ChatGPTSwift
 
 class AIAssistantViewModel: ObservableObject {
+    var currentLocationQuery: LocationInfo = LocationInfo(locationType: "", locationInformation: "", distance: 0.0, price: "1,2,3,4", location: "", preferences: [])
     var openAIAPIKey = ChatGPTAPI(apiKey: "<PUT API KEY HERE>")
     var yelpAPIKey = "<PUT API KEY HERE>"
     var gasPricesAPIKey = "<PUT GAS KEY HERE>"
@@ -121,21 +122,6 @@ class AIAssistantViewModel: ObservableObject {
      -----------------------------------------------------
      */
 
-    func converseAndGetInfoFromYelp(query: String, userVM: UserViewModel) async -> String? {
-        let jsonString = await queryChatGPT(query: query) ?? ""
-        let yelpInfo = await queryYelpWithjSONString(jsonString: jsonString, userVM: userVM) ?? "!!!Failed!!!"
-        print(yelpInfo)
-        let businessResponse = parseGetBusinessesIntoModel(yelpInfo: yelpInfo)
-        
-        let name = businessResponse?.businesses.first?.name ?? ""
-        let address = businessResponse?.businesses.first?.location.address1 ?? ""
-        let price = businessResponse?.businesses.first?.price ?? ""
-        let rating = businessResponse?.businesses.first?.rating ?? -1
-        let phoneNumber = businessResponse?.businesses.first?.phone ?? ""
-        
-        let response = await formatResponseToUser(name: name, address: address, price: price, rating: rating, phoneNumber: phoneNumber)
-        return response
-    }
      //-------------------------------------------------
     
     /*----------------------------------------------------
@@ -215,7 +201,7 @@ class AIAssistantViewModel: ObservableObject {
             URLQueryItem(name: "term", value: "\(preferences)  \(locationType)"),
             URLQueryItem(name: "price", value: price),
             URLQueryItem(name: "radius", value: "\(Int(distance * 1609))"), //Because the parameter takes in meters, we convert miles to meters (1 mile = 1608.34 meters)
-            URLQueryItem(name: "limit", value: "1"),
+            URLQueryItem(name: "limit", value: "3"),
         ]
         if(location == "UseCoords") {
             queryItems.append(URLQueryItem(name: "latitude", value: String(latitude)))
@@ -236,7 +222,6 @@ class AIAssistantViewModel: ObservableObject {
         }
     }
     
-    //Parses the Yelp JSON into a BusinessResponse struct so the information can be more easily displayed
     func parseGetBusinessesIntoModel(yelpInfo: String) -> BusinessResponse? {
         let jsonData = yelpInfo.data(using: .utf8)! // Convert the string to Data
         
@@ -244,9 +229,10 @@ class AIAssistantViewModel: ObservableObject {
             // Decode the JSON data into a YelpLocation instance
             let decoder = JSONDecoder()
             let businessesResponse = try decoder.decode(BusinessResponse.self, from: jsonData)
+            print("parseGetBusinessesIntoModel \(businessesResponse)")
             return businessesResponse
         } catch {
-            print("Error decoding JSON: \(error)")
+            print("Error decoding JSON (parseGetBusinessesIntoModel): \(error)")
             return nil
         }
     }
@@ -265,7 +251,21 @@ class AIAssistantViewModel: ObservableObject {
             return "Send OpenAI Query Error: \(error.localizedDescription)"
         }
     }
-    
+    func converseAndGetInfoFromYelp(query: String) async -> String? {
+        let jsonString = await queryChatGPT(query: query) ?? ""
+        let yelpInfo = await queryYelpWithjSONString(jsonString: jsonString) ?? "!!!Failed!!!"
+        print(yelpInfo)
+        let businessResponse = parseGetBusinessesIntoModel(yelpInfo: yelpInfo)
+        
+        let name_0 = businessResponse?.businesses.first?.name ?? ""
+        let address_0 = businessResponse?.businesses.first?.location.address1 ?? ""
+        let price_0 = businessResponse?.businesses.first?.price ?? ""
+        let rating_0 = businessResponse?.businesses.first?.rating ?? -1
+        let phoneNumber_0 = businessResponse?.businesses.first?.phone ?? ""
+        
+        let response = await formatResponseToUser(name: name_0, address: address_0, price: price_0, rating: rating_0, phoneNumber: phoneNumber_0)
+        return response
+    }
     // Helper function that will take in a JSON formatted String and turn it into an accessible Swift Data Structure
     func convertStringToStruct(jsonString: String) -> LocationInfo? {
         let jsonData = jsonString.data(using: .utf8)! // Convert the string to Data
@@ -284,6 +284,46 @@ class AIAssistantViewModel: ObservableObject {
     }
     //-------------------------------------------------
     
+
+    
+    func getPOIDetails(query: String) async -> [POIDetail]? {
+        let jsonString = await queryChatGPT(query: query) ?? ""
+        let yelpInfo = await queryYelpWithjSONString(jsonString: jsonString) ?? "!!!Failed!!!"
+        print(yelpInfo)
+        
+        guard let businessResponse = parseGetBusinessesIntoModel(yelpInfo: yelpInfo) else {
+            return [POIDetail.null]
+        }
+        
+        print(businessResponse)
+        
+        // Collect information for the first three businesses (or fewer if less are available)
+        var businessDetails: [(name: String, address: String, price: String, rating: Double, phoneNumber: String)] = []
+        for i in 0..<min(3, businessResponse.businesses.count) {
+            let business = businessResponse.businesses[i]
+            let name = business.name
+            let address = business.location.address1
+            let price = business.price ?? ""
+            let rating = business.rating ?? -1
+            let phoneNumber = business.phone
+            businessDetails.append((name, address, price, rating, phoneNumber))
+        }
+        
+        // Collect POI details for the first three businesses (or fewer if less are available)
+        let poiDetails = (0..<min(3, businessResponse.businesses.count)).compactMap { i -> POIDetail? in
+            let business = businessResponse.businesses[i]
+            return POIDetail(
+                name: business.name,
+                address: business.location.address1,
+                distance: "",  // Assuming distance will be calculated or provided elsewhere
+                phoneNumber: business.phone,
+                rating: "\(business.rating ?? -1)",
+                price: business.price ?? ""
+            )
+        }
+        
+        return poiDetails
+    }
 
     
     // Note: this is for text to speech functionality

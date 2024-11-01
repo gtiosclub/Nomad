@@ -1,49 +1,13 @@
 import SwiftUI
 
-struct Message: Identifiable {
-    let id = UUID()
-    let content: String
-    let sender: String
-}
-
-class ChatViewModel: ObservableObject {
-    @ObservedObject private var aiViewModel = AIAssistantViewModel()
-    @Published var messages: [Message] = [
-        Message(content: "Let me help you find a stop!", sender: "AI")
-    ]
-    
-    @Published var latestAIResponse: String?
-    
-    func sendMessage(_ content: String, vm: UserViewModel) {
-        let newMessage = Message(content: content, sender: "User")
-        messages.append(newMessage)
-        
-        // Simulate AI response asynchronously
-        Task {
-            if let aiResponse = await aiViewModel.converseAndGetInfoFromYelp(query: content, userVM: vm) {
-                DispatchQueue.main.async {
-                    let aiMessage = Message(content: aiResponse, sender: "AI")
-                    self.messages.append(aiMessage)
-                    self.latestAIResponse = aiResponse
-                }
-            } else {
-                DispatchQueue.main.async {
-                    let errorMessage = Message(content: "Sorry, I couldn't find any restaurants", sender: "AI")
-                    self.messages.append(errorMessage)
-                    self.latestAIResponse = "Sorry, I couldn't find any restaurants"
-                }
-            }
-        }
-    }
-}
-
 struct AIAssistantView: View {
     @ObservedObject var vm: UserViewModel
     @StateObject var aiViewModel = AIAssistantViewModel()
-    @StateObject private var viewModel = ChatViewModel()
+    @StateObject private var chatViewModel = ChatViewModel()
     @StateObject var speechRecognizer = SpeechRecognizer()
     @State private var isMicrophone = false
     @State private var currentMessage: String = ""
+    
 
     var body: some View {
         VStack {
@@ -82,8 +46,22 @@ struct AIAssistantView: View {
                 }
             }
             .background(Color.clear)
+            
+            // Horizontal scroll view for POIs
+            if !chatViewModel.pois.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 20) {
+                        ForEach(chatViewModel.pois) { poi in
+                            POIDetailView(name: poi.name, address: poi.address, distance: poi.distance)
+                                .frame(width: 400) // Adjust width as necessary
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+                .frame(height: 150)  // Adjust height as needed
+            }
+            
 
-            // Bottom input field
             HStack {
                 Button(action: {
                     // Microphone action if necessary
@@ -121,7 +99,7 @@ struct AIAssistantView: View {
 
                 Button(action: {
                     if !currentMessage.isEmpty {
-                        viewModel.sendMessage(currentMessage, vm: vm)
+                        chatViewModel.sendMessage(currentMessage)
                         currentMessage = ""
                     }
                 }) {
