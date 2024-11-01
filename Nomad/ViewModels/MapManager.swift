@@ -364,14 +364,14 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func checkOnRouteDirection(step: NomadStep) -> Bool {
         guard let userLocation = self.userLocation else { return false }
         let coords = step.getCoordinates()
-
+        
         let closest_coord = getClosestCoordinate(step: step)
         let next_coord_index = Int(coords.firstIndex(of: closest_coord) ?? coords.endIndex) + 1
         guard let next_closest_coord = coords.dropFirst(next_coord_index).first else { return false }
         
-        // TODO: Verify that this method words
+        // TODO: Calculate heading between two coordinates differently (https://www.igismap.com/formula-to-find-bearing-or-heading-angle-between-two-points-latitude-longitude/)
         // arcsin(x coord diff / distance between coords)
-        var expected_direction = asin((next_closest_coord.latitude - closest_coord.latitude) / next_closest_coord.distance(to: closest_coord)) * (180 / .pi)
+        var expected_direction = asin((next_closest_coord.latitude - closest_coord.latitude) / next_closest_coord.longitude - closest_coord.longitude) * (180 / .pi)
         if expected_direction < 0 {
             expected_direction = 360 + expected_direction // Convert westward directions to 180+ degs isntead of negative
         }
