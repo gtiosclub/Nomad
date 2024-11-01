@@ -16,7 +16,7 @@ struct AIAssistantView: View {
 
             // Chat messages
             ScrollView {
-                ForEach(viewModel.messages) { message in
+                ForEach(chatViewModel.messages) { message in
                     HStack {
                         if message.sender == "AI" {
                             HStack {
@@ -70,7 +70,7 @@ struct AIAssistantView: View {
                         let transcript = speechRecognizer.transcript
                         
                         if !transcript.isEmpty {
-                            viewModel.sendMessage(transcript, vm: vm)
+                            chatViewModel.sendMessage(transcript, vm: vm)
                             currentMessage = transcript
                         }
                         
@@ -99,7 +99,7 @@ struct AIAssistantView: View {
 
                 Button(action: {
                     if !currentMessage.isEmpty {
-                        chatViewModel.sendMessage(currentMessage)
+                        chatViewModel.sendMessage(currentMessage, vm: vm)
                         currentMessage = ""
                     }
                 }) {

@@ -13,39 +13,25 @@ class ChatViewModel: ObservableObject {
     ]
     
     @Published var pois: [POIDetail] = []
+    @Published var latestAIResponse: String?
     
-    func sendMessage(_ content: String) {
+    func sendMessage(_ content: String, vm: UserViewModel) {
         let newMessage = Message(content: content, sender: "User")
         messages.append(newMessage)
         
-        // Simulate AI response asynchronously
-//        Task {
-//            // Call your Yelp-related function
-//            if let aiResponse = await aiViewModel.converseAndGetInfoFromYelp(query: content) {
-//                DispatchQueue.main.async {
-//                    let aiMessage = Message(content: aiResponse, sender: "AI")
-//                    self.messages.append(aiMessage)
-//                    self.pois = self.generateSamplePOIs()  // Populate with sample POIs after query
-//                }
-//            } else {
-//                DispatchQueue.main.async {
-//                    let errorMessage = Message(content: "Sorry, I couldn't find any restaurants", sender: "AI")
-//                    self.messages.append(errorMessage)
-//                }
-//            }
-//        }
-        
         // Now call getPOIDetails to fetch POIs based on the user query
         Task {
-            if let pois = await self.aiViewModel.getPOIDetails(query: content) {
+            if let pois = await self.aiViewModel.getPOIDetails(query: content, vm: vm) {
                 DispatchQueue.main.async {
                     let aiMessage = Message(content: "Here are some locations I've found for you!", sender: "AI")
                     self.pois = pois  // Update pois with fetched data
+                    self.latestAIResponse = "Response"
                 }
             } else {
                 DispatchQueue.main.async {
                     let errorMessage = Message(content: "Sorry, I couldn't find any POIs", sender: "AI")
                     self.messages.append(errorMessage)
+                    self.latestAIResponse = "Sorry, I couldn't find any restaurants"
                 }
             }
         }
