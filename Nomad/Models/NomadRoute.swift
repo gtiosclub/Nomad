@@ -40,7 +40,7 @@ struct NomadRoute {
         var routeInfoMap: [String : Any] = [:]
         
         var routeCoords = [String]()
-        for (i, leg) in legs.enumerated() {
+        for leg in legs {
             let coords = leg.getJSONCoordinates()
             let coordsStr = coords.map { coord in "\(coord.latitude),\(coord.longitude)" }.joined(separator: ";")
             routeCoords.append(coordsStr)
