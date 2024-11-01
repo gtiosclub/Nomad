@@ -144,7 +144,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         return nil
     }
     // regenerate route from saved coordinates
-    public func generateRoute(coords: [[CLLocationCoordinate2D]], expectedTravelTime: TimeInterval, distance: CLLocationDistance) async -> NomadRoute? {
+    public func generateRoute(coords: [[CLLocationCoordinate2D]], expectedTravelTime: TimeInterval, distance: CLLocationDistance) async -> NomadRoute {
         var legs = [NomadLeg]()
         var mapboxLegs = [MapboxDirections.RouteLeg]()
         
@@ -167,35 +167,28 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         
         print("generateRoute \(legs)")
         
-        // TODO: Put distance and expectedTravelTime in firestore
         let mapboxRoute = Route.init(legs: mapboxLegs, shape: nil, distance: distance, expectedTravelTime: expectedTravelTime)
         return NomadRoute(route: mapboxRoute, legs: legs)
     }
     
-    public func docsToNomadRoute(docs: [QueryDocumentSnapshot]) async throws -> [String: NomadRoute] {
-        var routesmap: [String: NomadRoute] = [:]
-        for doc in docs {
-            // Decode json
-            let data = doc.data()
-            var routeCoords: [[CLLocationCoordinate2D]] = [[CLLocationCoordinate2D]]()
-            
-            let expectedTravelTime = data["expectedTravelTime"] as? TimeInterval ?? 0.0
-            let distance  = data["distance"] as? CLLocationDistance ?? 0.0
-            
-            for (id, legData) in data {
-                if id == "expectedTravelTime" || id == "distance" { continue }
-                if let legCoords = legData as? String {
-                    let legCoordsList = legCoords.split(separator: ";")
-                    routeCoords.append(legCoordsList.map { coord in
-                        let values = String(coord).split(separator: ",")
-                        return CLLocationCoordinate2D(latitude: Double(values[0]) ?? 0.0, longitude: Double(values[1]) ?? 0.0)
-                    })
-                }
-            }            
-            let route = await generateRoute(coords: routeCoords, expectedTravelTime: expectedTravelTime, distance: distance)
-            routesmap[doc.documentID] = route
+    public func dataToNomadRoute(data: [String: Any]) async throws -> NomadRoute {
+        // Decode json
+        var routeCoords: [[CLLocationCoordinate2D]] = [[CLLocationCoordinate2D]]()
+        
+        let expectedTravelTime = data["expectedTravelTime"] as? TimeInterval ?? 0.0
+        let distance  = data["distance"] as? CLLocationDistance ?? 0.0
+        
+        for (id, legData) in data {
+            if id == "expectedTravelTime" || id == "distance" { continue }
+            if let legCoords = legData as? String {
+                let legCoordsList = legCoords.split(separator: ";")
+                routeCoords.append(legCoordsList.map { coord in
+                    let values = String(coord).split(separator: ",")
+                    return CLLocationCoordinate2D(latitude: Double(values[0]) ?? 0.0, longitude: Double(values[1]) ?? 0.0)
+                })
+            }
         }
-        return routesmap
+        return await generateRoute(coords: routeCoords, expectedTravelTime: expectedTravelTime, distance: distance)
     }
     
     // ROUTE GENERATION HELPERS

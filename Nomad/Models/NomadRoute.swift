@@ -7,6 +7,7 @@
 
 import MapKit
 import MapboxDirections
+import Turf
 
 struct NomadRoute {
     var id = UUID()
@@ -35,16 +36,20 @@ struct NomadRoute {
         return coords
     }
     
-    func getJsonCoordinatesMap() -> [String : String] {
-        var legCoordsMap: [String : String] = [:]
+    func getRouteInfoMap() -> [String : Any] {
+        var routeInfoMap: [String : Any] = [:]
         
+        var routeCoords = [String]()
         for (i, leg) in legs.enumerated() {
             let coords = leg.getJSONCoordinates()
             let coordsStr = coords.map { coord in "\(coord.latitude),\(coord.longitude)" }.joined(separator: ";")
-            legCoordsMap[String(i)] = coordsStr
+            routeCoords.append(coordsStr)
         }
-        
-        return legCoordsMap
+        routeInfoMap["coords"] = routeCoords
+        routeInfoMap["expectedTravelTime"] = self.route?.expectedTravelTime ?? TimeInterval()
+        routeInfoMap["distance"] = self.route?.distance ?? Turf.LocationDistance()
+
+        return routeInfoMap
     }
     
     static func convertToMKPolyline(_ coords: [LocationCoordinate2D]) -> MKPolyline {
