@@ -53,9 +53,8 @@ struct PreviewRouteView: View {
                         .padding(.top)
                         
             
-                    if let trip = vm.current_trip {
+                    if vm.current_trip != nil {
                         RoutePlanListView(vm: vm)
-//                            .frame(height: 100)
                             .padding()
                     } else {
                         Rectangle()
@@ -64,84 +63,90 @@ struct PreviewRouteView: View {
                             .overlay(Text("No Route Details Available").foregroundColor(.gray))
                             .padding()
                     }
-                    
-                
-                
-                Text("Route Details")
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.leading)
-                
-                
-                Text("Finalize Your Route")
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                
-                Text("Route Name")
-                    .font(.body)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 10)
-                
-                TextField("Trip Title", text: $tripTitle)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding()
                 
                 VStack {
-                    Text("Route Visibility")
-                        .font(.body)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.leading)
-                        .padding(.top)
-                    
-                    TextField("Trip Title", text: $tripTitle)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .padding()
-                    
-                    VStack(alignment: .leading) {
-                        Text("Route Visibility")
-                            .font(.body)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.leading)
-                            
-                        
+                    if !isCommunityTrip {
                         VStack(alignment: .leading) {
-                            RadioButton(text: "Public", isSelected: $isPrivate, value: false)
-                            RadioButton(text: "Private", isSelected: $isPrivate, value: true)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.leading, 30)
-                    }
-                    
-                    HStack {
-                        NavigationLink(destination: FindStopView(vm: vm)) {
-                            Text("Edit Route")
-                                .padding()
-                                .background(Color.gray.opacity(0.2))
-                                .cornerRadius(8)
-                                .foregroundColor(Color.black)
-                        }
-                        
-                        Spacer().frame(width: 60)
-                        
-                        Button("Save Route") {
-                            vm.setTripTitle(newTitle: $tripTitle.wrappedValue)
-                            vm.setIsPrivate(isPrivate: $isPrivate.wrappedValue)
+                            Text("Finalize Your Route")
+                                .font(.headline)
+                                .fontWeight(.bold)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.leading)
                             
+                            Text("Route Name")
+                                .font(.body)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.top, 10)
+                                .padding(.leading)
+                            
+                            TextField("Trip Title", text: $tripTitle)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .padding()
+                            
+                            Text("Route Visibility")
+                                .font(.body)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.leading)
+                            
+                            
+                            VStack(alignment: .leading) {
+                                RadioButton(text: "Public", isSelected: $isPrivate, value: false)
+                                RadioButton(text: "Private", isSelected: $isPrivate, value: true)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.leading, 30)
+                        }
+                        
+                        HStack {
+                            NavigationLink(destination: FindStopView(vm: vm)) {
+                                Text("Edit Route")
+                                    .padding()
+                                    .background(Color.gray.opacity(0.2))
+                                    .cornerRadius(8)
+                                    .foregroundColor(Color.black)
+                            }
+                            
+                            Spacer().frame(width: 60)
+                            
+                            Button("Save Route") {
+                                vm.setTripTitle(newTitle: $tripTitle.wrappedValue)
+                                vm.setIsPrivate(isPrivate: $isPrivate.wrappedValue)
+                                
+                                dismiss()
+                            }
+                            .padding()
+                            .background(Color.gray.opacity(0.2))
+                            .foregroundColor(.black)
+                            .cornerRadius(8)
+                        }
+                        .padding(.horizontal)
+                    } else {
+                        Button("Copy to My Trips") {
+                            Task {
+                                await vm.createTrip(
+                                    start_location: trip.getStartLocation(),
+                                    end_location: trip.getEndLocation(),
+                                    start_date: trip.getStartDate() ?? "",
+                                    end_date: trip.getEndDate() ?? "",
+                                    stops: trip.getStops()
+                                )
+                            }
                             dismiss()
                         }
                         .padding()
                         .background(Color.gray.opacity(0.2))
-                        .foregroundColor(.black)
                         .cornerRadius(8)
+                        .foregroundColor(.black)
+                        .padding(.horizontal)
                     }
-                    .padding(.horizontal)
                 }
             }
         }
         .onAppear {
-            if let route = vm.getTrip(trip_id: trip.id)?.route {
+            vm.setCurrentTrip(trip: trip)
+            tripTitle = vm.current_trip?.getName() ?? ""
+            isPrivate = vm.current_trip?.isPrivate ?? true
+            if let route = trip.route {
                 trip.route = route
             } else {
                 Task {
@@ -163,7 +168,7 @@ struct PreviewRouteView: View {
         if let newRoutes = await MapManager.manager.generateRoute(pois: all_pois) {
             print("setting new route")
             trip.route = newRoutes[0]
-            vm.updateTrip(trip: trip)
+//            vm.updateTrip(trip: trip)
         }
     }
     
@@ -175,6 +180,10 @@ struct PreviewRouteView: View {
     func formatDistance(distance: Double) -> String {
         return String(format: "%.0f miles", distance)
     }
+    
+    private var isCommunityTrip: Bool {
+            return vm.community_trips.contains(where: { $0.id == trip.id })
+        }
     
     struct RadioButton: View {
         var text: String

@@ -73,6 +73,8 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    /*-------------------------------------------------------------------------------------------------*/
+    
     func addTripToUser(userID: String, tripID: String) async -> Bool {
         let docRef = db.collection("USERS").document(userID)
         do {
@@ -124,7 +126,6 @@ class FirebaseViewModel: ObservableObject {
 //    }
     func createTrip(tripID: String, startLocationName: String, startLocationAddress: String, endLocationName: String, endLocationAddress: String, createdDate: String, modifiedDate: String) async -> Bool {
         let tripDocRef = db.collection("TRIPS").document(tripID)
-        
         let tripData: [String: Any] = [
             "created_date": createdDate,
             "modified_date": modifiedDate,
@@ -133,7 +134,6 @@ class FirebaseViewModel: ObservableObject {
         ]
         do {
             try await tripDocRef.setData(tripData)
-            
             let stopsCollection = tripDocRef.collection("STOPS")
             
             let startData: [String: Any] = [
@@ -142,7 +142,7 @@ class FirebaseViewModel: ObservableObject {
                 "type": "GeneralLocation"
             ]
             try await stopsCollection.document("start").setData(startData)
-            
+
             let endData: [String: Any] = [
                 "name": endLocationName,
                 "address": endLocationAddress,
@@ -233,7 +233,7 @@ class FirebaseViewModel: ObservableObject {
             return false
         }
     }
-    
+
     func modifyEndLocationAndDate(tripID: String, stop: any POI, modifiedDate: String) async -> Bool {
         //modify start
         do {
@@ -269,7 +269,6 @@ class FirebaseViewModel: ObservableObject {
                     return false;
                 }
                 try await db.collection("TRIPS").document(tripID).updateData(["stops": stops])
-                
             } else {
                 print("Stop already in user stop list")
                 return false;
@@ -372,6 +371,7 @@ class FirebaseViewModel: ObservableObject {
             print(error)
             return false
         }
+
         let docRef = db.collection("TRIPS").document(tripID)
         do {
             try await db.collection("TRIPS").document(tripID).updateData(["stops": stops])

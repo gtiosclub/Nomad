@@ -21,6 +21,14 @@ struct NomadRoute {
         return legs.last?.endCoordinate ?? CLLocationCoordinate2D()
     }
     
+    func totalDistance() -> CLLocationDistance {
+        return legs.reduce(0) { $0 + $1.totalDistance() }
+    }
+    
+    func totalTime() -> TimeInterval {
+        return legs.reduce(0) { $0 + $1.totalTime() }
+    }
+    
     // returns an array of polylines for each step of the route.
     func getShape() -> MKPolyline {
         let coords = getCoordinates()
@@ -73,7 +81,15 @@ struct NomadLeg {
     init(steps: [NomadStep]) {
         self.steps = steps
         self.startCoordinate = steps.first?.startCoordinate ?? CLLocationCoordinate2D()
-        self.endCoordinate = steps.last?.endCoordinate ?? CLLocationCoordinate2D()
+        self.endCoordinate = steps.last?.endCoordinate ?? CLLocationCoordinate2D()        
+    }
+  
+    func totalDistance() -> CLLocationDistance {
+        return steps.reduce(0) { $0 + $1.direction.distance }
+    }
+    
+    func totalTime() -> TimeInterval {
+        return steps.reduce(0) { $0 + $1.direction.expectedTravelTime }
     }
     
     func getStartLocation() -> CLLocationCoordinate2D {
