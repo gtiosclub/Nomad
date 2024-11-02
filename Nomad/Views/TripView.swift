@@ -127,12 +127,12 @@ struct TripView: View {
                 HStack{
                     Text("Total Time").frame(alignment: .leading)
                     Spacer()
-                    Text("\(vm.total_time)")
+                    Text("\(String(describing: vm.current_trip?.route?.totalTime))")
                 }
                 HStack{
                     Text("Total Distance").frame(alignment: .leading)
                     Spacer()
-                    Text("\(vm.total_distance)")
+                    Text("\(String(describing: vm.current_trip?.route?.totalDistance))")
                 }
             }
             .frame(minWidth: UIScreen.main.bounds.width - 20)
