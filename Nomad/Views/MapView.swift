@@ -203,5 +203,5 @@ struct MapView: View {
 }
 
 #Preview {
-    MapView(vm: UserViewModel())
+    MapView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")))
 }

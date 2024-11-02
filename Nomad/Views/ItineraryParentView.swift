@@ -135,5 +135,5 @@ struct WipeShape: Shape {
 }
 
 #Preview {
-    ItineraryParentView(vm: UserViewModel())
+    ItineraryParentView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")))
 }
