@@ -362,23 +362,33 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     func checkOnRouteDirection(step: NomadStep) -> Bool {
-        guard let userLocation = self.userLocation else { return false }
         let coords = step.getCoordinates()
         
-        let closest_coord = getClosestCoordinate(step: step)
-        let next_coord_index = Int(coords.firstIndex(of: closest_coord) ?? coords.endIndex) + 1
-        guard let next_closest_coord = coords.dropFirst(next_coord_index).first else { return false }
+        let closestCoord = getClosestCoordinate(step: step)
+        let nextCoordIndex = Int(coords.firstIndex(of: closestCoord) ?? coords.endIndex) + 1
         
-        // TODO: Calculate heading between two coordinates differently (https://www.igismap.com/formula-to-find-bearing-or-heading-angle-between-two-points-latitude-longitude/)
-        // arcsin(x coord diff / distance between coords)
-        var expected_direction = asin((next_closest_coord.latitude - closest_coord.latitude) / next_closest_coord.longitude - closest_coord.longitude) * (180 / .pi)
-        if expected_direction < 0 {
-            expected_direction = 360 + expected_direction // Convert westward directions to 180+ degs isntead of negative
+        // Uses closest coord & next coord in route to find expected direction, if not use curr coordinate & closest
+        let expectedDirection: CLLocationDirection
+        if let nextClosestCoord = coords.dropFirst(nextCoordIndex).first {
+            expectedDirection = calculateHeading(from: closestCoord, to: nextClosestCoord)
+        } else {
+            expectedDirection = calculateHeading(from: motion.coordinate!, to: closestCoord)
         }
-        let user_direction = userLocation.direction(to: next_closest_coord)
-        
-        let thresholdDirection: Double = 90.0
-        return abs(expected_direction - user_direction) < thresholdDirection
+
+        let thresholdDirection: Double = 180.0
+        return abs(expectedDirection - motion.direction!) < thresholdDirection
+    }
+    
+    // Helper function to calculate heading between two coordinates
+    func calculateHeading(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) -> CLLocationDirection {
+        let deltaL = to.longitude * (.pi / 180.0)  - from.longitude * (.pi / 180.0)
+        let thetaB = from.latitude * (.pi / 180.0)
+        let thetaA = to.latitude * (.pi / 180.0)
+        let x = cos(thetaB) * sin(deltaL)
+        let y = cos(thetaA) * sin(thetaB) - sin(thetaA) * cos(thetaB) * cos(deltaL)
+
+        let bearingDeg = atan2(x, y) * (180.0 / .pi)
+        return bearingDeg < 0 ? 360 + bearingDeg : bearingDeg // CLLocationDirection takes 0-360
     }
  
     func getExampleRoute() async -> NomadRoute? {
