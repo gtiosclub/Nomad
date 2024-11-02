@@ -148,13 +148,15 @@ class AIAssistantViewModel: ObservableObject {
         // Collect POI details for the first three businesses (or fewer if less are available)
         let poiDetails = (0..<min(3, businessResponse.businesses.count)).compactMap { i -> POIDetail? in
             let business = businessResponse.businesses[i]
+            print(business.imageUrl)
             return POIDetail(
                 name: business.name,
-                address: business.location.address1,
+                address: "\(business.location.address1), \(business.location.city), \(business.location.state) \(business.location.zipCode)",
                 distance: "",  // Assuming distance will be calculated or provided elsewhere
                 phoneNumber: business.phone,
                 rating: "\(business.rating ?? -1)",
-                price: business.price ?? ""
+                price: business.price ?? "",
+                image: business.imageUrl ?? ""
             )
         }
         
@@ -173,7 +175,7 @@ class AIAssistantViewModel: ObservableObject {
         do {
             let response = try await openAIAPIKey.sendMessage(
                 text: """
-                    I will give you a question/statement. From this statement, extract the following information and put it in this JSON format. Price is default "1,2,3,4", and should only include upper or lower ranges based on user price preference. If the user refers to their own location or route, set location field to "MyLocation". If user does not mention time, set time to -1.
+                    I will give you a question/statement. From this statement, extract the following information and put it in this JSON format. Price is default "1,2,3,4", and should only include upper or lower ranges based on user price preference. If the user refers to their own location or route, set location field to "MyLocation". If user does not mention time, set time to -1. Example for locationInformation is "Museum" if locationType is "Activity".
                     {
                     locationType: <Restaurant/Gas Station/Hotel/Rest Stop/Point of Interest/Activity>
                     locationInformation: <String>
@@ -220,7 +222,7 @@ class AIAssistantViewModel: ObservableObject {
             
             var coords = MapManager.manager.getFutureLocation(time: time, route: route ?? sampleRoute)
             
-            guard let businessInformation = await fetchSpecificBusinesses(locationType: (locationInformation == "") ? locationType : locationInformation, distance: distance, price: price, location: "UseCoords", preferences: preferences, latitude: coords?.latitude ?? 0, longitutde: coords?.longitude ?? 0) else {
+            guard let businessInformation = await fetchSpecificBusinesses(locationType: (locationInformation == "") ? locationType : locationInformation, distance: 2, price: price, location: "UseCoords", preferences: preferences, latitude: coords?.latitude ?? 0, longitutde: coords?.longitude ?? 0) else {
                 return "Error: Unable to access YELP API"
             }
             return businessInformation
