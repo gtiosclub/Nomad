@@ -66,16 +66,7 @@ struct MapView: View {
         ZStack {
             // All views within Map
             Map(position: $navManager.mapPosition) {
-                // Adding markers for the start and finish points
-                Annotation("", coordinate: mapManager.userLocation ?? CLLocationCoordinate2D()) {
-                    Image("nav_user_icon")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 50)
-                        .background(.white)
-                        .clipShape(Circle())
-                        .rotationEffect(.degrees((mapManager.motion.direction ?? navManager.mapPosition.camera?.heading) ?? 0))
-                }
+                UserAnnotation()
                 
                 ForEach(navManager.mapMarkers) { marker in
                     Annotation("", coordinate: marker.coordinate) {
