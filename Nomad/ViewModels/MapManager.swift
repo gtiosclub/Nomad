@@ -361,7 +361,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
-    func checkOnRouteDirection(step: NomadStep) -> Bool {
+    func checkOnRouteDirection(step: NomadStep, thresholdDirection: Double) -> Bool {
         let coords = step.getCoordinates()
         
         let closestCoord = getClosestCoordinate(step: step)
@@ -375,7 +375,6 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             expectedDirection = calculateHeading(from: motion.coordinate!, to: closestCoord)
         }
 
-        let thresholdDirection: Double = 180.0
         return abs(expectedDirection - motion.direction!) < thresholdDirection
     }
     

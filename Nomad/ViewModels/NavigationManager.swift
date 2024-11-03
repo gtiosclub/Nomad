@@ -22,6 +22,7 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var navigatingRoute: NomadRoute? = nil
     @Published var navigatingLeg: NomadLeg? = nil
     @Published var navigatingStep: NomadStep? = nil
+    @Published var offRouteCount: Int = 0
     @Published var distanceToNextManeuver: Double?
     var nextStepManeuver: NomadStep? {
         guard let navStep = navigatingStep else { return nil }
@@ -108,12 +109,26 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
+    // TODO: Modify to make both distance and direction checks to re-route if so
     func recalibrateCurrentStep() {
         guard let currentLeg = self.navigatingLeg else { return }
         guard let estimatedStep = mapManager.determineCurrentStep(leg: currentLeg) else { return }
         print(estimatedStep.direction.instructions)
         if estimatedStep.id != navigatingStep?.id {
             setNavigatingStep(step: estimatedStep)
+        }
+        
+        // rerouting if step isn't working
+        if let currStep = navigatingStep {
+            let isDistance = mapManager.checkOnRouteDistance(step: currStep, thresholdDistance: 500)
+            let isDirection = mapManager.checkOnRouteDirection(step: currStep, thresholdDirection: 180)
+            
+            offRouteCount = !isDistance && !isDirection ? offRouteCount + 1 : 0
+            if offRouteCount == 10 {
+                // TODO: Generate new route, appropriately append it to NomadRoute
+                // - Use current step to update rest of NomadStep, cut off the rest of the NomadSteps
+                //   for a leg and replace
+            }
         }
     }
     func onFirstStepOfLeg() -> Bool {
