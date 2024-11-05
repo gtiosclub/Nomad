@@ -109,7 +109,7 @@ struct MapView: View {
             // All Map HUD
             VStack {
                 if navManager.navigating {
-                    DirectionView(distance: $navManager.distanceToNextManeuver, nextStep: navManager.nextStepManeuver)
+                    DirectionView(step: navManager.navigatingStep!)
                 }
                 HStack {
                     Spacer()
@@ -119,7 +119,7 @@ struct MapView: View {
                         })
                         .frame(width: 50, height: 50)
                       
-                        ChangeMapTypeButtonView(selectedMapType: $navManager.mapType)
+                        //ChangeMapTypeButtonView(selectedMapType: $navManager.mapType)
                             .frame(width: 50, height: 50)
                         // Add Voice Announcer Button
                         VoiceAnnouncerButtonView(onPress: announceCurrentLocation, isVoiceEnabled: $isVoiceEnabled)
@@ -203,16 +203,16 @@ struct MapView: View {
         }
     }
     
-    func getMapStyle() -> MapStyle {
-        switch navManager.mapType {
-        case .defaultMap:
-            return .standard
-        case .satellite:
-            return .imagery
-        case .terrain:
-            return .hybrid
-        }
-    }
+//    func getMapStyle() -> MapStyle {
+//        switch navManager.mapType {
+//        case .defaultMap:
+//            return .standard
+//        case .satellite:
+//            return .imagery
+//        case .terrain:
+//            return .hybrid
+//        }
+//    }
 }
 
 #Preview {
