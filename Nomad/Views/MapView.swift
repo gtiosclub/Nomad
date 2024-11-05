@@ -59,25 +59,28 @@ struct MapView: View {
     @ObservedObject var mapManager = MapManager.manager
     @StateObject private var voiceManager = LocationVoiceManager.shared
     @State private var isVoiceEnabled: Bool = false
-
+    @State private var cameraDistance: CLLocationDistance = 400
+    
+    
     var body: some View {
         ZStack {
             // All views within Map
             Map(position: $navManager.mapPosition) {
-                // Adding markers for the start and finish points
-                Annotation("", coordinate: mapManager.userLocation ?? CLLocationCoordinate2D()) {
-                    Image("nav_user_icon")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 50)
-                        .background(.white)
-                        .clipShape(Circle())
-                        .rotationEffect(.degrees((mapManager.motion.direction ?? navManager.mapPosition.camera?.heading) ?? 0))
-                }
+                UserAnnotation()
                 
-                //show all markers
                 ForEach(navManager.mapMarkers) { marker in
-                    Marker(marker.title, coordinate: marker.coordinate)
+                    Annotation("", coordinate: marker.coordinate) {
+                        VStack {
+                            Image(marker.icon.image_path)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: min(100000 / (cameraDistance), 40), height: min(40, 100000 / (cameraDistance)))
+                                .opacity(cameraDistance > 8000 ? 0 : 1)
+                                .clipShape(Circle())
+                                .animation(.easeInOut, value: cameraDistance)
+                            
+                        }
+                    }
                 }
                 // show all polylines
                 ForEach(navManager.mapPolylines, id:\.self) { polyline in
@@ -104,6 +107,11 @@ struct MapView: View {
             .onAppear() {
                 let motion = mapManager.motion
                 navManager.updateMapPosition(motion)
+            }.onMapCameraChange { camera in
+                withAnimation {
+                    cameraDistance = camera.camera.distance
+                }
+                
             }
             
             // All Map HUD
@@ -119,8 +127,6 @@ struct MapView: View {
                         })
                         .frame(width: 50, height: 50)
                       
-                        //ChangeMapTypeButtonView(selectedMapType: $navManager.mapType)
-                            .frame(width: 50, height: 50)
                         // Add Voice Announcer Button
                         VoiceAnnouncerButtonView(onPress: announceCurrentLocation, isVoiceEnabled: $isVoiceEnabled)
                             .frame(width: 50, height: 50)
@@ -159,7 +165,7 @@ struct MapView: View {
                 }
             }
         }
-    }    
+    }
     // Function to announce current location
     private func announceCurrentLocation() {
         guard let userLocation = MapManager.manager.userLocation else { return }
@@ -202,17 +208,6 @@ struct MapView: View {
             }
         }
     }
-    
-//    func getMapStyle() -> MapStyle {
-//        switch navManager.mapType {
-//        case .defaultMap:
-//            return .standard
-//        case .satellite:
-//            return .imagery
-//        case .terrain:
-//            return .hybrid
-//        }
-//    }
 }
 
 #Preview {
