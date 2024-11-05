@@ -117,7 +117,7 @@ struct MapView: View {
             // All Map HUD
             VStack {
                 if navManager.navigating {
-                    DirectionView(distance: $navManager.distanceToNextManeuver, nextStep: navManager.nextStepManeuver)
+                    DirectionView(step: navManager.navigatingStep!)
                 }
                 HStack {
                     Spacer()
@@ -126,7 +126,7 @@ struct MapView: View {
                             navManager.recenterMap()
                         })
                         .frame(width: 50, height: 50)
-                        
+                      
                         // Add Voice Announcer Button
                         VoiceAnnouncerButtonView(onPress: announceCurrentLocation, isVoiceEnabled: $isVoiceEnabled)
                             .frame(width: 50, height: 50)
