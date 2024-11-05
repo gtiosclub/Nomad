@@ -26,6 +26,7 @@ class ChatViewModel: ObservableObject {
                     let aiMessage = Message(content: "Here are some locations I've found for you!", sender: "AI")
                     self.pois = pois  // Update pois with fetched data
                     self.latestAIResponse = "Response"
+                    self.messages.append(aiMessage)
                 }
             } else {
                 DispatchQueue.main.async {
@@ -46,9 +47,9 @@ class ChatViewModel: ObservableObject {
     // Example function to generate sample POIs (you would use real data here)
     func generateSamplePOIs() -> [POIDetail] {
         return [
-            POIDetail(name: "Speedway", address: "901 Gas Station Avenue, Duluth GA", distance: "in 30 mi", phoneNumber: "4045949429", rating: "3.3/5", price: "$"),
-            POIDetail(name: "Shell", address: "123 Main Street, Atlanta GA", distance: "in 40 mi", phoneNumber: "4045949429", rating: "5/5", price: "$$$"),
-            POIDetail(name: "BP", address: "456 Elm Street, Lawrenceville GA", distance: "in 20 mi", phoneNumber: "4045949429", rating: "4/5", price: "$$")
+            POIDetail(name: "Speedway", address: "901 Gas Station Avenue, Duluth GA", distance: "in 30 mi", phoneNumber: "4045949429", rating: "3.3/5", price: "$", image: ""),
+            POIDetail(name: "Shell", address: "123 Main Street, Atlanta GA", distance: "in 40 mi", phoneNumber: "4045949429", rating: "5/5", price: "$$$", image: ""),
+            POIDetail(name: "BP", address: "456 Elm Street, Lawrenceville GA", distance: "in 20 mi", phoneNumber: "4045949429", rating: "4/5", price: "$$", image: "")
         ]
     }
 }
@@ -69,6 +70,7 @@ struct POIDetail: Identifiable {
     var phoneNumber: String
     var rating: String
     var price: String
+    var image: String
     
     // Static property for a null POIDetail instance
     static let null = POIDetail(
@@ -77,7 +79,8 @@ struct POIDetail: Identifiable {
         distance: "Unavailable",
         phoneNumber: "Unavailable",
         rating: "Unavailable",
-        price: "Unavailable"
+        price: "Unavailable",
+        image: ""
     )
 }
 

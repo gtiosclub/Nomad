@@ -3,7 +3,7 @@ import SwiftUI
 struct AIAssistantView: View {
     @ObservedObject var vm: UserViewModel
     @StateObject var aiViewModel = AIAssistantViewModel()
-    @StateObject private var chatViewModel = ChatViewModel()
+    @ObservedObject var chatViewModel: ChatViewModel
     @StateObject var speechRecognizer = SpeechRecognizer()
     @State private var isMicrophone = false
     @State private var currentMessage: String = ""
@@ -12,53 +12,82 @@ struct AIAssistantView: View {
     var body: some View {
         VStack {
             // Header
-            Spacer().frame(height: 100)
+            if let trip = vm.current_trip {
+                RoutePreviewView(vm: vm, trip: Binding.constant(trip))
+                    .frame(minHeight: 200.0)
+            } else {
+                Text("No current trip available")
+                    .foregroundColor(.red)
+            }
 
             // Chat messages
-            ScrollView {
-                ForEach(chatViewModel.messages) { message in
-                    HStack {
-                        if message.sender == "AI" {
-                            HStack {
-                                Circle()
-                                    .frame(width: 30, height: 30)
-                                    .foregroundColor(.gray) // Placeholder for AI avatar
-                                Text(message.content)
-                                    .padding()
-                                    .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
-                                    .frame(maxWidth: 270, alignment: .leading)
-                            }
-                            Spacer()
-                        } else {
-                            Spacer()
-                            HStack {
-                                Text(message.content)
-                                    .padding()
-                                    .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
-                                    .frame(maxWidth: 270, alignment: .trailing)
-                                Circle()
-                                    .frame(width: 30, height: 30)
-                                    .foregroundColor(.blue) // Placeholder for User avatar
+            ScrollViewReader { reader in
+                ScrollView {
+                    ForEach(chatViewModel.messages) { message in
+                        HStack {
+                            if message.sender == "AI" {
+                                HStack {
+                                    Circle()
+                                        .frame(width: 30, height: 30)
+                                        .foregroundColor(.gray) // Placeholder for AI avatar
+                                    Text(message.content)
+                                        .padding()
+                                        .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+                                        .frame(maxWidth: 270, alignment: .leading)
+                                        .id(message.id)
+                                }
+                                Spacer()
+                            } else {
+                                Spacer()
+                                HStack {
+                                    Text(message.content)
+                                        .padding()
+                                        .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+                                        .frame(maxWidth: 270, alignment: .trailing)
+                                    Circle()
+                                        .frame(width: 30, height: 30)
+                                        .foregroundColor(.blue) // Placeholder for User avatar
+                                }
                             }
                         }
+                        .padding(.horizontal)
                     }
-                    .padding(.horizontal)
+                    
+                }
+                .background(Color.clear)
+                .padding(.bottom)
+                .onChange(of: chatViewModel.messages.count) { _ in
+                    if let lastMessage = chatViewModel.messages.last {
+                        // Scroll to the latest message
+                        reader.scrollTo(lastMessage.id, anchor: .bottom)
+                    }
                 }
             }
-            .background(Color.clear)
             
             // Horizontal scroll view for POIs
+//            if !chatViewModel.pois.isEmpty {
+//                ScrollView(.horizontal, showsIndicators: false) {
+//                    HStack(spacing: 20) {
+//                        ForEach(chatViewModel.pois) { poi in
+//                            POIDetailView(name: poi.name, address: poi.address, distance: poi.distance)
+//                                .frame(width: 400) // Adjust width as necessary
+//                        }
+//                    }
+//                    .padding(.horizontal)
+//                }
+//                .frame(height: 110)  // Adjust height as needed
+//            }
+            
             if !chatViewModel.pois.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 20) {
-                        ForEach(chatViewModel.pois) { poi in
-                            POIDetailView(name: poi.name, address: poi.address, distance: poi.distance)
-                                .frame(width: 400) // Adjust width as necessary
-                        }
+                TabView {
+                    ForEach(chatViewModel.pois) { poi in
+                        POIDetailView(name: poi.name, address: poi.address, distance: poi.distance, image: poi.image)
+                            .frame(width: 400, height: 120) // Adjust width and height as needed
+                            .padding(.horizontal, 5) // Adds padding at the top and bottom
                     }
-                    .padding(.horizontal)
                 }
-                .frame(height: 150)  // Adjust height as needed
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                .frame(height: 180)  // Adjust to fit the padding and content
             }
             
 
@@ -117,5 +146,5 @@ struct AIAssistantView: View {
 }
 
 #Preview {
-    AIAssistantView(vm: UserViewModel())
+    AIAssistantView(vm: UserViewModel(), chatViewModel: ChatViewModel())
 }

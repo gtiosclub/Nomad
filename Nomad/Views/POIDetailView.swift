@@ -13,6 +13,7 @@ struct POIDetailView: View {
     var address = "901 Gas Station Avenue, Duluth GA"
     var distance = "in 30 mi"
     var phoneNumber = "4044315072"
+    var image = "https://s3-media2.fl.yelpcdn.com/bphoto/xU26QLcW8XAohg_APoojdQ/o.jpg"
 //    var rating = "3.4"
 //    var price = ""
     
@@ -22,17 +23,31 @@ struct POIDetailView: View {
             // Top part: Image and POI Information
             HStack(alignment: .top, spacing: 10) {
                 // Image placeholder
-                RoundedRectangle(cornerRadius: 10)
-                    .fill(Color.gray.opacity(0.2))
-                    .frame(width: 80, height: 60)
-                    .overlay(
-                        Image(systemName: "arrow.up.left.and.arrow.down.right")
-                            .resizable()
-                            .frame(width: 16, height: 16)
-                            .foregroundColor(.black.opacity(0.6))
-                            .padding([.trailing, .bottom], 8),
-                        alignment: .bottomTrailing
-                    )
+//                RoundedRectangle(cornerRadius: 10)
+//                    .fill(Color.gray.opacity(0.2))
+//                    .frame(width: 80, height: 60)
+//                    .overlay(
+//                        Image(systemName: "arrow.up.left.and.arrow.down.right")
+//                            .resizable()
+//                            .frame(width: 16, height: 16)
+//                            .foregroundColor(.black.opacity(0.6))
+//                            .padding([.trailing, .bottom], 8),
+//                        alignment: .bottomTrailing
+//                    )
+                
+                AsyncImage(url: URL(string: image)) { image in
+                    image
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 80, height: 60)
+                        .cornerRadius(10)
+                        .padding(.horizontal, 10)
+                } placeholder: {
+                    ProgressView()
+                        .frame(width: 80, height: 60)
+                        .cornerRadius(10)
+                        .padding(.horizontal, 10)
+                }
                 
                 // POI Information
                 VStack(alignment: .leading, spacing: 5) {

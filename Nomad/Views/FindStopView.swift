@@ -23,7 +23,6 @@ struct FindStopView: View {
     @State private var selectedStop: (any POI)?
     @State private var isEditing: Bool = false
     @State private var routeProgress: Double = 0.0
-    @State private var markerCoordinate: CLLocationCoordinate2D = .init(latitude: 0, longitude: 0)
     @State private var filterRating: String = "4 ★ and up"
     @State private var filterCuisine: String = "American"
     @State private var filterPrice: String = "$$"
@@ -42,7 +41,7 @@ struct FindStopView: View {
                     .padding(.horizontal)
                 
                 if let trip = vm.current_trip {
-                    RoutePreviewView(vm: vm, trip: Binding.constant(trip), currentLocation: markerCoordinate)
+                    RoutePreviewView(vm: vm, trip: Binding.constant(trip))
                         .frame(minHeight: 250.0)
                 } else {
                     Text("No current trip available")
