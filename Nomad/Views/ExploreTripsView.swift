@@ -34,14 +34,6 @@ struct ExploreTripsView: View {
                         }
                         
                         //TEMPORARY JUST FOR MID SEM DEMO
-                        NavigationLink(destination: AIAssistantView(vm: vm)) {
-                            Text("Consult Atlas")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .padding()
-                                .background(Color.blue)
-                                .cornerRadius(10)
-                        }.padding(.leading)
                         
                         HStack {
                             Text("Plan your next trip, \(vm.user?.getName().split(separator: " ").first ?? "User")!")
