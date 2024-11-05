@@ -188,14 +188,25 @@ class FirebaseViewModel: ObservableObject {
     }
     
     // Fetch coordinates JSON from firebase and convert to coordinates
-    func fetchRoute(routeId: UUID, mapManager: MapManager) async -> NomadRoute? {
+    func fetchRoute(tripID: String, mapManager: MapManager) async -> NomadRoute? {
+        let docRef = db.collection("TRIPS").document(tripID)
         do {
-            let routeDoc = try await db.collection("ROUTES").document(routeId.uuidString).getDocument()
-            return try await mapManager.dataToNomadRoute(data: routeDoc.data()!)
+            let document = try await docRef.getDocument()
+            guard let docData = document.data() else {
+                print("Cannot find start point for trip \(tripID)")
+                return nil
+            }
+//            let data : [[String: Any]]
+            let routeData = docData["route"] as? [[String: Any]] ?? [[:]]
+        
+            
+            // TODO: call function when it is ready
+            // return try await mapManager.dataToNomadRoute(data: routeDoc.data()!)
         } catch {
             print(error)
             return nil
         }
+        return nil
     }
 
     func modifyStartDate(userID: String, tripID: String, newStartDate: String, modifiedDate: String) async -> Bool {
