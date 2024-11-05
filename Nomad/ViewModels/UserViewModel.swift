@@ -24,6 +24,7 @@ class UserViewModel: ObservableObject {
     @Published var times: [Double] = []
     @Published var currentCity: String?
     
+    @Published var my_trips: [Trip] = []
     @Published var previous_trips: [Trip] = []
     @Published var community_trips: [Trip] = []
 
@@ -486,9 +487,9 @@ class UserViewModel: ObservableObject {
         return nil
     }
     
-//    func populate_my_trips() {
-//        my_trips = user?.trips ?? []
-//    }
+    func populate_my_trips() {
+        my_trips = UserViewModel.my_trips
+    }
     
     func populate_previous_trips() {
         previous_trips = UserViewModel.previous_trips

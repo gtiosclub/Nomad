@@ -505,15 +505,27 @@ struct FindStopView: View {
                     }
                     .frame(height: 300)
                     
-                    NavigationLink(destination: PreviewRouteView(vm: vm, trip: vm.current_trip!)) {
-                        Text("Continue").font(.headline)
-                            .foregroundColor(.black)
+                    if let currentTrip = vm.current_trip {
+                        NavigationLink(destination: PreviewRouteView(vm: vm, trip: currentTrip)) {
+                            Text("Continue")
+                                .font(.headline)
+                                .foregroundColor(.black)
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(Color.gray.opacity(0.3))
+                                .cornerRadius(15)
+                                .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
+                        }
+                    } else {
+                        Text("No trip available")
+                            .font(.headline)
+                            .foregroundColor(.gray)
                             .padding()
                             .frame(maxWidth: .infinity)
-                            .background(Color.gray.opacity(0.3))
+                            .background(Color.gray.opacity(0.2))
                             .cornerRadius(15)
-                            .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
                     }
+
                 }
                 .padding(.top, 20)
             }.onAppear() {
