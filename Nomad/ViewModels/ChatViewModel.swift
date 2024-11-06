@@ -25,7 +25,7 @@ class ChatViewModel: ObservableObject {
             defer { DispatchQueue.main.async {self.isQuerying = false}}
             if let pois = await self.aiViewModel.getPOIDetails(query: content, vm: vm) {
                 DispatchQueue.main.async {
-                    let aiMessage = Message(content: "Here are some locations I've found for you!", sender: "AI")
+                    let aiMessage = Message(content: self.aiViewModel.atlasResponse, sender: "AI")
                     self.pois = pois  // Update pois with fetched data
                     self.latestAIResponse = "Response"
                     self.messages.append(aiMessage)

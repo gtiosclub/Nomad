@@ -12,9 +12,10 @@ class AIAssistantViewModel: ObservableObject {
     var openAIAPIKey = ChatGPTAPI(apiKey: "<PUT API KEY HERE>")
     var yelpAPIKey = "<PUT API KEY HERE>"
     var gasPricesAPIKey = "<PUT GAS KEY HERE>"
+    @Published var atlasResponse = ""
     
     //used as context in chat so Atlas knows the last thing the user asked
-    var currentLocationQuery: LocationInfo = LocationInfo(locationType: "", locationInformation: "", distance: 0.0, time: 0.0, price: "1,2,3,4", location: "", preferences: [])
+    var currentLocationQuery: LocationInfo = LocationInfo(locationType: "", locationInformation: "", distance: 0.0, time: 0.0, price: "1,2,3,4", location: "", preferences: [], atlasResponse: "")
     
     let jsonResponseFormat = Components.Schemas.CreateChatCompletionRequest.response_formatPayload(_type: .json_object) // ensure that query returns json object
     let gptModel = ChatGPTModel(rawValue: "gpt-4o")
@@ -41,6 +42,7 @@ class AIAssistantViewModel: ObservableObject {
         let price: String
         let location: String
         let preferences: [String]
+        let atlasResponse: String
     }
 
     
@@ -175,7 +177,7 @@ class AIAssistantViewModel: ObservableObject {
         do {
             let response = try await openAIAPIKey.sendMessage(
                 text: """
-                    I will give you a question/statement. From this statement, extract the following information and put it in this JSON format. Price is default "1,2,3,4", and should only include upper or lower ranges based on user price preference. If the user refers to their own location or route, set location field to "MyLocation". If user does not mention time, set time to -1. Example for locationInformation is "Museum" if locationType is "Activity".
+                    I will give you a question/statement. From this statement, extract the following information and put it in this JSON format. Price is default "1,2,3,4", and should only include upper or lower ranges based on user price preference. If the user refers to their own location or route, set location field to "MyLocation". If user does not mention time, set time to -1. Example for locationInformation is "Museum" if locationType is "Activity". Include a one-line response to the user's query asking for more info if necessary or taking into account their feedback (e.g. "Here's what I found")
                     {
                     locationType: <Restaurant/Gas Station/Hotel/Rest Stop/Point of Interest/Activity>
                     locationInformation: <String>
@@ -184,6 +186,7 @@ class AIAssistantViewModel: ObservableObject {
                     price: <1,2,3,4>
                     location: <String>
                     preferences: [String]
+                    atlasResponse: <String>
                     }
                     
                     Reuse information from past queries if not given by the user: \(currentLocationQuery). Here is the statement: \(query)
@@ -214,13 +217,14 @@ class AIAssistantViewModel: ObservableObject {
         let time = locationInfo.time
         let price = locationInfo.price
         let preferences = locationInfo.preferences.joined(separator: ", ")
+        atlasResponse = locationInfo.atlasResponse
         
         if(time != -1 && location == "MyLocation") {
-            var sampleRoute = await MapManager.manager.getExampleRoute()!
+            let sampleRoute = await MapManager.manager.getExampleRoute()!
             
-            var route = userVM.current_trip?.route
+            let route = userVM.current_trip?.route
             
-            var coords = MapManager.manager.getFutureLocation(time: time, route: route ?? sampleRoute)
+            let coords = MapManager.manager.getFutureLocation(time: time, route: route ?? sampleRoute)
             
             guard let businessInformation = await fetchSpecificBusinesses(locationType: (locationInformation == "") ? locationType : locationInformation, distance: 2, price: price, location: "UseCoords", preferences: preferences, latitude: coords?.latitude ?? 0, longitutde: coords?.longitude ?? 0) else {
                 return "Error: Unable to access YELP API"
@@ -293,7 +297,7 @@ class AIAssistantViewModel: ObservableObject {
             return location
         } catch {
             print("Error decoding JSON: \(error)")
-            return LocationInfo(locationType: "", locationInformation: "", distance: -1, time: 0.0, price: "1,2,3,4", location: "", preferences: [])
+            return LocationInfo(locationType: "", locationInformation: "", distance: -1, time: 0.0, price: "1,2,3,4", location: "", preferences: [], atlasResponse: "Need more information")
         }
     }
     //-------------------------------------------------
