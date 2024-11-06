@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct CompassView: View {
-    @Binding var bearing: Double
+    var bearing: Double
     var body: some View {
         ZStack {
             Circle()
@@ -26,6 +26,6 @@ struct CompassView: View {
     @Previewable @State var bear: Double = 0
     Text("Use slider to test compass.")
     Slider(value: $bear, in: -360...360)
-    CompassView(bearing: $bear)
+    CompassView(bearing: bear)
         .frame(width: 200, height: 200)
 }

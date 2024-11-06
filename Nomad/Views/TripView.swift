@@ -214,7 +214,7 @@ struct TripView: View {
 
 }
 
-#Preview {
-    TripView(vm: .init(user: User(id: "89379", name: "austin", trips: UserViewModel.my_trips)), trip:  UserViewModel.my_trips[0])
-}
+//#Preview {
+//    TripView(vm: .init(user: User(id: "89379", name: "austin", trips: UserViewModel.my_trips)), trip:  UserViewModel.my_trips[0])
+//}
 
