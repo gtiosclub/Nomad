@@ -111,6 +111,31 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    // Converts NomadRoute coordinates (use jsonCoordinates) method and store in firebase
+    func storeRoute(route: NomadRoute) async -> Bool {
+        do {
+            var data = route.getJsonCoordinatesMap()
+            // TODO: Add expectedTravelTime and distance, look @ mapManager
+            data["expectedTravelTime"] = route.route?.expectedTravelTime.description ?? "0"
+            data["distance"] = route.route?.distance.description ?? "0"
+            
+            try await db.collection("ROUTES").document(route.id.uuidString).setData(data)
+            return true
+        } catch {
+            print(error)
+            return false
+        }
+    }
+    
+    // Fetch coordinates JSON from firebase and convert to coordinates
+    func fetchRoutes() async throws -> [String: NomadRoute] {
+        let getdocs = try await db.collection("ROUTES").getDocuments() // TODO: Change this
+        
+        // TODO: Integrate UserViewModel to use its mapmanager
+        let mapManager = MapManager.manager
+        return try await mapManager.docsToNomadRoute(docs: getdocs.documents)
+    }
+    
     func createTrip(tripID: String, startLocationName: String, startLocationAddress: String, endLocationName: String, endLocationAddress: String, createdDate: String, modifiedDate: String) async -> Bool {
         let tripDocRef = db.collection("TRIPS").document(tripID)
         
@@ -556,6 +581,59 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    func storeImageAndReturnURL(image: UIImage, completion: @escaping (URL?) -> Void) {
+        guard let imageData = image.jpegData(compressionQuality: 0.8) else {
+            completion(nil)
+            return
+        }
+            // create random image path
+        let imagePath = "images/\(UUID().uuidString).jpg"
+        let storageRef = Storage.storage().reference()
+        // create reference to file you want to upload
+        let imageRef = storageRef.child(imagePath)
+
+        //upload image
+        DispatchQueue.main.async {
+            let uploadTask = imageRef.putData(imageData, metadata: nil) { (metadata, error) in
+                if let error = error {
+                    print("Error uploading image: (error.localizedDescription)")
+                    completion(nil)
+                } else {
+                    // Image successfully uploaded
+                    imageRef.downloadURL { url, error in
+                        if let downloadURL = url {
+                            completion(downloadURL)
+                        } else {
+                            print("Error getting download URL: (String(describing: error?.localizedDescription))")
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    func getImageFromURL(urlString: String, completion: @escaping (UIImage?) -> Void) {
+        guard let url = URL(string: urlString) else {
+            print("Invalid URL string: \(urlString)")
+            completion(nil)
+            return
+        }
+
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("Error loading image from URL: \(error.localizedDescription)")
+                    completion(nil)
+                } else if let data = data, let image = UIImage(data: data) {
+                    completion(image)
+                } else {
+                    print("Could not load image from URL: \(urlString)")
+                    completion(nil)
+                }
+            }
+        }.resume()
+    }
+
     /*-------------------------------------------------------------------------------------------------*/
     
     private func parseFirebaseError(_ error: Error) -> String {
