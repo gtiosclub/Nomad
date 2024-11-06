@@ -110,7 +110,7 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     // TODO: Modify to make both distance and direction checks to re-route if so
-    func recalibrateCurrentStep() {
+    func recalibrateCurrentStep() async {
         guard let currentLeg = self.navigatingLeg else { return }
         guard let estimatedStep = mapManager.determineCurrentStep(leg: currentLeg) else { return }
         print(estimatedStep.direction.instructions)
@@ -125,12 +125,34 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             
             offRouteCount = !isDistance && !isDirection ? offRouteCount + 1 : 0
             if offRouteCount == 10 {
-                // TODO: Generate new route, appropriately append it to NomadRoute
-                // - Use current step to update rest of NomadStep, cut off the rest of the NomadSteps
-                //   for a leg and replace
+                await reroute(leg: currentLeg, step: estimatedStep)
             }
         }
     }
+    // Generates new route and updates current leg with that information
+    private func reroute(leg: NomadLeg, step: NomadStep) async {
+        guard let userLocation = mapManager.userLocation else { return }
+        let stopCoords = [userLocation, leg.getEndLocation()]
+        guard let newRoutes = await mapManager.generateRoute(stop_coords: stopCoords) else { return }
+        
+        guard let newLeg = newRoutes.first?.legs.first else { return }
+        guard let estimatedStep = mapManager.determineCurrentStep(leg: newLeg) else { return }
+        
+        let oldStepIndex = leg.steps.firstIndex { s in s.id == step.id } ?? 0
+        var updatedSteps = navigatingLeg?.steps[..<oldStepIndex] ?? []
+        updatedSteps.append(contentsOf: newLeg.steps)
+        let updatedLeg = NomadLeg(steps: Array(updatedSteps))
+                
+        for (i, l) in self.navigatingRoute!.legs.enumerated() {
+            if l.id == leg.id {
+                self.navigatingRoute!.legs[i] = updatedLeg
+            }
+        }
+        self.navigatingLeg = updatedLeg
+        self.navigatingStep = estimatedStep
+    }
+    
+    
     func onFirstStepOfLeg() -> Bool {
         guard let current_step = self.navigatingStep else { return false }
         guard let current_leg = self.navigatingLeg else { return false }

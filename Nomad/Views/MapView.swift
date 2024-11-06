@@ -41,7 +41,9 @@ struct MapView: View {
             .onChange(of: mapManager.motion, initial: true) { oldMotion, newMotion in
                 if let newLoc = newMotion.coordinate {
                     print("New User Location")
-                    navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
+                    Task {
+                        await navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
+                    }
                     navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
                     if let camera = navManager.mapPosition.camera {
                         let movingMap = navManager.movingMap(camera: camera.centerCoordinate)
