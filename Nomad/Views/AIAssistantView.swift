@@ -53,6 +53,23 @@ struct AIAssistantView: View {
                         }
                         .padding(.horizontal)
                     }
+                    if chatViewModel.isQuerying{
+                        //Detect if the ai is loading
+                        HStack {
+                            Circle()
+                                .frame(width: 30, height: 30)
+                                .foregroundColor(.gray) // Placeholder for AI avatar
+                            Text(String(repeating: ".", count: dotCount))
+                                .padding()
+                                .onReceive(timer) { _ in
+                                    dotCount = (dotCount % 3) + 1
+                                }
+                                .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+                                .frame(maxWidth: 270, alignment: .leading)
+                        }
+                        .padding(.horizontal)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                     
                 }
                 .background(Color.clear)
@@ -63,24 +80,6 @@ struct AIAssistantView: View {
                         reader.scrollTo(lastMessage.id, anchor: .bottom)
                     }
                 }
-                if chatViewModel.isQuerying{
-                                    //Detect if the ai is loading
-                                    HStack {
-                                        Circle()
-                                            .frame(width: 30, height: 30)
-                                            .foregroundColor(.gray) // Placeholder for AI avatar
-                                        Text(String(repeating: ".", count: dotCount))
-                                            .padding()
-                                            .onReceive(timer) { _ in
-                                                dotCount = (dotCount % 3) + 1
-                                            }
-                                            .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
-                                            .frame(maxWidth: 270, alignment: .leading)
-                                    }
-                                    .padding(.horizontal)
-                                    Spacer()
-
-                                }
             }
             
             // Horizontal scroll view for POIs
