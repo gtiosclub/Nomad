@@ -78,6 +78,7 @@ struct EnhancedRoutePlanListView: View {
                         .foregroundColor(.gray)
                         .padding(.top, 10)
                         .padding(.bottom, 10)
+                        .bold()
                 }
                 
                 // Stop Info
@@ -132,12 +133,6 @@ struct EnhancedRoutePlanListView: View {
                         }
                         .font(.subheadline)
                         .foregroundColor(.secondary)
-                        if let open_time = (location as? Restaurant)?.getOpenTime() {
-                            if let close_time = (location as? Restaurant)?.getCloseTime() {
-                                Text("Open • \(open_time) - \(close_time)")
-                            }
-                        }
-                        
                     }
                 }
             }

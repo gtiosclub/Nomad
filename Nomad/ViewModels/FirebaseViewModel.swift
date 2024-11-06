@@ -286,8 +286,6 @@ class FirebaseViewModel: ObservableObject {
         var rating: Double = -1
         var website: String = ""
         if let restaurant = stop as? Restaurant {
-            closeTime = restaurant.close_time ?? ""
-            openTime = restaurant.open_time ?? ""
             cuisine = restaurant.cuisine ?? ""
             price = restaurant.price ?? -1
             rating = restaurant.rating ?? -1.0
