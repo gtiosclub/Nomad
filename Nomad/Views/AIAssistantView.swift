@@ -7,7 +7,8 @@ struct AIAssistantView: View {
     @StateObject var speechRecognizer = SpeechRecognizer()
     @State private var isMicrophone = false
     @State private var currentMessage: String = ""
-    
+    @State private var dotCount = 1
+    let timer = Timer.publish(every:0.5, on: .main, in: .common).autoconnect()
 
     var body: some View {
         VStack {
@@ -62,6 +63,24 @@ struct AIAssistantView: View {
                         reader.scrollTo(lastMessage.id, anchor: .bottom)
                     }
                 }
+                if chatViewModel.isQuerying{
+                                    //Detect if the ai is loading
+                                    HStack {
+                                        Circle()
+                                            .frame(width: 30, height: 30)
+                                            .foregroundColor(.gray) // Placeholder for AI avatar
+                                        Text(String(repeating: ".", count: dotCount))
+                                            .padding()
+                                            .onReceive(timer) { _ in
+                                                dotCount = (dotCount % 3) + 1
+                                            }
+                                            .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+                                            .frame(maxWidth: 270, alignment: .leading)
+                                    }
+                                    .padding(.horizontal)
+                                    Spacer()
+
+                                }
             }
             
             // Horizontal scroll view for POIs
@@ -128,6 +147,7 @@ struct AIAssistantView: View {
 
                 Button(action: {
                     if !currentMessage.isEmpty {
+                        dotCount = 1
                         chatViewModel.sendMessage(currentMessage, vm: vm)
                         currentMessage = ""
                     }

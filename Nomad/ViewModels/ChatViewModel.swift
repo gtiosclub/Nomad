@@ -14,13 +14,15 @@ class ChatViewModel: ObservableObject {
     
     @Published var pois: [POIDetail] = []
     @Published var latestAIResponse: String?
+    @Published var isQuerying = false //the additional global variable for detecting if the gpt api is calling or not
     
     func sendMessage(_ content: String, vm: UserViewModel) {
         let newMessage = Message(content: content, sender: "User")
         messages.append(newMessage)
-        
+        isQuerying = true //before calling the API
         // Now call getPOIDetails to fetch POIs based on the user query
         Task {
+            defer { DispatchQueue.main.async {self.isQuerying = false}}
             if let pois = await self.aiViewModel.getPOIDetails(query: content, vm: vm) {
                 DispatchQueue.main.async {
                     let aiMessage = Message(content: "Here are some locations I've found for you!", sender: "AI")
