@@ -42,7 +42,7 @@ struct FindStopView: View {
                     .padding(.horizontal)
                 
                 if let trip = vm.current_trip {
-                    RoutePreviewView(vm: vm, trip: Binding.constant(trip), currentLocation: markerCoordinate)
+                    RoutePreviewView(vm: vm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(markerCoordinate), showStopMarker: true)
                         .frame(minHeight: 250.0)
                 } else {
                     Text("No current trip available")
@@ -51,13 +51,6 @@ struct FindStopView: View {
             }
             
             VStack(alignment: .leading, spacing: 15) {
-                /*Slider(value: $routeProgress, in: 0...1, step: 0.01) {
-                 Text("Route Progress")
-                 }
-                 .padding()
-                 .onChange(of: routeProgress) { newValue in
-                 updateMarkerPosition(progress: newValue)
-                 }*/
                 HStack {
                     ZStack {
                         Circle()
@@ -91,13 +84,23 @@ struct FindStopView: View {
                 
                 TabView(selection: $selectedTab) {
                     VStack(alignment: .leading, spacing: 16) {
+                        Slider(value: $routeProgress, in: 0...((vm.current_trip!.route?.totalTime() ?? 60)/60), step: 1, label: {Text("Stop")}, minimumValueLabel: {Text("0")}, maximumValueLabel: {Text("\(Int((vm.current_trip!.route?.totalTime() ?? 60)/60))")})
+                            .padding()
+                            .onChange(of: routeProgress) { newValue in
+                                updateMarkerPosition(progress: newValue)
+                            }
                         if selection == "Restaurants" {
-                            Text("Cuisine:")
+                            Text("Filters:")
                                 .font(.headline)
-                            FilterView(selectedRating: $rating, selectedCuisine: $selectedCuisines, selectedPrice: $price)
+                            HStack{
+                                RatingFilterView(selectedRating: $rating).frame(maxWidth: 90)
+                                CuisineFilterView(selectedCuisine: $selectedCuisines)
+                                PriceFilterView(selectedPrice: $price).frame(maxWidth: 80)
+                            }
                             Spacer()
                         } else if selection == "Activities" || selection == "Hotels" {
                             RatingUI(rating: $rating)
+                                .padding(.top, 10)
                         }
                     }
                     .padding(.horizontal)
@@ -168,6 +171,7 @@ struct FindStopView: View {
             }
             .padding(.top, 20)
         }.onAppear() {
+            markerCoordinate = vm.current_trip?.getStartLocationCoordinates() ?? .init(latitude: 0, longitude: 0)
             Task {
                 await updateTripRoute()
             }
@@ -417,17 +421,14 @@ struct FindStopView: View {
             .cornerRadius(12)
         }
     }
-    /*func updateMarkerPosition(progress: Double) {
-
-        let totalTime = vm.total_time
-        let targetTime = totalTime * progress
-
-        Task {
-            if let newPosition = try? await vm.mapManager.getFutureLocation(time: targetTime) {
-                markerCoordinate = newPosition
-            }
+    
+    func updateMarkerPosition(progress: Double) {
+        let targetTime = 60 * progress
+        
+        if let newPosition = MapManager.manager.getFutureLocation(time: targetTime, route: vm.current_trip!.route!) {
+            markerCoordinate = newPosition
         }
-    }*/
+    }
 }
 
 extension Array {
