@@ -24,6 +24,7 @@ struct ItineraryPlanningView: View {
     @State var startTime: Date = Date()
     @State private static var dateformatter = DateFormatter()
     @ObservedObject var vm: UserViewModel
+    @ObservedObject var aiVM: AIAssistantViewModel = AIAssistantViewModel()
     @ObservedObject var mapSearch = MapSearch()
     @State var isClicked: Bool = false
     @State var startAddressError: String = ""
@@ -198,6 +199,8 @@ struct ItineraryPlanningView: View {
                         Task {
                             await vm.createTrip(start_location: GeneralLocation(address: inputAddressStart, name: inputNameStart, latitude: startLatitude, longitude: startLongitude), end_location: GeneralLocation(address: inputAddressEnd, name: inputNameEnd, latitude: endLatitude, longitude: endLongitude), start_date: ItineraryPlanningView.dateToString(date: startDate), end_date: ItineraryPlanningView.dateToString(date: endDate), stops: [], start_time: ItineraryPlanningView.timeToString(date: startTime))
                             
+                            await aiVM.generateTripWithAtlas(userVM: vm)
+                            
                             inputNameEnd = ""
                             inputNameStart = ""
                             inputAddressEnd = ""
@@ -210,6 +213,8 @@ struct ItineraryPlanningView: View {
                             endLatitude = 0.0
                             endLongitude = 0.0
                             editTrip = true
+                            
+                            
                         }
                     }
 
