@@ -581,9 +581,11 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
-    func storeImageAndReturnURL(image: UIImage, completion: @escaping (URL?) -> Void) {
+    func storeImageAndReturnURL(image: UIImage, tripID: String) {
+        print("started")
         guard let imageData = image.jpegData(compressionQuality: 0.8) else {
-            completion(nil)
+            //completion(nil)
+            print("image with url")
             return
         }
             // create random image path
@@ -591,24 +593,53 @@ class FirebaseViewModel: ObservableObject {
         let storageRef = Storage.storage().reference()
         // create reference to file you want to upload
         let imageRef = storageRef.child(imagePath)
+        var urlString: String = ""
 
         //upload image
-        DispatchQueue.main.async {
-            let uploadTask = imageRef.putData(imageData, metadata: nil) { (metadata, error) in
-                if let error = error {
-                    print("Error uploading image: (error.localizedDescription)")
-                    completion(nil)
-                } else {
-                    // Image successfully uploaded
-                    imageRef.downloadURL { url, error in
-                        if let downloadURL = url {
-                            completion(downloadURL)
-                        } else {
-                            print("Error getting download URL: (String(describing: error?.localizedDescription))")
+        
+        let uploadTask = imageRef.putData(imageData, metadata: nil) { (metadata, error) in
+            if let error = error {
+                print("Error uploading image: \(error.localizedDescription)")
+            } else {
+                // Image successfully uploaded
+                imageRef.downloadURL { url, error in
+                    if let downloadURL = url {
+                        urlString = downloadURL.absoluteString
+                        Task {
+                            await self.addURLToUser(tripID: tripID, urlString: urlString)
                         }
+                        print("urlString: \(urlString)")
+                    } else {
+                        print("Error getting download URL: (String(describing: error?.localizedDescription))")
                     }
                 }
             }
+        }
+    
+        
+    }
+    
+    private func addURLToUser(tripID: String, urlString: String) async -> Void {
+        let docRef = db.collection("TRIPS").document(tripID)
+        do {
+            let document = try await docRef.getDocument()
+            guard var images = document.data()?["images"] as? [String] else {
+                print("Document does not exist or 'images' is not an array.")
+                return
+            }
+            if (!images.contains(urlString)) {
+                images.append(urlString)
+                try await db.collection("TRIPS").document(tripID).updateData(["images": images])
+                print("updated firebase")
+                //return true
+                
+            } else {
+                print("Image already in user image list")
+                //return false;
+            }
+        } catch {
+            print(error)
+            //return false
         }
     }
     

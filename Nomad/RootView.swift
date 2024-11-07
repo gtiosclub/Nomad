@@ -15,7 +15,7 @@ struct RootView: View {
     @ObservedObject var vm = UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: UserViewModel.my_trips))
     
     var body: some View {
-        TabView(selection: $selectedTab) {
+        /*TabView(selection: $selectedTab) {
             MapView(vm: vm)
                 .tabItem {
                     Label("Navigation", systemImage: "map.fill")
@@ -39,7 +39,8 @@ struct RootView: View {
                     self.mapboxSetUp = true
                     await MapManager.manager.setupMapbox()
                 }
-            }
+            }*/
+        TestingView(vm: FirebaseViewModel(), image: UIImage(systemName: "face.smiling")!)
     }
 }
 
