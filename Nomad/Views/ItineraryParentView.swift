@@ -46,6 +46,8 @@ struct ItineraryParentView: View {
                             withAnimation(.easeInOut(duration: 0.5)) {
                                 showWipeOverlay = true
                             }
+                            
+                            
                             // Delay the screen transition
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                                 withAnimation(.easeInOut(duration: 0.5)) {

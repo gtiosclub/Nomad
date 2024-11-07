@@ -199,8 +199,6 @@ struct ItineraryPlanningView: View {
                         Task {
                             await vm.createTrip(start_location: GeneralLocation(address: inputAddressStart, name: inputNameStart, latitude: startLatitude, longitude: startLongitude), end_location: GeneralLocation(address: inputAddressEnd, name: inputNameEnd, latitude: endLatitude, longitude: endLongitude), start_date: ItineraryPlanningView.dateToString(date: startDate), end_date: ItineraryPlanningView.dateToString(date: endDate), stops: [], start_time: ItineraryPlanningView.timeToString(date: startTime))
                             
-                            await aiVM.generateTripWithAtlas(userVM: vm)
-                            
                             inputNameEnd = ""
                             inputNameStart = ""
                             inputAddressEnd = ""
