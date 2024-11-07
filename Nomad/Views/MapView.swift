@@ -202,17 +202,6 @@ struct MapView: View {
             }
         }
     }
-    
-    func getMapStyle() -> MapStyle {
-        switch navManager.mapType {
-        case .defaultMap:
-            return .standard
-        case .satellite:
-            return .imagery
-        case .terrain:
-            return .hybrid
-        }
-    }
 }
 
 #Preview {
