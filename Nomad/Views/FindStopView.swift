@@ -169,7 +169,7 @@ struct FindStopView: View {
             .padding(.top, 20)
         }.onAppear() {
             Task {
-                await updateTripRoute()
+//                await updateTripRoute()
 //                await aiVM.generateTripWithAtlas(userVM: vm)
 //                await updateTripRoute()
             }

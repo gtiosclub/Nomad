@@ -182,6 +182,11 @@ class AIAssistantViewModel: ObservableObject {
 //            userVM.setTripRoute(route: newRoutes[0])
 //        }
         
+        while userVM.current_trip?.route == nil {
+               // Pause for a short duration to avoid busy-waiting
+               try? await Task.sleep(nanoseconds: 100_000_000) // 100 milliseconds
+           }
+        
         let expectedTravelTime = userVM.current_trip?.route?.route?.expectedTravelTime ?? 0.0
 //
         let brainstormedStops = await gptGenerateStops(startTime: userVM.current_trip?.getStartTime() ?? "", startLocation: userVM.current_trip?.getStartLocation().address ?? "", endLocation: userVM.current_trip?.getEndLocation().address ?? "", expectedTravelTime: String(expectedTravelTime)) ?? ""
@@ -269,7 +274,7 @@ class AIAssistantViewModel: ObservableObject {
         do {
             let response = try await openAIAPIKey.sendMessage(
                 text: """
-                    A road trip is starting at \(startTime) at \(startLocation) and ending at \(endLocation). Expected travel time is \(expectedTravelTime). Your job is to brainstorm stops for the road trip. Create a JSON array of these JSON objects in the format below. I will use these objects to query Yelp and find actual stops. "Time" is how long into the route the stop will be. Example for locationInformation is "Museum" if locationType is "Activity". You don't have to fill out preferences until the user gives feedback. Price should be default set to "1,2,3,4", and should only include upper or lower ranges based on user price preference. You don't have to include location information. Location is default "MyLocation". Make sure "time" to get to a stop does not exceed expected travel time.
+                    A road trip is starting at \(startTime) at \(startLocation) and ending at \(endLocation). Expected travel time is \(expectedTravelTime). Your job is to brainstorm stops for the road trip. Create a JSON array of these JSON objects in the format below. I will use these objects to query Yelp and find actual stops. "Time" is how long into the route the stop will be. Example for locationInformation is "Museum" if locationType is "Activity". If there is no location information, leave a blank String. You don't have to fill out preferences until the user gives feedback. Price should be default set to "1,2,3,4", and should only include upper or lower ranges based on user price preference. You don't have to include location information. Location is default "MyLocation". Make sure "time" to get to a stop does not exceed expected travel time.
                     { stops: [{
                     locationType: <Restaurant/Gas Station/Hotel/Rest Stop/Activity/Shopping>
                     locationInformation: <String>
