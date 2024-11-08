@@ -15,7 +15,6 @@ struct DetailRecapView: View {
     @ObservedObject var vm: UserViewModel
     @State var trip: Trip
     @State private var totalDist: Double = 0.0
-    var route: NomadRoute
     
     var body: some View {
         ScrollView {
@@ -53,7 +52,7 @@ struct DetailRecapView: View {
                             .foregroundColor(.gray.opacity(0.5))
                             .frame(width: 155, height: 87)
                         VStack {
-                            Text(String(round(route.totalDistance())))
+                            Text(String(round(trip.route?.totalDistance() ?? 0.0)))
                                 .font(.system(size: 30))
                             Text("miles traveled")
                         }
@@ -64,7 +63,7 @@ struct DetailRecapView: View {
                             .foregroundColor(.gray.opacity(0.5))
                             .frame(width: 155, height: 87)
                         VStack {
-                            Text(String(round(route.totalTime() / 60)))
+                            Text(String(round(trip.route?.totalTime() ?? 0.0 / 60)))
                                 .font(.system(size: 30))
                             Text("hours spent")
                         }
@@ -91,7 +90,7 @@ struct DetailRecapView: View {
                 .pickerStyle(SegmentedPickerStyle())
                 .padding(.bottom, 10)
 
-                RoutePreviewView(vm: vm, trip: Binding.constant(trip))
+                RoutePreviewView(vm: vm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(nil))
                     .frame(width: .infinity, height: 300)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
 
@@ -99,8 +98,8 @@ struct DetailRecapView: View {
                 .padding(.bottom, 30)
         }.onAppear{
             Task {
-                let totalDistance = route.totalDistance()
-                let totalTime = route.totalTime()
+                let totalDistance = trip.route?.totalDistance()
+                let totalTime = trip.route?.totalTime()
             }
             vm.setCurrentTrip(trip: trip)
         }

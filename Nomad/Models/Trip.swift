@@ -10,7 +10,7 @@ import MapKit
 
 class Trip: Identifiable, Equatable, ObservableObject {
     var id: String
-    var route: NomadRoute?
+    @Published var route: NomadRoute?
     private var stops: [any POI]
     private var start_location: any POI
     private var end_location: any POI
@@ -37,6 +37,30 @@ class Trip: Identifiable, Equatable, ObservableObject {
         self.coverImageURL = coverImageURL
         self.name = name
         if coverImageURL.isEmpty {
+            //print("find image for \(end_location.name)")
+            Trip.getCityImage(location: end_location) { imageURL in
+                DispatchQueue.main.async {
+                    self.coverImageURL = imageURL
+                    self.updateModifiedDate()
+                }
+            }
+        }
+    }
+    
+    init(id: String, start_location: any POI, end_location: any POI, start_date: String, end_date: String, created_date: String, modified_date: String, stops: [any POI], start_time: String, name: String, isPrivate: Bool) {
+        self.id = id
+        self.start_location = start_location
+        self.end_location = end_location
+        self.start_date = start_date
+        self.start_time = start_time
+        self.end_date = end_date
+        self.stops = stops
+        self.name = name
+        self.isPrivate = isPrivate
+        self.created_date = created_date
+        self.modified_date = modified_date
+        self.coverImageURL = ""
+        if coverImageURL.isEmpty {
             print("find image for \(end_location.name)")
             Trip.getCityImage(location: end_location) { imageURL in
                 DispatchQueue.main.async {
@@ -45,11 +69,6 @@ class Trip: Identifiable, Equatable, ObservableObject {
                 }
             }
         }
-//        if coverImageURL.isEmpty {
-//            Task {
-//                self.coverImageURL = await Trip.getCityImageAsync(location: end_location)
-//            }
-//        }
     }
     
 //    func generateRoute() async {
@@ -156,7 +175,7 @@ class Trip: Identifiable, Equatable, ObservableObject {
                 let pixabayResponse = try JSONDecoder().decode(PixabayResponse.self, from: data)
                 let hits = pixabayResponse.hits
                 let firstImageURL = hits.first?.webformatURL ?? ""
-                print("Found image for \(search_city): \(firstImageURL)")
+                // print("Found image for \(search_city): \(firstImageURL)")
                 DispatchQueue.main.async {
                     completion(firstImageURL)
                 }

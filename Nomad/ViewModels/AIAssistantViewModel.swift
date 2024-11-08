@@ -10,11 +10,15 @@ import ChatGPTSwift
 
 class AIAssistantViewModel: ObservableObject {
     var openAIAPIKey = ChatGPTAPI(apiKey: "<PUT API KEY HERE>")
-    var currentLocationQuery: LocationInfo = LocationInfo(locationType: "", locationInformation: "", distance: 0.0, location: "", preferences: [])
     var yelpAPIKey = "<PUT API KEY HERE>"
     var gasPricesAPIKey = "<PUT GAS KEY HERE>"
+    
+    //used as context in chat so Atlas knows the last thing the user asked
+    var currentLocationQuery: LocationInfo = LocationInfo(locationType: "", locationInformation: "", distance: 0.0, time: 0.0, price: "1,2,3,4", location: "", preferences: [])
+    
     let jsonResponseFormat = Components.Schemas.CreateChatCompletionRequest.response_formatPayload(_type: .json_object) // ensure that query returns json object
     let gptModel = ChatGPTModel(rawValue: "gpt-4o")
+    
     let FirebaseVM: FirebaseViewModel = FirebaseViewModel()
     
     let initialConditionSentence:String = """
@@ -28,10 +32,28 @@ class AIAssistantViewModel: ObservableObject {
     Keep asking me questions until you have information to fill out the Trip. Do not mention the actual variable names.
 
     """
+    //used to summarize the user's location request
+    struct LocationInfo: Codable, Equatable {
+        let locationType: String
+        let locationInformation: String
+        let distance: Double
+        let time: Double
+        let price: String
+        let location: String
+        let preferences: [String]
+    }
+
+    
+    
     
     init()  {
         fetchAPIKeys()
     }
+    
+    /*----------------------------------------------------
+     Miscellaneous
+     -----------------------------------------------------
+     */
     
     private func fetchAPIKeys() {
         Task {
@@ -45,79 +67,6 @@ class AIAssistantViewModel: ObservableObject {
             } catch {
                 print("Failed to fetch API keys: \(error)")
             }
-        }
-    }
-    
-    
-    func fetchBusinesses() async {
-        let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
-        var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
-        let queryItems: [URLQueryItem] = [
-            URLQueryItem(name: "location", value: "Atlanta"),
-            URLQueryItem(name: "term", value: "gas"),
-            URLQueryItem(name: "sort_by", value: "best_match"),
-            URLQueryItem(name: "limit", value: "2"),
-        ]
-        components.queryItems = components.queryItems.map { $0 + queryItems } ?? queryItems
-        var request = URLRequest(url: components.url!)
-        request.httpMethod = "GET"
-        request.timeoutInterval = 10
-        request.addValue("Bearer \(yelpAPIKey)", forHTTPHeaderField: "Authorization")
-        do {
-            let (data, _) = try await URLSession.shared.data(for: request)
-            print(String(decoding: data, as: UTF8.self))
-        } catch {
-            print("Error fetching data: \(error.localizedDescription)")
-        }
-    }
-    
-    func getChatGPT() async -> (String)  {
-        let question:String = "where is Atlanta?"
-        do {
-            let response = try await openAIAPIKey.sendMessage(
-                text: question)
-            return response
-        } catch {
-            print(error.localizedDescription)
-        }
-        return ""
-    }
-    
-    func getJsonOutput(query: String) async -> String? {
-        do {
-            let response = try await openAIAPIKey.sendMessage(
-                text: "Only return a JSON Object" + query,
-                model: gptModel!,
-                responseFormat: jsonResponseFormat)
-            return response
-        } catch {
-            return "Send OpenAI Query Error: \(error.localizedDescription)"
-        }
-    }
-    
-    func queryChatGPT(query: String) async -> String? {
-        do {
-            let response = try await openAIAPIKey.sendMessage(
-                text: """
-                    I will give you a question/statement. From this statement, extract the location type and distance I am looking for and put it in this JSON format. 
-                    {
-                    locationType: <Restaurant/Gas Station/Hotel/Rest Stop/Point of Interest/Activity>
-                    locationInformation: <String>
-                    distance: <Double>
-                    location: <String>
-                    preferences: [String]
-                    }
-                    
-                    Reuse information from past queries if not given by the user: \(currentLocationQuery). Here is the statement: \(query)
-                """,
-                model: gptModel!,
-                responseFormat: jsonResponseFormat)
-            
-            print(response)
-            
-            return response
-        } catch {
-            return "Send OpenAI Query Error: \(error.localizedDescription)"
         }
     }
     
@@ -164,41 +113,114 @@ class AIAssistantViewModel: ObservableObject {
             return nil
         }
     }
+    
+    //-------------------------------------------------
+    
+    /*----------------------------------------------------
+     Parent Function
+     -----------------------------------------------------
+     */
+
+    func converseAndGetInfoFromYelp(query: String) async -> String? {
+        let jsonString = await queryChatGPT(query: query) ?? ""
+        let yelpInfo = await queryYelpWithjSONString(jsonString: jsonString) ?? "!!!Failed!!!"
+        print(yelpInfo)
+        let businessResponse = parseGetBusinessesIntoModel(yelpInfo: yelpInfo)
         
-    // Helper function that will take in a JSON formatted String and turn it into an accessible Swift Data Structure
-    func convertStringToStruct(jsonString: String) -> LocationInfo? {
-        let jsonData = jsonString.data(using: .utf8)! // Convert the string to Data
+        let name = businessResponse?.businesses.first?.name ?? ""
+        let address = businessResponse?.businesses.first?.location.address1 ?? ""
+        let price = businessResponse?.businesses.first?.price ?? ""
+        let rating = businessResponse?.businesses.first?.rating ?? -1
+        let phoneNumber = businessResponse?.businesses.first?.phone ?? ""
         
+        let response = await formatResponseToUser(name: name, address: address, price: price, rating: rating, phoneNumber: phoneNumber)
+        return response
+    }
+     //-------------------------------------------------
+    
+    /*----------------------------------------------------
+     Helper Methods
+     -----------------------------------------------------
+     */
+    
+    //interacts GPT and returns a JSON representing the information that the user provided in their query
+    func queryChatGPT(query: String) async -> String? {
         do {
-            // Decode the JSON data into a YelpLocation instance
-            let decoder = JSONDecoder()
-            let location = try decoder.decode(LocationInfo.self, from: jsonData)
-            print(location)
+            let response = try await openAIAPIKey.sendMessage(
+                text: """
+                    I will give you a question/statement. From this statement, extract the following information and put it in this JSON format. Price is default "1,2,3,4", and should only include upper or lower ranges based on user price preference. If the user refers to their own location or route, set location field to "MyLocation". If user does not mention time, set time to -1.
+                    {
+                    locationType: <Restaurant/Gas Station/Hotel/Rest Stop/Point of Interest/Activity>
+                    locationInformation: <String>
+                    distance: <Double>
+                    time: <Double (in seconds)>
+                    price: <1,2,3,4>
+                    location: <String>
+                    preferences: [String]
+                    }
+                    
+                    Reuse information from past queries if not given by the user: \(currentLocationQuery). Here is the statement: \(query)
+                """,
+                model: gptModel!,
+                responseFormat: jsonResponseFormat)
             
-            return location
+            print(response)
+            
+            return response
         } catch {
-            print("Error decoding JSON: \(error)")
-            return LocationInfo(locationType: "", locationInformation: "", distance: -1, location: "", preferences: [])
+            return "Send OpenAI Query Error: \(error.localizedDescription)"
         }
     }
     
-    struct LocationInfo: Codable, Equatable {
-        let locationType: String
-        let locationInformation: String
-        let distance: Double
-        let location: String
-        let preferences: [String]
+    //First converts the GPT JSON into a struct that is then parsed
+    //The parsed information is used as parameters to call Yelp API
+    //The function returns a JSON consisting of all the stops that fit the user's criteria
+    func queryYelpWithjSONString(jsonString: String) async -> String? {
+        guard let locationInfo = convertStringToStruct(jsonString: jsonString) else {
+            return "Error: Unable to parse JSON String"
+        }
+        let locationType = locationInfo.locationType
+        let locationInformation = locationInfo.locationInformation
+        let distance = locationInfo.distance
+        let location = locationInfo.location
+        let time = locationInfo.time
+        let price = locationInfo.price
+        let preferences = locationInfo.preferences.joined(separator: ", ")
+        
+        if(time != -1) {
+            var sampleRoute = await MapManager.manager.getExampleRoute()!
+            
+            var coords = MapManager.manager.getFutureLocation(time: time, route: sampleRoute)
+            
+            guard let businessInformation = await fetchSpecificBusinesses(locationType: (locationInformation == "") ? locationType : locationInformation, distance: distance, price: price, location: "UseCoords", preferences: preferences, latitude: coords?.latitude ?? 0, longitutde: coords?.longitude ?? 0) else {
+                return "Error: Unable to access YELP API"
+            }
+            return businessInformation
+            
+        } else {
+            guard let businessInformation = await fetchSpecificBusinesses(locationType: (locationInformation == "") ? locationType : locationInformation, distance: distance, price: price, location: location, preferences: preferences, latitude: 0.0, longitutde: 0.0) else {
+                return "Error: Unable to access YELP API"
+            }
+            return businessInformation
+        }
     }
     
-    func fetchSpecificBusinesses(locationType: String, distance: Double, location: String, preferences: String) async -> String? {
+    //This function calls Yelp with the specified parameters and returns the Yelp APIs JSON
+    func fetchSpecificBusinesses(locationType: String, distance: Double, price: String, location: String, preferences: String, latitude: Double, longitutde: Double) async -> String? {
         let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
-        let queryItems: [URLQueryItem] = [
-            URLQueryItem(name: "location", value: location),
+        var queryItems: [URLQueryItem] = [
             URLQueryItem(name: "term", value: "\(preferences)  \(locationType)"),
+            URLQueryItem(name: "price", value: price),
             URLQueryItem(name: "radius", value: "\(Int(distance * 1609))"), //Because the parameter takes in meters, we convert miles to meters (1 mile = 1608.34 meters)
             URLQueryItem(name: "limit", value: "1"),
         ]
+        if(location == "UseCoords") {
+            queryItems.append(URLQueryItem(name: "latitude", value: String(latitude)))
+            queryItems.append(URLQueryItem(name: "longitude", value: String(longitutde)))
+        } else {
+            queryItems.append(URLQueryItem(name: "location", value: location))
+        }
         components.queryItems = components.queryItems.map { $0 + queryItems } ?? queryItems
         var request = URLRequest(url: components.url!)
         request.httpMethod = "GET"
@@ -212,22 +234,7 @@ class AIAssistantViewModel: ObservableObject {
         }
     }
     
-    
-    func queryYelpWithjSONString(jsonString: String) async -> String? {
-        guard let locationInfo = convertStringToStruct(jsonString: jsonString) else {
-            return "Error: Unable to parse JSON String"
-        }
-        let locationType = locationInfo.locationType
-        let locationInformation = locationInfo.locationInformation
-        let distance = locationInfo.distance
-        let location = locationInfo.location
-        let preferences = locationInfo.preferences.joined(separator: ", ")
-        guard let businessInformation = await fetchSpecificBusinesses(locationType: (locationInformation == "") ? locationType : locationInformation, distance: distance, location: location, preferences: preferences) else {
-            return "Error: Unable to access YELP API"
-        }
-        return businessInformation
-    }
-    
+    //Parses the Yelp JSON into a BusinessResponse struct so the information can be more easily displayed
     func parseGetBusinessesIntoModel(yelpInfo: String) -> BusinessResponse? {
         let jsonData = yelpInfo.data(using: .utf8)! // Convert the string to Data
         
@@ -257,21 +264,25 @@ class AIAssistantViewModel: ObservableObject {
         }
     }
     
-    func converseAndGetInfoFromYelp(query: String) async -> String? {
-        let jsonString = await queryChatGPT(query: query) ?? ""
-        let yelpInfo = await queryYelpWithjSONString(jsonString: jsonString) ?? "!!!Failed!!!"
-        print(yelpInfo)
-        let businessResponse = parseGetBusinessesIntoModel(yelpInfo: yelpInfo)
+    // Helper function that will take in a JSON formatted String and turn it into an accessible Swift Data Structure
+    func convertStringToStruct(jsonString: String) -> LocationInfo? {
+        let jsonData = jsonString.data(using: .utf8)! // Convert the string to Data
         
-        let name = businessResponse?.businesses.first?.name ?? ""
-        let address = businessResponse?.businesses.first?.location.address1 ?? ""
-        let price = businessResponse?.businesses.first?.price ?? ""
-        let rating = businessResponse?.businesses.first?.rating ?? -1
-        let phoneNumber = businessResponse?.businesses.first?.phone ?? ""
-        
-        let response = await formatResponseToUser(name: name, address: address, price: price, rating: rating, phoneNumber: phoneNumber)
-        return response
+        do {
+            // Decode the JSON data into a YelpLocation instance
+            let decoder = JSONDecoder()
+            let location = try decoder.decode(LocationInfo.self, from: jsonData)
+            print(location)
+            
+            return location
+        } catch {
+            print("Error decoding JSON: \(error)")
+            return LocationInfo(locationType: "", locationInformation: "", distance: -1, time: 0.0, price: "1,2,3,4", location: "", preferences: [])
+        }
     }
+    //-------------------------------------------------
+    
+
     
     // Note: this is for text to speech functionality
     // func speak(text: String) {
