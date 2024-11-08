@@ -121,11 +121,12 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         // rerouting if step isn't working
         if let currStep = navigatingStep {
             let isDistance = mapManager.checkOnRouteDistance(step: currStep, thresholdDistance: 500)
-            let isDirection = mapManager.checkOnRouteDirection(step: currStep, thresholdDirection: 180)
+            let isDirection = mapManager.checkOnRouteDirection(step: currStep, thresholdDirection: 90)
             
-            offRouteCount = !isDistance && !isDirection ? offRouteCount + 1 : 0
-            if offRouteCount == 10 {
+            offRouteCount = !isDistance || !isDirection ? offRouteCount + 1 : 0
+            if offRouteCount == 2 {
                 await reroute(leg: currentLeg, step: estimatedStep)
+                offRouteCount = 0
             }
         }
     }
@@ -148,8 +149,13 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                 self.navigatingRoute!.legs[i] = updatedLeg
             }
         }
+        print("Old Leg: \(self.navigatingLeg!.id), New Leg: \(updatedLeg.id)")
         self.navigatingLeg = updatedLeg
         self.navigatingStep = estimatedStep
+        
+        setNavigatingRoute(route: self.navigatingRoute!)
+        setNavigatingLeg(leg: self.navigatingLeg!)
+        setNavigatingStep(step: self.navigatingStep!)
     }
     
     
