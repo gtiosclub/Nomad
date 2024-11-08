@@ -27,7 +27,7 @@ class ChatViewModel: ObservableObject {
                 DispatchQueue.main.async {
                     let aiMessage = Message(content: self.aiViewModel.atlasResponse, sender: "AI")
                     self.pois = pois  // Update pois with fetched data
-                    self.latestAIResponse = "Response"
+                    self.latestAIResponse = aiMessage.content
                     self.messages.append(aiMessage)
                 }
             } else {

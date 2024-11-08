@@ -14,7 +14,7 @@ struct AtlasNavigationView: View {
     @State var selectedTab = 0
     @State private var mapboxSetUp: Bool = false
     
-    //@ObservedObject var AIVM = AIAssistantViewModel()
+    @ObservedObject var AIVM = AIAssistantViewModel()
     @ObservedObject var ChatVM = ChatViewModel()
     @State private var AIResponse: String? {
         didSet {
@@ -98,7 +98,18 @@ struct AtlasNavigationView: View {
                     Spacer()
                 }
                 .transition(.opacity)
-                            
+            }
+            
+            if !ChatVM.pois.isEmpty {
+                TabView {
+                    ForEach(ChatVM.pois) { poi in
+                        POIDetailView(name: poi.name, address: poi.address, distance: poi.distance, image: poi.image)
+                            .frame(width: 400, height: 120) // Adjust width and height as needed
+                            .padding(.horizontal, 5) // Adds padding at the top and bottom
+                    }
+                }
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                .frame(height: 180)  // Adjust to fit the padding and content
             }
 
             
