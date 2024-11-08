@@ -437,11 +437,51 @@ extension Array {
 }
 
 #Preview {
-    var current_trip = Trip(start_location: Restaurant(address: "848 Spring Street, Atlanta, GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)])
-    
-    var vm: UserViewModel = UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: [current_trip]))
-    
-    vm.setCurrentTrip(trip: current_trip)
-    
-    return FindStopView(vm: vm)
+    struct FindStopPreviewWrapper: View {
+        @StateObject private var vm = UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard"))
+        @State private var isLoading = true
+
+        var body: some View {
+            Group {
+                if isLoading {
+                    ProgressView("Loading trip...")
+                } else {
+                    FindStopView(vm: vm)
+                }
+            }
+            .onAppear {
+                Task {
+                    await vm.createTrip(
+                        start_location: Restaurant(
+                            address: "848 Spring Street, Atlanta, GA 30308",
+                            name: "Tiff's Cookies",
+                            rating: 4.5,
+                            price: 1,
+                            latitude: 33.778033,
+                            longitude: -84.389090
+                        ),
+                        end_location: Hotel(
+                            address: "201 8th Ave S, Nashville, TN 37203 United States",
+                            name: "JW Marriott",
+                            latitude: 36.156627,
+                            longitude: -86.780947
+                        ),
+                        start_date: "10-05-2024",
+                        end_date: "10-05-2024",
+                        stops: [
+                            Activity(
+                                address: "1720 S Scenic Hwy Chattanooga, TN 37409 United States",
+                                name: "Ruby Falls",
+                                latitude: 35.018901,
+                                longitude: -85.339367
+                            )
+                        ]
+                    )
+                    isLoading = false
+                }
+            }
+        }
+    }
+    return FindStopPreviewWrapper()
 }
+

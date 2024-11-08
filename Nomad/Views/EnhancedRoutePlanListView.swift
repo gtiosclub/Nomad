@@ -14,22 +14,23 @@ struct EnhancedRoutePlanListView: View {
         VStack(alignment: .leading, spacing: 0) {
             
             if let startLocation = vm.current_trip?.getStartLocation() {
-                createLocationView(location: startLocation, time: nil, isLast: false)
+                createLocationView(location: startLocation, time: nil, isLast: false, isFirst: true)
             }
             
             if let stops = vm.current_trip?.getStops() {
                 ForEach(stops.indices, id: \.self) { index in
                     let stop = stops[index]
                     let time = vm.times[safe: index]
-                    createLocationView(location: stop, time: time, isLast: false)
+                    createLocationView(location: stop, time: time, isLast: false, isFirst: false)
                 }
             }
             
             if let endLocation = vm.current_trip?.getEndLocation() {
-                createLocationView(location: endLocation, time: vm.times.last, isLast: true)
+                createLocationView(location: endLocation, time: vm.times.last, isLast: true, isFirst: false)
             }
         }
         .padding(.horizontal, 25)
+        .padding(.top, -30)
         .padding(.vertical, 15)
         .padding(.leading, 0)
         .padding(.trailing, 10)
@@ -44,7 +45,7 @@ struct EnhancedRoutePlanListView: View {
         }
     }
     
-    private func createLocationView(location: any POI, time: Double?, isLast: Bool) -> some View {
+    private func createLocationView(location: any POI, time: Double?, isLast: Bool, isFirst: Bool) -> some View {
         HStack(alignment: .center, spacing: 10) {
             // Left part: Circle + Vertical line
             /*
@@ -63,11 +64,12 @@ struct EnhancedRoutePlanListView: View {
                 ZStack {
                     if !isLast {
                         Rectangle()
-                            .fill(Color.gray.opacity(0.5))
-                            .frame(width: 2, height: 90)
-                            .offset(y: 50)
+                            .fill(Color(red: 0.18, green: 0.55, blue: 0.54))
+                            .frame(width: 1.5, height: 90)
+                            .offset(y: 68)
                     }
                     RouteCircle().padding(.top, 0)
+                        .offset(y: 18)
                 }
             }
             VStack(alignment: .leading, spacing: 0) {
@@ -75,7 +77,7 @@ struct EnhancedRoutePlanListView: View {
                 if let time = time {
                     Text("\(time, specifier: "%.0f") MIN DRIVE")
                         .font(.caption)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.black)
                         .padding(.top, 10)
                         .padding(.bottom, 10)
                         .bold()
@@ -91,7 +93,6 @@ struct EnhancedRoutePlanListView: View {
                                 .scaledToFill()
                                 .frame(width: 80, height: 60)
                                 .cornerRadius(10)
-                                .padding(.horizontal, 10)
                         } placeholder: {
                             Rectangle()
                                 .fill(Color.gray.opacity(0.3))
@@ -103,6 +104,10 @@ struct EnhancedRoutePlanListView: View {
                             .fill(Color.gray.opacity(0.3))
                             .frame(width: 80, height: 60)
                             .cornerRadius(10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(Color.black, lineWidth: 0.5)
+                            )
                     }
                     
                     // Location details
@@ -110,7 +115,6 @@ struct EnhancedRoutePlanListView: View {
                         Text(location.getName())
                             .font(.headline)
                             .foregroundColor(.black)
-                            .padding(.bottom, 5)
                         
                         if let cuisine = (location as? Restaurant)?.getCuisine() {
                             Text("\(cuisine) Cuisine")
@@ -124,19 +128,30 @@ struct EnhancedRoutePlanListView: View {
                             }
                             
                             if let ratable = location as? Ratable {
-                                Text("• \(String(format: "%.2f", ratable.getRating()))")
-                                Image(systemName: "star")
-                                    .resizable()
-                                    .frame(width: 14, height: 14)
-                                    .foregroundColor(.secondary)
+                                showRating(location: location, ratable: ratable)
                             }
                         }
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                     }
                 }
+                .padding(.top, isFirst ? 30 : 0)
             }
             Spacer()
+        }
+    }
+    
+    private func showRating(location: any POI, ratable: Ratable) -> some View {
+        HStack {
+            if (location.getCity()) != nil {
+                Text("•")
+            }
+            Text(" \(String(format: "%.2f", ratable.getRating()))")
+            Image(systemName: "star")
+                .resizable()
+                .frame(width: 14, height: 14)
+                .foregroundColor(.secondary)
+                .padding(.leading, -5)
         }
     }
 }
