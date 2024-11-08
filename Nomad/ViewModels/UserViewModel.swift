@@ -80,24 +80,27 @@ class UserViewModel: ObservableObject {
     
     func addStop(stop: any POI) async {
         if let trip = current_trip {
-            let start_coordinates = CLLocationCoordinate2D(latitude: trip.getStartLocation().getLatitude(), longitude: trip.getStartLocation().getLongitude())
-            let stop_coordinates = CLLocationCoordinate2D(latitude: stop.getLatitude(), longitude: stop.getLongitude())
-            let from_start = await getDistanceCoordinates(from: start_coordinates, to: stop_coordinates)
-            var from_stops: [Double] = []
-            for current_stop in trip.getStops() {
-                let current_stop_coordinates = CLLocationCoordinate2D(latitude: current_stop.getLatitude(), longitude: current_stop.getLongitude())
-                from_stops.append(await getDistanceCoordinates(from: current_stop_coordinates, to: stop_coordinates))
-            }
-            let min_stop_distance = from_stops.min() ?? 10000000
-            if min_stop_distance < from_start {
-                let index = from_stops.firstIndex(of: min_stop_distance)!
-                current_trip?.addStopAtIndex(newStop: stop, index: index + 1)
-                user.updateTrip(trip: current_trip!)
-                self.user = user
-            } else {
-                current_trip?.addStopAtIndex(newStop: stop, index: 0)
-                user.updateTrip(trip: current_trip!)
-                self.user = user
+            if await fbVM.addStopToTrip(tripID: current_trip!.id, stop:stop, index: 0) {
+                
+                let start_coordinates = CLLocationCoordinate2D(latitude: trip.getStartLocation().getLatitude(), longitude: trip.getStartLocation().getLongitude())
+                let stop_coordinates = CLLocationCoordinate2D(latitude: stop.getLatitude(), longitude: stop.getLongitude())
+                let from_start = await getDistanceCoordinates(from: start_coordinates, to: stop_coordinates)
+                var from_stops: [Double] = []
+                for current_stop in trip.getStops() {
+                    let current_stop_coordinates = CLLocationCoordinate2D(latitude: current_stop.getLatitude(), longitude: current_stop.getLongitude())
+                    from_stops.append(await getDistanceCoordinates(from: current_stop_coordinates, to: stop_coordinates))
+                }
+                let min_stop_distance = from_stops.min() ?? 10000000
+                if min_stop_distance < from_start {
+                    let index = from_stops.firstIndex(of: min_stop_distance)!
+                    current_trip?.addStopAtIndex(newStop: stop, index: index + 1)
+                    user.updateTrip(trip: current_trip!)
+                    self.user = user
+                } else {
+                    current_trip?.addStopAtIndex(newStop: stop, index: 0)
+                    user.updateTrip(trip: current_trip!)
+                    self.user = user
+                }
             }
         }
     }
