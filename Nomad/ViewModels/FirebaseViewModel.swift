@@ -159,7 +159,8 @@ class FirebaseViewModel: ObservableObject {
                "name" : "",
                "start_date" : startDate,
                "start_id" : "start",
-               "start_time" : startTime
+               "start_time" : startTime,
+               "images" : []
            ]
            do {
                try await tripDocRef.setData(tripData)
