@@ -172,9 +172,6 @@ struct FindStopView: View {
             .padding(.top, 20)
         }.onAppear() {
             markerCoordinate = vm.current_trip?.getStartLocationCoordinates() ?? .init(latitude: 0, longitude: 0)
-            Task {
-                await updateTripRoute()
-            }
         }
     }
     
