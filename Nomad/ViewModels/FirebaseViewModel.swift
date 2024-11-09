@@ -196,12 +196,8 @@ class FirebaseViewModel: ObservableObject {
                 print("Cannot find start point for trip \(tripID)")
                 return nil
             }
-//            let data : [[String: Any]]
             let routeData = docData["route"] as? [[String: Any]] ?? [[:]]
-        
-            
-            // TODO: call function when it is ready
-            // return try await mapManager.dataToNomadRoute(data: routeDoc.data()!)
+            return await mapManager.generateRoute(routeData: routeData)
         } catch {
             print(error)
             return nil

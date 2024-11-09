@@ -143,52 +143,45 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
         return nil
     }
-    // regenerate route from saved coordinates
-    public func generateRoute(coords: [[CLLocationCoordinate2D]], expectedTravelTime: TimeInterval, distance: CLLocationDistance) async -> NomadRoute {
+    // regenerate route from firebase saved coordinates
+    public func generateRoute(routeData: [[String : Any]]) async -> NomadRoute {
         var legs = [NomadLeg]()
         var mapboxLegs = [MapboxDirections.RouteLeg]()
+        var totalDistance: CLLocationDistance = 0.0
+        var totalExpectedTravelTime: TimeInterval = 0.0
         
         if let provider = await core?.routingProvider() {
-            for legCoords in coords {
-                let options = MatchOptions(coordinates: legCoords)
+            for legData in routeData {
+                let expectedTravelTime = legData["expectedTravelTime"] as? TimeInterval ?? 0.0
+                let distance  = legData["distance"] as? CLLocationDistance ?? 0.0
+                let coordsStr: [String] = legData["coords"] as? [String] ?? []
+                let coords = coordsStr.map { parseCoordinateString(coordString: $0) }
+                
+                totalDistance += distance
+                totalExpectedTravelTime += expectedTravelTime
+                
+                let options = MatchOptions(coordinates: coords)
                 options.includesSteps = true
                 
                 switch await provider.calculateRoutes(options: options).result {
                         case .failure(let error):
                             print("Could not generate route from coordinates: \(error)")
                         case .success(let response):
-                            if let leg = response.mainRoute.route.legs.first {
-                                legs.append(NomadLeg(leg: leg))
+                            if var leg = response.mainRoute.route.legs.first {
+                                var nomadLeg = NomadLeg(leg: leg)
+                                nomadLeg.setDistance(distance)
+                                nomadLeg.setExpectedTravelTime(expectedTravelTime)
+                                legs.append(nomadLeg)
                                 mapboxLegs.append(leg)
                             }
-                    }
+                }
             }
         }
         
         print("generateRoute \(legs)")
-        
-        let mapboxRoute = Route.init(legs: mapboxLegs, shape: nil, distance: distance, expectedTravelTime: expectedTravelTime)
+                
+        let mapboxRoute = Route.init(legs: mapboxLegs, shape: nil, distance: totalDistance, expectedTravelTime: totalExpectedTravelTime)
         return NomadRoute(route: mapboxRoute, legs: legs)
-    }
-    
-    public func dataToNomadRoute(data: [String: Any]) async throws -> NomadRoute {
-        // Decode json
-        var routeCoords: [[CLLocationCoordinate2D]] = [[CLLocationCoordinate2D]]()
-        
-        let expectedTravelTime = data["expectedTravelTime"] as? TimeInterval ?? 0.0
-        let distance  = data["distance"] as? CLLocationDistance ?? 0.0
-        
-        for (id, legData) in data {
-            if id == "expectedTravelTime" || id == "distance" { continue }
-            if let legCoords = legData as? String {
-                let legCoordsList = legCoords.split(separator: ";")
-                routeCoords.append(legCoordsList.map { coord in
-                    let values = String(coord).split(separator: ",")
-                    return CLLocationCoordinate2D(latitude: Double(values[0]) ?? 0.0, longitude: Double(values[1]) ?? 0.0)
-                })
-            }
-        }
-        return await generateRoute(coords: routeCoords, expectedTravelTime: expectedTravelTime, distance: distance)
     }
     
     // ROUTE GENERATION HELPERS

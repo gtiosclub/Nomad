@@ -66,6 +66,8 @@ struct NomadLeg {
     var steps: [NomadStep]
     var startCoordinate: CLLocationCoordinate2D
     var endCoordinate: CLLocationCoordinate2D
+    var distance: Turf.LocationDistance = 0
+    var expectedTravelTime: TimeInterval = 0
     
     init(leg: MapboxDirections.RouteLeg) {
         var steps = [NomadStep]()
@@ -73,12 +75,18 @@ struct NomadLeg {
             steps.append(NomadStep(step: step))
         }
         self.init(steps: steps)
+        self.distance = leg.distance
+        self.expectedTravelTime = leg.expectedTravelTime
     }
     
     init(steps: [NomadStep]) {
         self.steps = steps
         self.startCoordinate = steps.first?.startCoordinate ?? CLLocationCoordinate2D()
         self.endCoordinate = steps.last?.endCoordinate ?? CLLocationCoordinate2D()
+        for step in steps {
+            self.distance += step.direction.distance
+            self.expectedTravelTime += step.direction.expectedTravelTime
+        }
     }
     
     func getStartLocation() -> CLLocationCoordinate2D {
@@ -86,6 +94,19 @@ struct NomadLeg {
     }
     func getEndLocation() -> CLLocationCoordinate2D {
         return endCoordinate
+    }
+    
+    func getDistance() -> Turf.LocationDistance {
+        return distance
+    }
+    func getExpectedTravelTime() -> TimeInterval {
+        return expectedTravelTime
+    }
+    mutating func setDistance(_ distance: Turf.LocationDistance) {
+        self.distance = distance
+    }
+    mutating func setExpectedTravelTime(_ expectedTravelTime: TimeInterval) {
+        self.expectedTravelTime = expectedTravelTime
     }
     
     func getShape() -> MKPolyline {
