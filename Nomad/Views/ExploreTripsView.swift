@@ -10,6 +10,7 @@ import SwiftUI
 struct ExploreTripsView: View {
     @ObservedObject var vm: UserViewModel
     @State private var currentCity: String? = nil
+    @State var current_trips: [Trip] = []
     
     var body: some View {
         NavigationStack {
@@ -30,21 +31,13 @@ struct ExploreTripsView: View {
                             Spacer()
                         }
                         .task {
-                            await vm.getCurrentCity()
+                            //await vm.getCurrentCity()
                         }
                         
                         //TEMPORARY JUST FOR MID SEM DEMO
-                        NavigationLink(destination: AIAssistantView()) {
-                            Text("Consult Atlas")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .padding()
-                                .background(Color.blue)
-                                .cornerRadius(10)
-                        }.padding(.leading)
                         
                         HStack {
-                            Text("Plan your next trip, \(vm.user?.getName().split(separator: " ").first ?? "User")!")
+                            Text("Plan your next trip, \(vm.user.getName().split(separator: " ").first!)!")
                                 .bold()
                                 .font(.system(size: 20))
                                 .padding(.horizontal)
@@ -56,7 +49,7 @@ struct ExploreTripsView: View {
                                 Ellipse()
                                     .fill(Color.gray)
                                     .frame(width: 40, height: 40)
-                                Text((vm.user?.getName() ?? "User").prefix(1))
+                                Text((vm.user.getName()).prefix(1))
                                     .foregroundColor(.white)
                                     .font(.system(size: 25))
                             }
@@ -70,14 +63,17 @@ struct ExploreTripsView: View {
                             
                             ScrollView(.horizontal) {
                                 HStack {
-                                    ForEach(vm.my_trips) { trip in
+                                    ForEach($current_trips.wrappedValue) { trip in
                                         NavigationLink(destination: {
                                             PreviewRouteView(vm: vm, trip: trip)
                                         }, label: {
-                                            TripGridView(trip: Binding.constant(trip))
+                                            TripGridView(trip: trip)
                                                 .frame(alignment: .top)
                                         })
                                     }
+                                }
+                                .onChange(of: vm.user.trips, initial: true) { oldTrips, newTrips in
+                                    current_trips = newTrips
                                 }
                             }
                             .padding(.horizontal)
@@ -92,7 +88,7 @@ struct ExploreTripsView: View {
                                         NavigationLink(destination: {
                                             PreviewRouteView(vm: vm, trip: trip)
                                         }, label: {
-                                            TripGridView(trip: Binding.constant(trip))
+                                            TripGridView(trip: trip)
                                                 .frame(alignment: .top)
                                         })
                                     }
@@ -110,7 +106,7 @@ struct ExploreTripsView: View {
                                         NavigationLink(destination: {
                                             PreviewRouteView(vm: vm, trip: trip)
                                         }, label: {
-                                            TripGridView(trip: Binding.constant(trip))
+                                            TripGridView(trip: trip)
                                                 .frame(alignment: .top)
                                         })
                                     }
@@ -138,11 +134,13 @@ struct ExploreTripsView: View {
                     }
                 }
             }
-        }.onAppear() {
+        }.task {
             print("populating trips")
-            vm.populate_my_trips()
-            vm.populate_previous_trips()
+//            vm.populate_my_trips()
+//            vm.populate_previous_trips()
             vm.populate_community_trips()
+            await vm.populateUserTrips()
+            current_trips = vm.user.trips
         }
     }
     
@@ -164,7 +162,7 @@ struct ExploreTripsView: View {
     }
     
     struct TripGridView: View {
-        @Binding var trip: Trip
+        @StateObject var trip: Trip
         
         var body: some View {
             VStack {
@@ -182,6 +180,7 @@ struct ExploreTripsView: View {
                             .frame(width: 120, height: 120)
                             .cornerRadius(10)
                             .padding(.horizontal, 10)
+//                            .id($trip.coverImageURL.wrappedValue)
                     } placeholder: {
                         ProgressView()
                             .frame(width: 120, height: 120)
@@ -193,7 +192,7 @@ struct ExploreTripsView: View {
                     }
                 }
                 
-                Text(trip.getName())
+                Text(trip.name)
                     .lineLimit(3)
                     .multilineTextAlignment(.center)
                     .frame(width: 120)
@@ -201,6 +200,9 @@ struct ExploreTripsView: View {
                     .foregroundStyle(.black)
             }
             .padding(.vertical, 5)
+            .onChange(of: trip, initial: true) { old, new in
+                print("changing trip info \(old.coverImageURL) \(new.coverImageURL)")
+            }
         }
     }
 }
