@@ -478,6 +478,26 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             return false
         }
     }
+    
+    func checkOnRouteDirection(step: NomadStep) -> Bool {
+        guard let userLocation = self.userLocation else { return false }
+        let coords = step.getCoordinates()
+
+        let closest_coord = getClosestCoordinate(step: step)
+        let next_coord_index = Int(coords.firstIndex(of: closest_coord) ?? coords.endIndex) + 1
+        guard let next_closest_coord = coords.dropFirst(next_coord_index).first else { return false }
+        
+        // TODO: Verify that this method words
+        // arcsin(x coord diff / distance between coords)
+        var expected_direction = asin((next_closest_coord.latitude - closest_coord.latitude) / next_closest_coord.distance(to: closest_coord)) * (180 / .pi)
+        if expected_direction < 0 {
+            expected_direction = 360 + expected_direction // Convert westward directions to 180+ degs isntead of negative
+        }
+        let user_direction = userLocation.direction(to: next_closest_coord)
+        
+        let thresholdDirection: Double = 90.0
+        return abs(expected_direction - user_direction) < thresholdDirection
+    }
  
     func getExampleRoute() async -> NomadRoute? {
         let trip = UserViewModel.my_trips.first!
