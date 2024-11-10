@@ -28,15 +28,22 @@ struct AIAssistantView: View {
                         HStack {
                             if message.sender == "AI" {
                                 HStack {
-                                    Circle()
-                                        .frame(width: 30, height: 30)
-                                        .foregroundColor(.gray) // Placeholder for AI avatar
+                                    Image("AtlasIcon")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 35, height: 35)
+                                    
                                     Text(message.content)
                                         .padding()
-                                        .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .stroke(Color.black, lineWidth: 1)
+                                                .fill(Color.gray.opacity(0.2))
+                                        )
                                         .frame(maxWidth: 270, alignment: .leading)
                                         .id(message.id)
                                 }
+                                
                                 Spacer()
                             } else {
                                 Spacer()
@@ -45,14 +52,28 @@ struct AIAssistantView: View {
                                         .padding()
                                         .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
                                         .frame(maxWidth: 270, alignment: .trailing)
-                                    Circle()
-                                        .frame(width: 30, height: 30)
-                                        .foregroundColor(.blue) // Placeholder for User avatar
+                                    
+                                    ZStack {
+                                        Circle()
+                                            .foregroundColor(Color.white)
+                                            .frame(width: 30, height: 30) // Adjust size as needed
+                                            .overlay(
+                                                Circle()
+                                                    .stroke(Color.black, lineWidth: 1) // Adds a black outline with a width of 2
+                                            )
+                                        
+                                        // Image on top of the circle
+                                        Image(systemName: "person")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 20, height: 20)
+                                    }
                                 }
                             }
                         }
                         .padding(.horizontal)
                     }
+                    
                     if chatViewModel.isQuerying{
                         //Detect if the ai is loading
                         HStack {
@@ -81,20 +102,6 @@ struct AIAssistantView: View {
                     }
                 }
             }
-            
-            // Horizontal scroll view for POIs
-//            if !chatViewModel.pois.isEmpty {
-//                ScrollView(.horizontal, showsIndicators: false) {
-//                    HStack(spacing: 20) {
-//                        ForEach(chatViewModel.pois) { poi in
-//                            POIDetailView(name: poi.name, address: poi.address, distance: poi.distance)
-//                                .frame(width: 400) // Adjust width as necessary
-//                        }
-//                    }
-//                    .padding(.horizontal)
-//                }
-//                .frame(height: 110)  // Adjust height as needed
-//            }
             
             if !chatViewModel.pois.isEmpty {
                 TabView {
@@ -167,3 +174,4 @@ struct AIAssistantView: View {
 #Preview {
     AIAssistantView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")), chatViewModel: ChatViewModel())
 }
+
