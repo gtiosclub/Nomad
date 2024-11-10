@@ -25,7 +25,7 @@ struct MapMarker: Identifiable {
     }
     
     enum MapMarkerIcon: Int {
-        case pin, restaurant, hotel, museum, park // placeholders for now
+        case pin, restaurant, hotel, museum, park, trafficLight, stopSign // placeholders for now
         
         var image_path: String {
             switch self {
@@ -39,6 +39,10 @@ struct MapMarker: Identifiable {
                 return "museum"
             case .park:
                 return "park"
+            case .trafficLight:
+                return "traffic_light_icon"
+            case .stopSign:
+                return "stop_sign_icon"
             }
         }
     }
