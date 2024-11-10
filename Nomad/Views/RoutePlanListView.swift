@@ -100,9 +100,10 @@ struct RoutePlanListView: View {
 struct RouteCircle: View {
     var body: some View {
         Circle()
-            .fill(Color.white)
-            .shadow(radius: 2)
+            .stroke(Color(red: 0.18, green: 0.55, blue: 0.54), lineWidth: 1.5)
+            .background(Circle().fill(Color.white))
             .frame(width: 12, height: 12)
+            .shadow(radius: 0.2)
     }
 }
 

@@ -24,6 +24,7 @@ struct FindStopView: View {
     @State private var selectedStop: (any POI)?
     @State private var isEditing: Bool = false
     @State private var routeProgress: Double = 0.0
+    @State private var markerCoordinate: CLLocationCoordinate2D = .init(latitude: 0, longitude: 0)
     @State private var filterRating: String = "4 ★ and up"
     @State private var filterCuisine: String = "American"
     @State private var filterPrice: String = "$$"
@@ -42,7 +43,7 @@ struct FindStopView: View {
                     .padding(.horizontal)
                 
                 if let trip = vm.current_trip {
-                    RoutePreviewView(vm: vm, trip: Binding.constant(trip))
+                    RoutePreviewView(vm: vm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(markerCoordinate), showStopMarker: true)
                         .frame(minHeight: 250.0)
                 } else {
                     Text("No current trip available")
@@ -51,13 +52,6 @@ struct FindStopView: View {
             }
             
             VStack(alignment: .leading, spacing: 15) {
-                /*Slider(value: $routeProgress, in: 0...1, step: 0.01) {
-                 Text("Route Progress")
-                 }
-                 .padding()
-                 .onChange(of: routeProgress) { newValue in
-                 updateMarkerPosition(progress: newValue)
-                 }*/
                 HStack {
                     ZStack {
                         Circle()
@@ -91,13 +85,23 @@ struct FindStopView: View {
                 
                 TabView(selection: $selectedTab) {
                     VStack(alignment: .leading, spacing: 16) {
+                        Slider(value: $routeProgress, in: 0...((vm.current_trip!.route?.totalTime() ?? 60)/60), step: 1, label: {Text("Stop")}, minimumValueLabel: {Text("0")}, maximumValueLabel: {Text("\(Int((vm.current_trip!.route?.totalTime() ?? 60)/60))")})
+                            .padding()
+                            .onChange(of: routeProgress) { newValue in
+                                updateMarkerPosition(progress: newValue)
+                            }
                         if selection == "Restaurants" {
-                            Text("Cuisine:")
+                            Text("Filters:")
                                 .font(.headline)
-                            FilterView(selectedRating: $rating, selectedCuisine: $selectedCuisines, selectedPrice: $price)
+                            HStack{
+                                RatingFilterView(selectedRating: $rating).frame(maxWidth: 90)
+                                CuisineFilterView(selectedCuisine: $selectedCuisines)
+                                PriceFilterView(selectedPrice: $price).frame(maxWidth: 80)
+                            }
                             Spacer()
                         } else if selection == "Activities" || selection == "Hotels" {
                             RatingUI(rating: $rating)
+                                .padding(.top, 10)
                         }
                     }
                     .padding(.horizontal)
@@ -168,11 +172,7 @@ struct FindStopView: View {
             }
             .padding(.top, 20)
         }.onAppear() {
-            Task {
-//                await updateTripRoute()
-//                await aiVM.generateTripWithAtlas(userVM: vm)
-//                await updateTripRoute()
-            }
+            markerCoordinate = vm.current_trip?.getStartLocationCoordinates() ?? .init(latitude: 0, longitude: 0)
         }
     }
     
@@ -187,7 +187,7 @@ struct FindStopView: View {
                 return 30
             }
         case 2:
-            return 200 + CGFloat((vm.current_trip?.getStops().count ?? 0) * 100)
+            return 225 + CGFloat((vm.current_trip?.getStops().count ?? 0) * 100)
         default:
             return 300
         }
@@ -419,17 +419,14 @@ struct FindStopView: View {
             .cornerRadius(12)
         }
     }
-    /*func updateMarkerPosition(progress: Double) {
-
-        let totalTime = vm.total_time
-        let targetTime = totalTime * progress
-
-        Task {
-            if let newPosition = try? await vm.mapManager.getFutureLocation(time: targetTime) {
-                markerCoordinate = newPosition
-            }
+    
+    func updateMarkerPosition(progress: Double) {
+        let targetTime = 60 * progress
+        
+        if let newPosition = MapManager.manager.getFutureLocation(time: targetTime, route: vm.current_trip!.route!) {
+            markerCoordinate = newPosition
         }
-    }*/
+    }
 }
 
 extension Array {
@@ -441,11 +438,51 @@ extension Array {
 }
 
 #Preview {
-    var current_trip = Trip(start_location: Restaurant(address: "848 Spring Street, Atlanta, GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)])
-    
-    var vm: UserViewModel = UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: [current_trip]))
-    
-    vm.setCurrentTrip(trip: current_trip)
-    
-    return FindStopView(vm: vm)
+    struct FindStopPreviewWrapper: View {
+        @StateObject private var vm = UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard"))
+        @State private var isLoading = true
+
+        var body: some View {
+            Group {
+                if isLoading {
+                    ProgressView("Loading trip...")
+                } else {
+                    FindStopView(vm: vm)
+                }
+            }
+            .onAppear {
+                Task {
+                    await vm.createTrip(
+                        start_location: Restaurant(
+                            address: "848 Spring Street, Atlanta, GA 30308",
+                            name: "Tiff's Cookies",
+                            rating: 4.5,
+                            price: 1,
+                            latitude: 33.778033,
+                            longitude: -84.389090
+                        ),
+                        end_location: Hotel(
+                            address: "201 8th Ave S, Nashville, TN 37203 United States",
+                            name: "JW Marriott",
+                            latitude: 36.156627,
+                            longitude: -86.780947
+                        ),
+                        start_date: "10-05-2024",
+                        end_date: "10-05-2024",
+                        stops: [
+                            Activity(
+                                address: "1720 S Scenic Hwy Chattanooga, TN 37409 United States",
+                                name: "Ruby Falls",
+                                latitude: 35.018901,
+                                longitude: -85.339367
+                            )
+                        ]
+                    )
+                    isLoading = false
+                }
+            }
+        }
+    }
+    return FindStopPreviewWrapper()
 }
+

@@ -120,5 +120,5 @@ struct LocationSearchBox: View {
 } // End Struct
 
 #Preview {
-    LocationSearchBox(vm: UserViewModel())
+    LocationSearchBox(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")))
 }
