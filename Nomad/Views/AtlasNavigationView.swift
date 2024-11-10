@@ -142,6 +142,6 @@ struct AtlasNavigationView: View {
 
 struct AtlasNavigationView_Previews: PreviewProvider {
     static var previews: some View {
-        AtlasNavigationView(vm: UserViewModel())
+        AtlasNavigationView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")))
     }
 }
