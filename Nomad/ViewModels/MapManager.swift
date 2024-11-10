@@ -325,7 +325,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             }
         }
         
-        return closestLeg
+        return closestLeg ?? route.legs.first
     }
 
     // Modified getFutureLocation
