@@ -7,6 +7,7 @@
 
 import Foundation
 
+
 struct BusinessResponse: Codable {
     let businesses: [YelpBusiness]
 }

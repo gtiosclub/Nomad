@@ -10,6 +10,7 @@ import CoreLocation
 
 struct FindStopView: View {
     @ObservedObject var vm: UserViewModel
+    @ObservedObject var aiVM: AIAssistantViewModel = AIAssistantViewModel()
     @State var selection: String = "Restaurants"
     @State private var searchTerm: String = ""
     @State private var searchString: String = ""

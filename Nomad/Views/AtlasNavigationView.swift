@@ -124,7 +124,7 @@ struct AtlasNavigationView: View {
 
             if !transcript.isEmpty {
                 currentMessage = transcript
-                ChatVM.sendMessage(currentMessage)
+                ChatVM.sendMessage(currentMessage, vm: vm)
                 isLoading = true
             }
 
@@ -142,6 +142,6 @@ struct AtlasNavigationView: View {
 
 struct AtlasNavigationView_Previews: PreviewProvider {
     static var previews: some View {
-        AtlasNavigationView()
+        AtlasNavigationView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")))
     }
 }
