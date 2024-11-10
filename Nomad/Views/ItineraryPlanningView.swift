@@ -18,7 +18,8 @@ struct ItineraryPlanningView: View {
     @State var startLongitude: Double = 0
     @State var endLatitude: Double = 0
     @State var endLongitude: Double = 0
-    @State var editTrip: Bool = false
+    @State var editTripAtlas: Bool = false
+    @State var editTripContinue: Bool = false
     @State var startDate: Date = Date()
     @State var endDate: Date = Date()
     @State var startTime: Date = Date()
@@ -29,6 +30,7 @@ struct ItineraryPlanningView: View {
     @State var isClicked: Bool = false
     @State var startAddressError: String = ""
     @State var endAddressError: String = ""
+    @State var isLoading: Bool = false
     @State var bothAddressError: String = ""
     
     enum completion{
@@ -192,7 +194,7 @@ struct ItineraryPlanningView: View {
                 }.padding(.horizontal)
                     .frame(width: UIScreen.main.bounds.width - 20, height: 300, alignment: .leading)
                     .font(.headline)
-                
+               
                 Button(action: {
                     
                     //reset error states
@@ -232,29 +234,99 @@ struct ItineraryPlanningView: View {
                             startLongitude = 0.0
                             endLatitude = 0.0
                             endLongitude = 0.0
-                            editTrip = true
+                            editTripAtlas = true
                             
-                            
+                          
                         }
-                    }
 
-                }) {
-                    Text("Continue").font(.headline)
-                        .foregroundColor(.black)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.gray.opacity(0.3))
-                        .cornerRadius(15)
-                        .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
+                    }) {
+                        Label("Generate with Atlas", systemImage: "wand.and.sparkles").font(.headline)
+                            .foregroundColor(.white)
+                            .padding()
+                            .background(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [Color.blue, Color.purple]),
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+
+                            .cornerRadius(15)
+                            .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
+                    }
+                    .navigationDestination(isPresented: $editTripAtlas, destination: {
+                        ItineraryParentView(vm: vm, cvm: ChatViewModel())
+                    })
+//                    
+                    Button(action: {
+                        
+                        //reset error states
+                       startAddressError = ""
+                    endAddressError = ""
+                    bothAddressError = ""
+                    
+                    //check if start and end location are valid address that contains at least two commas
+                    if inputAddressStart.components(separatedBy: ",").count < 3 && inputAddressEnd.components(separatedBy: ",").count < 3 {
+                        bothAddressError = "Both addresses need to be entered with a street, city, and state."
+                    } else if inputAddressStart.components(separatedBy: ",").count < 3 {
+                            startAddressError = "Please enter a valid start location with a street, city, and state."
+                    } else if inputAddressEnd.components(separatedBy: ",").count < 3 {
+                            endAddressError = "Please enter a valid end location with a street, city, and state."
+                        }
+                    
+                    
+                    if(inputAddressStart.contains(inputNameStart)){
+                        inputNameStart = "Start Location"
+                    }
+                    if(inputAddressEnd.contains(inputNameEnd)){
+                        inputNameEnd = "End Location"
+                    }
+                    
+                    if (startAddressError.isEmpty && endAddressError.isEmpty && bothAddressError.isEmpty) {
+                        Task {
+                            await vm.createTrip(start_location: GeneralLocation(address: inputAddressStart, name: inputNameStart, latitude: startLatitude, longitude: startLongitude), end_location: GeneralLocation(address: inputAddressEnd, name: inputNameEnd, latitude: endLatitude, longitude: endLongitude), start_date: ItineraryPlanningView.dateToString(date: startDate), end_date: ItineraryPlanningView.dateToString(date: endDate), stops: [], start_time: ItineraryPlanningView.timeToString(date: startTime))
+                            
+                            inputNameEnd = ""
+                            inputNameStart = ""
+                            inputAddressEnd = ""
+                            inputAddressStart = ""
+                            startDate = Date()
+                            endDate = Date()
+                            startTime = Date()
+                            startLatitude = 0.0
+                            startLongitude = 0.0
+                            endLatitude = 0.0
+                            endLongitude = 0.0
+                            editTripContinue = true
+                            
+                          
+                        }
+
+                    }) {
+                        Text("Continue").font(.headline)
+                            .foregroundColor(.black)
+                            .padding()
+                            .background(Color.gray.opacity(0.3))
+                            .cornerRadius(15)
+                            .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
+                    }
+                    .navigationDestination(isPresented: $editTripContinue, destination: {
+                        ItineraryParentView(vm: vm, cvm: ChatViewModel())
+                    })
                 }
-                .padding(.horizontal, 50)
-                .navigationDestination(isPresented: $editTrip, destination: {
-                    ItineraryParentView(vm: vm, cvm: ChatViewModel())
-                })
+                
+            
                                 
                 Spacer()
                 
-            }
+            }.overlay(
+                Group {
+                    if isLoading {
+                        AtlasLoadingView()
+                            .frame(width: 80, height: 80) // Adjust size if needed
+                    }
+                }
+            )
         }
         .onAppear() {
             vm.clearCurrentTrip()
