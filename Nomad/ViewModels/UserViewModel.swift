@@ -89,16 +89,19 @@ class UserViewModel: ObservableObject {
                 from_stops.append(await getDistanceCoordinates(from: current_stop_coordinates, to: stop_coordinates))
             }
             let min_stop_distance = from_stops.min() ?? 10000000
+            
+            let index: Int
             if min_stop_distance < from_start {
-                let index = from_stops.firstIndex(of: min_stop_distance)!
-                current_trip?.addStopAtIndex(newStop: stop, index: index + 1)
-                user.updateTrip(trip: current_trip!)
-                self.user = user
+                index = from_stops.firstIndex(of: min_stop_distance)!
             } else {
-                current_trip?.addStopAtIndex(newStop: stop, index: 0)
+                index = 0
+            }
+            if await fbVM.addStopToTrip(tripID: current_trip!.id, stop:stop, index: index) {
+                current_trip?.addStopAtIndex(newStop: stop, index: (index > 0 ? index + 1: 0))
                 user.updateTrip(trip: current_trip!)
                 self.user = user
             }
+            
         }
     }
     
