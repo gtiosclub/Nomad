@@ -573,16 +573,10 @@ class UserViewModel: ObservableObject {
         
         return nil
     }
-    
-<<<<<<< HEAD
-    func populate_my_trips() {
-        my_trips = UserViewModel.my_trips
-    }
-=======
+
 //    func populate_my_trips() {
 //        my_trips = user.trips ?? []
 //    }
->>>>>>> itinerary-main
     
 //    func populate_previous_trips() {
 //        previous_trips = UserViewModel.previous_trips
