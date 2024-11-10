@@ -14,7 +14,7 @@ struct AIAssistantView: View {
         VStack {
             // Header
             if let trip = vm.current_trip {
-                RoutePreviewView(vm: vm, trip: Binding.constant(trip))
+                RoutePreviewView(vm: vm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(nil))
                     .frame(minHeight: 200.0)
             } else {
                 Text("No current trip available")
@@ -165,5 +165,5 @@ struct AIAssistantView: View {
 }
 
 #Preview {
-    AIAssistantView(vm: UserViewModel(), chatViewModel: ChatViewModel())
+    AIAssistantView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")), chatViewModel: ChatViewModel())
 }

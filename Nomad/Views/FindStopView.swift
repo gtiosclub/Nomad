@@ -24,6 +24,7 @@ struct FindStopView: View {
     @State private var selectedStop: (any POI)?
     @State private var isEditing: Bool = false
     @State private var routeProgress: Double = 0.0
+    @State private var markerCoordinate: CLLocationCoordinate2D = .init(latitude: 0, longitude: 0)
     @State private var filterRating: String = "4 ★ and up"
     @State private var filterCuisine: String = "American"
     @State private var filterPrice: String = "$$"
