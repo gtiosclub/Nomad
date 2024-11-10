@@ -124,7 +124,7 @@ class AIAssistantViewModel: ObservableObject {
     //-------------------------------------------------
     
     /*----------------------------------------------------
-     Parent Function
+     Parent Functions
      -----------------------------------------------------
      */
     
@@ -171,30 +171,19 @@ class AIAssistantViewModel: ObservableObject {
     }
     
     func generateTripWithAtlas(userVM: UserViewModel) async -> String {
-//        guard let start_loc = userVM.current_trip?.getStartLocation() else { return ""}
-//        guard let end_loc = userVM.current_trip?.getEndLocation() else { return ""}
-//        
-//        var all_pois: [any POI] = []
-//        all_pois.append(start_loc)
-//        all_pois.append(end_loc)
-//        
-//        if let newRoutes = await MapManager.manager.generateRoute(pois: all_pois) {
-//            userVM.setTripRoute(route: newRoutes[0])
-//        }
-        
-        while userVM.current_trip?.route == nil {
-               // Pause for a short duration to avoid busy-waiting
-               try? await Task.sleep(nanoseconds: 100_000_000) // 100 milliseconds
-           }
-        
         let expectedTravelTime = userVM.current_trip?.route?.route?.expectedTravelTime ?? 0.0
 //
         let brainstormedStops = await gptGenerateStops(startTime: userVM.current_trip?.getStartTime() ?? "", startLocation: userVM.current_trip?.getStartLocation().address ?? "", endLocation: userVM.current_trip?.getEndLocation().address ?? "", expectedTravelTime: String(expectedTravelTime)) ?? ""
         
+        
+        
         if let jsonData = brainstormedStops.data(using: .utf8) {
             do {
                 let stopsData = try JSONDecoder().decode(AtlasTrip.self, from: jsonData)
-                for locationInfo in stopsData.stops {
+                
+                let totalStops = stopsData.stops.count
+                
+                for (index, locationInfo) in stopsData.stops.enumerated() {
                     currentAtlasTrip.stops.append(locationInfo)
                     let locationType = locationInfo.locationType
                     let locationInformation = locationInfo.locationInformation
@@ -208,10 +197,10 @@ class AIAssistantViewModel: ObservableObject {
                     
                     if(time != -1 && location == "MyLocation") {
                         let coords = await getCoordsFromTime(time: time, userVM: userVM)
-                        
-                        print("Coords \(coords)")
-                        
-                        print(locationInfo)
+//                        
+//                        print("Coords \(coords)")
+//                        
+//                        print(locationInfo)
                         
                         businessInformation = await fetchSpecificBusinesses(locationType: (locationInformation == "") ? locationType : locationInformation, distance: 2, price: price, location: "UseCoords", preferences: preferences, latitude: coords.latitude, longitutde: coords.longitude, limit: 1) ?? ""
                         
@@ -224,7 +213,7 @@ class AIAssistantViewModel: ObservableObject {
                     }
                     
                     var poi: any POI;
-                    print("business response \(businessResponse)")
+//                    print("business response \(businessResponse)")
                     
                     if businessResponse.businesses.count > 0 {
                         let business = businessResponse.businesses[0]
@@ -249,8 +238,10 @@ class AIAssistantViewModel: ObservableObject {
                         }
                         
                         await userVM.addStop(stop: poi)
+                        
                     }
                 }
+                
             } catch {
                 print("Failed to decode JSON: \(error)")
             }
@@ -274,7 +265,7 @@ class AIAssistantViewModel: ObservableObject {
         do {
             let response = try await openAIAPIKey.sendMessage(
                 text: """
-                    A road trip is starting at \(startTime) at \(startLocation) and ending at \(endLocation). Expected travel time is \(expectedTravelTime). Your job is to brainstorm stops for the road trip. Create a JSON array of these JSON objects in the format below. I will use these objects to query Yelp and find actual stops. "Time" is how long into the route the stop will be. Example for locationInformation is "Museum" if locationType is "Activity". If there is no location information, leave a blank String. You don't have to fill out preferences until the user gives feedback. Price should be default set to "1,2,3,4", and should only include upper or lower ranges based on user price preference. You don't have to include location information. Location is default "MyLocation". Make sure "time" to get to a stop does not exceed expected travel time.
+                    A road trip is starting at \(startTime) at \(startLocation) and ending at \(endLocation). Expected travel time is \(expectedTravelTime). Your job is to brainstorm stops for the road trip. Create a JSON array of these JSON objects in the format below. I will use these objects to query Yelp and find actual stops. "Time" is how long into the route the stop will be. If there is no location information, leave a blank String. Example for locationInformation is "Museum" if locationType is "Activity". Preferences should be a blank array until the user gives feedback. Price should be default set to "1,2,3,4", and should only include upper or lower ranges based on user price preference. You don't have to include location information. Location is default "MyLocation". Make sure "time" to get to a stop does not exceed expected travel time. Only include at most 1 activity/shopping per day.
                     { stops: [{
                     locationType: <Restaurant/Gas Station/Hotel/Rest Stop/Activity/Shopping>
                     locationInformation: <String>
@@ -364,8 +355,14 @@ class AIAssistantViewModel: ObservableObject {
     func getCoordsFromTime(time: Double, userVM: UserViewModel) async -> CLLocationCoordinate2D{
         let sampleRoute = await MapManager.manager.getExampleRoute()!
         
+        
+        while userVM.current_trip?.route == nil {
+           // Pause for a short duration to avoid busy-waiting
+           try? await Task.sleep(nanoseconds: 100_000_000) // 100 milliseconds
+       }
         let route = userVM.current_trip?.route
         
+        print("route")
         print(route)
         
         let coords = MapManager.manager.getFutureLocation(time: time, route: route ?? sampleRoute) ?? CLLocationCoordinate2D(latitude: 0.0, longitude: 0.0)

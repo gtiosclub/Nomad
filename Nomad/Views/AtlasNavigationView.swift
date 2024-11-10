@@ -10,7 +10,7 @@ import AVFoundation
 
 
 struct AtlasNavigationView: View {
-    @ObservedObject var vm: UserViewModel
+    @ObservedObject var vm = UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard"))
     @State var selectedTab = 0
     @State private var mapboxSetUp: Bool = false
     
@@ -142,6 +142,6 @@ struct AtlasNavigationView: View {
 
 struct AtlasNavigationView_Previews: PreviewProvider {
     static var previews: some View {
-        AtlasNavigationView(vm: UserViewModel())
+        AtlasNavigationView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")))
     }
 }

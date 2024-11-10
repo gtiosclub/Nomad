@@ -26,7 +26,7 @@ struct PreviewRouteView: View {
                     .padding(.leading)
                     .padding(.top)
                 
-                RoutePreviewView(vm: vm, trip: Binding.constant(trip))
+                RoutePreviewView(vm: vm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(nil))
                     .frame(height: 300)
                 
                 Spacer().frame(height: 20)

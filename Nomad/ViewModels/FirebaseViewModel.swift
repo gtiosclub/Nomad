@@ -397,6 +397,7 @@ class FirebaseViewModel: ObservableObject {
 //            return false
 //        }
 //    }
+
     
     
     func removeStopFromTrip(tripID: String, stop: any POI) async -> Bool {
