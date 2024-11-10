@@ -15,10 +15,46 @@ import SwiftUI
 class FirebaseViewModel: ObservableObject {
     let auth = Auth.auth()
     let db = Firestore.firestore()
+    @Published var current_user: User? = nil
     @Published var errorText: String? = nil
     @Published var isLoading: Bool = false
+    @Published var isAuthenticated = false  // Add this new property
+    var onSetupCompleted: ((FirebaseViewModel) -> Void)?
     
-    func firebase_email_password_sign_up(email: String, password: String, completion: @escaping (Bool) -> Void) {
+    init(current_user: User? = nil, errorText: String? = nil) {
+        if self.current_user == nil {
+            self.current_user = current_user
+            self.errorText = errorText
+            
+            // Combine both auth listeners
+            auth.addStateDidChangeListener { [weak self] auth, user in
+                DispatchQueue.main.async {
+                    self?.isAuthenticated = user != nil  // Update authentication state
+                    
+                    if let user = user {
+                        print("User Found")
+                        if let username = user.displayName {
+                            if !(current_user != nil && current_user!.id == username) {
+                                print("Setting User: \(username)")
+                                Task {
+                                    await self?.setCurrentUser(userId: username)
+                                    UserDefaults.standard.setValue(true, forKey: "log_Status")
+                                }
+                            }
+                        }
+                    } else {
+                        UserDefaults.standard.setValue(false, forKey: "log_Status")
+                    }
+                }
+            }
+        }
+    }
+    
+    func configure() {
+        self.onSetupCompleted?(self)
+    }
+    
+    func firebase_email_password_sign_up(email: String, password: String, name: String, completion: @escaping (Bool) -> Void) {
         isLoading = true
         auth.createUser(withEmail: email, password: password) { [weak self] authResult, error in
             guard let self = self else { return }
@@ -35,9 +71,17 @@ class FirebaseViewModel: ObservableObject {
                 completion(false)
                 return
             }
-            
-            db.collection("USERS").document(user.uid).setData([
-                "email": email
+            let changeRequest = user.createProfileChangeRequest()
+            changeRequest.displayName = name
+            changeRequest.commitChanges { error in
+                if let error = error {
+                    self.errorText = "Failed to update user display name: \(error.localizedDescription)"
+                    completion(false)
+                }
+            }
+            let trips: [String] = []
+            db.collection("USERS").document(name).setData([
+                "email": email, "name": name, "trips": trips
             ]) { error in
                 if let error = error {
                     self.errorText = "Failed to save user data: \(error.localizedDescription)"
@@ -72,6 +116,44 @@ class FirebaseViewModel: ObservableObject {
             
         }
     }
+    
+    func setCurrentUser(userId: String) async -> User? {
+        if userId.isEmpty {
+            return nil
+        }
+        
+        // Only fetch if current_user is nil or different user
+        if current_user == nil || current_user?.id != userId {
+            do {
+                // First get the user document
+                let document = try await db.collection("USERS").document(userId).getDocument()
+                
+                guard let documentData = document.data() else {
+                    print("User document does not contain any data.")
+                    return nil
+                }
+                
+                // Then fetch all trips
+                let allTrips: [String: [Trip]] = await getAllTrips(userID: userId)
+                
+                self.current_user = User(
+                    id: document.documentID,
+                    name: documentData["name"] as? String ?? "",
+                    email: documentData["email"] as? String ?? "",
+                    trips: allTrips["future"] ?? [],
+                    pastTrips: allTrips["past"] ?? [],
+                    currentTrip: allTrips["present"] ?? []
+                )
+                
+                return self.current_user
+            } catch {
+                print("SetCurrentUserError: \(error.localizedDescription)")
+                return nil
+            }
+        }
+        return current_user
+    }
+
     
     /*-------------------------------------------------------------------------------------------------*/
     

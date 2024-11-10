@@ -2,42 +2,142 @@
 //  DirectionView.swift
 //  Nomad
 //
-//  Created by Nicholas Candello on 10/23/24.
+//  Created by Karen Lu on 10/8/24.
 //
-import SwiftUI
 
-struct DirectionView: View {
-    @Binding var distance: Double?
-    var nextStep: NomadStep?
-    
+import SwiftUI
+import MapKit
+import MapboxDirections
+
+struct HighwayBox: View {
+    var imageName: String
+    var number: Int
     var body: some View {
-        if let dist = distance, let nextStep = nextStep  {
-            VStack {
-                Text("\(nextStep.direction.instructions) in \(getDistanceDescriptor(meters: dist))")
-                    .font(.title)
-                    .padding(20)
-                    .background(Color.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
-            }
-        } else {
-            VStack {}
+        ZStack {
+            Image(systemName: "\(imageName)")
+                .font(.system(size: 40))
+                .imageScale(.large)
+                .foregroundStyle(.indigo)
+            Text("\(number)")
+                .padding(5)
         }
     }
-    func getDistanceDescriptor(meters: Double) -> String {
-        let miles = meters / 1609.34
-        let feet = miles * 5280
-        if feet < 800 {
-            return String(format: "%d ft", Int(feet / 100) * 100) // round feet to nearest 100 ft
+}
+
+struct DirectionView: View {
+    var step: NomadStep
+    
+    var body: some View {
+        VStack {
+            HStack {
+                VStack {
+                    HighwayBox(imageName: "square", number: 123)
+                    getStepIcon(step: step)
+                        .resizable()
+                        .frame(width: 40, height: 40)
+                        .foregroundColor(.indigo)
+                }
+                VStack(alignment: .leading) {
+                    Text(step.direction.instructions)
+                        .font(.title2)
+                        .foregroundColor(.indigo)
+                        .bold()
+                        .padding(.bottom, 5)
+                    Text("Distance: \(String(format: "%.2f", step.direction.distance)) meters")
+                        .font(.title3)
+                        .foregroundColor(.indigo)
+                }
+            }
+            .padding()
+            .background(Color.gray.opacity(0.3))
+            .cornerRadius(10)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background {
+            Color.gray.opacity(0.5)
+                .ignoresSafeArea()
+        }
+        
+    }
+    
+    //    func getRouteStep(for route: NomadRoute, at stepIndex: Int) {
+    //        guard stepIndex >= 0 && stepIndex < route.NomadRoute.count else {
+    //            print("Invalid step index")
+    //            return
+    //        }
+    //        let step = route.steps[stepIndex]
+    //        self.step = step
+    //    }
+    
+    func getStepIcon(step: NomadStep) -> Image {
+        //        if step.direction.instructions.lowercased().contains("exit"),
+        //           let exitNumber = getExitNumber(from: step.direction.instructions) {
+        //            return getExitIcon(for: exitNumber)
+        //        }
+        if step.direction.instructions.lowercased().contains("right") {
+            return Image(systemName: "arrow.turn.up.right")
+        } else if step.direction.instructions.lowercased().contains("left") {
+            return Image(systemName: "arrow.turn.up.left")
+        } else if step.direction.instructions.lowercased().contains("merge") {
+            return Image(systemName: "arrow.merge")
         } else {
-            return String(format: "%.1f mi", miles) // round miles to nearest 0.1 mi
+            return Image(systemName: "arrow.forward")
+        }
+    }
+    func getExitNumber(from instruction: String) -> Int? {
+        let pattern = #"exit (\d+)"#
+        let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive)
+        let range = NSRange(location: 0, length: instruction.utf16.count)
+        if let match = regex?.firstMatch(in: instruction, options: [], range: range),
+           let exitRange = Range(match.range(at: 1), in: instruction),
+           let exitNumber = Int(instruction[exitRange]) {
+            return exitNumber
+        }
+        return nil
+    }
+    
+    func getExitIcon(for exitNumber: Int) -> some View {
+        ZStack {
+            Image(systemName: "road.lanes")
+                .resizable()
+                .frame(width: 40, height: 40)
+            
+            Text("\(exitNumber)")
+                .font(.caption)
+                .bold()
+                .foregroundColor(.white)
+                .padding(2)
+                .background(Circle().fill(Color.indigo))
+                .offset(x: 10, y: -10)
+        }
+    }
+}
+
+enum StepType {
+    case leftTurn, rightTurn, slightLeft, slightRight, uturn, merge, exitLeft, exitRight
+    
+    var icon: Image {
+        switch self {
+        case.leftTurn:
+            return Image(systemName: "arrow.turn.up.left")
+        case.rightTurn:
+            return Image(systemName: "arrow.turn.up.right")
+        case.slightLeft:
+            return Image(systemName: "arrow.up.left")
+        case.slightRight:
+            return Image(systemName: "arrow.up.right")
+        case.uturn:
+            return Image(systemName: "arrow.uturn.down")
+        case.merge:
+            return Image(systemName: "arrow.merge")
+        case.exitLeft:
+            return Image(systemName: "road.lanes.curved.left")
+        case.exitRight:
+            return Image(systemName: "road.lanes.curved.right")
         }
     }
 }
 
 #Preview {
-//    Task {
-//        if let route = MapManager.manager.getExampleRoute() {
-    DirectionView(distance: Binding.constant(100.0), nextStep: NomadStep())
-//    }
-// }
+    DirectionView(step: NomadStep())
 }

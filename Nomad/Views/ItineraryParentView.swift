@@ -4,12 +4,14 @@ struct ItineraryParentView: View {
     @State private var showAtlas = false
     @State private var showWipeOverlay = false
     @ObservedObject var vm: UserViewModel
+    @ObservedObject var cvm: ChatViewModel
+    
 
     var body: some View {
         ZStack {
             // Background views that will transition
             if showAtlas {
-                AIAssistantView()
+                AIAssistantView(vm: vm, chatViewModel: cvm)
                     .transition(.identity) // No animation on the content itself
             } else {
                 FindStopView(vm: vm)
@@ -44,6 +46,8 @@ struct ItineraryParentView: View {
                             withAnimation(.easeInOut(duration: 0.5)) {
                                 showWipeOverlay = true
                             }
+                            
+                            
                             // Delay the screen transition
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                                 withAnimation(.easeInOut(duration: 0.5)) {
@@ -52,10 +56,10 @@ struct ItineraryParentView: View {
                                 }
                             }
                         }) {
-                            Text("Return To Manual")
-                                .font(.headline)
+                            Text("Return")
+                                .font(.subheadline)
                                 .foregroundColor(.white)
-                                .padding()
+                                .padding(10)
                                 .background(Color.blue)
                                 .cornerRadius(10)
                         }
@@ -135,5 +139,5 @@ struct WipeShape: Shape {
 }
 
 #Preview {
-    ItineraryParentView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")))
+    ItineraryParentView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")), cvm: ChatViewModel())
 }

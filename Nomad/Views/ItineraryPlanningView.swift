@@ -24,6 +24,7 @@ struct ItineraryPlanningView: View {
     @State var startTime: Date = Date()
     @State private static var dateformatter = DateFormatter()
     @ObservedObject var vm: UserViewModel
+    @ObservedObject var aiVM: AIAssistantViewModel = AIAssistantViewModel()
     @ObservedObject var mapSearch = MapSearch()
     @State var isClicked: Bool = false
     @State var startAddressError: String = ""
@@ -232,6 +233,8 @@ struct ItineraryPlanningView: View {
                             endLatitude = 0.0
                             endLongitude = 0.0
                             editTrip = true
+                            
+                            
                         }
                     }
 
@@ -246,7 +249,7 @@ struct ItineraryPlanningView: View {
                 }
                 .padding(.horizontal, 50)
                 .navigationDestination(isPresented: $editTrip, destination: {
-                    FindStopView(vm: vm)
+                    ItineraryParentView(vm: vm, cvm: ChatViewModel())
                 })
                                 
                 Spacer()

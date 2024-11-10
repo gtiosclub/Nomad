@@ -34,7 +34,7 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             return nil
         }
     }
-
+    
     // MAP UI Components
     @Published var mapMarkers: [MapMarker] = []
     @Published var mapPolylines: [MKPolyline] = []
@@ -63,7 +63,25 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func setNavigatingRoute(route: NomadRoute) {
         self.navigatingRoute = route
         self.mapPolylines.removeAll()
+        self.mapMarkers.removeAll()
+        
         self.showPolyline(route: navigatingRoute!)
+        
+        for leg in route.legs {
+            for step in leg.steps {
+                if let intersections = step.direction.intersections {
+                    for intersection in intersections {
+                        if intersection.trafficSignal == true {
+                            showMarker("Traffic Light", coordinate: intersection.location, icon: .trafficLight)
+                        }
+                        
+                        if intersection.stopSign == true {
+                            showMarker("Stop Sign", coordinate: intersection.location, icon: .stopSign)
+                        }
+                    }
+                }
+            }
+        }
     }
     
     func setNavigatingLeg(leg: NomadLeg) {
@@ -192,8 +210,8 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         guard let direction = userMotion.direction else { return }
         guard let speed = userMotion.speed else { return }
         let bearing = speed >= minSpeed ? direction : 0
-            withAnimation {
-                mapPosition = .camera(MapCamera(centerCoordinate: location, distance: navigating ? navDistance : normalDistance, heading: getNavBearing(motion: userMotion), pitch: navigating ? navPitch : 0))
+        withAnimation {
+            mapPosition = .camera(MapCamera(centerCoordinate: location, distance: navigating ? navDistance : normalDistance, heading: getNavBearing(motion: userMotion), pitch: navigating ? navPitch : 0))
         }
     }
     // MAPMARKER CRUD
