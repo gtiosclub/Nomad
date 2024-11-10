@@ -90,7 +90,7 @@ struct DetailRecapView: View {
                 .pickerStyle(SegmentedPickerStyle())
                 .padding(.bottom, 10)
 
-                RoutePreviewView(vm: vm, trip: Binding.constant(trip))
+                RoutePreviewView(vm: vm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(nil))
                     .frame(width: .infinity, height: 300)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
 

@@ -307,32 +307,148 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     //        return currStep.shape?.coordinates.last ?? CLLocationCoordinate2D()
     //    }
     
-    func getFutureLocation(time: TimeInterval, route: NomadRoute) -> CLLocationCoordinate2D? {
-        
-        var currTime = 0.0
+    // New method to find closest leg
+    func determineCurrentLeg(route: NomadRoute) -> NomadLeg? {
+        var closestLeg: NomadLeg?
+        var minDistance = CLLocationDistanceMax
         
         for leg in route.legs {
-            for step in leg.steps {
-                if currTime < time {
-                    currTime += step.direction.expectedTravelTime
-                } else {
-                    return step.endCoordinate
+            if let step = determineCurrentStep(leg: leg) {
+                let closestCoord = getClosestCoordinate(step: step)
+                if let userLocation = self.userLocation {
+                    let distance = userLocation.distance(to: closestCoord)
+                    if distance < minDistance {
+                        minDistance = distance
+                        closestLeg = leg
+                    }
                 }
-                
             }
         }
-        return nil
+        
+        return closestLeg
+    }
+
+    // Modified getFutureLocation
+    func getFutureLocation(time: TimeInterval, route: NomadRoute) -> CLLocationCoordinate2D? {
+        // Find current leg and step
+        let currentLeg = determineCurrentLeg(route: route)
+        let currentStep = currentLeg.flatMap { determineCurrentStep(leg: $0) }
+        
+        // Get current position on route
+        let currentPosition = currentStep.flatMap { getClosestCoordinate(step: $0) }
+        
+        // Get all coordinates from the route
+        let allCoordinates = route.getCoordinates()
+        
+        // Find the index where we start from (closest to current position)
+        let startIndex = currentPosition.flatMap { coord in
+            allCoordinates.firstIndex { $0.latitude == coord.latitude && $0.longitude == coord.longitude }
+        }
+        
+        var accumulatedTime: TimeInterval = 0.0
+        var lastCoordinate = startIndex.flatMap { allCoordinates[$0] }
+        
+        // Calculate average speed across the remaining route
+        var totalDistance: CLLocationDistance = 0.0
+        var totalTime: TimeInterval = 0.0
+        
+        // Only count remaining legs/steps
+        var foundCurrentLeg = false
+        for leg in route.legs {
+            if let currentLeg = currentLeg, leg.id == currentLeg.id {
+                foundCurrentLeg = true
+            }
+            if foundCurrentLeg {
+                for step in leg.steps {
+                    totalDistance += step.direction.distance
+                    totalTime += step.direction.expectedTravelTime
+                }
+            }
+        }
+        
+        let averageSpeed = totalDistance / totalTime // meters per second
+        
+        // Iterate through remaining coordinates
+        for i in (startIndex ?? 0)+1..<allCoordinates.count {
+            let coord = allCoordinates[i]
+            let prevCoord = allCoordinates[i-1]
+            
+            // Calculate time to travel between these coordinates
+            let segmentDistance = prevCoord.distance(to: coord)
+            let segmentTime = segmentDistance / averageSpeed
+            
+            accumulatedTime += segmentTime
+            
+            if accumulatedTime >= time {
+                // Interpolate between previous and current coordinate
+                let overshootRatio = (accumulatedTime - time) / segmentTime
+                let lat = coord.latitude + (prevCoord.latitude - coord.latitude) * overshootRatio
+                let lon = coord.longitude + (prevCoord.longitude - coord.longitude) * overshootRatio
+                
+                return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+            }
+            
+            lastCoordinate = coord
+        }
+        
+        return lastCoordinate
+    }
+
+    // Modified getFutureLocationByDistance
+    func getFutureLocationByDistance(distance: CLLocationDistance, route: NomadRoute) -> CLLocationCoordinate2D? {
+        // Find current leg and step
+        let currentLeg = determineCurrentLeg(route: route)
+        let currentStep = currentLeg.flatMap { determineCurrentStep(leg: $0) }
+        
+        // Get current position on route
+        let currentPosition = currentStep.flatMap { getClosestCoordinate(step: $0) }
+        
+        // Get all coordinates from the route
+        let allCoordinates = route.getCoordinates()
+        
+        // Find the index where we start from (closest to current position)
+        let startIndex = currentPosition.flatMap { coord in
+            allCoordinates.firstIndex { $0.latitude == coord.latitude && $0.longitude == coord.longitude }
+        }
+        
+        var accumulatedDistance: CLLocationDistance = 0.0
+        var lastCoordinate = startIndex.flatMap { allCoordinates[$0] }
+        
+        // Iterate through remaining coordinates
+        for i in (startIndex ?? 0)+1..<allCoordinates.count {
+            let coord = allCoordinates[i]
+            let prevCoord = allCoordinates[i-1]
+            
+            let segmentDistance = prevCoord.distance(to: coord)
+            accumulatedDistance += segmentDistance
+            
+            if accumulatedDistance >= distance {
+                // Interpolate between previous and current coordinate
+                let overshootDistance = accumulatedDistance - distance
+                let ratio = 1 - (overshootDistance / segmentDistance)
+                
+                // Linear interpolation between coordinates
+                let lat = prevCoord.latitude + (coord.latitude - prevCoord.latitude) * ratio
+                let lon = prevCoord.longitude + (coord.longitude - prevCoord.longitude) * ratio
+                
+                return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+            }
+            
+            lastCoordinate = coord
+        }
+        
+        return lastCoordinate
     }
     
     func determineCurrentStep(leg: NomadLeg) -> NomadStep? {
         for step in leg.steps {
-            if checkOnRoute(step: step) {
+            if checkOnStep(step: step) {
                 return step
             }
         }
         return nil
     }
-    
+        
     func getClosestCoordinate(step: NomadStep) -> CLLocationCoordinate2D {
         guard let userLocation = self.userLocation else { return CLLocationCoordinate2D() }
         let stepCoordinates = step.getCoordinates()
@@ -350,7 +466,8 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
         return closestCoordinate ?? CLLocationCoordinate2D()
     }
-    func checkOnRoute(step: NomadStep) -> Bool {
+    
+    func checkOnStep(step: NomadStep) -> Bool {
         guard let userLocation = self.userLocation else { return false }
         let closest_coord = getClosestCoordinate(step: step)
         let measured_distance = userLocation.distance(to: closest_coord)

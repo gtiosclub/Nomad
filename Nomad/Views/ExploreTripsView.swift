@@ -10,6 +10,7 @@ import SwiftUI
 struct ExploreTripsView: View {
     @ObservedObject var vm: UserViewModel
     @State private var currentCity: String? = nil
+    @State var current_trips: [Trip] = []
     
     var body: some View {
         NavigationStack {
@@ -36,7 +37,7 @@ struct ExploreTripsView: View {
                         //TEMPORARY JUST FOR MID SEM DEMO
                         
                         HStack {
-                            Text("Plan your next trip, \(vm.user?.getName().split(separator: " ").first ?? "User")!")
+                            Text("Plan your next trip, \(vm.user.getName().split(separator: " ").first!)!")
                                 .bold()
                                 .font(.system(size: 20))
                                 .padding(.horizontal)
@@ -48,7 +49,7 @@ struct ExploreTripsView: View {
                                 Ellipse()
                                     .fill(Color.gray)
                                     .frame(width: 40, height: 40)
-                                Text((vm.user?.getName() ?? "User").prefix(1))
+                                Text((vm.user.getName()).prefix(1))
                                     .foregroundColor(.white)
                                     .font(.system(size: 25))
                             }
@@ -62,7 +63,7 @@ struct ExploreTripsView: View {
                             
                             ScrollView(.horizontal) {
                                 HStack {
-                                    ForEach(vm.user?.trips ?? []) { trip in
+                                    ForEach($current_trips.wrappedValue) { trip in
                                         NavigationLink(destination: {
                                             PreviewRouteView(vm: vm, trip: trip)
                                         }, label: {
@@ -70,6 +71,9 @@ struct ExploreTripsView: View {
                                                 .frame(alignment: .top)
                                         })
                                     }
+                                }
+                                .onChange(of: vm.user.trips, initial: true) { oldTrips, newTrips in
+                                    current_trips = newTrips
                                 }
                             }
                             .padding(.horizontal)
@@ -130,11 +134,13 @@ struct ExploreTripsView: View {
                     }
                 }
             }
-        }.onAppear() {
+        }.task {
             print("populating trips")
 //            vm.populate_my_trips()
-            vm.populate_previous_trips()
+//            vm.populate_previous_trips()
             vm.populate_community_trips()
+            await vm.populateUserTrips()
+            current_trips = vm.user.trips
         }
     }
     

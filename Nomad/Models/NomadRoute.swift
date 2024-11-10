@@ -22,7 +22,7 @@ struct NomadRoute {
     }
     
     func totalDistance() -> CLLocationDistance {
-        return legs.reduce(0) { $0 + $1.totalDistance() }
+        return legs.reduce(0) { $0 + $1.totalDistance() } * 0.000621371
     }
     
     func totalTime() -> TimeInterval {
