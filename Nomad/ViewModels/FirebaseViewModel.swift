@@ -346,59 +346,55 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
-//    func addStopToTrip(tripID: String, stop: any POI, index: Int) async -> Bool {
-//        // Add stop to tripID array
-//        let docRef = db.collection("TRIPS").document(tripID)
-//        do {
-//            let document = try await docRef.getDocument()
-//            guard var stops = document.data()?["stops"] as? [String] else {
-//                print("Document does not exist or stops is not an array.")
-//                return false
-//            }
-//            if (!stops.contains(stop.name)) {
-//                if (index >= 0 || index > stops.count) {
-//                    stops.insert(stop.name, at: index)
-//                } else {
-//                    print("Invalid Index")
-//                    return false;
-//                }
-//                try await db.collection("TRIPS").document(tripID).updateData(["stops": stops])
-//            } else {
-//                print("Stop already in user stop list")
-//                return false;
-//            }
-//        } catch {
-//            print(error)
-//            return false
-//        }
-//        
-//        //add stop to collections
-//        var closeTime: String = ""
-//        var cuisine: String = ""
-//        var openTime: String = ""
-//        var price: Int = -1
-//        var rating: Double = -1
-//        var website: String = ""
-//        if let restaurant = stop as? Restaurant {
-//            closeTime = restaurant.close_time ?? ""
-//            openTime = restaurant.open_time ?? ""
-//            cuisine = restaurant.cuisine ?? ""
-//            price = restaurant.price ?? -1
-//            rating = restaurant.rating ?? -1.0
-//            website = restaurant.website ?? ""
-//        }
-//        if let hotel = stop as? Hotel {
-//            rating = hotel.rating ?? -1.0
-//            website = hotel.website ?? ""
-//        }
-//        do {
-//            try await db.collection("TRIPS").document(tripID).collection("STOPS").document(stop.name).setData(["name" : stop.name, "address" : stop.address, "type" : "\(type(of: stop))", "latitude" : stop.latitude, "longitude" : stop.longitude, "city" : stop.city ?? "", "close_time" : closeTime, "cuisine" : cuisine, "open_time" : openTime, "price" : price, "rating" : rating, "website" : website])
-//            return true
-//        } catch {
-//            print(error)
-//            return false
-//        }
-//    }
+    func addStopToTrip(tripID: String, stop: any POI, index: Int) async -> Bool {
+        // Add stop to tripID array
+        let docRef = db.collection("TRIPS").document(tripID)
+        do {
+            let document = try await docRef.getDocument()
+            guard var stops = document.data()?["stops"] as? [String] else {
+                print("Document does not exist or stops is not an array.")
+                return false
+            }
+            if (!stops.contains(stop.name)) {
+                if (index >= 0 || index > stops.count) {
+                    stops.insert(stop.name, at: index)
+                } else {
+                    print("Invalid Index")
+                    return false;
+                }
+                try await db.collection("TRIPS").document(tripID).updateData(["stops": stops])
+            } else {
+                print("Stop already in user stop list")
+                return false;
+            }
+        } catch {
+            print(error)
+            return false
+        }
+        
+        //add stop to collections
+        var cuisine: String = ""
+        var price: Int = -1
+        var rating: Double = -1
+        var website: String = ""
+        if let restaurant = stop as? Restaurant {
+            cuisine = restaurant.cuisine ?? ""
+            price = restaurant.price ?? -1
+            rating = restaurant.rating ?? -1.0
+            website = restaurant.website ?? ""
+        }
+        if let hotel = stop as? Hotel {
+            rating = hotel.rating ?? -1.0
+            website = hotel.website ?? ""
+        }
+        do {
+            try await db.collection("TRIPS").document(tripID).collection("STOPS").document(stop.name).setData(["name" : stop.name, "address" : stop.address, "type" : "\(type(of: stop))", "latitude" : stop.latitude, "longitude" : stop.longitude, "city" : stop.city ?? "",  "cuisine" : cuisine, "price" : price, "rating" : rating, "website" : website])
+            return true
+        } catch {
+            print(error)
+            return false
+        }
+    }
 
     
     
@@ -575,8 +571,6 @@ class FirebaseViewModel: ObservableObject {
                             let poi_latitude = stopData["latitude"] as? Double ?? 0.0
                             let poi_longitude = stopData["longitude"] as? Double ?? 0.0
                             let poi_city = stopData["city"] as? String ?? ""
-                            let poi_closetime: String? = stopData["close_time"] as? String
-                            let poi_opentime: String? = stopData["open_time"] as? String
                             let poi_price: Int? = stopData["price"] as? Int
                             let poi_rating: Double? = stopData["rating"] as? Double
                             let poi_website: String? = stopData["website"] as? String
@@ -590,8 +584,6 @@ class FirebaseViewModel: ObservableObject {
                                 latitude: poi_latitude,
                                 city: poi_city,
                                 cuisine: poi_cuisine,
-                                open_time: poi_opentime,
-                                close_time: poi_closetime,
                                 rating: poi_rating,
                                 price: poi_price,
                                 website: poi_website
@@ -776,8 +768,6 @@ class FirebaseViewModel: ObservableObject {
                             let poi_latitude = stopData["latitude"] as? Double ?? 0.0
                             let poi_longitude = stopData["longitude"] as? Double ?? 0.0
                             let poi_city = stopData["city"] as? String ?? ""
-                            let poi_closetime: String? = stopData["close_time"] as? String
-                            let poi_opentime: String? = stopData["open_time"] as? String
                             let poi_price: Int? = stopData["price"] as? Int
                             let poi_rating: Double? = stopData["rating"] as? Double
                             let poi_website: String? = stopData["website"] as? String
@@ -791,8 +781,6 @@ class FirebaseViewModel: ObservableObject {
                                 latitude: poi_latitude,
                                 city: poi_city,
                                 cuisine: poi_cuisine,
-                                open_time: poi_opentime,
-                                close_time: poi_closetime,
                                 rating: poi_rating,
                                 price: poi_price,
                                 website: poi_website
@@ -836,7 +824,7 @@ class FirebaseViewModel: ObservableObject {
         return ["past": driven_trips, "present": in_progress_trips, "future": future_trips]
     }
     
-    private func getPOI(name: String, address: String, type: String, longitude: Double, latitude: Double, city: String?, cuisine: String? = nil, open_time: String? = nil, close_time: String? = nil, rating: Double? = nil, price: Int? = nil, website: String? = nil) -> any POI {
+    private func getPOI(name: String, address: String, type: String, longitude: Double, latitude: Double, city: String?, cuisine: String? = nil, rating: Double? = nil, price: Int? = nil, website: String? = nil) -> any POI {
         switch type {
         case "Restaurant":
             return Restaurant(address: address, name: name, rating: rating, cuisine: cuisine, price: price, website: website, latitude: latitude, longitude: longitude, city: city)
