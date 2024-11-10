@@ -16,7 +16,6 @@
 		48974BA12CB04B420057B073 /* RoutePreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974BA02CB04B420057B073 /* RoutePreviewView.swift */; };
 		48974BAF2CB30AAF0057B073 /* EnhancedRoutePlanListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974BAE2CB30AAF0057B073 /* EnhancedRoutePlanListView.swift */; };
 		48BBC2D22C9CE5070093D9D0 /* DetailRecapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48BBC2D12C9CE5070093D9D0 /* DetailRecapView.swift */; };
-		57C914CB2CDD356600F4BD15 /* TestingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57C914CA2CDD356600F4BD15 /* TestingView.swift */; };
 		599F66172C9CE4F90025A8F8 /* Motion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 599F66162C9CE4F90025A8F8 /* Motion.swift */; };
 		66443CD72CADDB77000D3F12 /* RoutePlanListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66443CD62CADDB77000D3F12 /* RoutePlanListView.swift */; };
 		6B3E9F682CAF60A100C24BDB /* ExploreTripsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B3E9F672CAF60A100C24BDB /* ExploreTripsView.swift */; };
@@ -102,7 +101,6 @@
 		48974BA02CB04B420057B073 /* RoutePreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePreviewView.swift; sourceTree = "<group>"; };
 		48974BAE2CB30AAF0057B073 /* EnhancedRoutePlanListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnhancedRoutePlanListView.swift; sourceTree = "<group>"; };
 		48BBC2D12C9CE5070093D9D0 /* DetailRecapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRecapView.swift; sourceTree = "<group>"; };
-		57C914CA2CDD356600F4BD15 /* TestingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestingView.swift; sourceTree = "<group>"; };
 		599F66162C9CE4F90025A8F8 /* Motion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Motion.swift; sourceTree = "<group>"; };
 		66443CD62CADDB77000D3F12 /* RoutePlanListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePlanListView.swift; sourceTree = "<group>"; };
 		6B3E9F672CAF60A100C24BDB /* ExploreTripsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreTripsView.swift; sourceTree = "<group>"; };
@@ -276,7 +274,6 @@
 				66443CD62CADDB77000D3F12 /* RoutePlanListView.swift */,
 				48974BAE2CB30AAF0057B073 /* EnhancedRoutePlanListView.swift */,
 				B3E575E62CC1CA44009E0355 /* POIDetailView.swift */,
-				57C914CA2CDD356600F4BD15 /* TestingView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -463,7 +460,6 @@
 				B3E575E72CC1CA44009E0355 /* POIDetailView.swift in Sources */,
 				B2154CD22C9E319C00A6F238 /* RecenterMapView.swift in Sources */,
 				B2F8F35D2C97BD3000B9618E /* GasStation.swift in Sources */,
-				57C914CB2CDD356600F4BD15 /* TestingView.swift in Sources */,
 				B2F8F3592C97BCD400B9618E /* Restaurant.swift in Sources */,
 				48974BAF2CB30AAF0057B073 /* EnhancedRoutePlanListView.swift in Sources */,
 				B35A09032CB6181C00C8F02B /* Businesses.swift in Sources */,
