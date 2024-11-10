@@ -279,9 +279,8 @@ class FirebaseViewModel: ObservableObject {
         }
         
         //add stop to collections
-        var closeTime: String = ""
+
         var cuisine: String = ""
-        var openTime: String = ""
         var price: Int = -1
         var rating: Double = -1
         var website: String = ""
@@ -296,7 +295,7 @@ class FirebaseViewModel: ObservableObject {
             website = hotel.website ?? ""
         }
         do {
-            try await db.collection("TRIPS").document(tripID).collection("STOPS").document(stop.name).setData(["name" : stop.name, "address" : stop.address, "type" : "\(type(of: stop))", "latitude" : stop.latitude, "longitude" : stop.longitude, "city" : stop.city ?? "", "close_time" : closeTime, "cuisine" : cuisine, "open_time" : openTime, "price" : price, "rating" : rating, "website" : website])
+            try await db.collection("TRIPS").document(tripID).collection("STOPS").document(stop.name).setData(["name" : stop.name, "address" : stop.address, "type" : "\(type(of: stop))", "latitude" : stop.latitude, "longitude" : stop.longitude, "city" : stop.city ?? "", "cuisine" : cuisine, "price" : price, "rating" : rating, "website" : website])
             return true
         } catch {
             print(error)

@@ -386,11 +386,11 @@ class UserViewModel: ObservableObject {
         }
     }
 
-    func fetchPlaces(location: String, stopType: String, rating: Double?, price: Int?, cuisine: String?, searchString: String) async {
+    func fetchPlaces(latitude: String, longitude: String, stopType: String, rating: Double?, price: Int?, cuisine: String?, searchString: String) async {
         let apiKey = aiVM.yelpAPIKey
         let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
         guard let currentTrip = current_trip else { return }
-        let startLocation = currentTrip.getStartLocation()
+        //let startLocation = currentTrip.getStartLocation()
 
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
         
@@ -401,14 +401,16 @@ class UserViewModel: ObservableObject {
         if (searchString != "") {
             print("Searching via search bar")
             queryItems = [
-                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "latitude", value: latitude),
+                URLQueryItem(name: "longitude", value: longitude),
                 URLQueryItem(name: "term", value: searchString),
                 URLQueryItem(name: "sort_by", value: "rating"),
                 URLQueryItem(name: "limit", value: "50")
             ]
         } else if (stopType == "Restaurants") {
             queryItems = [
-                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "latitude", value: latitude),
+                URLQueryItem(name: "longitude", value: longitude),
                 URLQueryItem(name: "categories", value: "restaurants,food"),
                 URLQueryItem(name: "sort_by", value: "rating"),
                 URLQueryItem(name: "limit", value: "50")
@@ -421,43 +423,48 @@ class UserViewModel: ObservableObject {
             }
         } else if (stopType == "Activities") {
             queryItems = [
-                URLQueryItem(name: "location", value: startLocation.getAddress()),
-
+                URLQueryItem(name: "latitude", value: latitude),
+                URLQueryItem(name: "longitude", value: longitude),
                 URLQueryItem(name: "categories", value: "activelife,nightlife,facepainting,photoboothrentals,photographers,silentdisco,videographers,triviahosts,teambuilding,massage,hotspring"),
                 URLQueryItem(name: "sort_by", value: "rating"),
                 URLQueryItem(name: "limit", value: "50")
             ]
         } else if (stopType == "Scenic") {
             queryItems = [
-                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "latitude", value: latitude),
+                URLQueryItem(name: "longitude", value: longitude),
                 URLQueryItem(name: "term", value: "sights"),
                 URLQueryItem(name: "sort_by", value: "rating"),
                 URLQueryItem(name: "limit", value: "50")
             ]
         } else if (stopType == "Hotels") {
             queryItems = [
-                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "latitude", value: latitude),
+                URLQueryItem(name: "longitude", value: longitude),
                 URLQueryItem(name: "categories", value: "hotels,hostels"),
                 URLQueryItem(name: "sort_by", value: "rating"),
                 URLQueryItem(name: "limit", value: "50")
             ]
         } else if (stopType == "Tours and Landmarks") {
             queryItems = [
-                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "latitude", value: latitude),
+                URLQueryItem(name: "longitude", value: longitude),
                 URLQueryItem(name: "categories", value: "tours,landmarks,collegeuniv,hotsprings"),
                 URLQueryItem(name: "sort_by", value: "rating"),
                 URLQueryItem(name: "limit", value: "50")
             ]
         } else if (stopType == "Shopping") {
             queryItems = [
-                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "latitude", value: latitude),
+                URLQueryItem(name: "longitude", value: longitude),
                 URLQueryItem(name: "term", value: "shopping"),
                 URLQueryItem(name: "sort_by", value: "rating"),
                 URLQueryItem(name: "limit", value: "50")
             ]
         } else { //entertainment
             queryItems = [
-                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "latitude", value: latitude),
+                URLQueryItem(name: "longitude", value: longitude),
                 URLQueryItem(name: "categories", value: "arts,magicians,musicians"),
                 URLQueryItem(name: "sort_by", value: "rating"),
                 URLQueryItem(name: "limit", value: "50")
@@ -472,7 +479,6 @@ class UserViewModel: ObservableObject {
 
         do {
             let (data, _) = try await URLSession.shared.data(for: request)
-            print("Raw Response Data: \(String(data: data, encoding: .utf8) ?? "No data")")
             let decoder = JSONDecoder()
             
             let response = try decoder.decode(YelpResponse.self, from: data)
@@ -510,15 +516,16 @@ class UserViewModel: ObservableObject {
         }
     }
     
-    func fetchRestStops(location: String) async {
+    func fetchRestStops(latitude: String, longitude: String) async {
         let apiKey = aiVM.yelpAPIKey
         let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
 
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
         
         let queryItems: [URLQueryItem] = [
-          URLQueryItem(name: "term", value: "reststops"),
-          URLQueryItem(name: "location", value: location),
+          URLQueryItem(name: "categories", value: "reststops"),
+          URLQueryItem(name: "latitude", value: latitude),
+          URLQueryItem(name: "longitude", value: longitude),
           URLQueryItem(name: "sort_by", value: "rating"),
           URLQueryItem(name: "limit", value: "50"),
         ]
@@ -531,15 +538,9 @@ class UserViewModel: ObservableObject {
 
         do {
             let (data, _) = try await URLSession.shared.data(for: request)
-            print("Raw Response Data: \(String(data: data, encoding: .utf8) ?? "No data")")
             let decoder = JSONDecoder()
             
             let response = try decoder.decode(YelpResponse.self, from: data)
-            
-            let filteredBusinesses = response.businesses.filter { business in
-                let hasValidAddress = business.location.display_address.count >= 2
-                return hasValidAddress
-            }
             
             self.reststops = response.businesses.compactMap { business -> RestStop? in
                 guard business.location.display_address.count >= 2 else { return nil }

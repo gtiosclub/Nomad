@@ -7,13 +7,14 @@
 
 import Foundation
 
-struct RestStop: POI, Identifiable {
+struct RestStop: POI, Identifiable, Imagable {    
     var id: String
     var address: String
     var name: String
     var longitude: Double
     var latitude: Double
     var city: String?
+    var imageUrl: String?
     
     init(address: String, name: String, latitude: Double, longitude: Double, city: String? = nil) {
         self.id = UUID().uuidString
@@ -31,6 +32,7 @@ struct RestStop: POI, Identifiable {
         self.latitude = business.coordinates.latitude
         self.longitude = business.coordinates.longitude
         self.city = business.location.city
+        self.imageUrl = business.image_url
     }
 
     
@@ -80,6 +82,10 @@ struct RestStop: POI, Identifiable {
     
     func getId() -> String {
         return id
+    }
+    
+    func getImageUrl() -> String?  {
+        return imageUrl
     }
 }
 

@@ -28,9 +28,12 @@ struct FindStopView: View {
     @State private var filterCuisine: String = "American"
     @State private var filterPrice: String = "$$"
     @State var selectedTab = 1
+    @State private var isCuisineDropdownOpen = false
+    @State private var isRatingDropdownOpen = false
+    @State private var isPriceDropdownOpen = false
     @Environment(\.dismiss) var dismiss
     
-    let stop_types = ["Restaurants", "Activities", "Scenic", "Hotels", "Tours & Landmarks", "Entertainment", "Shopping"]
+    let stop_types = ["Restaurants", "Activities", "Rest Stops", "Hotels", "Tours & Landmarks", "Entertainment", "Shopping"]
     let cuisines = ["Chinese", "Italian", "Indian", "American", "Japanese", "Korean"]
     
     var body: some View {
@@ -48,9 +51,22 @@ struct FindStopView: View {
                     Text("No current trip available")
                         .foregroundColor(.red)
                 }
+                //                        Slider(value: $routeProgress, in: 0...((vm.current_trip!.route?.totalTime() ?? 60)/60), step: 1, label: {Text("Stop")}, minimumValueLabel: {
+                //                            Text("0")}, maximumValueLabel: {
+                //                                Text("\(Int((vm.current_trip!.route?.totalTime() ?? 60)/60))")})
+                //                                    .padding()
+                //                                    .onChange(of: routeProgress) { newValue in
+                //                                        updateMarkerPosition(progress: newValue)
+                //                                    }
+                Slider(value: $routeProgress, in: 0...((vm.current_trip?.route?.totalTime() ?? 60) / 60), step: 1, label: { Text("Stop") }, minimumValueLabel: { Text("0") }, maximumValueLabel: { Text("\(Int((vm.current_trip?.route?.totalTime() ?? 60) / 60))") })
+                    .padding(.horizontal)
+                    .padding(.top)
+                    .onChange(of: routeProgress) { newValue in
+                        updateMarkerPosition(progress: newValue)
+                    }
             }
             
-            VStack(alignment: .leading, spacing: 15) {
+            VStack(alignment: .leading, spacing: 10) {
                 HStack {
                     ZStack {
                         Circle()
@@ -84,19 +100,15 @@ struct FindStopView: View {
                 
                 TabView(selection: $selectedTab) {
                     VStack(alignment: .leading, spacing: 16) {
-                        Slider(value: $routeProgress, in: 0...((vm.current_trip!.route?.totalTime() ?? 60)/60), step: 1, label: {Text("Stop")}, minimumValueLabel: {Text("0")}, maximumValueLabel: {Text("\(Int((vm.current_trip!.route?.totalTime() ?? 60)/60))")})
-                            .padding()
-                            .onChange(of: routeProgress) { newValue in
-                                updateMarkerPosition(progress: newValue)
-                            }
                         if selection == "Restaurants" {
-                            Text("Filters:")
-                                .font(.headline)
-                            HStack{
-                                RatingFilterView(selectedRating: $rating).frame(maxWidth: 90)
-                                CuisineFilterView(selectedCuisine: $selectedCuisines)
-                                PriceFilterView(selectedPrice: $price).frame(maxWidth: 80)
+//                            Text("Filters:")
+//                                .font(.headline)
+                            HStack(){
+                                RatingFilterView(selectedRating: $rating, isRatingDropdownOpen: $isRatingDropdownOpen).frame(maxWidth: 90)
+                                CuisineFilterView(selectedCuisine: $selectedCuisines, isCuisineDropdownOpen: $isCuisineDropdownOpen)
+                                PriceFilterView(selectedPrice: $price, isPriceDropdownOpen: $isPriceDropdownOpen).frame(maxWidth: 80)
                             }
+                            .padding(.top, 25)
                             Spacer()
                         } else if selection == "Activities" || selection == "Hotels" {
                             RatingUI(rating: $rating)
@@ -106,8 +118,8 @@ struct FindStopView: View {
                     .padding(.horizontal)
                     .tag(1)
                     
-                    EnhancedRoutePlanListView(vm: vm)
-                        .tag(2)
+//                    EnhancedRoutePlanListView(vm: vm)
+//                        .tag(2)
                 }
                 .frame(height: dynamicHeight(for: selectedTab))
                 .tabViewStyle(PageTabViewStyle())
@@ -150,23 +162,25 @@ struct FindStopView: View {
                                     .foregroundColor(.secondary)
                                     .padding(.top)
                             }
-                        } else {
-                            Text("Search for \(selection)")
-                                .foregroundColor(.secondary)
-                                .padding(.top)
                         }
                     }
                 }
-                .frame(height: 300)
+                .frame(height: hasSearched ? 300 : nil)
                 
                 NavigationLink(destination: PreviewRouteView(vm: vm, trip: vm.current_trip!)) {
-                    Text("Continue").font(.headline)
+                    Spacer()
+                    Text("Preview Route").font(.system(size: 16))
                         .foregroundColor(.black)
                         .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.gray.opacity(0.3))
-                        .cornerRadius(15)
+                        .frame(maxWidth: 140)
+                        .background(Color.gray.opacity(0.05))
+                        .cornerRadius(10)
                         .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray, lineWidth: 0.5)
+                        )
+                    Spacer()
                 }
             }
             .padding(.top, 20)
@@ -179,11 +193,18 @@ struct FindStopView: View {
         switch tab {
         case 1:
             if selection == "Restaurants" {
-                return 250
+                if (isCuisineDropdownOpen) {
+                    return 240
+                } else if (isRatingDropdownOpen) {
+                    return 200
+                } else if (isPriceDropdownOpen) {
+                    return 170
+                }
+                return 50
             } else if selection == "Activities" || selection == "Hotels" {
-                return 80
+                return 70
             } else {
-                return 30
+                return 0
             }
         case 2:
             return 225 + CGFloat((vm.current_trip?.getStops().count ?? 0) * 100)
@@ -195,40 +216,58 @@ struct FindStopView: View {
     private var listCuisines: some View {
         let rows = stop_types.chunked(into: 4)
         return ForEach(rows, id: \.self) { row in
-            HStack {
+            HStack(spacing: 12) {
+                Spacer()
                 ForEach(row, id: \.self) { option in
                     Button(action: {
                         selection = option
                     }) {
                         Text(option)
                             .padding(8)
-                            .background(selection == option ? Color.gray : Color.gray.opacity(0))
-                            .foregroundColor(selection == option ? Color.white : Color.black)
-                            .cornerRadius(8)
+                            .background(selection == option ? Color.gray.opacity(0.4) : Color.gray.opacity(0))
+                            .foregroundColor(Color.black)
+                            .cornerRadius(12)
                             .font(.system(size: 14))
+                            .fixedSize()
                     }
                     .buttonStyle(PlainButtonStyle())
-                    .frame(width: 90, height: 30)
                 }
+                Spacer()
             }
         }
     }
+
     
     private var fetchResults: some View {
         Button(action: {
             isLoading = true
             hasSearched = true
-            
             Task {
                 do {
-                    await vm.fetchPlaces(
-                        location: vm.current_trip?.getStartLocation().getAddress() ?? "",
-                        stopType: selection,
-                        rating: Double(rating),
-                        price: price,
-                        cuisine: selectedCuisines.joined(separator: ","),
-                        searchString: searchString
-                    )
+                    if let currentTrip = vm.current_trip,
+                        let location = currentTrip.getStartLocation() as? any POI {
+                        let address = location.getAddress()
+                        if let (latitude, longitude) = await vm.getCoordinates(for: address) {
+                            if (selection == "Rest Stops") {
+                                await vm.fetchRestStops(
+                                    latitude: "\(latitude)",
+                                    longitude: "\(longitude)"
+                                )
+                            } else {
+                                await vm.fetchPlaces(
+                                    latitude: "\(latitude)",
+                                    longitude: "\(longitude)",
+                                    stopType: selection,
+                                    rating: Double(rating),
+                                    price: price,
+                                    cuisine: selectedCuisines.joined(separator: ","),
+                                    searchString: searchString
+                                )
+                            }
+                        } else {
+                            print("Failed to retrieve coordinates for address")
+                        }
+                    }
                 }
                 isLoading = false
             }
@@ -243,11 +282,10 @@ struct FindStopView: View {
                     .cornerRadius(10)
                 Spacer()
             }
-                //markerCoordinate = vm.current_trip?.getStartLocationCoordinates()
         }
         .padding()
     }
-    
+
     func removeStop(stop: any POI) async {
         vm.current_trip?.removeStops(removedStops: [stop])
         await self.updateTripRoute()
@@ -284,6 +322,8 @@ struct FindStopView: View {
             return vm.activities
         case "Shopping":
             return vm.shopping
+        case "Rest Stops":
+            return vm.reststops
         default:
             return vm.generalLocations
         }
@@ -300,7 +340,7 @@ struct FindStopView: View {
         @Binding var rating: Int
         
         var body: some View {
-            VStack(alignment: .leading) {
+            HStack() {
                 Text("Minimum Rating:")
                     .font(.subheadline)
                     .bold()
@@ -346,7 +386,7 @@ struct FindStopView: View {
         }
 
         var body: some View {
-            HStack {
+            HStack(spacing: 12) {
                 Button(action: { addStop(stop) }) {
                     ZStack {
                         Circle()
@@ -367,13 +407,14 @@ struct FindStopView: View {
                             .cornerRadius(10)
                             .clipped()
                     } placeholder: {
-                        ProgressView().frame(width: 70, height: 70)
+                        //ProgressView().frame(width: 70, height: 70)
+                        Color.clear.frame(width: 70, height: 70)
                     }
                 } else {
                     Color.clear.frame(width: 70, height: 70)
                 }
 
-                VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 0) {
                     Text(stop.name)
                         .font(.headline)
                         .lineLimit(1)
@@ -381,6 +422,7 @@ struct FindStopView: View {
                     Text(stop.address)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
+                        .lineLimit(1)
                     HStack {
                         if let restaurant = stop as? Restaurant {
                             Text(restaurant.cuisine ?? "")
@@ -388,12 +430,15 @@ struct FindStopView: View {
                                 .foregroundColor(.secondary)
                             
                             if let city = restaurant.city {
-                                Text(" • \(city) • ")
+                                Text("• \(city)")
                                     .font(.system(size: 16))
                                     .foregroundColor(.secondary)
                             }
                             
                             if let price = restaurant.price {
+                                Text("•")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(.secondary)
                                 Text(String(repeating: "$", count: price))
                                     .font(.system(size: 16))
                                     .foregroundColor(.secondary)
@@ -409,11 +454,10 @@ struct FindStopView: View {
                         showRating(hotel.rating)
                     }
                 }
-                .padding(.vertical, 12)
-
+                .padding(.vertical, 2)
                 Spacer()
             }
-            .padding(2)
+            .padding(4)
             .background(Color.white)
             .cornerRadius(12)
         }
