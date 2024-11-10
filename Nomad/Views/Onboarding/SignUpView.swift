@@ -15,14 +15,15 @@
 import SwiftUI
 
 struct SignUpView: View {
-    @ObservedObject var vm: FirebaseViewModel
+    @ObservedObject var vm : FirebaseViewModel
     @State private var email = ""
     @State private var password = ""
     @State private var repeatPassword = ""
     @State private var name = ""
     private let screenWidth = UIScreen.main.bounds.size.width
     private let screenHeight = UIScreen.main.bounds.size.height
-    @State private var navigateToHome = false
+//    @State private var navigateToHome = false
+    @State private var isLoggedIn = false
 
     var body: some View {
         NavigationStack {
@@ -153,14 +154,16 @@ struct SignUpView: View {
                 }
                 .padding([.leading, .trailing], 20)
                 .frame(maxWidth: .infinity, alignment: .leading)
-
+                NavigationLink(destination: RootView(), isActive: $isLoggedIn) {
+                    EmptyView()
+                }
                 Spacer()
 
                 HStack {
                     Text("Already have an account?")
                         .foregroundColor(Color.gray)
                     Spacer()
-                    NavigationLink(destination: LogInView(vm: vm).navigationBarBackButtonHidden(true) ) {
+                    NavigationLink(destination: LoginView(vm: vm).navigationBarBackButtonHidden(true) ) {
                         Text("Log In")
                             .foregroundColor(Color.gray)
                             .underline()
@@ -172,10 +175,18 @@ struct SignUpView: View {
             }
             .ignoresSafeArea()
         }
+        .onChange(of: vm.isAuthenticated) { _, newValue in
+            if newValue {
+                self.isLoggedIn = true
+            }
+        }
     }
-
+    
     private func signUp() {
         vm.errorText = nil
+        email = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        password = password.trimmingCharacters(in: .whitespacesAndNewlines)
+        repeatPassword = repeatPassword.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !email.isEmpty && !password.isEmpty && !repeatPassword.isEmpty && !name.isEmpty else {
             vm.errorText = "Please fill in all fields"
             return
@@ -185,14 +196,17 @@ struct SignUpView: View {
             vm.errorText = "Passwords do not match"
             return
         }
-
         vm.firebase_email_password_sign_up(email: email, password: password, name: name) { success in
             if success {
-                navigateToHome = true
+                DispatchQueue.main.async {
+                    self.isLoggedIn = true
+                }
             }
         }
     }
+
 }
+
 
 #Preview {
     SignUpView(vm: FirebaseViewModel())

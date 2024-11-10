@@ -1,89 +1,96 @@
-//
-//  AIAssistantView.swift
-//  Nomad
-//
-//  Created by Nicholas Candello on 9/15/24.
-//
-
 import SwiftUI
 
-struct Message: Identifiable {
-    let id = UUID()
-    let content: String
-    let sender: String
-}
-
-class ChatViewModel: ObservableObject {
-    @ObservedObject private var aiViewModel = AIAssistantViewModel()
-    @Published var messages: [Message] = [
-        Message(content: "Hi! I'm Atlas, your AI assistant", sender: "AI")
-    ]
-    
-    @Published var latestAIResponse: String?
-    
-    func sendMessage(_ content: String) {
-        let newMessage = Message(content: content, sender: "User")
-        messages.append(newMessage)
-        
-        // Simulate AI response asynchronously
-        Task {
-            // Call your Yelp-related function
-            if let aiResponse = await aiViewModel.converseAndGetInfoFromYelp(query: content) {
-                DispatchQueue.main.async {
-                    let aiMessage = Message(content: aiResponse, sender: "AI")
-                    self.messages.append(aiMessage)
-                    self.latestAIResponse = aiResponse
-                }
-            } else {
-                DispatchQueue.main.async {
-                    let errorMessage = Message(content: "Sorry, I couldn't find any restaurants", sender: "AI")
-                    self.messages.append(errorMessage)
-                    self.latestAIResponse = "Sorry, I couldn't find any restaurants"
-                }
-            }
-        }
-    }
-}
-
 struct AIAssistantView: View {
+    @ObservedObject var vm: UserViewModel
     @StateObject var aiViewModel = AIAssistantViewModel()
-    @StateObject private var viewModel = ChatViewModel()
+    @ObservedObject var chatViewModel: ChatViewModel
     @StateObject var speechRecognizer = SpeechRecognizer()
     @State private var isMicrophone = false
-
     @State private var currentMessage: String = ""
+    
 
     var body: some View {
         VStack {
-            HStack {
-                Text("Let's plan your new trip")
-                    .font(.title2)
-                    .padding()
-                Spacer()
+            // Header
+            if let trip = vm.current_trip {
+                RoutePreviewView(vm: vm, trip: Binding.constant(trip))
+                    .frame(minHeight: 200.0)
+            } else {
+                Text("No current trip available")
+                    .foregroundColor(.red)
             }
-            
-            List(viewModel.messages) { message in
-                HStack {
-                    if message.sender == "AI" {
-                        Text(message.content)
-                            .padding()
-                            .background(Color.green.opacity(0.1))
-                            .cornerRadius(10)
-                        Spacer()
-                    } else {
-                        Spacer()
-                        
-                        Text(message.content)
-                            .padding()
-                            .background(Color.blue.opacity(0.1))
-                            .cornerRadius(10)
+
+            // Chat messages
+            ScrollViewReader { reader in
+                ScrollView {
+                    ForEach(chatViewModel.messages) { message in
+                        HStack {
+                            if message.sender == "AI" {
+                                HStack {
+                                    Circle()
+                                        .frame(width: 30, height: 30)
+                                        .foregroundColor(.gray) // Placeholder for AI avatar
+                                    Text(message.content)
+                                        .padding()
+                                        .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+                                        .frame(maxWidth: 270, alignment: .leading)
+                                        .id(message.id)
+                                }
+                                Spacer()
+                            } else {
+                                Spacer()
+                                HStack {
+                                    Text(message.content)
+                                        .padding()
+                                        .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+                                        .frame(maxWidth: 270, alignment: .trailing)
+                                    Circle()
+                                        .frame(width: 30, height: 30)
+                                        .foregroundColor(.blue) // Placeholder for User avatar
+                                }
+                            }
+                        }
+                        .padding(.horizontal)
+                    }
+                    
+                }
+                .background(Color.clear)
+                .padding(.bottom)
+                .onChange(of: chatViewModel.messages.count) { _ in
+                    if let lastMessage = chatViewModel.messages.last {
+                        // Scroll to the latest message
+                        reader.scrollTo(lastMessage.id, anchor: .bottom)
                     }
                 }
-                .listRowBackground(Color.clear)
             }
-            .listStyle(PlainListStyle())
-            .background(Color.clear)
             
+            // Horizontal scroll view for POIs
+//            if !chatViewModel.pois.isEmpty {
+//                ScrollView(.horizontal, showsIndicators: false) {
+//                    HStack(spacing: 20) {
+//                        ForEach(chatViewModel.pois) { poi in
+//                            POIDetailView(name: poi.name, address: poi.address, distance: poi.distance)
+//                                .frame(width: 400) // Adjust width as necessary
+//                        }
+//                    }
+//                    .padding(.horizontal)
+//                }
+//                .frame(height: 110)  // Adjust height as needed
+//            }
+            
+            if !chatViewModel.pois.isEmpty {
+                TabView {
+                    ForEach(chatViewModel.pois) { poi in
+                        POIDetailView(name: poi.name, address: poi.address, distance: poi.distance, image: poi.image)
+                            .frame(width: 400, height: 120) // Adjust width and height as needed
+                            .padding(.horizontal, 5) // Adds padding at the top and bottom
+                    }
+                }
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                .frame(height: 180)  // Adjust to fit the padding and content
+            }
+            
+
             HStack {
                 Button(action: {
                     // Microphone action if necessary
@@ -92,8 +99,8 @@ struct AIAssistantView: View {
                         let transcript = speechRecognizer.transcript
                         
                         if !transcript.isEmpty {
-                            //viewModel.sendMessage(transcript)
-                            //currentMessage = transcript
+                            chatViewModel.sendMessage(transcript, vm: vm)
+                            currentMessage = transcript
                         }
                         
                         isMicrophone = false
@@ -109,6 +116,7 @@ struct AIAssistantView: View {
                         .clipShape(Circle())
                         .foregroundColor(isMicrophone ? .red : .gray)
                 }
+
                 TextField("Ask me anything...", text: $currentMessage)
                     .padding()
                     .background(Color.gray.opacity(0.2))
@@ -118,14 +126,13 @@ struct AIAssistantView: View {
                         currentMessage = newTranscript
                     }
 
-
                 Button(action: {
                     if !currentMessage.isEmpty {
-                        viewModel.sendMessage(currentMessage)
+                        chatViewModel.sendMessage(currentMessage, vm: vm)
                         currentMessage = ""
                     }
                 }) {
-                    Text("Send")
+                    Image(systemName: "paperplane.fill")
                         .padding()
                         .background(Color.blue)
                         .foregroundColor(.white)
@@ -135,10 +142,9 @@ struct AIAssistantView: View {
             .padding()
         }
         .background(Color.clear)
-        .navigationTitle("Plan a New Trip (AI)")
     }
 }
 
 #Preview {
-    AIAssistantView()
+    AIAssistantView(vm: UserViewModel(), chatViewModel: ChatViewModel())
 }

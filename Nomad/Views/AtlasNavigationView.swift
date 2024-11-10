@@ -10,7 +10,7 @@ import AVFoundation
 
 
 struct AtlasNavigationView: View {
-    @ObservedObject var vm = UserViewModel()
+    @ObservedObject var vm: UserViewModel
     @State var selectedTab = 0
     @State private var mapboxSetUp: Bool = false
     
@@ -124,7 +124,7 @@ struct AtlasNavigationView: View {
 
             if !transcript.isEmpty {
                 currentMessage = transcript
-                ChatVM.sendMessage(currentMessage)
+                ChatVM.sendMessage(currentMessage, vm: vm)
                 isLoading = true
             }
 
@@ -142,6 +142,6 @@ struct AtlasNavigationView: View {
 
 struct AtlasNavigationView_Previews: PreviewProvider {
     static var previews: some View {
-        AtlasNavigationView()
+        AtlasNavigationView(vm: UserViewModel())
     }
 }

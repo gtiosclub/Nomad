@@ -15,8 +15,69 @@ import SwiftUI
 class FirebaseViewModel: ObservableObject {
     let auth = Auth.auth()
     let db = Firestore.firestore()
+    @Published var current_user: User? = nil
     @Published var errorText: String? = nil
     @Published var isLoading: Bool = false
+    @Published var isAuthenticated = false  // Add this new property
+    var onSetupCompleted: ((FirebaseViewModel) -> Void)?
+    
+//    init(current_user: User? = nil, errorText: String? = nil) {
+//        if self.current_user == nil {
+//            self.current_user = current_user
+//            self.errorText = errorText
+//            
+//            
+//            Auth.auth().addStateDidChangeListener { [weak self] auth, user in
+//                if let user = user {
+//                    print("User Found")
+//                    if let username = user.displayName {
+//                        if !(current_user != nil && current_user!.id == username) {
+//                            print("Setting User: \(username)")
+//                            Task {
+//                                 await self?.setCurrentUser(userId: username)
+//                                 UserDefaults.standard.setValue(true, forKey: "log_Status")
+//                             }
+//                        }
+//                    }
+//                } else {
+//                    UserDefaults.standard.setValue(false, forKey: "log_Status")
+//                }
+//            }
+//        }
+//    }
+    
+    init(current_user: User? = nil, errorText: String? = nil) {
+        if self.current_user == nil {
+            self.current_user = current_user
+            self.errorText = errorText
+            
+            // Combine both auth listeners
+            auth.addStateDidChangeListener { [weak self] auth, user in
+                DispatchQueue.main.async {
+                    self?.isAuthenticated = user != nil  // Update authentication state
+                    
+                    if let user = user {
+                        print("User Found")
+                        if let username = user.displayName {
+                            if !(current_user != nil && current_user!.id == username) {
+                                print("Setting User: \(username)")
+                                Task {
+                                    await self?.setCurrentUser(userId: username)
+                                    UserDefaults.standard.setValue(true, forKey: "log_Status")
+                                }
+                            }
+                        }
+                    } else {
+                        UserDefaults.standard.setValue(false, forKey: "log_Status")
+                    }
+                }
+            }
+        }
+    }
+    
+    func configure() {
+        self.onSetupCompleted?(self)
+    }
     
     func firebase_email_password_sign_up(email: String, password: String, name: String, completion: @escaping (Bool) -> Void) {
         isLoading = true
@@ -35,9 +96,17 @@ class FirebaseViewModel: ObservableObject {
                 completion(false)
                 return
             }
-            
-            db.collection("USERS").document(user.uid).setData([
-                "email": email, "name": name
+            let changeRequest = user.createProfileChangeRequest()
+            changeRequest.displayName = name
+            changeRequest.commitChanges { error in
+                if let error = error {
+                    self.errorText = "Failed to update user display name: \(error.localizedDescription)"
+                    completion(false)
+                }
+            }
+            let trips: [String] = []
+            db.collection("USERS").document(name).setData([
+                "email": email, "name": name, "trips": trips
             ]) { error in
                 if let error = error {
                     self.errorText = "Failed to save user data: \(error.localizedDescription)"
@@ -72,6 +141,120 @@ class FirebaseViewModel: ObservableObject {
             
         }
     }
+    
+    func setCurrentUser(userId: String) async -> User? {
+        if userId.isEmpty {
+            return nil
+        }
+        
+        // Only fetch if current_user is nil or different user
+        if current_user == nil || current_user?.id != userId {
+            do {
+                // First get the user document
+                let document = try await db.collection("USERS").document(userId).getDocument()
+                
+                guard let documentData = document.data() else {
+                    print("User document does not contain any data.")
+                    return nil
+                }
+                
+                // Then fetch all trips
+                let allTrips: [String: [Trip]] = await getAllTrips(userID: userId)
+                
+                self.current_user = User(
+                    id: document.documentID,
+                    name: documentData["name"] as? String ?? "",
+                    email: documentData["email"] as? String ?? "",
+                    trips: allTrips["future"] ?? [],
+                    pastTrips: allTrips["past"] ?? [],
+                    currentTrip: allTrips["present"] ?? []
+                )
+                
+                return self.current_user
+            } catch {
+                print("SetCurrentUserError: \(error.localizedDescription)")
+                return nil
+            }
+        }
+        return current_user
+    }
+
+//    func setCurrentUser(userId: String, completion: @escaping ((User?) -> Void)) {
+//        if userId.isEmpty {
+//            completion(nil)
+//        }  else {
+//            if current_user == nil {
+//                db.collection("USERS").document(userId).getDocument (completion: { document, error in
+//                    if let error = error {
+//                        print("SetCurrentUserError: \(error.localizedDescription)")
+//                        completion(nil)
+//                    } else if let document = document {
+//                        let allTrips: [String: [Trip]]
+//                        do {
+//                            allTrips = await.getAllTrips(userID: userId)
+//                        } catch {
+//                            
+//                        }
+//                        self.current_user = User(id: document.documentID,
+//                                                 name: document["name"] as! String,
+//                                                 email: document["email"] as! String,
+//                                                 trips: allTrips["future"] ?? [],
+//                                                 pastTrips: allTrips["past"] ?? [],
+//                                                 currentTrip: allTrips["present"] ?? [])
+//                        completion(self.current_user)
+//                    }
+//                })
+//            } else {
+//                completion(self.current_user)
+//            }
+//        }
+//    }
+    
+//    func setCurrentUser(userId: String) async -> User? {
+//        if userId.isEmpty {
+//            return nil
+//        } else {
+//            // Only fetch if current_user is nil
+//            if current_user == nil {
+//                // Fetch all trips asynchronously before the getDocument call
+//                let allTrips: [String: [Trip]]
+//                do {
+//                    allTrips = await getAllTrips(userID: userId)
+//                } catch {
+//                    print("Error fetching trips: \(error.localizedDescription)")
+//                    return nil
+//                }
+//                
+//                do {
+//                    let document = try await db.collection("USERS").document(userId).getDocument()
+//                    
+//                    guard let documentData = document.data() else {
+//                        print("User document does not contain any data.")
+//                        return nil
+//                    }
+//                    
+//                    self.current_user = User(
+//                        id: document.documentID,
+//                        name: documentData["name"] as? String ?? "",
+//                        email: documentData["email"] as? String ?? "",
+//                        trips: allTrips["future"] ?? [],
+//                        pastTrips: allTrips["past"] ?? [],
+//                        currentTrip: allTrips["present"] ?? []
+//                    )
+//                    return self.current_user
+//                } catch {
+//                    print("SetCurrentUserError: \(error.localizedDescription)")
+//                    return nil
+//                }
+//            }
+//            return current_user
+//        }
+//    }
+
+
+
+    
+    /*-------------------------------------------------------------------------------------------------*/
     
     func addTripToUser(userID: String, tripID: String) async -> Bool {
         let docRef = db.collection("USERS").document(userID)
@@ -124,7 +307,6 @@ class FirebaseViewModel: ObservableObject {
 //    }
     func createTrip(tripID: String, startLocationName: String, startLocationAddress: String, endLocationName: String, endLocationAddress: String, createdDate: String, modifiedDate: String) async -> Bool {
         let tripDocRef = db.collection("TRIPS").document(tripID)
-        
         let tripData: [String: Any] = [
             "created_date": createdDate,
             "modified_date": modifiedDate,
@@ -133,7 +315,6 @@ class FirebaseViewModel: ObservableObject {
         ]
         do {
             try await tripDocRef.setData(tripData)
-            
             let stopsCollection = tripDocRef.collection("STOPS")
             
             let startData: [String: Any] = [
@@ -142,7 +323,7 @@ class FirebaseViewModel: ObservableObject {
                 "type": "GeneralLocation"
             ]
             try await stopsCollection.document("start").setData(startData)
-            
+
             let endData: [String: Any] = [
                 "name": endLocationName,
                 "address": endLocationAddress,
@@ -233,7 +414,7 @@ class FirebaseViewModel: ObservableObject {
             return false
         }
     }
-    
+
     func modifyEndLocationAndDate(tripID: String, stop: any POI, modifiedDate: String) async -> Bool {
         //modify start
         do {
@@ -269,7 +450,6 @@ class FirebaseViewModel: ObservableObject {
                     return false;
                 }
                 try await db.collection("TRIPS").document(tripID).updateData(["stops": stops])
-                
             } else {
                 print("Stop already in user stop list")
                 return false;
@@ -372,6 +552,7 @@ class FirebaseViewModel: ObservableObject {
             print(error)
             return false
         }
+
         let docRef = db.collection("TRIPS").document(tripID)
         do {
             try await db.collection("TRIPS").document(tripID).updateData(["stops": stops])
@@ -564,7 +745,7 @@ class FirebaseViewModel: ObservableObject {
         case "RestStop":
             return RestStop(address: address, name: name, latitude: latitude, longitude: longitude, city: city)
         case "GasStation":
-            return GasStation(name: name, address: address, longitude: longitude, latitude: latitude, city: city)
+            return GasStation(address: address, name: name, latitude: latitude, longitude: longitude, city: city)
         case "GeneralLocation":
             return GeneralLocation(address: address, name: name, latitude: latitude, longitude: longitude, city: city)
         case "Hotel":

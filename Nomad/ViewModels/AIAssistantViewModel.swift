@@ -120,22 +120,49 @@ class AIAssistantViewModel: ObservableObject {
      Parent Function
      -----------------------------------------------------
      */
-
-    func converseAndGetInfoFromYelp(query: String) async -> String? {
+    
+    
+    func getPOIDetails(query: String, vm: UserViewModel) async -> [POIDetail]? {
         let jsonString = await queryChatGPT(query: query) ?? ""
-        let yelpInfo = await queryYelpWithjSONString(jsonString: jsonString) ?? "!!!Failed!!!"
+        let yelpInfo = await queryYelpWithjSONString(jsonString: jsonString, userVM: vm) ?? "!!!Failed!!!"
         print(yelpInfo)
-        let businessResponse = parseGetBusinessesIntoModel(yelpInfo: yelpInfo)
         
-        let name = businessResponse?.businesses.first?.name ?? ""
-        let address = businessResponse?.businesses.first?.location.address1 ?? ""
-        let price = businessResponse?.businesses.first?.price ?? ""
-        let rating = businessResponse?.businesses.first?.rating ?? -1
-        let phoneNumber = businessResponse?.businesses.first?.phone ?? ""
+        guard let businessResponse = parseGetBusinessesIntoModel(yelpInfo: yelpInfo) else {
+            return [POIDetail.null]
+        }
         
-        let response = await formatResponseToUser(name: name, address: address, price: price, rating: rating, phoneNumber: phoneNumber)
-        return response
+        print(businessResponse)
+        
+        // Collect information for the first three businesses (or fewer if less are available)
+        var businessDetails: [(name: String, address: String, price: String, rating: Double, phoneNumber: String)] = []
+        for i in 0..<min(3, businessResponse.businesses.count) {
+            let business = businessResponse.businesses[i]
+            let name = business.name
+            let address = business.location.address1
+            let price = business.price ?? ""
+            let rating = business.rating ?? -1
+            let phoneNumber = business.phone
+            businessDetails.append((name, address, price, rating, phoneNumber))
+        }
+        
+        // Collect POI details for the first three businesses (or fewer if less are available)
+        let poiDetails = (0..<min(3, businessResponse.businesses.count)).compactMap { i -> POIDetail? in
+            let business = businessResponse.businesses[i]
+            print(business.imageUrl)
+            return POIDetail(
+                name: business.name,
+                address: "\(business.location.address1), \(business.location.city), \(business.location.state) \(business.location.zipCode)",
+                distance: "",  // Assuming distance will be calculated or provided elsewhere
+                phoneNumber: business.phone,
+                rating: "\(business.rating ?? -1)",
+                price: business.price ?? "",
+                image: business.imageUrl ?? ""
+            )
+        }
+        
+        return poiDetails
     }
+
      //-------------------------------------------------
     
     /*----------------------------------------------------
@@ -148,7 +175,7 @@ class AIAssistantViewModel: ObservableObject {
         do {
             let response = try await openAIAPIKey.sendMessage(
                 text: """
-                    I will give you a question/statement. From this statement, extract the following information and put it in this JSON format. Price is default "1,2,3,4", and should only include upper or lower ranges based on user price preference. If the user refers to their own location or route, set location field to "MyLocation". If user does not mention time, set time to -1.
+                    I will give you a question/statement. From this statement, extract the following information and put it in this JSON format. Price is default "1,2,3,4", and should only include upper or lower ranges based on user price preference. If the user refers to their own location or route, set location field to "MyLocation". If user does not mention time, set time to -1. Example for locationInformation is "Museum" if locationType is "Activity".
                     {
                     locationType: <Restaurant/Gas Station/Hotel/Rest Stop/Point of Interest/Activity>
                     locationInformation: <String>
@@ -175,10 +202,11 @@ class AIAssistantViewModel: ObservableObject {
     //First converts the GPT JSON into a struct that is then parsed
     //The parsed information is used as parameters to call Yelp API
     //The function returns a JSON consisting of all the stops that fit the user's criteria
-    func queryYelpWithjSONString(jsonString: String) async -> String? {
+    func queryYelpWithjSONString(jsonString: String, userVM: UserViewModel) async -> String? {
         guard let locationInfo = convertStringToStruct(jsonString: jsonString) else {
             return "Error: Unable to parse JSON String"
         }
+        currentLocationQuery = locationInfo
         let locationType = locationInfo.locationType
         let locationInformation = locationInfo.locationInformation
         let distance = locationInfo.distance
@@ -187,12 +215,14 @@ class AIAssistantViewModel: ObservableObject {
         let price = locationInfo.price
         let preferences = locationInfo.preferences.joined(separator: ", ")
         
-        if(time != -1) {
+        if(time != -1 && location == "MyLocation") {
             var sampleRoute = await MapManager.manager.getExampleRoute()!
             
-            var coords = MapManager.manager.getFutureLocation(time: time, route: sampleRoute)
+            var route = userVM.current_trip?.route
             
-            guard let businessInformation = await fetchSpecificBusinesses(locationType: (locationInformation == "") ? locationType : locationInformation, distance: distance, price: price, location: "UseCoords", preferences: preferences, latitude: coords?.latitude ?? 0, longitutde: coords?.longitude ?? 0) else {
+            var coords = MapManager.manager.getFutureLocation(time: time, route: route ?? sampleRoute)
+            
+            guard let businessInformation = await fetchSpecificBusinesses(locationType: (locationInformation == "") ? locationType : locationInformation, distance: 2, price: price, location: "UseCoords", preferences: preferences, latitude: coords?.latitude ?? 0, longitutde: coords?.longitude ?? 0) else {
                 return "Error: Unable to access YELP API"
             }
             return businessInformation
@@ -213,7 +243,7 @@ class AIAssistantViewModel: ObservableObject {
             URLQueryItem(name: "term", value: "\(preferences)  \(locationType)"),
             URLQueryItem(name: "price", value: price),
             URLQueryItem(name: "radius", value: "\(Int(distance * 1609))"), //Because the parameter takes in meters, we convert miles to meters (1 mile = 1608.34 meters)
-            URLQueryItem(name: "limit", value: "1"),
+            URLQueryItem(name: "limit", value: "3"),
         ]
         if(location == "UseCoords") {
             queryItems.append(URLQueryItem(name: "latitude", value: String(latitude)))
@@ -234,7 +264,6 @@ class AIAssistantViewModel: ObservableObject {
         }
     }
     
-    //Parses the Yelp JSON into a BusinessResponse struct so the information can be more easily displayed
     func parseGetBusinessesIntoModel(yelpInfo: String) -> BusinessResponse? {
         let jsonData = yelpInfo.data(using: .utf8)! // Convert the string to Data
         
@@ -242,28 +271,15 @@ class AIAssistantViewModel: ObservableObject {
             // Decode the JSON data into a YelpLocation instance
             let decoder = JSONDecoder()
             let businessesResponse = try decoder.decode(BusinessResponse.self, from: jsonData)
+            print("parseGetBusinessesIntoModel \(businessesResponse)")
             return businessesResponse
         } catch {
-            print("Error decoding JSON: \(error)")
+            print("Error decoding JSON (parseGetBusinessesIntoModel): \(error)")
             return nil
         }
     }
     
-    func formatResponseToUser(name: String, address: String, price: String, rating: Double, phoneNumber: String) async -> String? {
-        do {
-            let response = try await openAIAPIKey.sendMessage(
-                text: """
-                    I will give you data about a business. Give the data back to the user in a concise yet friendly manner. Ensure you write in complete sentences. Although I say I will give you data, it doesn't mean the data is valid. Use discretion on whether the data is valid, and if none of the data is valid, then say there are no restaurants in the area. Note that the price will be a symbol "$", and the number of dollar signs will be out of four. For example, $$$$ = most expensive. Rating is out of 5.0.
-                
-                    Here is the data: <<<Name: \(name), Address: \(address), Price: \(price), Rating: \(rating), Phone Number: \(phoneNumber)
-                """,
-                model: gptModel!)
-            return response
-        } catch {
-            return "Send OpenAI Query Error: \(error.localizedDescription)"
-        }
-    }
-    
+
     // Helper function that will take in a JSON formatted String and turn it into an accessible Swift Data Structure
     func convertStringToStruct(jsonString: String) -> LocationInfo? {
         let jsonData = jsonString.data(using: .utf8)! // Convert the string to Data
