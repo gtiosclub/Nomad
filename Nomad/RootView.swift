@@ -13,6 +13,7 @@ struct RootView: View {
     @State private var mapboxSetUp: Bool = false
     
     @ObservedObject var vm = UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: UserViewModel.my_trips))
+//    @ObservedObject var firebaseVM = FirebaseViewModel()
     
     var body: some View {
         TabView(selection: $selectedTab) {

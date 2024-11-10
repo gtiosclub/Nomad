@@ -29,7 +29,7 @@ class UserViewModel: ObservableObject {
     @Published var community_trips: [Trip] = []
     
     var aiVM = AIAssistantViewModel()
-
+    var fbVM = FirebaseViewModel()
     
     init(user: User? = nil) {
         self.user = user

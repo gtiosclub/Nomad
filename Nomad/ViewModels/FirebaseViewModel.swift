@@ -117,6 +117,16 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    func firebase_sign_out() {
+        do {
+            try auth.signOut()
+            current_user = nil
+        } catch let signOutError as NSError {
+        
+            print("Error signing out: %@", signOutError)
+        }
+    }
+    
     func setCurrentUser(userId: String) async -> User? {
         if userId.isEmpty {
             return nil
@@ -334,59 +344,59 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
-    func addStopToTrip(tripID: String, stop: any POI, index: Int) async -> Bool {
-        // Add stop to tripID array
-        let docRef = db.collection("TRIPS").document(tripID)
-        do {
-            let document = try await docRef.getDocument()
-            guard var stops = document.data()?["stops"] as? [String] else {
-                print("Document does not exist or stops is not an array.")
-                return false
-            }
-            if (!stops.contains(stop.name)) {
-                if (index >= 0 || index > stops.count) {
-                    stops.insert(stop.name, at: index)
-                } else {
-                    print("Invalid Index")
-                    return false;
-                }
-                try await db.collection("TRIPS").document(tripID).updateData(["stops": stops])
-            } else {
-                print("Stop already in user stop list")
-                return false;
-            }
-        } catch {
-            print(error)
-            return false
-        }
-        
-        //add stop to collections
-        var closeTime: String = ""
-        var cuisine: String = ""
-        var openTime: String = ""
-        var price: Int = -1
-        var rating: Double = -1
-        var website: String = ""
-        if let restaurant = stop as? Restaurant {
-            closeTime = restaurant.close_time ?? ""
-            openTime = restaurant.open_time ?? ""
-            cuisine = restaurant.cuisine ?? ""
-            price = restaurant.price ?? -1
-            rating = restaurant.rating ?? -1.0
-            website = restaurant.website ?? ""
-        }
-        if let hotel = stop as? Hotel {
-            rating = hotel.rating ?? -1.0
-            website = hotel.website ?? ""
-        }
-        do {
-            try await db.collection("TRIPS").document(tripID).collection("STOPS").document(stop.name).setData(["name" : stop.name, "address" : stop.address, "type" : "\(type(of: stop))", "latitude" : stop.latitude, "longitude" : stop.longitude, "city" : stop.city ?? "", "close_time" : closeTime, "cuisine" : cuisine, "open_time" : openTime, "price" : price, "rating" : rating, "website" : website])
-            return true
-        } catch {
-            print(error)
-            return false
-        }
-    }
+//    func addStopToTrip(tripID: String, stop: any POI, index: Int) async -> Bool {
+//        // Add stop to tripID array
+//        let docRef = db.collection("TRIPS").document(tripID)
+//        do {
+//            let document = try await docRef.getDocument()
+//            guard var stops = document.data()?["stops"] as? [String] else {
+//                print("Document does not exist or stops is not an array.")
+//                return false
+//            }
+//            if (!stops.contains(stop.name)) {
+//                if (index >= 0 || index > stops.count) {
+//                    stops.insert(stop.name, at: index)
+//                } else {
+//                    print("Invalid Index")
+//                    return false;
+//                }
+//                try await db.collection("TRIPS").document(tripID).updateData(["stops": stops])
+//            } else {
+//                print("Stop already in user stop list")
+//                return false;
+//            }
+//        } catch {
+//            print(error)
+//            return false
+//        }
+//        
+//        //add stop to collections
+//        var closeTime: String = ""
+//        var cuisine: String = ""
+//        var openTime: String = ""
+//        var price: Int = -1
+//        var rating: Double = -1
+//        var website: String = ""
+//        if let restaurant = stop as? Restaurant {
+//            closeTime = restaurant.close_time ?? ""
+//            openTime = restaurant.open_time ?? ""
+//            cuisine = restaurant.cuisine ?? ""
+//            price = restaurant.price ?? -1
+//            rating = restaurant.rating ?? -1.0
+//            website = restaurant.website ?? ""
+//        }
+//        if let hotel = stop as? Hotel {
+//            rating = hotel.rating ?? -1.0
+//            website = hotel.website ?? ""
+//        }
+//        do {
+//            try await db.collection("TRIPS").document(tripID).collection("STOPS").document(stop.name).setData(["name" : stop.name, "address" : stop.address, "type" : "\(type(of: stop))", "latitude" : stop.latitude, "longitude" : stop.longitude, "city" : stop.city ?? "", "close_time" : closeTime, "cuisine" : cuisine, "open_time" : openTime, "price" : price, "rating" : rating, "website" : website])
+//            return true
+//        } catch {
+//            print(error)
+//            return false
+//        }
+//    }
     
     
     func removeStopFromTrip(tripID: String, stop: any POI) async -> Bool {
@@ -631,6 +641,23 @@ class FirebaseViewModel: ObservableObject {
             }
             return public_trips
         }
+    
+//    func modifyTrips(userID: String, trip: Trip) async -> Bool {
+//        let tripID = trip.id
+//        let user = db.collection("USERS").document(userID)
+//        
+//        do {
+//            let trip_document = try await user.getDocument()
+//            guard let tripDocs = trip_document.data()?["trips"] as? [String] else {
+//                print("Unable to retrieve trips array from user document")
+//                return false
+//            }
+//        } catch {
+//            print("Error fetching user document: \(error)")
+//            return false
+//        }
+//    }
+    
     
     func getAllTrips(userID: String) async -> [String: [Trip]] {
         //        var trips: [Trip] = []
