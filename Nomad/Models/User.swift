@@ -10,16 +10,26 @@ import Foundation
 class User: Identifiable, ObservableObject {
     var id: String
     private var name: String
-    @Published var trips: [Trip]
+    var email: String
+//    var profilePicture: String
+    @Published var trips: [Trip] // this is referencing future trips
+    @Published var pastTrips: [Trip]
+    @Published var currentTrip: [Trip]
     
-    init(id: String, name: String, trips: [Trip] = []) {
+    init(id: String, name: String, email: String = "", trips: [Trip] = [], pastTrips: [Trip] = [], currentTrip: [Trip] = []) {
         self.id = id
         self.name = name
+        self.email = email
+//        self.profilePicture = profilePicture
         self.trips = trips
+        self.pastTrips = pastTrips
+        self.currentTrip = currentTrip
     }
+    
     func getName() -> String {
         return self.name
     }
+    
     func addTrip(trip: Trip) {
         self.trips.append(trip)
     }
