@@ -29,6 +29,7 @@ struct ItineraryPlanningView: View {
     @State var isClicked: Bool = false
     @State var startAddressError: String = ""
     @State var endAddressError: String = ""
+    @State var bothAddressError: String = ""
     
     enum completion{
         case null, start, end
@@ -68,33 +69,52 @@ struct ItineraryPlanningView: View {
                         }
                         ZStack {
                             VStack(spacing: 15){
-                                VStack{
-                                    TextField("Start Location", text: $inputAddressStart).padding().background(Color.white).cornerRadius(10)
-                                        .onChange(of: inputAddressStart) {
-                                            lastEdited = .start
-                                            mapSearch.searchTerm = inputAddressStart
-                                        }
-                                    
-                                    //if did not enter startAddress
-                                    if !startAddressError.isEmpty {
-                                        Text(startAddressError)
-                                            .foregroundColor(.red)
-                                            .font(.caption)
-                                    }
-                                    
+                                if !bothAddressError.isEmpty {
+                                    Text(bothAddressError)
+                                        .foregroundColor(.red)
+                                        .font(.caption)
+                                        .padding()
                                 }
-                                ZStack{
-                                    TextField("End Location", text: $inputAddressEnd).padding().background(Color.white).cornerRadius(10)
-                                        .onChange(of: inputAddressEnd) {
-                                            lastEdited = .end
-                                            mapSearch.searchTerm = inputAddressEnd
+                                    VStack{
+                                        TextField("Start Location", text: $inputAddressStart).padding().background(Color.white).cornerRadius(10)
+                                            .onChange(of: inputAddressStart) {
+                                                if !startAddressError.isEmpty {
+                                                    startAddressError = ""
+                                                }
+                                                lastEdited = .start
+                                                mapSearch.searchTerm = inputAddressStart
+                                                
+                                                
+                                            }
+                                        if (!startAddressError.isEmpty) {
+                                            Text(startAddressError)
+                                                .foregroundColor(.red)
+                                                .font(.caption)
                                         }
-                                    //if did not enter endAddress
-                                    if !endAddressError.isEmpty {
-                                        Text(endAddressError)
-                                            .foregroundColor(.red)
-                                            .font(.caption)
+                                        
+                                        }
+                                    
+                                
+                                ZStack{
+                                    VStack {
+                                        TextField("End Location", text: $inputAddressEnd).padding().background(Color.white).cornerRadius(10)
+                                            .onChange(of: inputAddressEnd) {
+                                                if !endAddressError.isEmpty {
+                                                    endAddressError = ""
+                                                }
+                                                lastEdited = .end
+                                                mapSearch.searchTerm = inputAddressEnd
+                                                
+                                                
+                                            }
+                                        if (!endAddressError.isEmpty) {
+                                            Text(endAddressError)
+                                                .foregroundColor(.red)
+                                                .font(.caption)
+                                            }
                                     }
+                                    
+                                
                                     if(lastEdited == completion.start && !isClicked){
                                         dropdownMenu(inputAddress: $inputAddressStart, inputName: $inputNameStart, inputLatitude: $startLatitude, inputLongitude: $startLongitude)
                                     }
@@ -178,13 +198,15 @@ struct ItineraryPlanningView: View {
                     //reset error states
                     startAddressError = ""
                     endAddressError = ""
+                    bothAddressError = ""
                     
                     //check if start and end location are valid address that contains at least two commas
-                    if inputAddressStart.components(separatedBy: ",").count < 3 {
+                    if inputAddressStart.components(separatedBy: ",").count < 3 && inputAddressEnd.components(separatedBy: ",").count < 3 {
+                        bothAddressError = "Both addresses need to be entered with a street, city, and state."
+                    } else if inputAddressStart.components(separatedBy: ",").count < 3 {
                             startAddressError = "Please enter a valid start location with a street, city, and state."
-                        }
-                    if inputAddressEnd.components(separatedBy: ",").count < 3 {
-                            endAddressError = "Please enter a valid start location with a street, city, and state."
+                    } else if inputAddressEnd.components(separatedBy: ",").count < 3 {
+                            endAddressError = "Please enter a valid end location with a street, city, and state."
                         }
                     
                     
@@ -195,7 +217,7 @@ struct ItineraryPlanningView: View {
                         inputNameEnd = "End Location"
                     }
                     
-                    if (startAddressError.isEmpty && endAddressError.isEmpty) {
+                    if (startAddressError.isEmpty && endAddressError.isEmpty && bothAddressError.isEmpty) {
                         Task {
                             await vm.createTrip(start_location: GeneralLocation(address: inputAddressStart, name: inputNameStart, latitude: startLatitude, longitude: startLongitude), end_location: GeneralLocation(address: inputAddressEnd, name: inputNameEnd, latitude: endLatitude, longitude: endLongitude), start_date: ItineraryPlanningView.dateToString(date: startDate), end_date: ItineraryPlanningView.dateToString(date: endDate), stops: [], start_time: ItineraryPlanningView.timeToString(date: startTime))
                             
