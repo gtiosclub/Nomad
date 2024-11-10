@@ -318,6 +318,11 @@ class UserViewModel: ObservableObject {
         return 0.0
     }
     
+    @Published var navigatingTrip: Trip? = nil
+    func startTrip(trip: Trip) {
+        self.navigatingTrip = trip
+    }
+    
     func calculateLegInfo() async {
         DispatchQueue.main.async {
             self.distances.removeAll()

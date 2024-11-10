@@ -164,6 +164,12 @@ struct MapView: View {
                     }
                 }
             }
+        }.onChange(of: vm.navigatingTrip) { old, new in
+            if let newTrip = new {
+                if let newRoute = newTrip.route {
+                    navManager.setNavigatingRoute(route: newRoute)
+                }
+            }
         }
     }
     // Function to announce current location

@@ -139,6 +139,14 @@ struct PreviewRouteView: View {
                         .foregroundColor(.black)
                         .padding(.horizontal)
                     }
+                    Button("Start Route") {
+                        vm.startTrip(trip: trip)
+                    }
+                    .padding()
+                    .background(Color.gray.opacity(0.2))
+                    .foregroundColor(.black)
+                    .cornerRadius(8)
+
                 }
             }
         }
