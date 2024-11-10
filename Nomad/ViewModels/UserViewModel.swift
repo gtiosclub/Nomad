@@ -30,7 +30,6 @@ class UserViewModel: ObservableObject {
     
     var aiVM = AIAssistantViewModel()
     var fbVM = FirebaseViewModel()
-
     
     init(user: User) {
         self.user = user
