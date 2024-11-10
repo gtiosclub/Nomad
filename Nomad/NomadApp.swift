@@ -61,6 +61,7 @@ struct YourApp: App {
             }
             .onAppear {
                 firebaseViewModel.onSetupCompleted = { vm in
+                    print("made it to firebase setup")
                     DispatchQueue.main.async {
                         if let user = firebaseViewModel.auth.currentUser {
                             Task {

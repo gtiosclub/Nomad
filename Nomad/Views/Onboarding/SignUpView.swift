@@ -180,6 +180,9 @@ struct SignUpView: View {
                 self.isLoggedIn = true
             }
         }
+        .onAppear() {
+            print("made it to sign up view")
+        }
     }
     
     private func signUp() {

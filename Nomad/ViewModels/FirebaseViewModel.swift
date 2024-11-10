@@ -22,6 +22,7 @@ class FirebaseViewModel: ObservableObject {
     var onSetupCompleted: ((FirebaseViewModel) -> Void)?
     
     init(current_user: User? = nil, errorText: String? = nil) {
+        print("inside fbVM init")
         if self.current_user == nil {
             self.current_user = current_user
             self.errorText = errorText
@@ -118,6 +119,7 @@ class FirebaseViewModel: ObservableObject {
     }
     
     func setCurrentUser(userId: String) async -> User? {
+        print("attempting to set current user")
         if userId.isEmpty {
             return nil
         }
