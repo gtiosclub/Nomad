@@ -457,6 +457,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         let stepProgress = distance / step.direction.distance
         totalTime += stepProgress * TimeInterval(step.direction.expectedTravelTime)
         
+        print("total time remaining on leg: \(totalTime.description)")
         return totalTime
     }
     

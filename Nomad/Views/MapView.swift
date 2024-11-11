@@ -64,6 +64,8 @@ struct MapView: View {
     @State private var remainingTime: TimeInterval = 0
     @State private var remainingDistance: Double = 0
     
+    let timer = Timer.publish(every: 7, on: .main, in: .common).autoconnect()
+    
     var body: some View {
         ZStack {
             // All views within Map
@@ -104,10 +106,6 @@ struct MapView: View {
                             }
                         }
                     }
-                    if navManager.navigating {
-                        self.remainingTime = mapManager.getRemainingTime(leg: navManager.navigatingLeg!)
-                        self.remainingDistance = mapManager.getRemainingDistance(leg: navManager.navigatingLeg!)
-                    }
                 }
             }
             .onAppear() {
@@ -139,18 +137,41 @@ struct MapView: View {
                     }
                 }
                 Spacer()
-                Button {
-                    navManager.startNavigating()
-                } label: {
-                    Text("Start Navigating")
-                        .padding()
-                        .background(.blue)
-                        .foregroundStyle(.white)
-                        .padding()
-                }
-                VStack {
-                    Text("Time Remaining: \(formattedRemainingTime())")
-                    Text("Distance: \(formattedRemainingDistance())")
+                if !navManager.navigating {
+                    Button {
+                        if navManager.navigatingRoute == nil {
+                            if let trip = vm.navigatingTrip {
+                                if let route = trip.route {
+                                    navManager.setNavigatingRoute(route: route)
+                                    navManager.startNavigating()
+                                }
+                            }
+                        } else {
+                            navManager.startNavigating()
+                        }
+                    } label: {
+                        Text("Start Navigating")
+                            .padding()
+                            .background(.blue)
+                            .foregroundStyle(.white)
+                            .padding()
+                    }
+                } else {
+                    HStack(spacing: 100) {
+                        VStack {
+                            Text("\(formattedRemainingTime())")
+                                .font(.largeTitle)
+                            Text("hrs")
+                        }
+                        VStack {
+                            Text("\(formattedRemainingDistance())")
+                                .font(.largeTitle)
+                            Text("mi")
+                        }
+                    }.padding()
+                    .frame(maxWidth: .infinity, idealHeight: 150)
+                        .background(.white)
+                    
                 }
                 
             }
@@ -160,22 +181,30 @@ struct MapView: View {
                     navManager.setNavigatingRoute(route: newRoute)
                 }
             }
+        }.onReceive(timer) { _ in
+            if navManager.navigating {
+                self.remainingTime = mapManager.getRemainingTime(leg: navManager.navigatingLeg!)
+                self.remainingDistance = mapManager.getRemainingDistance(leg: navManager.navigatingLeg!)
+            }
         }
+        
     }
     private func formattedRemainingTime() -> String {
-        let hours = floor(self.remainingTime / 3600)
-        let minutes = floor(self.remainingTime.remainder(dividingBy: 3600) / 60)
+        let seconds = Int(self.remainingTime)
+        let hours = Int(seconds) / 3600
+        let minutes = (Int(seconds) % 3600) / 60
         
-        return "\(hours > 0 ? "\(hours) hrs " : "")\(minutes) mins"
+        return String(format: "%1d:%02d", hours, minutes)
     }
     private func formattedRemainingDistance() -> String {
-        var miles = self.remainingDistance / 1609.34
-        if miles > 0.2 {
-            return String(format: "%.1f miles", miles)
-        } else {
-            let feet = 100 * floor(miles * 5280 / 100)
-            return String(format: "%3.0f feet", feet)
-        }
+        return String(format: "%.1f", self.remainingDistance / 1609.34)
+//        var miles = self.remainingDistance / 1609.34
+//        if miles > 0.2 {
+//            return String(format: "%.1f miles", miles)
+//        } else {
+//            let feet = 100 * floor(miles * 5280 / 100)
+//            return String(format: "%3.0f feet", feet)
+//        }
     }
     // Function to announce current location
     private func announceCurrentLocation() {
