@@ -91,9 +91,13 @@ struct MapView: View {
             }
             .onChange(of: mapManager.motion, initial: true) { oldMotion, newMotion in
                 if let newLoc = newMotion.coordinate {
+                    
                     print("New User Location")
-                    navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
-                    navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
+                    if !navManager.destinationReached {
+                        navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
+                        navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
+                    }
+                    
                     if let camera = navManager.mapPosition.camera {
                         let movingMap = navManager.movingMap(camera: camera.centerCoordinate)
                         if !movingMap {
@@ -126,7 +130,6 @@ struct MapView: View {
                             navManager.recenterMap()
                         })
                         .frame(width: 50, height: 50)
-                      
                         // Add Voice Announcer Button
                         VoiceAnnouncerButtonView(onPress: announceCurrentLocation, isVoiceEnabled: $isVoiceEnabled)
                             .frame(width: 50, height: 50)
@@ -163,6 +166,22 @@ struct MapView: View {
                             .padding()
                     }
                 }
+            }
+            if navManager.destinationReached {
+                VStack {
+                    Text("Destination Reached!")
+                        .font(.largeTitle)
+                        .padding()
+                    Button("Toggle Destination Reached") {
+                        navManager.destinationReached.toggle()
+                    }
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.black.opacity(0.5))
             }
         }
     }

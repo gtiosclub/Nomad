@@ -38,6 +38,7 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     // MAP UI Components
     @Published var mapMarkers: [MapMarker] = []
     @Published var mapPolylines: [MKPolyline] = []
+    @Published var destinationReached = false
     
     // Map UI Parameters
     @Published var mapPosition: MapCameraPosition = .userLocation(fallback: .camera(MapCamera(centerCoordinate: CLLocationCoordinate2D(latitude: .zero, longitude: .zero), distance: 0)))
@@ -129,6 +130,9 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func recalibrateCurrentStep() {
         guard let currentLeg = self.navigatingLeg else { return }
         guard let estimatedStep = mapManager.determineCurrentStep(leg: currentLeg) else { return }
+        if mapManager.checkDestinationReached(leg: currentLeg) {
+            destinationReached = true
+        }
         print(estimatedStep.direction.instructions)
         if estimatedStep.id != navigatingStep?.id {
             setNavigatingStep(step: estimatedStep)

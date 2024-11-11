@@ -361,6 +361,17 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             return false
         }
     }
+    
+    func checkDestinationReached(leg: NomadLeg) -> Bool {
+        guard let userLocation = self.userLocation else { return false }
+        let endCoord = leg.endCoordinate
+        let measured_distance = userLocation.distance(to: endCoord)
+        let thresholdDistance: CLLocationDistance = 100  // maximum allowed distance from route (in m)
+        if measured_distance <= thresholdDistance {
+            return true
+        }
+        return false
+    }
  
     func getExampleRoute() async -> NomadRoute? {
         let trip = UserViewModel.my_trips.first!
