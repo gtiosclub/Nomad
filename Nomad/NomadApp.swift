@@ -55,6 +55,7 @@ struct YourApp: App {
             NavigationView {
                 if firebaseViewModel.current_user != nil {
                     RootView()
+                        .toolbar(.hidden, for: .navigationBar)
                 } else {
                     SignUpView(vm: firebaseViewModel)
                 }

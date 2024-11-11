@@ -61,6 +61,8 @@ struct MapView: View {
     @State private var isVoiceEnabled: Bool = false
     @State private var cameraDistance: CLLocationDistance = 400
     
+    @State private var remainingTime: TimeInterval = 0
+    @State private var remainingDistance: Double = 0
     
     var body: some View {
         ZStack {
@@ -89,9 +91,9 @@ struct MapView: View {
                 }
                 
             }
+            
             .onChange(of: mapManager.motion, initial: true) { oldMotion, newMotion in
-                if let newLoc = newMotion.coordinate {
-                    print("New User Location")
+                if let _ = newMotion.coordinate {
                     navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
                     navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
                     if let camera = navManager.mapPosition.camera {
@@ -101,6 +103,10 @@ struct MapView: View {
                                 navManager.updateMapPosition(newMotion)
                             }
                         }
+                    }
+                    if navManager.navigating {
+                        self.remainingTime = mapManager.getRemainingTime(leg: navManager.navigatingLeg!)
+                        self.remainingDistance = mapManager.getRemainingDistance(leg: navManager.navigatingLeg!)
                     }
                 }
             }
@@ -126,43 +132,27 @@ struct MapView: View {
                             navManager.recenterMap()
                         })
                         .frame(width: 50, height: 50)
-                      
+                        
                         // Add Voice Announcer Button
                         VoiceAnnouncerButtonView(onPress: announceCurrentLocation, isVoiceEnabled: $isVoiceEnabled)
                             .frame(width: 50, height: 50)
                     }
                 }
                 Spacer()
+                Button {
+                    navManager.startNavigating()
+                } label: {
+                    Text("Start Navigating")
+                        .padding()
+                        .background(.blue)
+                        .foregroundStyle(.white)
+                        .padding()
+                }
                 VStack {
-                    Text("Add debugging info below:")
-                    Text("ENTER HERE")
+                    Text("Time Remaining: \(formattedRemainingTime())")
+                    Text("Distance: \(formattedRemainingDistance())")
                 }
-                HStack {
-                    Button {
-                        // set example route
-                        Task {
-                            if let route = await mapManager.getExampleRoute() {
-                                navManager.setNavigatingRoute(route: route)
-                            }
-                            
-                        }
-                    } label: {
-                        Text("Generate Route")
-                            .padding()
-                            .background(.blue)
-                            .foregroundStyle(.white)
-                            .padding()
-                    }
-                    Button {
-                        navManager.startNavigating()
-                    } label: {
-                        Text("Start Navigating")
-                            .padding()
-                            .background(.blue)
-                            .foregroundStyle(.white)
-                            .padding()
-                    }
-                }
+                
             }
         }.onChange(of: vm.navigatingTrip) { old, new in
             if let newTrip = new {
@@ -170,6 +160,21 @@ struct MapView: View {
                     navManager.setNavigatingRoute(route: newRoute)
                 }
             }
+        }
+    }
+    private func formattedRemainingTime() -> String {
+        let hours = floor(self.remainingTime / 3600)
+        let minutes = floor(self.remainingTime.remainder(dividingBy: 3600) / 60)
+        
+        return "\(hours > 0 ? "\(hours) hrs " : "")\(minutes) mins"
+    }
+    private func formattedRemainingDistance() -> String {
+        var miles = self.remainingDistance / 1609.34
+        if miles > 0.2 {
+            return String(format: "%.1f miles", miles)
+        } else {
+            let feet = 100 * floor(miles * 5280 / 100)
+            return String(format: "%3.0f feet", feet)
         }
     }
     // Function to announce current location

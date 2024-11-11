@@ -61,6 +61,7 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     func setNavigatingRoute(route: NomadRoute) {
+        print("Set navigating route")
         self.navigatingRoute = route
         self.mapPolylines.removeAll()
         self.mapMarkers.removeAll()
@@ -147,17 +148,13 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     // UI GETTERS
     func assignDistanceToNextManeuver() -> Double {
-        print("1")
         guard let currentStep = self.navigatingStep else { return -1 }
-        print("2")
         let currLoc = mapManager.getClosestCoordinate(step: currentStep) // closest route coordinate to user location
         guard let coord_index = currentStep.getCoordinates().firstIndex(where: { coord in
             coord == currLoc
         }) else { return -1 }
-        print("3")
         let total_coord_count = currentStep.getCoordinates().count
         let distance = (Double(total_coord_count - coord_index)/Double(total_coord_count)) * currentStep.direction.distance
-        print(distance)
         return distance
     }
     func getNavBearing(motion: Motion) -> Double {

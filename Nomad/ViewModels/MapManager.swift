@@ -440,6 +440,45 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         return lastCoordinate
     }
     
+    // get remaining time on current leg at current user location
+    func getRemainingTime(leg: NomadLeg) -> TimeInterval {
+        var totalTime: TimeInterval = 0
+        
+        guard let step = determineCurrentStep(leg: leg) else { return 0 }
+        let step_index = leg.steps.firstIndex { $0.id == step.id }!
+        // append time for all future steps
+        for i in step_index+1..<leg.steps.count {
+            totalTime += TimeInterval(leg.steps[i].direction.expectedTravelTime)
+        }
+        let coord = getClosestCoordinate(step: step)
+        let coord_index = step.getCoordinates().firstIndex(where: { $0 == coord })!
+        let total_coord_count = step.getCoordinates().count
+        let distance = (Double(total_coord_count - coord_index)/Double(total_coord_count)) * step.direction.distance
+        let stepProgress = distance / step.direction.distance
+        totalTime += stepProgress * TimeInterval(step.direction.expectedTravelTime)
+        
+        return totalTime
+    }
+    
+    // get remaining distance on current leg
+    func getRemainingDistance(leg: NomadLeg) -> TimeInterval {
+        var totalDistance: TimeInterval = 0
+        
+        guard let step = determineCurrentStep(leg: leg) else { return 0 }
+        let step_index = leg.steps.firstIndex { $0.id == step.id }!
+        // append time for all future steps
+        for i in step_index+1..<leg.steps.count {
+            totalDistance += leg.steps[i].direction.distance
+        }
+        let coord = getClosestCoordinate(step: step)
+        let coord_index = step.getCoordinates().firstIndex(where: { $0 == coord })!
+        let total_coord_count = step.getCoordinates().count
+        let distance = (Double(total_coord_count - coord_index)/Double(total_coord_count)) * step.direction.distance
+        totalDistance += distance
+        
+        return totalDistance
+    }
+    
     func determineCurrentStep(leg: NomadLeg) -> NomadStep? {
         for step in leg.steps {
             if checkOnStep(step: step) {
