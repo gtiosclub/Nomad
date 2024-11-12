@@ -83,9 +83,9 @@
 		E90E9AB82CAF5C1F00A7C4FA /* SpeechRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90E9AB72CAF5C1400A7C4FA /* SpeechRecognizer.swift */; };
 		E90E9ABA2CAF5C7000A7C4FA /* VoiceInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90E9AB92CAF5C6900A7C4FA /* VoiceInput.swift */; };
 		E93AD24C2CC9A17400D1B27C /* AtlasNavigationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93AD24B2CC9A16800D1B27C /* AtlasNavigationView.swift */; };
+		F74D35632CE2D46B0030C72A /* AtlasAnimation.gif in Resources */ = {isa = PBXBuildFile; fileRef = F74D35622CE2D46B0030C72A /* AtlasAnimation.gif */; };
 		F79779AD2CDE887100C95095 /* AtlasLoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F79779AC2CDE887100C95095 /* AtlasLoadingView.swift */; };
 		F79779AF2CDE8CE600C95095 /* GIFImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F79779AE2CDE8CE600C95095 /* GIFImageView.swift */; };
-		F79779B72CDE910C00C95095 /* AtlasAnimation.gif in Resources */ = {isa = PBXBuildFile; fileRef = F79779B62CDE910C00C95095 /* AtlasAnimation.gif */; };
 		F7C4929A2CD1988D00E8F255 /* ItineraryParentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7C492992CD1988D00E8F255 /* ItineraryParentView.swift */; };
 /* End PBXBuildFile section */
 
@@ -154,9 +154,9 @@
 		E90E9AB72CAF5C1400A7C4FA /* SpeechRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognizer.swift; sourceTree = "<group>"; };
 		E90E9AB92CAF5C6900A7C4FA /* VoiceInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceInput.swift; sourceTree = "<group>"; };
 		E93AD24B2CC9A16800D1B27C /* AtlasNavigationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlasNavigationView.swift; sourceTree = "<group>"; };
+		F74D35622CE2D46B0030C72A /* AtlasAnimation.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = AtlasAnimation.gif; sourceTree = "<group>"; };
 		F79779AC2CDE887100C95095 /* AtlasLoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlasLoadingView.swift; sourceTree = "<group>"; };
 		F79779AE2CDE8CE600C95095 /* GIFImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GIFImageView.swift; sourceTree = "<group>"; };
-		F79779B62CDE910C00C95095 /* AtlasAnimation.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = AtlasAnimation.gif; sourceTree = "<group>"; };
 		F7C492992CD1988D00E8F255 /* ItineraryParentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItineraryParentView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -281,12 +281,12 @@
 				48BBC2D12C9CE5070093D9D0 /* DetailRecapView.swift */,
 				B2F8F34B2C97BC7F00B9618E /* MapView.swift */,
 				B2F34D572CC95B8A0098F652 /* DirectionView.swift */,
+				F74D35622CE2D46B0030C72A /* AtlasAnimation.gif */,
 				B2F8F34D2C97BC8A00B9618E /* AIAssistantView.swift */,
 				B2F8F34F2C97BC9600B9618E /* ItineraryPlanningView.swift */,
 				B2154CCE2C9E2DE500A6F238 /* MapButtons */,
 				F7C492992CD1988D00E8F255 /* ItineraryParentView.swift */,
 				48974B8C2CA0A3CB0057B073 /* FindStopView.swift */,
-				F79779B62CDE910C00C95095 /* AtlasAnimation.gif */,
 				F79779AC2CDE887100C95095 /* AtlasLoadingView.swift */,
 				08C4C61E2CCB068C00C9B8D9 /* FilterView.swift */,
 				F79779AE2CDE8CE600C95095 /* GIFImageView.swift */,
@@ -462,7 +462,7 @@
 				B2F8F3402C97BB3E00B9618E /* Preview Assets.xcassets in Resources */,
 				B2154C6D2C9D01BA00A6F238 /* GoogleService-Info.plist in Resources */,
 				B2F8F33D2C97BB3E00B9618E /* Assets.xcassets in Resources */,
-				F79779B72CDE910C00C95095 /* AtlasAnimation.gif in Resources */,
+				F74D35632CE2D46B0030C72A /* AtlasAnimation.gif in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

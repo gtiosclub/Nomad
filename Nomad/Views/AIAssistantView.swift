@@ -27,22 +27,8 @@ struct AIAssistantView: View {
                     ForEach(chatViewModel.messages) { message in
                         HStack {
                             if message.sender == "AI" {
-                                HStack {
-                                    Image("AtlasIcon")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 35, height: 35)
-                                    
-                                    Text(message.content)
-                                        .padding()
-                                        .background(
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .stroke(Color.black, lineWidth: 1)
-                                                .fill(Color.gray.opacity(0.2))
-                                        )
-                                        .frame(maxWidth: 270, alignment: .leading)
-                                        .id(message.id)
-                                }
+                                
+                                AtlasMessage(content: message.content, id: message.id)
                                 
                                 Spacer()
                             } else {
@@ -106,7 +92,7 @@ struct AIAssistantView: View {
             if !chatViewModel.pois.isEmpty {
                 TabView {
                     ForEach(chatViewModel.pois) { poi in
-                        POIDetailView(name: poi.name, address: poi.address, distance: poi.distance, image: poi.image)
+                        POIDetailView(name: poi.name, address: poi.address, distance: poi.distance, phoneNumber: poi.phoneNumber, image: poi.image, rating: poi.rating, price: poi.price)
                             .frame(width: 400, height: 120) // Adjust width and height as needed
                             .padding(.horizontal, 5) // Adds padding at the top and bottom
                     }
@@ -175,3 +161,27 @@ struct AIAssistantView: View {
     AIAssistantView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")), chatViewModel: ChatViewModel())
 }
 
+struct AtlasMessage: View {
+    let content: String
+    let id: UUID
+    
+    var body: some View {
+        HStack {
+            Image("AtlasIcon")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 35, height: 35)
+            
+            Text(content)
+                .padding()
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.black, lineWidth: 1)
+                        .fill(Color.gray.opacity(0.2))
+                )
+                .frame(maxWidth: 270, alignment: .leading)
+                .id(id)
+        }
+
+    }
+}
