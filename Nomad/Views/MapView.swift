@@ -8,50 +8,6 @@ import SwiftUI
 import MapKit
 import AVFoundation
 
-// Voice Button View
-struct VoiceAnnouncerButtonView: View {
-    let onPress: () -> Void
-    @Binding var isVoiceEnabled: Bool
-    
-    var body: some View {
-        Button(action: {
-            isVoiceEnabled.toggle()
-            if isVoiceEnabled {
-                onPress()
-            }
-        }) {
-            ZStack {
-                Circle()
-                    .fill(.white)
-                    .shadow(radius: 4)
-                Image(systemName: isVoiceEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill")
-                    .foregroundColor(.blue)
-            }
-        }
-    }
-}
-
-// Voice Manager
-class LocationVoiceManager: ObservableObject {
-    static let shared = LocationVoiceManager()
-    private let synthesizer = AVSpeechSynthesizer()
-    
-    func announceLocation(_ locationDescription: String) {
-        // Stop any ongoing speech
-        if synthesizer.isSpeaking {
-            synthesizer.stopSpeaking(at: .immediate)
-        }
-        
-        let utterance = AVSpeechUtterance(string: locationDescription)
-        utterance.rate = 0.5
-        utterance.volume = 1.0
-        utterance.pitchMultiplier = 1.0
-        utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
-        
-        synthesizer.speak(utterance)
-    }
-}
-
 @available(iOS 17.0, *)
 struct MapView: View {
     @ObservedObject var vm: UserViewModel
@@ -181,23 +137,24 @@ struct MapView: View {
                     navManager.setNavigatingRoute(route: newRoute)
                 }
             }
-        }.onReceive(timer) { _ in
-            if navManager.navigating {
-                self.remainingTime = mapManager.getRemainingTime(leg: navManager.navigatingLeg!)
-                self.remainingDistance = mapManager.getRemainingDistance(leg: navManager.navigatingLeg!)
-            }
         }
+//        .onReceive(timer) { _ in
+//            if navManager.navigating {
+//                self.remainingTime = mapManager.getRemainingTime(leg: navManager.navigatingLeg!)
+//                self.remainingDistance = mapManager.getRemainingDistance(leg: navManager.navigatingLeg!)
+//            }
+//        }
         
     }
     private func formattedRemainingTime() -> String {
-        let seconds = Int(self.remainingTime)
+        let seconds = Int(navManager.remainingTime ?? 0)
         let hours = Int(seconds) / 3600
         let minutes = (Int(seconds) % 3600) / 60
         
         return String(format: "%1d:%02d", hours, minutes)
     }
     private func formattedRemainingDistance() -> String {
-        return String(format: "%.1f", self.remainingDistance / 1609.34)
+        return String(format: "%.1f", (navManager.remainingDistance ?? 0) / 1609.34)
 //        var miles = self.remainingDistance / 1609.34
 //        if miles > 0.2 {
 //            return String(format: "%.1f miles", miles)
@@ -249,6 +206,51 @@ struct MapView: View {
         }
     }
 }
+
+// Voice Button View
+struct VoiceAnnouncerButtonView: View {
+    let onPress: () -> Void
+    @Binding var isVoiceEnabled: Bool
+    
+    var body: some View {
+        Button(action: {
+            isVoiceEnabled.toggle()
+            if isVoiceEnabled {
+                onPress()
+            }
+        }) {
+            ZStack {
+                Circle()
+                    .fill(.white)
+                    .shadow(radius: 4)
+                Image(systemName: isVoiceEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill")
+                    .foregroundColor(.blue)
+            }
+        }
+    }
+}
+
+// Voice Manager
+class LocationVoiceManager: ObservableObject {
+    static let shared = LocationVoiceManager()
+    private let synthesizer = AVSpeechSynthesizer()
+    
+    func announceLocation(_ locationDescription: String) {
+        // Stop any ongoing speech
+        if synthesizer.isSpeaking {
+            synthesizer.stopSpeaking(at: .immediate)
+        }
+        
+        let utterance = AVSpeechUtterance(string: locationDescription)
+        utterance.rate = 0.5
+        utterance.volume = 1.0
+        utterance.pitchMultiplier = 1.0
+        utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
+        
+        synthesizer.speak(utterance)
+    }
+}
+
 
 #Preview {
     MapView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")))

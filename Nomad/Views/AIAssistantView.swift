@@ -8,8 +8,10 @@ struct AIAssistantView: View {
     @State private var isMicrophone = false
     @State private var currentMessage: String = ""
     @State private var dotCount = 1
+    @State private var isAdded: Bool = false //detect the add stop for changing style
+    @State private var currentTabIndex: Int = 0 // Track the current tab index
     let timer = Timer.publish(every:0.5, on: .main, in: .common).autoconnect()
-
+    
     var body: some View {
         VStack {
             // Header
@@ -63,9 +65,10 @@ struct AIAssistantView: View {
                     if chatViewModel.isQuerying{
                         //Detect if the ai is loading
                         HStack {
-                            Circle()
-                                .frame(width: 30, height: 30)
-                                .foregroundColor(.gray) // Placeholder for AI avatar
+                            Image("AtlasIcon")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 35, height: 35)
                             Text(String(repeating: ".", count: dotCount))
                                 .padding()
                                 .onReceive(timer) { _ in
@@ -92,13 +95,33 @@ struct AIAssistantView: View {
             if !chatViewModel.pois.isEmpty {
                 TabView {
                     ForEach(chatViewModel.pois) { poi in
-                        POIDetailView(name: poi.name, address: poi.address, distance: poi.distance, phoneNumber: poi.phoneNumber, image: poi.image, rating: poi.rating, price: poi.price)
+                        POIDetailView(name: poi.name, address: poi.address, distance: poi.distance, phoneNumber: poi.phoneNumber, image: poi.image, rating: poi.rating, price: poi.price, time: poi.time)
                             .frame(width: 400, height: 120) // Adjust width and height as needed
                             .padding(.horizontal, 5) // Adds padding at the top and bottom
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .frame(height: 180)  // Adjust to fit the padding and content
+                VStack {
+                            Button(action: {
+                                isAdded = true // Set state to true after button click
+                                //add all the tabs
+                                ForEach(chatViewModel.pois) { poi in
+                                    vm.addStop(stop: poi)
+                                }
+                                
+                                    // Reset to "Add Stop" after 2 seconds
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                        isAdded = false
+                                    }
+                                
+                            }) {
+                                Text(isAdded ? "Stop Added" : "Add Stop")
+                                    .padding()
+                                    .cornerRadius(10)
+                                    .buttonStyle(.bordered)
+                            }
+                        }
             }
             
 
@@ -160,6 +183,8 @@ struct AIAssistantView: View {
 #Preview {
     AIAssistantView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")), chatViewModel: ChatViewModel())
 }
+
+
 
 struct AtlasMessage: View {
     let content: String

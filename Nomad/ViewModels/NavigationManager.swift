@@ -39,6 +39,21 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var mapMarkers: [MapMarker] = []
     @Published var mapPolylines: [MKPolyline] = []
     
+    var remainingTime: TimeInterval? {
+        if let leg = navigatingLeg {
+            return mapManager.getRemainingTime(leg: leg)
+        } else {
+            return nil
+        }
+    }
+    var remainingDistance: Double? {
+        if let leg = navigatingLeg {
+            return mapManager.getRemainingDistance(leg: leg)
+        } else {
+            return nil
+        }
+    }
+    
     // Map UI Parameters
     @Published var mapPosition: MapCameraPosition = .userLocation(fallback: .camera(MapCamera(centerCoordinate: CLLocationCoordinate2D(latitude: .zero, longitude: .zero), distance: 0)))
     

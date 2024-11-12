@@ -46,6 +46,7 @@
 		8419ED982C99536E003AD5C2 /* FirebaseVertexAI-Preview in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED972C99536E003AD5C2 /* FirebaseVertexAI-Preview */; };
 		944E9E9B2CACBBEE0032FD34 /* NomadRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 944E9E9A2CACBBEC0032FD34 /* NomadRoute.swift */; };
 		947F53C22CA0F59F00238C4F /* MapboxNavigationCore in Frameworks */ = {isa = PBXBuildFile; productRef = 947F53C12CA0F59F00238C4F /* MapboxNavigationCore */; };
+		B208F21F2CE3EDC7009BCA45 /* NomadColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = B208F21E2CE3EDC4009BCA45 /* NomadColors.swift */; };
 		B2154C6D2C9D01BA00A6F238 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B2154C6C2C9D01BA00A6F238 /* GoogleService-Info.plist */; };
 		B2154CD02C9E2DF400A6F238 /* CompassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2154CCF2C9E2DF400A6F238 /* CompassView.swift */; };
 		B2154CD22C9E319C00A6F238 /* RecenterMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2154CD12C9E319C00A6F238 /* RecenterMapView.swift */; };
@@ -115,6 +116,7 @@
 		944E9E9A2CACBBEC0032FD34 /* NomadRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NomadRoute.swift; sourceTree = "<group>"; };
 		9455F54A2C9F99F0006D03D6 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		94F91F652C9F875F00A63F7A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		B208F21E2CE3EDC4009BCA45 /* NomadColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NomadColors.swift; sourceTree = "<group>"; };
 		B2154C6C2C9D01BA00A6F238 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B2154CCF2C9E2DF400A6F238 /* CompassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompassView.swift; sourceTree = "<group>"; };
 		B2154CD12C9E319C00A6F238 /* RecenterMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecenterMapView.swift; sourceTree = "<group>"; };
@@ -298,6 +300,7 @@
 			isa = PBXGroup;
 			children = (
 				B35A09022CB6181400C8F02B /* Businesses.swift */,
+				B208F21E2CE3EDC4009BCA45 /* NomadColors.swift */,
 				E90E9AB92CAF5C6900A7C4FA /* VoiceInput.swift */,
 				E90E9AB72CAF5C1400A7C4FA /* SpeechRecognizer.swift */,
 				48974B852C9A449F0057B073 /* Hotel.swift */,
@@ -480,6 +483,7 @@
 				B2154CD22C9E319C00A6F238 /* RecenterMapView.swift in Sources */,
 				B2F8F35D2C97BD3000B9618E /* GasStation.swift in Sources */,
 				B2F8F3592C97BCD400B9618E /* Restaurant.swift in Sources */,
+				B208F21F2CE3EDC7009BCA45 /* NomadColors.swift in Sources */,
 				48974BAF2CB30AAF0057B073 /* EnhancedRoutePlanListView.swift in Sources */,
 				B35A09032CB6181C00C8F02B /* Businesses.swift in Sources */,
 				48974B8D2CA0A3CB0057B073 /* FindStopView.swift in Sources */,

@@ -16,6 +16,7 @@ struct POIDetailView: View {
     var image = "https://s3-media2.fl.yelpcdn.com/bphoto/xU26QLcW8XAohg_APoojdQ/o.jpg"
     var rating = 3.7
     var price = "$$$"
+    var time = 5.1
     
     
     var body: some View {
@@ -38,7 +39,7 @@ struct POIDetailView: View {
                             .padding(.horizontal, 10)
                     }
                     
-                    Text("+2 min")
+                    Text("\(time == floor(time) ? "\(Int(time))" : String(format: "%.1f", time)) min")
                         .font(.headline)
                     
                     Text("+\(distance == floor(distance) ? "\(Int(distance))" : String(format: "%.1f", distance)) mi")
