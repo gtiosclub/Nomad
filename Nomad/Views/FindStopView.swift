@@ -119,8 +119,8 @@ struct FindStopView: View {
                     .padding(.horizontal)
                     .tag(1)
                     
-//                    EnhancedRoutePlanListView(vm: vm)
-//                        .tag(2)
+                    EnhancedRoutePlanListView(vm: vm)
+                        .tag(2)
                 }
                 .frame(height: dynamicHeight(for: selectedTab))
                 .tabViewStyle(PageTabViewStyle())
