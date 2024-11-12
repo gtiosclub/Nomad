@@ -54,14 +54,15 @@ struct YourApp: App {
         WindowGroup {
             NavigationView {
                 if firebaseViewModel.current_user != nil {
-                    RootView()
-                        .toolbar(.hidden, for: .navigationBar)
+                    RootView(vm: UserViewModel(user: firebaseViewModel.current_user!))
+                      .toolbar(.hidden, for: .navigationBar)
                 } else {
                     SignUpView(vm: firebaseViewModel)
                 }
             }
             .onAppear {
                 firebaseViewModel.onSetupCompleted = { vm in
+                    print("made it to firebase setup")
                     DispatchQueue.main.async {
                         if let user = firebaseViewModel.auth.currentUser {
                             Task {

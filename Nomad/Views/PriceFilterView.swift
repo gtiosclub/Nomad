@@ -12,7 +12,7 @@ struct PriceFilterView: View {
 
     let prices = ["$", "$$", "$$$", "$$$$"]
 
-    @State private var isPriceDropdownOpen = false
+    @Binding var isPriceDropdownOpen: Bool
 
     var body: some View {
         dropdownNum(
@@ -38,25 +38,28 @@ struct PriceFilterView: View {
             }.foregroundColor(.black)
 
             if isOpen.wrappedValue {
-                ScrollView {
-                    VStack(alignment: .leading) {
-                        ForEach(0..<options.count, id: \.self) { index in
-                            Button(action: {
-                                selectedOption.wrappedValue = index
-                                isOpen.wrappedValue = false
-                            }) {
-                                Text(options[index])
-                                    .padding(.vertical, 2)
-                            }
-                            .buttonStyle(PlainButtonStyle())
+                VStack(alignment: .leading) {
+                    ForEach(0..<options.count, id: \.self) { index in
+                        Button(action: {
+                            selectedOption.wrappedValue = index
+                            //isOpen.wrappedValue = false
+                        }) {
+                            Text(options[index])
+                                .padding(2)
+                                .frame(maxWidth: 80)
+                                .background(selectedOption.wrappedValue == index ? Color.gray.opacity(0.3) : Color.clear)
                         }
+                        .buttonStyle(PlainButtonStyle())
                     }
-                    .padding()
                 }
-                .frame(height: 150)
-                .background(Color.white)
-                .cornerRadius(10)
+                //.padding(.vertical, 5)
+                .cornerRadius(8)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.gray, lineWidth: 1)
+                )
                 .shadow(radius: 5)
+                .padding(.horizontal)
             }
         }
     }
@@ -65,6 +68,7 @@ struct PriceFilterView: View {
 
 #Preview {
     PriceFilterView(
-        selectedPrice: .constant(1)
+        selectedPrice: .constant(1),
+        isPriceDropdownOpen: .constant(true)
     )
 }

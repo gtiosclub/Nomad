@@ -331,6 +331,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     // Modified getFutureLocation
     func getFutureLocation(time: TimeInterval, route: NomadRoute) -> CLLocationCoordinate2D? {
         // Find current leg and step
+        print(time)
         let currentLeg = determineCurrentLeg(route: route)
         let currentStep = currentLeg.flatMap { determineCurrentStep(leg: $0) }
         
@@ -391,6 +392,8 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             lastCoordinate = coord
         }
         
+        print(lastCoordinate!.latitude)
+        print(lastCoordinate!.longitude)
         return lastCoordinate
     }
 
@@ -540,7 +543,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
  
     func getExampleRoute() async -> NomadRoute? {
-        let trip = UserViewModel.my_trips.first!
+        let trip = Trip(id: "austintrip2", start_location: Restaurant(address: "848 Spring Street, Atlanta, GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN 37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", created_date: "10-1-2024", modified_date: "10-1-2024", stops: [Activity(address: "1720 S Scenic Hwy, Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)], start_time: "10:00:00", name: "ATL to Nashville", isPrivate: true)
         var coords = [CLLocationCoordinate2D]()
         let start_coord = self.userLocation ?? trip.getStartLocationCoordinates()
         coords.append(start_coord)
