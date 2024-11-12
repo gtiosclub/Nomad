@@ -9,20 +9,58 @@ import SwiftUI
 
 struct POIDetailView: View {
     
-    var name = "Speedway"
-    var address = "901 Gas Station Avenue, Duluth GA"
-    var distance = 5.0
-    var phoneNumber = "4044315072"
-    var image = "https://s3-media2.fl.yelpcdn.com/bphoto/xU26QLcW8XAohg_APoojdQ/o.jpg"
-    var rating = 3.7
-    var price = "$$$"
-    var time = 5.1
+    var name: String
+    var address: String
+    var distance: Double
+    var phoneNumber: String
+    var image: String
+    var rating: Double
+    var price: String
+    var time: Double
+    var latitude: Double
+    var longitude: Double
+    var city: String
+    @ObservedObject var vm: UserViewModel
+    @ObservedObject var aiVM: AIAssistantViewModel
+    
+    @State private var isAdded: Bool = false
+    
     
     
     var body: some View {
         VStack(spacing: 10) {
             // Top part: Image and POI Information
             HStack(alignment: .top, spacing: 10) {
+                Button(action: {
+                    if(!isAdded) {
+                        isAdded = true // Set state to true after button click
+                        
+                        let locationType = aiVM.currentLocationType
+    
+                        var poi = GeneralLocation(address: address, name: name, latitude: latitude, longitude: longitude)
+                        
+                        Task {
+                            await vm.addStop(stop: poi)
+                            
+                            guard let start_loc = vm.current_trip?.getStartLocation() else { return }
+                            guard let end_loc = vm.current_trip?.getEndLocation() else { return }
+                            guard let all_stops = vm.current_trip?.getStops() else { return }
+                            
+                            var all_pois: [any POI] = []
+                            all_pois.append(start_loc)
+                            all_pois.append(contentsOf: all_stops)
+                            all_pois.append(end_loc)
+                            
+                            if let newRoutes = await MapManager.manager.generateRoute(pois: all_pois) {
+                                vm.setTripRoute(route: newRoutes[0])
+                            }
+                        }
+                    }
+                }) {
+                    Image(systemName: "plus.circle")
+                        .resizable()
+                        .frame(width: 50)
+                }
                 
                 VStack {
                     AsyncImage(url: URL(string: image)) { image in
@@ -92,7 +130,6 @@ struct POIDetailView: View {
                             .underline()
                     }
                 }
-            
 
             }
             .padding()
@@ -114,5 +151,5 @@ struct POIDetailView: View {
 //}
 
 #Preview {
-    POIDetailView()
+    POIDetailView(name: "Speedway", address: "5 XYZ St, Atlanta, GA 06843", distance: 4.5, phoneNumber: "+19055759875", image: "", rating: 4.5, price: "$$", time: 4.2, latitude: 35.0, longitude: 34.0, city: "adsfsad", vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")), aiVM: AIAssistantViewModel())
 }
