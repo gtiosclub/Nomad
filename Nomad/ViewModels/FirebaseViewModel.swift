@@ -22,6 +22,7 @@ class FirebaseViewModel: ObservableObject {
     var onSetupCompleted: ((FirebaseViewModel) -> Void)?
     
     init(current_user: User? = nil, errorText: String? = nil) {
+        print("inside fbVM init")
         if self.current_user == nil {
             self.current_user = current_user
             self.errorText = errorText
@@ -128,6 +129,7 @@ class FirebaseViewModel: ObservableObject {
     }
     
     func setCurrentUser(userId: String) async -> User? {
+        print("attempting to set current user")
         if userId.isEmpty {
             return nil
         }
@@ -144,16 +146,18 @@ class FirebaseViewModel: ObservableObject {
                 }
                 
                 // Then fetch all trips
-                let allTrips: [String: [Trip]] = await getAllTrips(userID: userId)
+//                let allTrips: [String: [Trip]] = await getAllTrips(userID: userId)
                 
-                self.current_user = User(
-                    id: document.documentID,
-                    name: documentData["name"] as? String ?? "",
-                    email: documentData["email"] as? String ?? "",
-                    trips: allTrips["future"] ?? [],
-                    pastTrips: allTrips["past"] ?? [],
-                    currentTrip: allTrips["present"] ?? []
-                )
+                DispatchQueue.main.async {
+                    self.current_user = User(
+                        id: document.documentID,
+                        name: documentData["name"] as? String ?? "",
+                        email: documentData["email"] as? String ?? ""
+//                        trips: allTrips["future"] ?? [],
+//                        pastTrips: allTrips["past"] ?? [],
+//                        currentTrip: allTrips["present"] ?? []
+                    )
+                }
                 
                 return self.current_user
             } catch {
@@ -344,59 +348,56 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
-//    func addStopToTrip(tripID: String, stop: any POI, index: Int) async -> Bool {
-//        // Add stop to tripID array
-//        let docRef = db.collection("TRIPS").document(tripID)
-//        do {
-//            let document = try await docRef.getDocument()
-//            guard var stops = document.data()?["stops"] as? [String] else {
-//                print("Document does not exist or stops is not an array.")
-//                return false
-//            }
-//            if (!stops.contains(stop.name)) {
-//                if (index >= 0 || index > stops.count) {
-//                    stops.insert(stop.name, at: index)
-//                } else {
-//                    print("Invalid Index")
-//                    return false;
-//                }
-//                try await db.collection("TRIPS").document(tripID).updateData(["stops": stops])
-//            } else {
-//                print("Stop already in user stop list")
-//                return false;
-//            }
-//        } catch {
-//            print(error)
-//            return false
-//        }
-//        
-//        //add stop to collections
-//        var closeTime: String = ""
-//        var cuisine: String = ""
-//        var openTime: String = ""
-//        var price: Int = -1
-//        var rating: Double = -1
-//        var website: String = ""
-//        if let restaurant = stop as? Restaurant {
-//            closeTime = restaurant.close_time ?? ""
-//            openTime = restaurant.open_time ?? ""
-//            cuisine = restaurant.cuisine ?? ""
-//            price = restaurant.price ?? -1
-//            rating = restaurant.rating ?? -1.0
-//            website = restaurant.website ?? ""
-//        }
-//        if let hotel = stop as? Hotel {
-//            rating = hotel.rating ?? -1.0
-//            website = hotel.website ?? ""
-//        }
-//        do {
-//            try await db.collection("TRIPS").document(tripID).collection("STOPS").document(stop.name).setData(["name" : stop.name, "address" : stop.address, "type" : "\(type(of: stop))", "latitude" : stop.latitude, "longitude" : stop.longitude, "city" : stop.city ?? "", "close_time" : closeTime, "cuisine" : cuisine, "open_time" : openTime, "price" : price, "rating" : rating, "website" : website])
-//            return true
-//        } catch {
-//            print(error)
-//            return false
-//        }
-//    }
+    func addStopToTrip(tripID: String, stop: any POI, index: Int) async -> Bool {
+        // Add stop to tripID array
+        let docRef = db.collection("TRIPS").document(tripID)
+        do {
+            let document = try await docRef.getDocument()
+            guard var stops = document.data()?["stops"] as? [String] else {
+                print("Document does not exist or stops is not an array.")
+                return false
+            }
+            if (!stops.contains(stop.name)) {
+                if (index >= 0 || index > stops.count) {
+                    stops.insert(stop.name, at: index)
+                } else {
+                    print("Invalid Index")
+                    return false;
+                }
+                try await db.collection("TRIPS").document(tripID).updateData(["stops": stops])
+            } else {
+                print("Stop already in user stop list")
+                return false;
+            }
+        } catch {
+            print(error)
+            return false
+        }
+        
+        //add stop to collections
+
+        var cuisine: String = ""
+        var price: Int = -1
+        var rating: Double = -1
+        var website: String = ""
+        if let restaurant = stop as? Restaurant {
+            cuisine = restaurant.cuisine ?? ""
+            price = restaurant.price ?? -1
+            rating = restaurant.rating ?? -1.0
+            website = restaurant.website ?? ""
+        }
+        if let hotel = stop as? Hotel {
+            rating = hotel.rating ?? -1.0
+            website = hotel.website ?? ""
+        }
+        do {
+            try await db.collection("TRIPS").document(tripID).collection("STOPS").document(stop.name).setData(["name" : stop.name, "address" : stop.address, "type" : "\(type(of: stop))", "latitude" : stop.latitude, "longitude" : stop.longitude, "city" : stop.city ?? "", "cuisine" : cuisine, "price" : price, "rating" : rating, "website" : website])
+            return true
+        } catch {
+            print(error)
+            return false
+        }
+    }
 
     
     
@@ -465,7 +466,6 @@ class FirebaseViewModel: ObservableObject {
             return false
         }
 
-        let docRef = db.collection("TRIPS").document(tripID)
         do {
             try await db.collection("TRIPS").document(tripID).updateData(["stops": stops])
             return true
@@ -478,12 +478,28 @@ class FirebaseViewModel: ObservableObject {
     func getAllPublicTrips(userID: String) async -> [Trip] {
             var public_trips : [Trip] = []
             var public_trip_names : [String] = []
+            
+            var user_trip_ids: [String] = []
+            let userDocRef = db.collection("USERS").document(userID)
+            do {
+                let document = try await userDocRef.getDocument()
+                user_trip_ids = document.data()?["trips"] as? [String] ?? []
+            } catch {
+                print(error)
+            }
+        
+        
             let tripsDocRef = db.collection("TRIPS")
             do {
                 let tripDocuments = try await tripsDocRef.getDocuments()
                 for document in tripDocuments.documents {
                     print("document is \(document.documentID)")
+                    if (user_trip_ids.contains(document.documentID)) {continue}
+                    
                     let tripData = document.data()
+                    
+                    let isPrivate = tripData["isPrivate"] as? Bool ?? true
+                    if isPrivate {continue}
 
                     let start_location_id = tripData["start_id"] as? String ?? ""
                     let end_location_id = tripData["end_id"] as? String ?? ""
@@ -492,6 +508,10 @@ class FirebaseViewModel: ObservableObject {
                     var end_location: (any POI)?
                     let startRef = document.reference.collection("STOPS").document(start_location_id)
                     let endRef = document.reference.collection("STOPS").document(end_location_id)
+                    
+                    
+                    
+                    
                     do {
                         let startDoc = try await startRef.getDocument()
                         let endDoc = try await endRef.getDocument()
@@ -553,7 +573,6 @@ class FirebaseViewModel: ObservableObject {
                     let created_date = tripData["created_date"] as? String ?? ""
                     let modified_date = tripData["modified_date"] as? String ?? ""
                     let name = tripData["name"] as? String ?? ""
-                    let isPrivate = tripData["isPrivate"] as? Bool ?? true
 
                     let stops_data = tripData["stops"] as? [String] ?? []
                     var stops: [any POI] = []
@@ -573,8 +592,6 @@ class FirebaseViewModel: ObservableObject {
                             let poi_latitude = stopData["latitude"] as? Double ?? 0.0
                             let poi_longitude = stopData["longitude"] as? Double ?? 0.0
                             let poi_city = stopData["city"] as? String ?? ""
-                            let poi_closetime: String? = stopData["close_time"] as? String
-                            let poi_opentime: String? = stopData["open_time"] as? String
                             let poi_price: Int? = stopData["price"] as? Int
                             let poi_rating: Double? = stopData["rating"] as? Double
                             let poi_website: String? = stopData["website"] as? String
@@ -588,8 +605,6 @@ class FirebaseViewModel: ObservableObject {
                                 latitude: poi_latitude,
                                 city: poi_city,
                                 cuisine: poi_cuisine,
-                                open_time: poi_opentime,
-                                close_time: poi_closetime,
                                 rating: poi_rating,
                                 price: poi_price,
                                 website: poi_website
@@ -622,24 +637,24 @@ class FirebaseViewModel: ObservableObject {
                 print(error)
             }
             //Exclude User trips
-            let userDocRef = db.collection("USERS").document(userID)
-            do {
-                let document = try await userDocRef.getDocument()
-                guard var trips = document.data()?["trips"] as? [String] else {
-                    print("Document does not exist or 'trips' is not an array.")
-                    return public_trips
-                }
-                for tripID in trips {
-                    if public_trip_names.contains(tripID) {
-                        if let index = public_trip_names.firstIndex(of: tripID) {
-                            public_trip_names.remove(at: index)
-                            public_trips.remove(at: index)
-                        }
-                    }
-                }
-            } catch {
-                print(error)
-            }
+//            let userDocRef = db.collection("USERS").document(userID)
+//            do {
+//                let document = try await userDocRef.getDocument()
+//                guard var trips = document.data()?["trips"] as? [String] else {
+//                    print("Document does not exist or 'trips' is not an array.")
+//                    return public_trips
+//                }
+//                for tripID in trips {
+//                    if public_trip_names.contains(tripID) {
+//                        if let index = public_trip_names.firstIndex(of: tripID) {
+//                            public_trip_names.remove(at: index)
+//                            public_trips.remove(at: index)
+//                        }
+//                    }
+//                }
+//            } catch {
+//                print(error)
+//            }
             return public_trips
         }
     
@@ -774,8 +789,6 @@ class FirebaseViewModel: ObservableObject {
                             let poi_latitude = stopData["latitude"] as? Double ?? 0.0
                             let poi_longitude = stopData["longitude"] as? Double ?? 0.0
                             let poi_city = stopData["city"] as? String ?? ""
-                            let poi_closetime: String? = stopData["close_time"] as? String
-                            let poi_opentime: String? = stopData["open_time"] as? String
                             let poi_price: Int? = stopData["price"] as? Int
                             let poi_rating: Double? = stopData["rating"] as? Double
                             let poi_website: String? = stopData["website"] as? String
@@ -789,8 +802,6 @@ class FirebaseViewModel: ObservableObject {
                                 latitude: poi_latitude,
                                 city: poi_city,
                                 cuisine: poi_cuisine,
-                                open_time: poi_opentime,
-                                close_time: poi_closetime,
                                 rating: poi_rating,
                                 price: poi_price,
                                 website: poi_website
@@ -834,7 +845,7 @@ class FirebaseViewModel: ObservableObject {
         return ["past": driven_trips, "present": in_progress_trips, "future": future_trips]
     }
     
-    private func getPOI(name: String, address: String, type: String, longitude: Double, latitude: Double, city: String?, cuisine: String? = nil, open_time: String? = nil, close_time: String? = nil, rating: Double? = nil, price: Int? = nil, website: String? = nil) -> any POI {
+    private func getPOI(name: String, address: String, type: String, longitude: Double, latitude: Double, city: String?, cuisine: String? = nil, rating: Double? = nil, price: Int? = nil, website: String? = nil) -> any POI {
         switch type {
         case "Restaurant":
             return Restaurant(address: address, name: name, rating: rating, cuisine: cuisine, price: price, website: website, latitude: latitude, longitude: longitude, city: city)

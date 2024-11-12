@@ -41,10 +41,16 @@ class UserViewModel: ObservableObject {
     }
     
     func populateUserTrips() async {
-        let allTrips = await FirebaseViewModel().getAllTrips(userID: user.id)
+        print(user.id)
+        let allTrips = await fbVM.getAllTrips(userID: user.id)
         DispatchQueue.main.async {
             self.user.trips = allTrips["future"]!
             self.previous_trips = allTrips["past"]!
+        }
+//        self.previous_trips = user.pastTrips
+        let communityTrips = await fbVM.getAllPublicTrips(userID: user.id)
+        DispatchQueue.main.async {
+            self.community_trips = communityTrips
         }
     }
     
@@ -58,10 +64,17 @@ class UserViewModel: ObservableObject {
     
     @MainActor
     func createTrip(start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM") async {
-        self.current_trip = Trip(start_location: start_location, end_location: end_location, start_date: start_date, end_date: end_date, stops: stops, start_time: start_time)
-        let route = await getRoute()
-        self.current_trip?.route = route
-        self.user.addTrip(trip: self.current_trip!)
+        let temp_trip = Trip(start_location: start_location, end_location: end_location, start_date: start_date, end_date: end_date, stops: stops, start_time: start_time)
+
+        if await fbVM.createTrip(tripID: temp_trip.id, startLocationName: start_location.getName(), startLocationAddress: start_location.getAddress(), endLocationName: end_location.getName(), endLocationAddress: end_location.getAddress(), createdDate: Trip.getCurrentDateTime(), modifiedDate: temp_trip.modified_date) {
+            if await fbVM.addTripToUser(userID: user.id, tripID: temp_trip.id) {
+                self.current_trip = temp_trip
+                let route = await getRoute()
+                self.current_trip?.route = route
+                
+                self.user.addTrip(trip: self.current_trip!)
+            }
+        }
     }
     
     func addTripToUser(trip: Trip) {
@@ -95,14 +108,15 @@ class UserViewModel: ObservableObject {
                 current_trip?.addStopAtIndex(newStop: stop, index: (index > 0 ? index + 1: 0))
                 user.updateTrip(trip: current_trip!)
                 self.user = user
+            } else {
+                print("Failed to add stop")
             }
             
         }
     }
     
     func removeStop(stop: any POI) async {
-        let firebaseViewModel = FirebaseViewModel()
-        if await firebaseViewModel.removeStopFromTrip(tripID: current_trip!.id, stop: stop) {
+        if await fbVM.removeStopFromTrip(tripID: current_trip!.id, stop: stop) {
             current_trip?.removeStops(removedStops: [stop])
             user.updateTrip(trip: current_trip!)
             self.user = user
@@ -384,11 +398,11 @@ class UserViewModel: ObservableObject {
         }
     }
 
-    func fetchPlaces(location: String, stopType: String, rating: Double?, price: Int?, cuisine: String?, searchString: String) async {
+    func fetchPlaces(latitude: String, longitude: String, stopType: String, rating: Double?, price: Int?, cuisine: String?, searchString: String) async {
         let apiKey = aiVM.yelpAPIKey
         let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
         guard let currentTrip = current_trip else { return }
-        let startLocation = currentTrip.getStartLocation()
+        //let startLocation = currentTrip.getStartLocation()
 
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
         
@@ -399,14 +413,16 @@ class UserViewModel: ObservableObject {
         if (searchString != "") {
             print("Searching via search bar")
             queryItems = [
-                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "latitude", value: latitude),
+                URLQueryItem(name: "longitude", value: longitude),
                 URLQueryItem(name: "term", value: searchString),
                 URLQueryItem(name: "sort_by", value: "rating"),
                 URLQueryItem(name: "limit", value: "50")
             ]
         } else if (stopType == "Restaurants") {
             queryItems = [
-                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "latitude", value: latitude),
+                URLQueryItem(name: "longitude", value: longitude),
                 URLQueryItem(name: "categories", value: "restaurants,food"),
                 URLQueryItem(name: "sort_by", value: "rating"),
                 URLQueryItem(name: "limit", value: "50")
@@ -419,43 +435,48 @@ class UserViewModel: ObservableObject {
             }
         } else if (stopType == "Activities") {
             queryItems = [
-                URLQueryItem(name: "location", value: startLocation.getAddress()),
-
+                URLQueryItem(name: "latitude", value: latitude),
+                URLQueryItem(name: "longitude", value: longitude),
                 URLQueryItem(name: "categories", value: "activelife,nightlife,facepainting,photoboothrentals,photographers,silentdisco,videographers,triviahosts,teambuilding,massage,hotspring"),
                 URLQueryItem(name: "sort_by", value: "rating"),
                 URLQueryItem(name: "limit", value: "50")
             ]
         } else if (stopType == "Scenic") {
             queryItems = [
-                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "latitude", value: latitude),
+                URLQueryItem(name: "longitude", value: longitude),
                 URLQueryItem(name: "term", value: "sights"),
                 URLQueryItem(name: "sort_by", value: "rating"),
                 URLQueryItem(name: "limit", value: "50")
             ]
         } else if (stopType == "Hotels") {
             queryItems = [
-                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "latitude", value: latitude),
+                URLQueryItem(name: "longitude", value: longitude),
                 URLQueryItem(name: "categories", value: "hotels,hostels"),
                 URLQueryItem(name: "sort_by", value: "rating"),
                 URLQueryItem(name: "limit", value: "50")
             ]
         } else if (stopType == "Tours and Landmarks") {
             queryItems = [
-                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "latitude", value: latitude),
+                URLQueryItem(name: "longitude", value: longitude),
                 URLQueryItem(name: "categories", value: "tours,landmarks,collegeuniv,hotsprings"),
                 URLQueryItem(name: "sort_by", value: "rating"),
                 URLQueryItem(name: "limit", value: "50")
             ]
         } else if (stopType == "Shopping") {
             queryItems = [
-                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "latitude", value: latitude),
+                URLQueryItem(name: "longitude", value: longitude),
                 URLQueryItem(name: "term", value: "shopping"),
                 URLQueryItem(name: "sort_by", value: "rating"),
                 URLQueryItem(name: "limit", value: "50")
             ]
         } else { //entertainment
             queryItems = [
-                URLQueryItem(name: "location", value: startLocation.getAddress()),
+                URLQueryItem(name: "latitude", value: latitude),
+                URLQueryItem(name: "longitude", value: longitude),
                 URLQueryItem(name: "categories", value: "arts,magicians,musicians"),
                 URLQueryItem(name: "sort_by", value: "rating"),
                 URLQueryItem(name: "limit", value: "50")
@@ -470,7 +491,6 @@ class UserViewModel: ObservableObject {
 
         do {
             let (data, _) = try await URLSession.shared.data(for: request)
-            print("Raw Response Data: \(String(data: data, encoding: .utf8) ?? "No data")")
             let decoder = JSONDecoder()
             
             let response = try decoder.decode(YelpResponse.self, from: data)
@@ -508,15 +528,16 @@ class UserViewModel: ObservableObject {
         }
     }
     
-    func fetchRestStops(location: String) async {
+    func fetchRestStops(latitude: String, longitude: String) async {
         let apiKey = aiVM.yelpAPIKey
         let url = URL(string: "https://api.yelp.com/v3/businesses/search")!
 
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
         
         let queryItems: [URLQueryItem] = [
-          URLQueryItem(name: "term", value: "reststops"),
-          URLQueryItem(name: "location", value: location),
+          URLQueryItem(name: "categories", value: "reststops"),
+          URLQueryItem(name: "latitude", value: latitude),
+          URLQueryItem(name: "longitude", value: longitude),
           URLQueryItem(name: "sort_by", value: "rating"),
           URLQueryItem(name: "limit", value: "50"),
         ]
@@ -529,15 +550,9 @@ class UserViewModel: ObservableObject {
 
         do {
             let (data, _) = try await URLSession.shared.data(for: request)
-            print("Raw Response Data: \(String(data: data, encoding: .utf8) ?? "No data")")
             let decoder = JSONDecoder()
             
             let response = try decoder.decode(YelpResponse.self, from: data)
-            
-            let filteredBusinesses = response.businesses.filter { business in
-                let hasValidAddress = business.location.display_address.count >= 2
-                return hasValidAddress
-            }
             
             self.reststops = response.businesses.compactMap { business -> RestStop? in
                 guard business.location.display_address.count >= 2 else { return nil }
@@ -579,9 +594,9 @@ class UserViewModel: ObservableObject {
 //        previous_trips = UserViewModel.previous_trips
 //    }
     
-    func populate_community_trips() {
-        community_trips = UserViewModel.community_trips
-    }
+//    func populate_community_trips() {
+//        community_trips = UserViewModel.community_trips
+//    }
     
 //    func updateTrip(trip: Trip) {
 //        let trip_id = trip.id
@@ -629,17 +644,17 @@ class UserViewModel: ObservableObject {
 //        return nil
 //    }
     
-    static let community_trips = [
-        Trip(start_location: Activity(address: "555 Favorite Rd", name: "Home", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "666 Favorite Ave", name: "Favorite Hotel 1", latitude: 34.0522, longitude: -118.2437, city: "Redwood"), name: "Redwood National Park", coverImageURL: ""),
-        Trip(start_location: Restaurant(address: "777 Favorite Rd", name: "Lorum ipsum Pebble Beach", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "888 Favorite Ave", name: "Favorite Hotel 2", latitude: 34.0522, longitude: -118.2437, city: "San Francisco"), name: "LA to SF", coverImageURL: ""),
-        Trip(start_location: Restaurant(address: "333 Old Rd", name: "Lorum Ipsum Pebble Beach, CA", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "444 Old Ave", name: "Previous Hotel 2", latitude: 34.0522, longitude: -118.2437, city: "Boulder"), name: "Colorado Mountains", coverImageURL: "")
-    ]
+//    static let community_trips = [
+//        Trip(start_location: Activity(address: "555 Favorite Rd", name: "Home", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "666 Favorite Ave", name: "Favorite Hotel 1", latitude: 34.0522, longitude: -118.2437, city: "Redwood"), name: "Redwood National Park", coverImageURL: ""),
+//        Trip(start_location: Restaurant(address: "777 Favorite Rd", name: "Lorum ipsum Pebble Beach", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "888 Favorite Ave", name: "Favorite Hotel 2", latitude: 34.0522, longitude: -118.2437, city: "San Francisco"), name: "LA to SF", coverImageURL: ""),
+//        Trip(start_location: Restaurant(address: "333 Old Rd", name: "Lorum Ipsum Pebble Beach, CA", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "444 Old Ave", name: "Previous Hotel 2", latitude: 34.0522, longitude: -118.2437, city: "Boulder"), name: "Colorado Mountains", coverImageURL: "")
+//    ]
     
-    static let my_trips = [
-        Trip(id: "austintrip2", start_location: Restaurant(address: "848 Spring Street, Atlanta, GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN 37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", created_date: "10-1-2024", modified_date: "10-1-2024", stops: [Activity(address: "1720 S Scenic Hwy, Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)], start_time: "10:00:00", name: "ATL to Nashville", isPrivate: true),
-        Trip(id: "austintrip1", start_location: Activity(address: "1 City Hall Square Suite 500, Boston, MA 02201 United States", name: "Boston City Hall", latitude: 42.360388, longitude: -71.058026, city: "Boston"), end_location: Hotel(address: "145 W 44th St, New York, NY 10036 United States", name: "Millennium Hotel Broadway Times Square", latitude: 40.757067, longitude: -73.984734, city: "New York City"), start_date: "10-12-2024", end_date: "10-12-2024", created_date: "10-1-2024", modified_date: "10-1-2024", stops: [GeneralLocation(address: "127 Wall St, New Haven, CT  06511 United States", name: "Yale University", latitude: 41.311930, longitude: -72.927877)], start_time: "10:00:00", name: "Cross Country", isPrivate: true),
-        Trip(id: "austintrip3", start_location: Hotel(address: "533 State St, Santa Barbara, CA  93101 United States", name: "Hotel Santa Barbara", latitude: 34.417535, longitude: -119.696807, city: "Santa Barbara"), end_location: GeneralLocation(address: "1 World Way, Los Angeles, CA  90045 United States", name: "LAX Airport", latitude: 33.944007, longitude: -118.403811, city: "Los Angeles"), start_date: "10-19-2024", end_date: "10-19-2024", created_date: "10-1-2024", modified_date: "10-1-2024", stops: [Activity(address: "727 N Broadway, Los Angeles, CA 90012", name: "Chinatown", latitude: 34.061303, longitude: -118.239277)], start_time: "10:00:00", name: "GA Mountains", isPrivate: true)
-    ]
+//    static let my_trips = [
+//        Trip(id: "austintrip2", start_location: Restaurant(address: "848 Spring Street, Atlanta, GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN 37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", created_date: "10-1-2024", modified_date: "10-1-2024", stops: [Activity(address: "1720 S Scenic Hwy, Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)], start_time: "10:00:00", name: "ATL to Nashville", isPrivate: true),
+//        Trip(id: "austintrip1", start_location: Activity(address: "1 City Hall Square Suite 500, Boston, MA 02201 United States", name: "Boston City Hall", latitude: 42.360388, longitude: -71.058026, city: "Boston"), end_location: Hotel(address: "145 W 44th St, New York, NY 10036 United States", name: "Millennium Hotel Broadway Times Square", latitude: 40.757067, longitude: -73.984734, city: "New York City"), start_date: "10-12-2024", end_date: "10-12-2024", created_date: "10-1-2024", modified_date: "10-1-2024", stops: [GeneralLocation(address: "127 Wall St, New Haven, CT  06511 United States", name: "Yale University", latitude: 41.311930, longitude: -72.927877)], start_time: "10:00:00", name: "Cross Country", isPrivate: true),
+//        Trip(id: "austintrip3", start_location: Hotel(address: "533 State St, Santa Barbara, CA  93101 United States", name: "Hotel Santa Barbara", latitude: 34.417535, longitude: -119.696807, city: "Santa Barbara"), end_location: GeneralLocation(address: "1 World Way, Los Angeles, CA  90045 United States", name: "LAX Airport", latitude: 33.944007, longitude: -118.403811, city: "Los Angeles"), start_date: "10-19-2024", end_date: "10-19-2024", created_date: "10-1-2024", modified_date: "10-1-2024", stops: [Activity(address: "727 N Broadway, Los Angeles, CA 90012", name: "Chinatown", latitude: 34.061303, longitude: -118.239277)], start_time: "10:00:00", name: "GA Mountains", isPrivate: true)
+//    ]
     
 //    static let previous_trips = [
 //        Trip(id: "pastaustintrip1", start_location: Restaurant(address: "123 Bourbon St, New Orleans, LA 70130", name: "Cafe du Monde", rating: 4.7, price: 1, latitude: 29.957444, longitude: -90.063212), end_location: Hotel(address: "2525 S Michigan Ave, Chicago, IL 60616", name: "Hyatt Regency McCormick Place", latitude: 41.852580, longitude: -87.621361), start_date: "10-26-2024", end_date: "10-26-2024", created_date: "10-1-2024", modified_date: "10-1-2024", stops: [Activity(address: "501 Basin St, New Orleans, LA 70112", name: "St. Louis Cemetery No. 1", latitude: 29.961583, longitude: -90.066514)], start_time: "10:00:00", name: "NOLA to Chicago", isPrivate: true),

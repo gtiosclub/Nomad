@@ -12,7 +12,7 @@ struct CuisineFilterView: View {
     
     let cuisines = ["Chinese", "Italian", "Indian", "American", "Japanese", "Korean"]
 
-    @State private var isCuisineDropdownOpen = false
+    @Binding var isCuisineDropdownOpen: Bool
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -29,27 +29,25 @@ struct CuisineFilterView: View {
             }.foregroundColor(.black)
             
             if isCuisineDropdownOpen {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 4) {
-                        ForEach(cuisines, id: \.self) { cuisine in
-                            Button(action: {
-                                toggleCuisineSelection(cuisine)
-                            }) {
-                                HStack(alignment: .center) {
-                                    Image(systemName: selectedCuisine.contains(cuisine) ? "checkmark.square.fill" : "square")
-                                        .foregroundColor(selectedCuisine.contains(cuisine) ? .blue : .gray)
-                                    Text(cuisine)
-                                }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(6)
-                            }
-                            .buttonStyle(PlainButtonStyle())
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(cuisines, id: \.self) { cuisine in
+                        Button(action: {
+                            toggleCuisineSelection(cuisine)
+                        }) {
+                            Text(cuisine)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(6)
+                            .background(selectedCuisine.contains(cuisine) ? Color.gray.opacity(0.3) : .white)
                         }
+                        .buttonStyle(PlainButtonStyle())
                     }
-                    .padding()
                 }
-                .frame(height: 150)
-                .background(RoundedRectangle(cornerRadius: 10).fill(Color.white))
+                .cornerRadius(8)
+                //.padding()
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.gray, lineWidth: 1)
+                )
                 .shadow(radius: 5)
                 .padding(.horizontal)
             }
@@ -66,6 +64,7 @@ struct CuisineFilterView: View {
 
 #Preview {
     CuisineFilterView(
-        selectedCuisine: .constant(["Chinese"])
+        selectedCuisine: .constant(["Chinese"]),
+        isCuisineDropdownOpen: .constant(true)
     )
 }

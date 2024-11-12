@@ -120,6 +120,7 @@ struct EnhancedRoutePlanListView: View {
                             Text("\(cuisine) Cuisine")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
+                                .lineLimit(1)
                         }
                         
                         HStack(spacing: 5) {
