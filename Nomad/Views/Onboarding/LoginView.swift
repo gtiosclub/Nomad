@@ -88,9 +88,9 @@ struct LoginView: View {
                 }
                 .padding([.leading, .trailing], 20)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                NavigationLink(destination: RootView(), isActive: $isLoggedIn) {
-                    EmptyView()
-                }
+//                NavigationLink(destination: RootView(vm: UserViewModel(user: (vm.current_user ?? User(id: "Default", name: "Default User")))), isActive: $isLoggedIn) {
+//                    EmptyView()
+//                }
                 Spacer()
                 
                 HStack {
@@ -137,5 +137,5 @@ struct LoginView: View {
 }
 
 #Preview {
-    LoginView(vm: FirebaseViewModel())
+    LoginView(vm: FirebaseViewModel.vm)
 }

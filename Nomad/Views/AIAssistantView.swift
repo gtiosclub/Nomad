@@ -14,7 +14,7 @@ struct AIAssistantView: View {
         VStack {
             // Header
             if let trip = vm.current_trip {
-                RoutePreviewView(vm: vm, trip: Binding.constant(trip))
+                RoutePreviewView(vm: vm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(nil))
                     .frame(minHeight: 200.0)
             } else {
                 Text("No current trip available")
@@ -27,16 +27,9 @@ struct AIAssistantView: View {
                     ForEach(chatViewModel.messages) { message in
                         HStack {
                             if message.sender == "AI" {
-                                HStack {
-                                    Circle()
-                                        .frame(width: 30, height: 30)
-                                        .foregroundColor(.gray) // Placeholder for AI avatar
-                                    Text(message.content)
-                                        .padding()
-                                        .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
-                                        .frame(maxWidth: 270, alignment: .leading)
-                                        .id(message.id)
-                                }
+                                
+                                AtlasMessage(content: message.content, id: message.id)
+                                
                                 Spacer()
                             } else {
                                 Spacer()
@@ -45,14 +38,28 @@ struct AIAssistantView: View {
                                         .padding()
                                         .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
                                         .frame(maxWidth: 270, alignment: .trailing)
-                                    Circle()
-                                        .frame(width: 30, height: 30)
-                                        .foregroundColor(.blue) // Placeholder for User avatar
+                                    
+                                    ZStack {
+                                        Circle()
+                                            .foregroundColor(Color.white)
+                                            .frame(width: 30, height: 30) // Adjust size as needed
+                                            .overlay(
+                                                Circle()
+                                                    .stroke(Color.black, lineWidth: 1) // Adds a black outline with a width of 2
+                                            )
+                                        
+                                        // Image on top of the circle
+                                        Image(systemName: "person")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 20, height: 20)
+                                    }
                                 }
                             }
                         }
                         .padding(.horizontal)
                     }
+                    
                     if chatViewModel.isQuerying{
                         //Detect if the ai is loading
                         HStack {
@@ -82,24 +89,10 @@ struct AIAssistantView: View {
                 }
             }
             
-            // Horizontal scroll view for POIs
-//            if !chatViewModel.pois.isEmpty {
-//                ScrollView(.horizontal, showsIndicators: false) {
-//                    HStack(spacing: 20) {
-//                        ForEach(chatViewModel.pois) { poi in
-//                            POIDetailView(name: poi.name, address: poi.address, distance: poi.distance)
-//                                .frame(width: 400) // Adjust width as necessary
-//                        }
-//                    }
-//                    .padding(.horizontal)
-//                }
-//                .frame(height: 110)  // Adjust height as needed
-//            }
-            
             if !chatViewModel.pois.isEmpty {
                 TabView {
                     ForEach(chatViewModel.pois) { poi in
-                        POIDetailView(name: poi.name, address: poi.address, distance: poi.distance, image: poi.image)
+                        POIDetailView(name: poi.name, address: poi.address, distance: poi.distance, phoneNumber: poi.phoneNumber, image: poi.image, rating: poi.rating, price: poi.price)
                             .frame(width: 400, height: 120) // Adjust width and height as needed
                             .padding(.horizontal, 5) // Adds padding at the top and bottom
                     }
@@ -165,5 +158,30 @@ struct AIAssistantView: View {
 }
 
 #Preview {
-    AIAssistantView(vm: UserViewModel(), chatViewModel: ChatViewModel())
+    AIAssistantView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")), chatViewModel: ChatViewModel())
+}
+
+struct AtlasMessage: View {
+    let content: String
+    let id: UUID
+    
+    var body: some View {
+        HStack {
+            Image("AtlasIcon")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 35, height: 35)
+            
+            Text(content)
+                .padding()
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.black, lineWidth: 1)
+                        .fill(Color.gray.opacity(0.2))
+                )
+                .frame(maxWidth: 270, alignment: .leading)
+                .id(id)
+        }
+
+    }
 }

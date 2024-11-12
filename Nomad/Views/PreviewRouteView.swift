@@ -26,7 +26,7 @@ struct PreviewRouteView: View {
                     .padding(.leading)
                     .padding(.top)
                 
-                RoutePreviewView(vm: vm, trip: Binding.constant(trip))
+                RoutePreviewView(vm: vm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(nil))
                     .frame(height: 300)
                 
                 Spacer().frame(height: 20)
@@ -139,6 +139,14 @@ struct PreviewRouteView: View {
                         .foregroundColor(.black)
                         .padding(.horizontal)
                     }
+                    Button("Start Route") {
+                        vm.startTrip(trip: trip)
+                    }
+                    .padding()
+                    .background(Color.gray.opacity(0.2))
+                    .foregroundColor(.black)
+                    .cornerRadius(8)
+
                 }
             }
         }

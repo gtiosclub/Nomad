@@ -48,19 +48,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 @main
 struct YourApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    @StateObject private var firebaseViewModel = FirebaseViewModel()
+    @StateObject private var firebaseViewModel = FirebaseViewModel.vm
 
     var body: some Scene {
         WindowGroup {
-            NavigationView {
+            VStack {
                 if firebaseViewModel.current_user != nil {
-                    RootView()
+                    RootView(vm: UserViewModel(user: firebaseViewModel.current_user!))
+                      .toolbar(.hidden, for: .navigationBar)
                 } else {
                     SignUpView(vm: firebaseViewModel)
                 }
             }
             .onAppear {
                 firebaseViewModel.onSetupCompleted = { vm in
+                    print("made it to firebase setup")
                     DispatchQueue.main.async {
                         if let user = firebaseViewModel.auth.currentUser {
                             Task {

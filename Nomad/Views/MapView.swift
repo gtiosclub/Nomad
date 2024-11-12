@@ -61,6 +61,10 @@ struct MapView: View {
     @State private var isVoiceEnabled: Bool = false
     @State private var cameraDistance: CLLocationDistance = 400
     
+    @State private var remainingTime: TimeInterval = 0
+    @State private var remainingDistance: Double = 0
+    
+    let timer = Timer.publish(every: 7, on: .main, in: .common).autoconnect()
     
     var body: some View {
         ZStack {
@@ -89,9 +93,9 @@ struct MapView: View {
                 }
                 
             }
+            
             .onChange(of: mapManager.motion, initial: true) { oldMotion, newMotion in
-                if let newLoc = newMotion.coordinate {
-                    print("New User Location")
+                if let _ = newMotion.coordinate {
                     navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
                     navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
                     if let camera = navManager.mapPosition.camera {
@@ -126,35 +130,25 @@ struct MapView: View {
                             navManager.recenterMap()
                         })
                         .frame(width: 50, height: 50)
-                      
+                        
                         // Add Voice Announcer Button
                         VoiceAnnouncerButtonView(onPress: announceCurrentLocation, isVoiceEnabled: $isVoiceEnabled)
                             .frame(width: 50, height: 50)
                     }
                 }
                 Spacer()
-                VStack {
-                    Text("Add debugging info below:")
-                    Text("ENTER HERE")
-                }
-                HStack {
+                if !navManager.navigating {
                     Button {
-                        // set example route
-                        Task {
-                            if let route = await mapManager.getExampleRoute() {
-                                navManager.setNavigatingRoute(route: route)
+                        if navManager.navigatingRoute == nil {
+                            if let trip = vm.navigatingTrip {
+                                if let route = trip.route {
+                                    navManager.setNavigatingRoute(route: route)
+                                    navManager.startNavigating()
+                                }
                             }
-                            
+                        } else {
+                            navManager.startNavigating()
                         }
-                    } label: {
-                        Text("Generate Route")
-                            .padding()
-                            .background(.blue)
-                            .foregroundStyle(.white)
-                            .padding()
-                    }
-                    Button {
-                        navManager.startNavigating()
                     } label: {
                         Text("Start Navigating")
                             .padding()
@@ -162,9 +156,55 @@ struct MapView: View {
                             .foregroundStyle(.white)
                             .padding()
                     }
+                } else {
+                    HStack(spacing: 100) {
+                        VStack {
+                            Text("\(formattedRemainingTime())")
+                                .font(.largeTitle)
+                            Text("hrs")
+                        }
+                        VStack {
+                            Text("\(formattedRemainingDistance())")
+                                .font(.largeTitle)
+                            Text("mi")
+                        }
+                    }.padding()
+                    .frame(maxWidth: .infinity, idealHeight: 150)
+                        .background(.white)
+                    
+                }
+                
+            }
+        }.onChange(of: vm.navigatingTrip) { old, new in
+            if let newTrip = new {
+                if let newRoute = newTrip.route {
+                    navManager.setNavigatingRoute(route: newRoute)
                 }
             }
+        }.onReceive(timer) { _ in
+            if navManager.navigating {
+                self.remainingTime = mapManager.getRemainingTime(leg: navManager.navigatingLeg!)
+                self.remainingDistance = mapManager.getRemainingDistance(leg: navManager.navigatingLeg!)
+            }
         }
+        
+    }
+    private func formattedRemainingTime() -> String {
+        let seconds = Int(self.remainingTime)
+        let hours = Int(seconds) / 3600
+        let minutes = (Int(seconds) % 3600) / 60
+        
+        return String(format: "%1d:%02d", hours, minutes)
+    }
+    private func formattedRemainingDistance() -> String {
+        return String(format: "%.1f", self.remainingDistance / 1609.34)
+//        var miles = self.remainingDistance / 1609.34
+//        if miles > 0.2 {
+//            return String(format: "%.1f miles", miles)
+//        } else {
+//            let feet = 100 * floor(miles * 5280 / 100)
+//            return String(format: "%3.0f feet", feet)
+//        }
     }
     // Function to announce current location
     private func announceCurrentLocation() {
@@ -211,5 +251,5 @@ struct MapView: View {
 }
 
 #Preview {
-    MapView(vm: UserViewModel())
+    MapView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")))
 }

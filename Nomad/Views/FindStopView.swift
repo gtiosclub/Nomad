@@ -10,7 +10,6 @@ import CoreLocation
 
 struct FindStopView: View {
     @ObservedObject var vm: UserViewModel
-    @ObservedObject var aiVM: AIAssistantViewModel = AIAssistantViewModel()
     @State var selection: String = "Restaurants"
     @State private var searchTerm: String = ""
     @State private var searchString: String = ""
@@ -24,40 +23,22 @@ struct FindStopView: View {
     @State private var selectedStop: (any POI)?
     @State private var isEditing: Bool = false
     @State private var routeProgress: Double = 0.0
+    @State private var markerCoordinate: CLLocationCoordinate2D = .init(latitude: 0, longitude: 0)
     @State private var filterRating: String = "4 ★ and up"
     @State private var filterCuisine: String = "American"
     @State private var filterPrice: String = "$$"
     @State var selectedTab = 1
+    @State private var isCuisineDropdownOpen = false
+    @State private var isRatingDropdownOpen = false
+    @State private var isPriceDropdownOpen = false
     @Environment(\.dismiss) var dismiss
     
-    let stop_types = ["Restaurants", "Activities", "Scenic", "Hotels", "Tours & Landmarks", "Entertainment", "Shopping"]
+    let stop_types = ["Restaurants", "Activities", "Rest Stops", "Hotels", "Tours & Landmarks", "Entertainment", "Shopping"]
     let cuisines = ["Chinese", "Italian", "Indian", "American", "Japanese", "Korean"]
     
     var body: some View {
         ScrollView {
             VStack(alignment: .leading) {
-                Text("Let's Plan Your New Trip")
-                    .font(.headline)
-                    .padding(.vertical, 5)
-                    .padding(.horizontal)
-                
-                if let trip = vm.current_trip {
-                    RoutePreviewView(vm: vm, trip: Binding.constant(trip))
-                        .frame(minHeight: 250.0)
-                } else {
-                    Text("No current trip available")
-                        .foregroundColor(.red)
-                }
-            }
-            
-            VStack(alignment: .leading, spacing: 15) {
-                /*Slider(value: $routeProgress, in: 0...1, step: 0.01) {
-                 Text("Route Progress")
-                 }
-                 .padding()
-                 .onChange(of: routeProgress) { newValue in
-                 updateMarkerPosition(progress: newValue)
-                 }*/
                 HStack {
                     ZStack {
                         Circle()
@@ -80,24 +61,45 @@ struct FindStopView: View {
                         .offset(x: 12, y: 3)
                 }
                 
-                if (selectedTab == 1) {
-                    VStack(spacing: 8) {
-                        listCuisines //Lists out stops type that can be selected
-                    }
-                    .padding(5)
+                if let trip = vm.current_trip {
+                    RoutePreviewView(vm: vm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(markerCoordinate), showStopMarker: true)
+                        .frame(minHeight: 250.0)
+                } else {
+                    Text("No current trip available")
+                        .foregroundColor(.red)
                 }
-                
-                Divider()
-                
+
+                Slider(value: $routeProgress, in: 0...((vm.current_trip?.route?.totalTime() ?? 60) / 60), step: 1, label: { Text("Stop") }, minimumValueLabel: { Text("0 Mins") }, maximumValueLabel: { Text("\(Int((vm.current_trip?.route?.totalTime() ?? 60) / 60)) Mins") })
+                    .padding(.horizontal)
+                    .padding(.top)
+                    .onChange(of: routeProgress) { newValue in
+                        updateMarkerPosition(progress: newValue)
+                    }
+            }
+            
+            VStack(alignment: .leading, spacing: 10) {                
                 TabView(selection: $selectedTab) {
                     VStack(alignment: .leading, spacing: 16) {
+                        VStack(spacing: 8) {
+                            listCuisines //Lists out stops type that can be selected
+                        }
+                        .padding(5)
+                        
+                        Divider()
+                        
                         if selection == "Restaurants" {
-                            Text("Cuisine:")
-                                .font(.headline)
-                            FilterView(selectedRating: $rating, selectedCuisine: $selectedCuisines, selectedPrice: $price)
+//                            Text("Filters:")
+//                                .font(.headline)
+                            HStack(){
+                                RatingFilterView(selectedRating: $rating, isRatingDropdownOpen: $isRatingDropdownOpen).frame(maxWidth: 90)
+                                CuisineFilterView(selectedCuisine: $selectedCuisines, isCuisineDropdownOpen: $isCuisineDropdownOpen)
+                                PriceFilterView(selectedPrice: $price, isPriceDropdownOpen: $isPriceDropdownOpen).frame(maxWidth: 80)
+                            }
+                            .padding(.top, 25)
                             Spacer()
                         } else if selection == "Activities" || selection == "Hotels" {
                             RatingUI(rating: $rating)
+                                .padding(.top, 10)
                         }
                     }
                     .padding(.horizontal)
@@ -147,89 +149,117 @@ struct FindStopView: View {
                                     .foregroundColor(.secondary)
                                     .padding(.top)
                             }
-                        } else {
-                            Text("Search for \(selection)")
-                                .foregroundColor(.secondary)
-                                .padding(.top)
                         }
                     }
                 }
-                .frame(height: 300)
+                .frame(height: hasSearched ? 300 : nil)
                 
                 NavigationLink(destination: PreviewRouteView(vm: vm, trip: vm.current_trip!)) {
-                    Text("Continue").font(.headline)
+                    Spacer()
+                    Text("Preview Route").font(.system(size: 16))
                         .foregroundColor(.black)
                         .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.gray.opacity(0.3))
-                        .cornerRadius(15)
+                        .frame(maxWidth: 140)
+                        .background(Color.gray.opacity(0.05))
+                        .cornerRadius(10)
                         .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray, lineWidth: 0.5)
+                        )
+                    Spacer()
                 }
             }
             .padding(.top, 20)
         }.onAppear() {
-            Task {
-//                await updateTripRoute()
-//                await aiVM.generateTripWithAtlas(userVM: vm)
-//                await updateTripRoute()
-            }
+            markerCoordinate = vm.current_trip?.getStartLocationCoordinates() ?? .init(latitude: 0, longitude: 0)
         }
+        .navigationBarBackButtonHidden()
     }
     
     private func dynamicHeight(for tab: Int) -> CGFloat {
+        var size: CGFloat = 0
         switch tab {
         case 1:
             if selection == "Restaurants" {
-                return 250
+                if (isCuisineDropdownOpen) {
+                    size = 240
+                } else if (isRatingDropdownOpen) {
+                    size = 200
+                } else if (isPriceDropdownOpen) {
+                    size = 170
+                }
+                size = 150
             } else if selection == "Activities" || selection == "Hotels" {
-                return 80
+                size = 100
             } else {
-                return 30
+                size = 50
             }
         case 2:
-            return 200 + CGFloat((vm.current_trip?.getStops().count ?? 0) * 100)
+            return 225 + CGFloat((vm.current_trip?.getStops().count ?? 0) * 100)
         default:
             return 300
         }
+        return size + 150
     }
 
     private var listCuisines: some View {
         let rows = stop_types.chunked(into: 4)
         return ForEach(rows, id: \.self) { row in
-            HStack {
+            HStack(spacing: 12) {
+                Spacer()
                 ForEach(row, id: \.self) { option in
                     Button(action: {
                         selection = option
                     }) {
                         Text(option)
                             .padding(8)
-                            .background(selection == option ? Color.gray : Color.gray.opacity(0))
-                            .foregroundColor(selection == option ? Color.white : Color.black)
-                            .cornerRadius(8)
+                            .background(selection == option ? Color.gray.opacity(0.4) : Color.gray.opacity(0))
+                            .foregroundColor(Color.black)
+                            .cornerRadius(12)
                             .font(.system(size: 14))
+                            .fixedSize()
                     }
                     .buttonStyle(PlainButtonStyle())
-                    .frame(width: 90, height: 30)
                 }
+                Spacer()
             }
         }
     }
+
     
     private var fetchResults: some View {
         Button(action: {
             isLoading = true
             hasSearched = true
-            
             Task {
                 do {
-                    await vm.fetchPlaces(
-                        location: vm.current_trip?.getStartLocation().getAddress() ?? "",
-                        stopType: selection,
-                        rating: Double(rating),
-                        price: price,
-                        cuisine: selectedCuisines.joined(separator: ","),
-                        searchString: searchString
-                    )
+                    if let currentTrip = vm.current_trip {
+                        let coordinates: CLLocationCoordinate2D
+                        if (stopAddress.isEmpty) {
+                            coordinates = markerCoordinate
+                        } else {
+                            let (latitude, longitude) = await vm.getCoordinates(for: stopAddress) ?? (markerCoordinate.latitude, markerCoordinate.longitude)
+                            coordinates = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+                        }
+                        
+                        if (selection == "Rest Stops") {
+                            await vm.fetchRestStops(
+                                latitude: "\(coordinates.latitude)",
+                                longitude: "\(coordinates.longitude)"
+                            )
+                        } else {
+                            await vm.fetchPlaces(
+                                latitude: "\(coordinates.latitude)",
+                                longitude: "\(coordinates.longitude)",
+                                stopType: selection,
+                                rating: Double(rating),
+                                price: price,
+                                cuisine: selectedCuisines.joined(separator: ","),
+                                searchString: searchString
+                            )
+                        }
+                    }
                 }
                 isLoading = false
             }
@@ -244,11 +274,10 @@ struct FindStopView: View {
                     .cornerRadius(10)
                 Spacer()
             }
-                //markerCoordinate = vm.current_trip?.getStartLocationCoordinates()
         }
         .padding()
     }
-    
+
     func removeStop(stop: any POI) async {
         vm.current_trip?.removeStops(removedStops: [stop])
         await self.updateTripRoute()
@@ -285,6 +314,8 @@ struct FindStopView: View {
             return vm.activities
         case "Shopping":
             return vm.shopping
+        case "Rest Stops":
+            return vm.reststops
         default:
             return vm.generalLocations
         }
@@ -301,7 +332,7 @@ struct FindStopView: View {
         @Binding var rating: Int
         
         var body: some View {
-            VStack(alignment: .leading) {
+            HStack() {
                 Text("Minimum Rating:")
                     .font(.subheadline)
                     .bold()
@@ -347,7 +378,7 @@ struct FindStopView: View {
         }
 
         var body: some View {
-            HStack {
+            HStack(spacing: 12) {
                 Button(action: { addStop(stop) }) {
                     ZStack {
                         Circle()
@@ -368,13 +399,14 @@ struct FindStopView: View {
                             .cornerRadius(10)
                             .clipped()
                     } placeholder: {
-                        ProgressView().frame(width: 70, height: 70)
+                        //ProgressView().frame(width: 70, height: 70)
+                        Color.clear.frame(width: 70, height: 70)
                     }
                 } else {
                     Color.clear.frame(width: 70, height: 70)
                 }
 
-                VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 0) {
                     Text(stop.name)
                         .font(.headline)
                         .lineLimit(1)
@@ -382,6 +414,7 @@ struct FindStopView: View {
                     Text(stop.address)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
+                        .lineLimit(1)
                     HStack {
                         if let restaurant = stop as? Restaurant {
                             Text(restaurant.cuisine ?? "")
@@ -389,12 +422,15 @@ struct FindStopView: View {
                                 .foregroundColor(.secondary)
                             
                             if let city = restaurant.city {
-                                Text(" • \(city) • ")
+                                Text("• \(city)")
                                     .font(.system(size: 16))
                                     .foregroundColor(.secondary)
                             }
                             
                             if let price = restaurant.price {
+                                Text("•")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(.secondary)
                                 Text(String(repeating: "$", count: price))
                                     .font(.system(size: 16))
                                     .foregroundColor(.secondary)
@@ -410,26 +446,22 @@ struct FindStopView: View {
                         showRating(hotel.rating)
                     }
                 }
-                .padding(.vertical, 12)
-
+                .padding(.vertical, 2)
                 Spacer()
             }
-            .padding(2)
+            .padding(4)
             .background(Color.white)
             .cornerRadius(12)
         }
     }
-    /*func updateMarkerPosition(progress: Double) {
-
-        let totalTime = vm.total_time
-        let targetTime = totalTime * progress
-
-        Task {
-            if let newPosition = try? await vm.mapManager.getFutureLocation(time: targetTime) {
-                markerCoordinate = newPosition
-            }
+    
+    func updateMarkerPosition(progress: Double) {
+        let targetTime = 60 * progress
+        
+        if let newPosition = MapManager.manager.getFutureLocation(time: targetTime, route: vm.current_trip!.route!) {
+            markerCoordinate = newPosition
         }
-    }*/
+    }
 }
 
 extension Array {
@@ -441,11 +473,51 @@ extension Array {
 }
 
 #Preview {
-    var current_trip = Trip(start_location: Restaurant(address: "848 Spring Street, Atlanta, GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)])
-    
-    var vm: UserViewModel = UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: [current_trip]))
-    
-    vm.setCurrentTrip(trip: current_trip)
-    
-    return FindStopView(vm: vm)
+    struct FindStopPreviewWrapper: View {
+        @StateObject private var vm = UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard"))
+        @State private var isLoading = true
+
+        var body: some View {
+            Group {
+                if isLoading {
+                    ProgressView("Loading trip...")
+                } else {
+                    FindStopView(vm: vm)
+                }
+            }
+            .onAppear {
+                Task {
+                    await vm.createTrip(
+                        start_location: Restaurant(
+                            address: "848 Spring Street, Atlanta, GA 30308",
+                            name: "Tiff's Cookies",
+                            rating: 4.5,
+                            price: 1,
+                            latitude: 33.778033,
+                            longitude: -84.389090
+                        ),
+                        end_location: Hotel(
+                            address: "201 8th Ave S, Nashville, TN 37203 United States",
+                            name: "JW Marriott",
+                            latitude: 36.156627,
+                            longitude: -86.780947
+                        ),
+                        start_date: "10-05-2024",
+                        end_date: "10-05-2024",
+                        stops: [
+                            Activity(
+                                address: "1720 S Scenic Hwy Chattanooga, TN 37409 United States",
+                                name: "Ruby Falls",
+                                latitude: 35.018901,
+                                longitude: -85.339367
+                            )
+                        ]
+                    )
+                    isLoading = false
+                }
+            }
+        }
+    }
+    return FindStopPreviewWrapper()
 }
+

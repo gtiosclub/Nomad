@@ -10,6 +10,8 @@ import SwiftUI
 struct ExploreTripsView: View {
     @ObservedObject var vm: UserViewModel
     @State private var currentCity: String? = nil
+    @State var current_trips: [Trip] = []
+    @State var pulled_trips: Bool = false
     
     var body: some View {
         NavigationStack {
@@ -36,7 +38,7 @@ struct ExploreTripsView: View {
                         //TEMPORARY JUST FOR MID SEM DEMO
                         
                         HStack {
-                            Text("Plan your next trip, \(vm.user?.getName().split(separator: " ").first ?? "User")!")
+                            Text("Plan your next trip, \(vm.user.getName().split(separator: " ").first!)!")
                                 .bold()
                                 .font(.system(size: 20))
                                 .padding(.horizontal)
@@ -48,7 +50,7 @@ struct ExploreTripsView: View {
                                 Ellipse()
                                     .fill(Color.gray)
                                     .frame(width: 40, height: 40)
-                                Text((vm.user?.getName() ?? "User").prefix(1))
+                                Text((vm.user.getName()).prefix(1).uppercased())
                                     .foregroundColor(.white)
                                     .font(.system(size: 25))
                             }
@@ -57,12 +59,12 @@ struct ExploreTripsView: View {
                         
                         // Itineraries
                         VStack(alignment: .leading) {
-                            SectionHeaderView(title: "My Itineraries")
+                            SectionHeaderView(title: "Upcoming Itineraries")
                                 .padding(.horizontal)
                             
                             ScrollView(.horizontal) {
                                 HStack {
-                                    ForEach(vm.user?.trips ?? []) { trip in
+                                    ForEach($current_trips.wrappedValue) { trip in
                                         NavigationLink(destination: {
                                             PreviewRouteView(vm: vm, trip: trip)
                                         }, label: {
@@ -70,6 +72,9 @@ struct ExploreTripsView: View {
                                                 .frame(alignment: .top)
                                         })
                                     }
+                                }
+                                .onChange(of: vm.user.trips, initial: true) { oldTrips, newTrips in
+                                    current_trips = newTrips
                                 }
                             }
                             .padding(.horizontal)
@@ -130,11 +135,16 @@ struct ExploreTripsView: View {
                     }
                 }
             }
-        }.onAppear() {
+        }.task {
             print("populating trips")
 //            vm.populate_my_trips()
-            vm.populate_previous_trips()
-            vm.populate_community_trips()
+//            vm.populate_previous_trips()
+//            vm.populate_community_trips()
+            if !pulled_trips {
+                await vm.populateUserTrips()
+                current_trips = vm.user.trips
+                pulled_trips = true
+            }
         }
     }
     
@@ -186,7 +196,7 @@ struct ExploreTripsView: View {
                     }
                 }
                 
-                Text(trip.name)
+                Text(trip.name.isEmpty ? "New Trip" : trip.name)
                     .lineLimit(3)
                     .multilineTextAlignment(.center)
                     .frame(width: 120)
@@ -194,9 +204,9 @@ struct ExploreTripsView: View {
                     .foregroundStyle(.black)
             }
             .padding(.vertical, 5)
-            .onChange(of: trip, initial: true) { old, new in
-                print("changing trip info \(old.coverImageURL) \(new.coverImageURL)")
-            }
+//            .onChange(of: trip, initial: true) { old, new in
+//                print("changing trip info \(old.coverImageURL) \(new.coverImageURL)")
+//            }
         }
     }
 }
