@@ -49,9 +49,9 @@ class ChatViewModel: ObservableObject {
     // Example function to generate sample POIs (you would use real data here)
     func generateSamplePOIs() -> [POIDetail] {
         return [
-            POIDetail(name: "Speedway", address: "901 Gas Station Avenue, Duluth GA", distance: 15, phoneNumber: "4045949429", rating: 3.3, price: "$", image: ""),
-            POIDetail(name: "Shell", address: "123 Main Street, Atlanta GA", distance: 5, phoneNumber: "4045949429", rating: 3.2, price: "$$$", image: ""),
-            POIDetail(name: "BP", address: "456 Elm Street, Lawrenceville GA", distance: 7, phoneNumber: "4045949429", rating: 5, price: "$$", image: "")
+            POIDetail(name: "Speedway", address: "901 Gas Station Avenue, Duluth GA", distance: 15, phoneNumber: "4045949429", rating: 3.3, price: "$", image: "", time: 3.0),
+            POIDetail(name: "Shell", address: "123 Main Street, Atlanta GA", distance: 5, phoneNumber: "4045949429", rating: 3.2, price: "$$$", image: "", time: 4.1),
+            POIDetail(name: "BP", address: "456 Elm Street, Lawrenceville GA", distance: 7, phoneNumber: "4045949429", rating: 5, price: "$$", image: "", time: 7.2)
         ]
     }
 }
@@ -73,6 +73,7 @@ struct POIDetail: Identifiable {
     var rating: Double
     var price: String
     var image: String
+    var time: Double
     
     // Static property for a null POIDetail instance
     static let null = POIDetail(
@@ -82,7 +83,8 @@ struct POIDetail: Identifiable {
         phoneNumber: "Unavailable",
         rating: 0.0,
         price: "Unavailable",
-        image: ""
+        image: "",
+        time: 0.0
     )
 }
 

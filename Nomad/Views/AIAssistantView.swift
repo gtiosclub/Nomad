@@ -93,7 +93,7 @@ struct AIAssistantView: View {
             if !chatViewModel.pois.isEmpty {
                 TabView {
                     ForEach(chatViewModel.pois) { poi in
-                        POIDetailView(name: poi.name, address: poi.address, distance: poi.distance, phoneNumber: poi.phoneNumber, image: poi.image, rating: poi.rating, price: poi.price)
+                        POIDetailView(name: poi.name, address: poi.address, distance: poi.distance, phoneNumber: poi.phoneNumber, image: poi.image, rating: poi.rating, price: poi.price, time: poi.time)
                             .frame(width: 400, height: 120) // Adjust width and height as needed
                             .padding(.horizontal, 5) // Adds padding at the top and bottom
                     }

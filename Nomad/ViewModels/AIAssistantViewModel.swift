@@ -156,18 +156,31 @@ class AIAssistantViewModel: ObservableObject {
         }
         
         // Collect POI details for the first three businesses (or fewer if less are available)
-        let poiDetails = (0..<min(3, businessResponse.businesses.count)).compactMap { i -> POIDetail? in
+        var poiDetails: [POIDetail] = []
+
+        for i in 0..<min(3, businessResponse.businesses.count) {
             let business = businessResponse.businesses[i]
             print(business.imageUrl)
-            return POIDetail(
+            
+            let coords = CLLocationCoordinate2D(latitude: business.coordinates.latitude, longitude: business.coordinates.longitude)
+            
+            // Use await to get routeAdditions asynchronously
+            let routeAdditions = await MapManager.manager.determineRouteAdditions(route: (vm.current_trip?.route)!, newStop: coords)
+            
+            print("route additions \(routeAdditions)")
+            
+            let poiDetail = POIDetail(
                 name: business.name,
                 address: "\(business.location.address1), \(business.location.city), \(business.location.state) \(business.location.zipCode)",
-                distance: 4.38,  // Assuming distance will be calculated or provided elsewhere
+                distance: routeAdditions?.distanceAdded ?? 2.2,  // Placeholder for actual distance calculation
                 phoneNumber: business.phone,
                 rating: business.rating ?? 4.0,
                 price: business.price ?? "",
-                image: business.imageUrl ?? ""
+                image: business.imageUrl ?? "",
+                time: (abs(routeAdditions?.timeAdded ?? 300) / 60.0)
             )
+            
+            poiDetails.append(poiDetail)
         }
         
         return poiDetails
