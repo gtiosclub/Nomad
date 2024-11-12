@@ -325,7 +325,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             }
         }
         
-        return closestLeg
+        return closestLeg ?? route.legs.first
     }
 
     // Modified getFutureLocation
@@ -443,6 +443,46 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         return lastCoordinate
     }
     
+    // get remaining time on current leg at current user location
+    func getRemainingTime(leg: NomadLeg) -> TimeInterval {
+        var totalTime: TimeInterval = 0
+        
+        guard let step = determineCurrentStep(leg: leg) else { return 0 }
+        let step_index = leg.steps.firstIndex { $0.id == step.id }!
+        // append time for all future steps
+        for i in step_index+1..<leg.steps.count {
+            totalTime += TimeInterval(leg.steps[i].direction.expectedTravelTime)
+        }
+        let coord = getClosestCoordinate(step: step)
+        let coord_index = step.getCoordinates().firstIndex(where: { $0 == coord })!
+        let total_coord_count = step.getCoordinates().count
+        let distance = (Double(total_coord_count - coord_index)/Double(total_coord_count)) * step.direction.distance
+        let stepProgress = distance / step.direction.distance
+        totalTime += stepProgress * TimeInterval(step.direction.expectedTravelTime)
+        
+        print("total time remaining on leg: \(totalTime.description)")
+        return totalTime
+    }
+    
+    // get remaining distance on current leg
+    func getRemainingDistance(leg: NomadLeg) -> TimeInterval {
+        var totalDistance: TimeInterval = 0
+        
+        guard let step = determineCurrentStep(leg: leg) else { return 0 }
+        let step_index = leg.steps.firstIndex { $0.id == step.id }!
+        // append time for all future steps
+        for i in step_index+1..<leg.steps.count {
+            totalDistance += leg.steps[i].direction.distance
+        }
+        let coord = getClosestCoordinate(step: step)
+        let coord_index = step.getCoordinates().firstIndex(where: { $0 == coord })!
+        let total_coord_count = step.getCoordinates().count
+        let distance = (Double(total_coord_count - coord_index)/Double(total_coord_count)) * step.direction.distance
+        totalDistance += distance
+        
+        return totalDistance
+    }
+    
     func determineCurrentStep(leg: NomadLeg) -> NomadStep? {
         for step in leg.steps {
             if checkOnStep(step: step) {
@@ -480,6 +520,26 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         } else {
             return false
         }
+    }
+    
+    func checkOnRouteDirection(step: NomadStep) -> Bool {
+        guard let userLocation = self.userLocation else { return false }
+        let coords = step.getCoordinates()
+
+        let closest_coord = getClosestCoordinate(step: step)
+        let next_coord_index = Int(coords.firstIndex(of: closest_coord) ?? coords.endIndex) + 1
+        guard let next_closest_coord = coords.dropFirst(next_coord_index).first else { return false }
+        
+        // TODO: Verify that this method words
+        // arcsin(x coord diff / distance between coords)
+        var expected_direction = asin((next_closest_coord.latitude - closest_coord.latitude) / next_closest_coord.distance(to: closest_coord)) * (180 / .pi)
+        if expected_direction < 0 {
+            expected_direction = 360 + expected_direction // Convert westward directions to 180+ degs isntead of negative
+        }
+        let user_direction = userLocation.direction(to: next_closest_coord)
+        
+        let thresholdDirection: Double = 90.0
+        return abs(expected_direction - user_direction) < thresholdDirection
     }
  
     func getExampleRoute() async -> NomadRoute? {

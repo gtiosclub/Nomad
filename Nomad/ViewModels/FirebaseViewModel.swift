@@ -33,10 +33,10 @@ class FirebaseViewModel: ObservableObject {
                     self?.isAuthenticated = user != nil  // Update authentication state
                     
                     if let user = user {
-                        print("User Found")
+                        // print("User Found")
                         if let username = user.displayName {
                             if !(current_user != nil && current_user!.id == username) {
-                                print("Setting User: \(username)")
+                                // print("Setting User: \(username)")
                                 Task {
                                     await self?.setCurrentUser(userId: username)
                                     UserDefaults.standard.setValue(true, forKey: "log_Status")

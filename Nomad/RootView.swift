@@ -34,11 +34,18 @@ struct RootView: View {
                 }
                 .tag(3)
         }.environmentObject(vm)
+        .edgesIgnoringSafeArea(.all)
         .task {
             print("made it to root view")
             if !mapboxSetUp {
                 self.mapboxSetUp = true
                 await MapManager.manager.setupMapbox()
+            }
+        }.onChange(of: vm.navigatingTrip) { oldValue, newValue in
+            if let newTrip = newValue {
+                if let _ = newTrip.route {
+                    self.selectedTab = 1
+                }
             }
         }
     }
