@@ -143,6 +143,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
         return nil
     }
+    
     // regenerate route from saved coordinates
     public func generateRoute(coords: [[CLLocationCoordinate2D]], expectedTravelTime: TimeInterval, distance: CLLocationDistance) async -> NomadRoute? {
         var legs = [NomadLeg]()
