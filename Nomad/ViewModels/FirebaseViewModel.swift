@@ -146,16 +146,18 @@ class FirebaseViewModel: ObservableObject {
                 }
                 
                 // Then fetch all trips
-                let allTrips: [String: [Trip]] = await getAllTrips(userID: userId)
+//                let allTrips: [String: [Trip]] = await getAllTrips(userID: userId)
                 
-                self.current_user = User(
-                    id: document.documentID,
-                    name: documentData["name"] as? String ?? "",
-                    email: documentData["email"] as? String ?? "",
-                    trips: allTrips["future"] ?? [],
-                    pastTrips: allTrips["past"] ?? [],
-                    currentTrip: allTrips["present"] ?? []
-                )
+                DispatchQueue.main.async {
+                    self.current_user = User(
+                        id: document.documentID,
+                        name: documentData["name"] as? String ?? "",
+                        email: documentData["email"] as? String ?? ""
+//                        trips: allTrips["future"] ?? [],
+//                        pastTrips: allTrips["past"] ?? [],
+//                        currentTrip: allTrips["present"] ?? []
+                    )
+                }
                 
                 return self.current_user
             } catch {
@@ -464,7 +466,6 @@ class FirebaseViewModel: ObservableObject {
             return false
         }
 
-        let docRef = db.collection("TRIPS").document(tripID)
         do {
             try await db.collection("TRIPS").document(tripID).updateData(["stops": stops])
             return true
@@ -477,12 +478,28 @@ class FirebaseViewModel: ObservableObject {
     func getAllPublicTrips(userID: String) async -> [Trip] {
             var public_trips : [Trip] = []
             var public_trip_names : [String] = []
+            
+            var user_trip_ids: [String] = []
+            let userDocRef = db.collection("USERS").document(userID)
+            do {
+                let document = try await userDocRef.getDocument()
+                user_trip_ids = document.data()?["trips"] as? [String] ?? []
+            } catch {
+                print(error)
+            }
+        
+        
             let tripsDocRef = db.collection("TRIPS")
             do {
                 let tripDocuments = try await tripsDocRef.getDocuments()
                 for document in tripDocuments.documents {
                     print("document is \(document.documentID)")
+                    if (user_trip_ids.contains(document.documentID)) {continue}
+                    
                     let tripData = document.data()
+                    
+                    let isPrivate = tripData["isPrivate"] as? Bool ?? true
+                    if isPrivate {continue}
 
                     let start_location_id = tripData["start_id"] as? String ?? ""
                     let end_location_id = tripData["end_id"] as? String ?? ""
@@ -491,6 +508,10 @@ class FirebaseViewModel: ObservableObject {
                     var end_location: (any POI)?
                     let startRef = document.reference.collection("STOPS").document(start_location_id)
                     let endRef = document.reference.collection("STOPS").document(end_location_id)
+                    
+                    
+                    
+                    
                     do {
                         let startDoc = try await startRef.getDocument()
                         let endDoc = try await endRef.getDocument()
@@ -552,7 +573,6 @@ class FirebaseViewModel: ObservableObject {
                     let created_date = tripData["created_date"] as? String ?? ""
                     let modified_date = tripData["modified_date"] as? String ?? ""
                     let name = tripData["name"] as? String ?? ""
-                    let isPrivate = tripData["isPrivate"] as? Bool ?? true
 
                     let stops_data = tripData["stops"] as? [String] ?? []
                     var stops: [any POI] = []
@@ -617,24 +637,24 @@ class FirebaseViewModel: ObservableObject {
                 print(error)
             }
             //Exclude User trips
-            let userDocRef = db.collection("USERS").document(userID)
-            do {
-                let document = try await userDocRef.getDocument()
-                guard var trips = document.data()?["trips"] as? [String] else {
-                    print("Document does not exist or 'trips' is not an array.")
-                    return public_trips
-                }
-                for tripID in trips {
-                    if public_trip_names.contains(tripID) {
-                        if let index = public_trip_names.firstIndex(of: tripID) {
-                            public_trip_names.remove(at: index)
-                            public_trips.remove(at: index)
-                        }
-                    }
-                }
-            } catch {
-                print(error)
-            }
+//            let userDocRef = db.collection("USERS").document(userID)
+//            do {
+//                let document = try await userDocRef.getDocument()
+//                guard var trips = document.data()?["trips"] as? [String] else {
+//                    print("Document does not exist or 'trips' is not an array.")
+//                    return public_trips
+//                }
+//                for tripID in trips {
+//                    if public_trip_names.contains(tripID) {
+//                        if let index = public_trip_names.firstIndex(of: tripID) {
+//                            public_trip_names.remove(at: index)
+//                            public_trips.remove(at: index)
+//                        }
+//                    }
+//                }
+//            } catch {
+//                print(error)
+//            }
             return public_trips
         }
     

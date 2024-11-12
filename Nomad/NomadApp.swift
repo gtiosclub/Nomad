@@ -54,7 +54,7 @@ struct YourApp: App {
         WindowGroup {
             NavigationView {
                 if firebaseViewModel.current_user != nil {
-                    RootView()
+                    RootView(vm: UserViewModel(user: firebaseViewModel.current_user!))
                 } else {
                     SignUpView(vm: firebaseViewModel)
                 }

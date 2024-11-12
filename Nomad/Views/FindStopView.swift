@@ -10,7 +10,6 @@ import CoreLocation
 
 struct FindStopView: View {
     @ObservedObject var vm: UserViewModel
-    @ObservedObject var aiVM: AIAssistantViewModel = AIAssistantViewModel()
     @State var selection: String = "Restaurants"
     @State private var searchTerm: String = ""
     @State private var searchString: String = ""
@@ -59,7 +58,7 @@ struct FindStopView: View {
                 //                                    .onChange(of: routeProgress) { newValue in
                 //                                        updateMarkerPosition(progress: newValue)
                 //                                    }
-                Slider(value: $routeProgress, in: 0...((vm.current_trip?.route?.totalTime() ?? 60) / 60), step: 1, label: { Text("Stop") }, minimumValueLabel: { Text("0") }, maximumValueLabel: { Text("\(Int((vm.current_trip?.route?.totalTime() ?? 60) / 60))") })
+                Slider(value: $routeProgress, in: 0...((vm.current_trip?.route?.totalTime() ?? 60) / 60), step: 1, label: { Text("Stop") }, minimumValueLabel: { Text("0 Mins") }, maximumValueLabel: { Text("\(Int((vm.current_trip?.route?.totalTime() ?? 60) / 60)) Mins") })
                     .padding(.horizontal)
                     .padding(.top)
                     .onChange(of: routeProgress) { newValue in
@@ -90,17 +89,21 @@ struct FindStopView: View {
                         .offset(x: 12, y: 3)
                 }
                 
-                if (selectedTab == 1) {
-                    VStack(spacing: 8) {
-                        listCuisines //Lists out stops type that can be selected
-                    }
-                    .padding(5)
-                }
-                
-                Divider()
+//                if (selectedTab == 1) {
+//                    
+//                }
+//                
+//                Divider()
                 
                 TabView(selection: $selectedTab) {
                     VStack(alignment: .leading, spacing: 16) {
+                        VStack(spacing: 8) {
+                            listCuisines //Lists out stops type that can be selected
+                        }
+                        .padding(5)
+                        
+                        Divider()
+                        
                         if selection == "Restaurants" {
 //                            Text("Filters:")
 //                                .font(.headline)
@@ -195,17 +198,17 @@ struct FindStopView: View {
         case 1:
             if selection == "Restaurants" {
                 if (isCuisineDropdownOpen) {
-                    return 240
+                    return 290
                 } else if (isRatingDropdownOpen) {
-                    return 200
+                    return 250
                 } else if (isPriceDropdownOpen) {
-                    return 170
+                    return 220
                 }
                 return 50
             } else if selection == "Activities" || selection == "Hotels" {
-                return 70
+                return 120
             } else {
-                return 0
+                return 50
             }
         case 2:
             return 225 + CGFloat((vm.current_trip?.getStops().count ?? 0) * 100)
@@ -245,28 +248,30 @@ struct FindStopView: View {
             hasSearched = true
             Task {
                 do {
-                    if let currentTrip = vm.current_trip,
-                        let location = currentTrip.getStartLocation() as? any POI {
-                        let address = location.getAddress()
-                        if let (latitude, longitude) = await vm.getCoordinates(for: address) {
-                            if (selection == "Rest Stops") {
-                                await vm.fetchRestStops(
-                                    latitude: "\(latitude)",
-                                    longitude: "\(longitude)"
-                                )
-                            } else {
-                                await vm.fetchPlaces(
-                                    latitude: "\(latitude)",
-                                    longitude: "\(longitude)",
-                                    stopType: selection,
-                                    rating: Double(rating),
-                                    price: price,
-                                    cuisine: selectedCuisines.joined(separator: ","),
-                                    searchString: searchString
-                                )
-                            }
+                    if let currentTrip = vm.current_trip {
+                        let coordinates: CLLocationCoordinate2D
+                        if (stopAddress.isEmpty) {
+                            coordinates = markerCoordinate
                         } else {
-                            print("Failed to retrieve coordinates for address")
+                            let (latitude, longitude) = await vm.getCoordinates(for: stopAddress) ?? (markerCoordinate.latitude, markerCoordinate.longitude)
+                            coordinates = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+                        }
+                        
+                        if (selection == "Rest Stops") {
+                            await vm.fetchRestStops(
+                                latitude: "\(coordinates.latitude)",
+                                longitude: "\(coordinates.longitude)"
+                            )
+                        } else {
+                            await vm.fetchPlaces(
+                                latitude: "\(coordinates.latitude)",
+                                longitude: "\(coordinates.longitude)",
+                                stopType: selection,
+                                rating: Double(rating),
+                                price: price,
+                                cuisine: selectedCuisines.joined(separator: ","),
+                                searchString: searchString
+                            )
                         }
                     }
                 }
