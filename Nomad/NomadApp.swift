@@ -52,7 +52,7 @@ struct YourApp: App {
 
     var body: some Scene {
         WindowGroup {
-            NavigationView {
+            VStack {
                 if firebaseViewModel.current_user != nil {
                     RootView(vm: UserViewModel(user: firebaseViewModel.current_user!))
                 } else {
