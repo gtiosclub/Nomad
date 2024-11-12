@@ -63,9 +63,10 @@ struct AIAssistantView: View {
                     if chatViewModel.isQuerying{
                         //Detect if the ai is loading
                         HStack {
-                            Circle()
-                                .frame(width: 30, height: 30)
-                                .foregroundColor(.gray) // Placeholder for AI avatar
+                            Image("AtlasIcon")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 35, height: 35)
                             Text(String(repeating: ".", count: dotCount))
                                 .padding()
                                 .onReceive(timer) { _ in
