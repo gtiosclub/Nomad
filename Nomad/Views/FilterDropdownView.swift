@@ -42,19 +42,12 @@ struct FilterDropdownView: View {
                                 Button(action: {
                                     handleSelection(option: option)
                                 }) {
-                                    HStack {
-                                        Text(option)
-                                            .foregroundColor(.black)
-                                        Spacer()
-                                        if isSelected(option: option) {
-                                            Image(systemName: "checkmark")
-                                                .foregroundColor(.blue)
-                                        }
-                                    }
-                                    .padding(8)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .background(isSelected(option: option) ? Color.gray.opacity(0.3) : Color.clear)
-                                    .cornerRadius(5)
+                                    Text(option)
+                                        .foregroundColor(.black)
+                                        .padding(8)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .background(isSelected(option: option) ? Color.gray.opacity(0.3) : Color.clear)
+                                        .cornerRadius(5)
                                 }
                                 .buttonStyle(PlainButtonStyle())
                             }

@@ -147,6 +147,7 @@ struct FindStopView: View {
                             )
                             
                             fetchResults //Runs parameters through yelp api when search button is clicked
+                                .offset(y: -20)
                         } else {
                             VStack(spacing: 8) {
                                 listCuisines //Lists out stops type that can be selected
@@ -283,22 +284,27 @@ struct FindStopView: View {
         var size: CGFloat = 0
         switch tab {
         case 1:
-            if selection == "Restaurants" {
-                //                if (isCuisineDropdownOpen) {
-                //                    size = 240
-                //                } else if (isRatingDropdownOpen) {
-                //                    size = 200
-                //                } else if (isPriceDropdownOpen) {
-                //                    size = 170
-                //                }
-                size = 200
-                if isPriceDropdownOpen || isCuisineDropdownOpen || isRatingDropdownOpen {
-                    size += 50
-                }
-            } else if selection == "Activities" || selection == "Hotels" {
+            if $manualSearch.wrappedValue == "Manual Search" {
                 size = 150
             } else {
-                size = 90
+                
+                if selection == "Restaurants" {
+                    //                if (isCuisineDropdownOpen) {
+                    //                    size = 240
+                    //                } else if (isRatingDropdownOpen) {
+                    //                    size = 200
+                    //                } else if (isPriceDropdownOpen) {
+                    //                    size = 170
+                    //                }
+                    size = 200
+                    if isPriceDropdownOpen || isCuisineDropdownOpen || isRatingDropdownOpen {
+                        size += 50
+                    }
+                } else if selection == "Activities" || selection == "Hotels" {
+                    size = 150
+                } else {
+                    size = 90
+                }
             }
         case 2:
             return 275 + CGFloat((vm.current_trip?.getStops().count ?? 0) * 100)
