@@ -159,9 +159,9 @@ class AIAssistantViewModel: ObservableObject {
             return POIDetail(
                 name: business.name,
                 address: "\(business.location.address1), \(business.location.city), \(business.location.state) \(business.location.zipCode)",
-                distance: "",  // Assuming distance will be calculated or provided elsewhere
+                distance: 4.38,  // Assuming distance will be calculated or provided elsewhere
                 phoneNumber: business.phone,
-                rating: "\(business.rating ?? -1)",
+                rating: business.rating ?? 4.0,
                 price: business.price ?? "",
                 image: business.imageUrl ?? ""
             )
@@ -200,7 +200,7 @@ class AIAssistantViewModel: ObservableObject {
 //                        
 //                        print("Coords \(coords)")
 //                        
-//                        print(locationInfo)
+                        print(locationInfo)
                         
                         businessInformation = await fetchSpecificBusinesses(locationType: (locationInformation == "") ? locationType : locationInformation, distance: 2, price: price, location: "UseCoords", preferences: preferences, latitude: coords.latitude, longitutde: coords.longitude, limit: 1) ?? ""
                         
@@ -265,7 +265,17 @@ class AIAssistantViewModel: ObservableObject {
         do {
             let response = try await openAIAPIKey.sendMessage(
                 text: """
-                    A road trip is starting at \(startTime) at \(startLocation) and ending at \(endLocation). Expected travel time is \(expectedTravelTime). Your job is to brainstorm stops for the road trip. Create a JSON array of these JSON objects in the format below. I will use these objects to query Yelp and find actual stops. "Time" is how long into the route the stop will be. If there is no location information, leave a blank String. Example for locationInformation is "Museum" if locationType is "Activity". Preferences should be a blank array until the user gives feedback. Price should be default set to "1,2,3,4", and should only include upper or lower ranges based on user price preference. You don't have to include location information. Location is default "MyLocation". Make sure "time" to get to a stop does not exceed expected travel time. Only include at most 1 activity/shopping per day.
+                   A road trip starts at \(startTime) from \(startLocation) and ends at \(endLocation), with an expected travel time of \(expectedTravelTime). Your task is to suggest stops for the trip. Each stop should be a JSON object with the following fields:
+                       locationType: Type of stop (Restaurant, Gas Station, Hotel, Rest Stop, Activity, Shopping)
+                       locationInformation: Details about the stop (e.g., "Museum" for Activity, or specific name)
+                       distance: Distance from the location in miles
+                       time: Time from location in seconds, ensuring it does not exceed the expected travel time
+                       price: Price range (defaults to "1,2,3,4" but should be adjusted based on user preferences)
+                       location: The name or address of the location (default to "MyLocation" unless specified)
+                       preferences: Array of user preferences (default is empty)
+                
+                Ensure the number of activities/shopping stops is limited to one per day and that the travel time to each stop does not exceed the expected travel time. The location should default to "MyLocation" unless a city or landmark is mentioned, and location information should reflect the type of stop (e.g., "Museum" for Activity). The price range should be adjusted based on user preferences once provided.
+                
                     { stops: [{
                     locationType: <Restaurant/Gas Station/Hotel/Rest Stop/Activity/Shopping>
                     locationInformation: <String>
@@ -292,7 +302,7 @@ class AIAssistantViewModel: ObservableObject {
         do {
             let response = try await openAIAPIKey.sendMessage(
                 text: """
-                    I will give you a question/statement. From this statement, extract the following information and put it in this JSON format. Price is default "1,2,3,4", and should only include upper or lower ranges based on user price preference. If the user refers to their own location or route, set location field to "MyLocation". If user does not mention time, set time to -1. Example for locationInformation is "Museum" if locationType is "Activity". Include a one-line response to the user's query asking for more info if necessary or taking into account their feedback (e.g. "Here's what I found")
+                    I will give you a question or statement. From this, extract the following information and format it as JSON. The price field should default to "1,2,3,4" and be adjusted to include upper or lower ranges based on the user's price preference. If the user mentions their own location or route, set the location field to "MyLocation." If the user does not mention a time, set the time field to -1. For locationInformation, default is a blank string, unless there is more specific info about the location type (e.g., "Museum" if the locationType is "Activity"). Include a one-line response to the user's query asking for more information or incorporating their feedback, such as "Here's what I found."
                     {
                     locationType: <Restaurant/Gas Station/Hotel/Rest Stop/Activity/Shopping>
                     locationInformation: <String>
@@ -377,7 +387,7 @@ class AIAssistantViewModel: ObservableObject {
         var queryItems: [URLQueryItem] = [
             URLQueryItem(name: "term", value: "\(preferences)  \(locationType)"),
             URLQueryItem(name: "price", value: price),
-            URLQueryItem(name: "radius", value: "\(Int(distance * 1609))"), //Because the parameter takes in meters, we convert miles to meters (1 mile = 1608.34 meters)
+            URLQueryItem(name: "radius", value: (distance >= 0) ? "\(Int(distance * 1609))" : "\(2 * 1609)"), //Because the parameter takes in meters, we convert miles to meters (1 mile = 1608.34 meters)
             URLQueryItem(name: "limit", value: String(limit)),
         ]
         if(location == "UseCoords") {
@@ -406,7 +416,7 @@ class AIAssistantViewModel: ObservableObject {
             // Decode the JSON data into a YelpLocation instance
             let decoder = JSONDecoder()
             let businessesResponse = try decoder.decode(BusinessResponse.self, from: jsonData)
-            print("parseGetBusinessesIntoModel \(businessesResponse)")
+//            print("parseGetBusinessesIntoModel \(businessesResponse)")
             return businessesResponse
         } catch {
             print("Error decoding JSON (parseGetBusinessesIntoModel): \(error)")

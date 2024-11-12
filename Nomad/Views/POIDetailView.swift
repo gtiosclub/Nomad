@@ -11,63 +11,73 @@ struct POIDetailView: View {
     
     var name = "Speedway"
     var address = "901 Gas Station Avenue, Duluth GA"
-    var distance = "in 30 mi"
+    var distance = 5.0
     var phoneNumber = "4044315072"
     var image = "https://s3-media2.fl.yelpcdn.com/bphoto/xU26QLcW8XAohg_APoojdQ/o.jpg"
-//    var rating = "3.4"
-//    var price = ""
+    var rating = 3.7
+    var price = "$$$"
     
     
     var body: some View {
         VStack(spacing: 10) {
             // Top part: Image and POI Information
             HStack(alignment: .top, spacing: 10) {
-                // Image placeholder
-//                RoundedRectangle(cornerRadius: 10)
-//                    .fill(Color.gray.opacity(0.2))
-//                    .frame(width: 80, height: 60)
-//                    .overlay(
-//                        Image(systemName: "arrow.up.left.and.arrow.down.right")
-//                            .resizable()
-//                            .frame(width: 16, height: 16)
-//                            .foregroundColor(.black.opacity(0.6))
-//                            .padding([.trailing, .bottom], 8),
-//                        alignment: .bottomTrailing
-//                    )
                 
-                AsyncImage(url: URL(string: image)) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 80, height: 60)
-                        .cornerRadius(10)
-                        .padding(.horizontal, 10)
-                } placeholder: {
-                    ProgressView()
-                        .frame(width: 80, height: 60)
-                        .cornerRadius(10)
-                        .padding(.horizontal, 10)
+                VStack {
+                    AsyncImage(url: URL(string: image)) { image in
+                        image
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 80, height: 60)
+                            .cornerRadius(10)
+                            .padding(.horizontal, 10)
+                    } placeholder: {
+                        ProgressView()
+                            .frame(width: 80, height: 60)
+                            .cornerRadius(10)
+                            .padding(.horizontal, 10)
+                    }
+                    
+                    Text("+2 min")
+                        .font(.headline)
+                    
+                    Text("+\(distance == floor(distance) ? "\(Int(distance))" : String(format: "%.1f", distance)) mi")
+                        .font(.subheadline)
                 }
+                
+                
                 
                 // POI Information
                 VStack(alignment: .leading, spacing: 5) {
                     Text(name)
-                        .font(.title)
+                        .font(.title3)
                         .fontWeight(.bold)
                     
                     Text(address)
                         .font(.subheadline)
                         .foregroundColor(.gray)
+                        .lineLimit(nil) // Allow unlimited lines
+                        .multilineTextAlignment(.leading)
                     
-                    HStack {
-                        Spacer() // Push stars to the center
-                        HStack(spacing: 4) {
-                            ForEach(0..<5) { _ in
+                    HStack(spacing: 4) {
+                        ForEach(0...4, id: \.self) { index in
+                            if Double(index) >= rating {
                                 Image(systemName: "star")
+                            } else {
+                                if Double(index) + 1 > rating {
+                                    Image(systemName: "star.leadinghalf.filled") // Full star
+                                } else {
+                                    Image(systemName: "star.fill")
+                                }
                             }
+
                         }
-                        Spacer() // Keep stars centered
-                    }
+                        
+                        Text("• \(price)")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                        
+                    } .frame(maxWidth: .infinity, alignment: .leading)
                     
                     // Phone Button
                     Button(action: {
@@ -75,42 +85,16 @@ struct POIDetailView: View {
                             UIApplication.shared.open(phoneURL)
                         }
                     }) {
-                        Text(phoneNumber)
+                        Label(phoneNumber, systemImage: "phone")
                             .foregroundColor(.blue)
+                            .font(.subheadline)
                             .underline()
                     }
                 }
-                
-                // Time Information
-                VStack {
-                    Text("+ 2 min")
-                        .font(.headline)
-                    Text(distance)
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
-                }
-            }
-            .padding()
-            
-            
             
 
-            Divider()
-            
-            // Bottom part: Pricing
-//            HStack {
-//                Spacer()
-//                Text("Reg. $3.04")
-//                    .font(.headline)
-//                Spacer()
-//                Text("Mid. $3.39")
-//                    .font(.headline)
-//                Spacer()
-//                Text("Plus $4.45")
-//                    .font(.headline)
-//                Spacer()
-//            }
-//            .padding(.bottom, 10)
+            }
+            .padding()
         }
         .background(
             RoundedRectangle(cornerRadius: 15)

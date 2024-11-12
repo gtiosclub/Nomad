@@ -10,7 +10,7 @@ import AVFoundation
 
 
 struct AtlasNavigationView: View {
-    @ObservedObject var vm = UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard"))
+    @ObservedObject var vm: UserViewModel
     @State var selectedTab = 0
     @State private var mapboxSetUp: Bool = false
     
@@ -78,7 +78,23 @@ struct AtlasNavigationView: View {
                 .cornerRadius(10)
                 .padding(.horizontal, 10)
                 .onChange(of: speechRecognizer.transcript) { newTranscript in
-                    currentMessage = newTranscript
+                    if newTranscript != ""
+                    {
+                        currentMessage = newTranscript
+                        print("on change of speechRecognizer.transcript")
+                    }
+                   
+                }
+                .onChange(of: speechRecognizer.voiceRecordingTranscript) { newValue in
+                    // Handle the change here
+                    if newValue != ""{
+                        print("Atlas Navigation View: \(newValue)")
+                        currentMessage = newValue
+                        ChatVM.sendMessage(currentMessage, vm: vm)
+                        isLoading = true
+                        isMicrophone = false
+                    }
+
                 }
             
             if isLoading {
@@ -98,20 +114,20 @@ struct AtlasNavigationView: View {
                     Spacer()
                 }
                 .transition(.opacity)
-                            
             }
-
-            
             Spacer()
                 .padding(.bottom, 60)
-        
-        }
-        .onChange(of: ChatVM.latestAIResponse) { response in
-            if let response = response, !response.isEmpty {
-                speak(text: response)
-                toggleIsLoading()
             }
-        }
+            .onChange(of: ChatVM.latestAIResponse) { response in
+                if let response = response, !response.isEmpty {
+                    speak(text: response)
+                    //toggleIsLoading()
+                    isLoading = false
+                }
+            }
+            
+
+        
     }
     
     
