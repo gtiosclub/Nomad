@@ -12,42 +12,87 @@ import FirebaseStorage
 import MapKit
 import SwiftUI
 
+//class FirebaseViewModel: ObservableObject {
+//    let auth = Auth.auth()
+//    let db = Firestore.firestore()
+//    @Published var current_user: User? = nil
+//    @Published var errorText: String? = nil
+//    @Published var isLoading: Bool = false
+//    @Published var isAuthenticated = false  // Add this new property
+//    var onSetupCompleted: ((FirebaseViewModel) -> Void)?
+//    
+//    init(current_user: User? = nil, errorText: String? = nil) {
+//        print("inside fbVM init")
+//        if self.current_user == nil {
+//            self.current_user = current_user
+//            self.errorText = errorText
+//            
+//            // Combine both auth listeners
+//            auth.addStateDidChangeListener { [weak self] auth, user in
+//                DispatchQueue.main.async {
+//                    self?.isAuthenticated = user != nil  // Update authentication state
+//                    
+//                    if let user = user {
+//                        print("User Found")
+//                        if let username = user.displayName {
+//                            if current_user == nil || current_user!.id != username {
+//                                print("Setting User: \(username)")
+//                                Task {
+//                                    await self?.setCurrentUser(userId: username)
+//                                    UserDefaults.standard.setValue(true, forKey: "log_Status")
+//                                }
+//                            }
+//                        }
+//                    } else {
+//                        UserDefaults.standard.setValue(false, forKey: "log_Status")
+//                    }
+//                }
+//            }
+//        }
+//    }
+
 class FirebaseViewModel: ObservableObject {
+    static var isListenerInitialized = false  // Static variable to prevent multiple listeners
+
     let auth = Auth.auth()
     let db = Firestore.firestore()
     @Published var current_user: User? = nil
     @Published var errorText: String? = nil
     @Published var isLoading: Bool = false
-    @Published var isAuthenticated = false  // Add this new property
+    @Published var isAuthenticated = false
     var onSetupCompleted: ((FirebaseViewModel) -> Void)?
     
-    init(current_user: User? = nil, errorText: String? = nil) {
+    static let vm = FirebaseViewModel()
+
+    private init(current_user: User? = nil, errorText: String? = nil) {
+        self.current_user = current_user
+        self.errorText = errorText
         print("inside fbVM init")
-        if self.current_user == nil {
-            self.current_user = current_user
-            self.errorText = errorText
-            
-            // Combine both auth listeners
+
+        if !FirebaseViewModel.isListenerInitialized {
+            FirebaseViewModel.isListenerInitialized = true
             auth.addStateDidChangeListener { [weak self] auth, user in
                 DispatchQueue.main.async {
-                    self?.isAuthenticated = user != nil  // Update authentication state
-                    
-                    if let user = user {
-                        print("User Found")
-                        if let username = user.displayName {
-                            if !(current_user != nil && current_user!.id == username) {
-                                print("Setting User: \(username)")
-                                Task {
-                                    await self?.setCurrentUser(userId: username)
-                                    UserDefaults.standard.setValue(true, forKey: "log_Status")
-                                }
-                            }
-                        }
-                    } else {
-                        UserDefaults.standard.setValue(false, forKey: "log_Status")
-                    }
+                    self?.handleAuthChange(user)
                 }
             }
+        }
+    }
+
+    private func handleAuthChange(_ user: FirebaseAuth.User?) {
+        self.isAuthenticated = user != nil
+
+        if let user = user, let username = user.displayName {
+            if self.current_user?.id != username {
+                print("User Found")
+                print("Setting User: \(username)")
+                Task {
+                    await self.setCurrentUser(userId: username)
+                    UserDefaults.standard.setValue(true, forKey: "log_Status")
+                }
+            }
+        } else {
+            UserDefaults.standard.setValue(false, forKey: "log_Status")
         }
     }
     
@@ -226,7 +271,8 @@ class FirebaseViewModel: ObservableObject {
             "created_date": createdDate,
             "modified_date": modifiedDate,
             "start_id": "start",
-            "end_id": "end"
+            "end_id": "end",
+            "stops": []
         ]
         do {
             try await tripDocRef.setData(tripData)

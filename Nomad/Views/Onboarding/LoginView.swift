@@ -137,5 +137,5 @@ struct LoginView: View {
 }
 
 #Preview {
-    LoginView(vm: FirebaseViewModel())
+    LoginView(vm: FirebaseViewModel.vm)
 }

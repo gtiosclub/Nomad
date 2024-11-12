@@ -48,7 +48,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 @main
 struct YourApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    @StateObject private var firebaseViewModel = FirebaseViewModel()
+    @StateObject private var firebaseViewModel = FirebaseViewModel.vm
 
     var body: some Scene {
         WindowGroup {
