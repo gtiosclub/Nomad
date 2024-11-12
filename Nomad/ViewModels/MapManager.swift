@@ -262,8 +262,8 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         let distanceAdded: Double // in m
     }
     // determine time and distance added to a route given a new stop
-    func determineRouteAdditions(route: NomadRoute, newStop: any POI) async -> RouteAdditions? {
-        let updatedStops = addStopToRoute(route: route, newStop: newStop)
+    func determineRouteAdditions(route: NomadRoute, newStop: CLLocationCoordinate2D) async -> RouteAdditions? {
+        let updatedStops = addStopToRoute(route: route, new_coord: newStop)
         
         if let newRoutes = await generateRoute(stop_coords: updatedStops) {
             let newRoute = newRoutes.first!
@@ -275,14 +275,13 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     // append stop to route at right location/order
-    func addStopToRoute(route: NomadRoute, newStop: any POI) -> [CLLocationCoordinate2D] {
+    func addStopToRoute(route: NomadRoute, new_coord: CLLocationCoordinate2D) -> [CLLocationCoordinate2D] {
         var stop_coords = [CLLocationCoordinate2D]()
         for leg in route.legs {
             stop_coords.append(leg.getStartLocation())
         }
         stop_coords.append(route.legs.last!.getEndLocation())
         
-        let new_coord = CLLocationCoordinate2D(latitude: newStop.latitude, longitude: newStop.longitude)
         var distances = [Double]()
         for i in 0..<stop_coords.count {
             distances.append(stop_coords[i].distance(to: new_coord))
