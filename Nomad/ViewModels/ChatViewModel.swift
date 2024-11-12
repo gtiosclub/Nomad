@@ -49,9 +49,9 @@ class ChatViewModel: ObservableObject {
     // Example function to generate sample POIs (you would use real data here)
     func generateSamplePOIs() -> [POIDetail] {
         return [
-            POIDetail(name: "Speedway", address: "901 Gas Station Avenue, Duluth GA", distance: "in 30 mi", phoneNumber: "4045949429", rating: "3.3/5", price: "$", image: ""),
-            POIDetail(name: "Shell", address: "123 Main Street, Atlanta GA", distance: "in 40 mi", phoneNumber: "4045949429", rating: "5/5", price: "$$$", image: ""),
-            POIDetail(name: "BP", address: "456 Elm Street, Lawrenceville GA", distance: "in 20 mi", phoneNumber: "4045949429", rating: "4/5", price: "$$", image: "")
+            POIDetail(name: "Speedway", address: "901 Gas Station Avenue, Duluth GA", distance: 15, phoneNumber: "4045949429", rating: 3.3, price: "$", image: ""),
+            POIDetail(name: "Shell", address: "123 Main Street, Atlanta GA", distance: 5, phoneNumber: "4045949429", rating: 3.2, price: "$$$", image: ""),
+            POIDetail(name: "BP", address: "456 Elm Street, Lawrenceville GA", distance: 7, phoneNumber: "4045949429", rating: 5, price: "$$", image: "")
         ]
     }
 }
@@ -68,9 +68,9 @@ struct POIDetail: Identifiable {
     var id = UUID()
     var name: String
     var address: String
-    var distance: String
+    var distance: Double
     var phoneNumber: String
-    var rating: String
+    var rating: Double
     var price: String
     var image: String
     
@@ -78,9 +78,9 @@ struct POIDetail: Identifiable {
     static let null = POIDetail(
         name: "Unavailable",
         address: "Unavailable",
-        distance: "Unavailable",
+        distance: 5.4,
         phoneNumber: "Unavailable",
-        rating: "Unavailable",
+        rating: 0.0,
         price: "Unavailable",
         image: ""
     )
