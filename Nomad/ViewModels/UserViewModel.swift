@@ -25,7 +25,6 @@ class UserViewModel: ObservableObject {
     @Published var times: [Double] = []
     @Published var currentCity: String?
     
-    @Published var my_trips: [Trip] = []
     @Published var previous_trips: [Trip] = []
     @Published var community_trips: [Trip] = []
     
