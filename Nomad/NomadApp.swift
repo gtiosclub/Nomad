@@ -55,6 +55,7 @@ struct YourApp: App {
             VStack {
                 if firebaseViewModel.current_user != nil {
                     RootView(vm: UserViewModel(user: firebaseViewModel.current_user!))
+                      .toolbar(.hidden, for: .navigationBar)
                 } else {
                     SignUpView(vm: firebaseViewModel)
                 }
