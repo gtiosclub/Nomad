@@ -130,7 +130,9 @@ class FirebaseViewModel: ObservableObject {
             "created_date": createdDate,
             "modified_date": modifiedDate,
             "start_id": "start",
-            "end_id": "end"
+            "end_id": "end",
+            "images": [],
+            "isPrivate": true
         ]
         do {
             try await tripDocRef.setData(tripData)
@@ -140,7 +142,9 @@ class FirebaseViewModel: ObservableObject {
             let startData: [String: Any] = [
                 "name": startLocationName,
                 "address": startLocationAddress,
-                "type": "GeneralLocation"
+                "type": "GeneralLocation",
+                "images": [],
+                "isPrivate": true
             ]
             try await stopsCollection.document("start").setData(startData)
             
@@ -638,43 +642,62 @@ class FirebaseViewModel: ObservableObject {
                 //return false
             }
         }
-        
-        func getAllImages(tripID: String) async -> [String] {
-            let docRef = db.collection("TRIPS").document(tripID)
-            var images_list: [String] = []
-            do {
-                let document = try await docRef.getDocument()
-                guard var images = document.data()?["images"] as? [String] else {
-                    print("Document does not exist or 'images' is not an array.")
-                    return images_list
-                }
-                images_list = images
-            } catch {
-                print(error)
-            }
-            return images_list
-        }
-        
-        func getImageFromURL(urlString: String, completion: @escaping (UIImage?) -> Void) {
-            guard let url = URL(string: urlString) else {
-                print("Invalid URL string: \(urlString)")
-                completion(nil)
+    
+    func clearTripImages(tripID: String) async -> Void {
+        let docRef = db.collection("TRIPS").document(tripID)
+        do {
+            let document = try await docRef.getDocument()
+            guard var images = document.data()?["images"] as? [String] else {
+                print("Document does not exist or 'images' is not an array.")
                 return
             }
-            URLSession.shared.dataTask(with: url) { data, response, error in
-                DispatchQueue.main.async {
-                    if let error = error {
-                        print("Error loading image from URL: \(error.localizedDescription)")
-                        completion(nil)
-                    } else if let data = data, let image = UIImage(data: data) {
-                        completion(image)
-                    } else {
-                        print("Could not load image from URL: \(urlString)")
-                        completion(nil)
-                    }
-                }
-            }.resume()
+            images.removeAll()
+            try await db.collection("TRIPS").document(tripID).updateData(["images": images])
+            print("updated firebase")
+                //return true
+        } catch {
+            print(error)
+            //return false
+        }
     }
+        
+    func getAllImages(tripID: String) async -> [String] {
+        let docRef = db.collection("TRIPS").document(tripID)
+        var images_list: [String] = []
+        do {
+            let document = try await docRef.getDocument()
+            guard var images = document.data()?["images"] as? [String] else {
+                print("Document does not exist or 'images' is not an array.")
+                return images_list
+            }
+            images_list = images
+        } catch {
+            print(error)
+        }
+        return images_list
+    }
+        
+    func getImageFromURL(urlString: String, completion: @escaping (UIImage?) -> Void) {
+        guard let url = URL(string: urlString) else {
+            print("Invalid URL string: \(urlString)")
+            completion(nil)
+            return
+        }
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("Error loading image from URL: \(error.localizedDescription)")
+                    completion(nil)
+                } else if let data = data, let image = UIImage(data: data) {
+                    completion(image)
+                } else {
+                    print("Could not load image from URL: \(urlString)")
+                    completion(nil)
+                }
+            }
+        }.resume()
+    }
+    
 
     /*-------------------------------------------------------------------------------------------------*/
     
