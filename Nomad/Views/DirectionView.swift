@@ -53,7 +53,7 @@ struct DirectionView: View {
                 }
             }
             .padding()
-            .background(Color.gray.opacity(0.3))
+            .background(Color.gray)
             .cornerRadius(10)
         }
     }
