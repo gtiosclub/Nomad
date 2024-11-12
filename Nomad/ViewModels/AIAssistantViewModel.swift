@@ -22,7 +22,7 @@ class AIAssistantViewModel: ObservableObject {
     let jsonResponseFormat = Components.Schemas.CreateChatCompletionRequest.response_formatPayload(_type: .json_object) // ensure that query returns json object
     let gptModel = ChatGPTModel(rawValue: "gpt-4o")
     
-    let FirebaseVM: FirebaseViewModel = FirebaseViewModel()
+    let FirebaseVM: FirebaseViewModel = FirebaseViewModel.vm
     
     let initialConditionSentence:String = """
     I have a Trip with properties

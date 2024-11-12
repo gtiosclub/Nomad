@@ -7,7 +7,7 @@
 import Foundation
 
 class ChatViewModel: ObservableObject {
-    private var aiViewModel = AIAssistantViewModel()
+    var aiViewModel = AIAssistantViewModel()
     @Published var messages: [Message] = [
         Message(content: "Hi! I'm Atlas, your AI assistant", sender: "AI")
     ]
