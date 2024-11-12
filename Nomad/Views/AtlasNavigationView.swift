@@ -10,7 +10,7 @@ import AVFoundation
 
 
 struct AtlasNavigationView: View {
-    @ObservedObject var vm = UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard"))
+    @ObservedObject var vm: UserViewModel
     @State var selectedTab = 0
     @State private var mapboxSetUp: Bool = false
     
@@ -90,7 +90,7 @@ struct AtlasNavigationView: View {
                     if newValue != ""{
                         print("Atlas Navigation View: \(newValue)")
                         currentMessage = newValue
-                        ChatVM.sendMessage(currentMessage)
+                        ChatVM.sendMessage(currentMessage, vm: vm)
                         isLoading = true
                         isMicrophone = false
                     }

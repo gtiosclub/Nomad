@@ -194,27 +194,29 @@ struct FindStopView: View {
     }
     
     private func dynamicHeight(for tab: Int) -> CGFloat {
+        var size: CGFloat = 0
         switch tab {
         case 1:
             if selection == "Restaurants" {
                 if (isCuisineDropdownOpen) {
-                    return 290
+                    size = 240
                 } else if (isRatingDropdownOpen) {
-                    return 250
+                    size = 200
                 } else if (isPriceDropdownOpen) {
-                    return 220
+                    size = 170
                 }
-                return 50
+                size = 150
             } else if selection == "Activities" || selection == "Hotels" {
-                return 120
+                size = 100
             } else {
-                return 50
+                size = 50
             }
         case 2:
             return 225 + CGFloat((vm.current_trip?.getStops().count ?? 0) * 100)
         default:
             return 300
         }
+        return size + 150
     }
 
     private var listCuisines: some View {

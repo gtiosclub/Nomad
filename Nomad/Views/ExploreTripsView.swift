@@ -50,7 +50,7 @@ struct ExploreTripsView: View {
                                 Ellipse()
                                     .fill(Color.gray)
                                     .frame(width: 40, height: 40)
-                                Text((vm.user.getName()).prefix(1))
+                                Text((vm.user.getName()).prefix(1).uppercased())
                                     .foregroundColor(.white)
                                     .font(.system(size: 25))
                             }
