@@ -15,6 +15,8 @@ class AIAssistantViewModel: ObservableObject {
     var gasPricesAPIKey = "<PUT GAS KEY HERE>"
     @Published var atlasResponse = ""
     
+    @Published var currentLocationType: String = "Restaurant"
+    
     //used as context in chat so Atlas knows the last thing the user asked
     var currentLocationQuery: LocationInfo = LocationInfo(locationType: "", locationInformation: "", distance: 0.0, time: 0.0, price: "1,2,3,4", location: "", preferences: [], atlasResponse: "")
     var currentAtlasTrip: AtlasTrip = AtlasTrip(stops: [])
@@ -177,7 +179,10 @@ class AIAssistantViewModel: ObservableObject {
                 rating: business.rating ?? 4.0,
                 price: business.price ?? "",
                 image: business.imageUrl ?? "",
-                time: (abs(routeAdditions?.timeAdded ?? 300) / 60.0)
+                time: (abs(routeAdditions?.timeAdded ?? 300) / 60.0),
+                latitude: business.coordinates.latitude,
+                longitude: business.coordinates.longitude,
+                city: business.location.city
             )
             
             poiDetails.append(poiDetail)
@@ -346,6 +351,7 @@ class AIAssistantViewModel: ObservableObject {
         }
         currentLocationQuery = locationInfo
         let locationType = locationInfo.locationType
+        currentLocationType = locationType
         let locationInformation = locationInfo.locationInformation
         let distance = locationInfo.distance
         let location = locationInfo.location
