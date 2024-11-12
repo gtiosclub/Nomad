@@ -39,34 +39,6 @@ struct FindStopView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading) {
-                Text("Let's Plan Your New Trip")
-                    .font(.headline)
-                    .padding(.vertical, 5)
-                    .padding(.horizontal)
-                
-                if let trip = vm.current_trip {
-                    RoutePreviewView(vm: vm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(markerCoordinate), showStopMarker: true)
-                        .frame(minHeight: 250.0)
-                } else {
-                    Text("No current trip available")
-                        .foregroundColor(.red)
-                }
-                //                        Slider(value: $routeProgress, in: 0...((vm.current_trip!.route?.totalTime() ?? 60)/60), step: 1, label: {Text("Stop")}, minimumValueLabel: {
-                //                            Text("0")}, maximumValueLabel: {
-                //                                Text("\(Int((vm.current_trip!.route?.totalTime() ?? 60)/60))")})
-                //                                    .padding()
-                //                                    .onChange(of: routeProgress) { newValue in
-                //                                        updateMarkerPosition(progress: newValue)
-                //                                    }
-                Slider(value: $routeProgress, in: 0...((vm.current_trip?.route?.totalTime() ?? 60) / 60), step: 1, label: { Text("Stop") }, minimumValueLabel: { Text("0 Mins") }, maximumValueLabel: { Text("\(Int((vm.current_trip?.route?.totalTime() ?? 60) / 60)) Mins") })
-                    .padding(.horizontal)
-                    .padding(.top)
-                    .onChange(of: routeProgress) { newValue in
-                        updateMarkerPosition(progress: newValue)
-                    }
-            }
-            
-            VStack(alignment: .leading, spacing: 10) {
                 HStack {
                     ZStack {
                         Circle()
@@ -89,12 +61,23 @@ struct FindStopView: View {
                         .offset(x: 12, y: 3)
                 }
                 
-//                if (selectedTab == 1) {
-//                    
-//                }
-//                
-//                Divider()
-                
+                if let trip = vm.current_trip {
+                    RoutePreviewView(vm: vm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(markerCoordinate), showStopMarker: true)
+                        .frame(minHeight: 250.0)
+                } else {
+                    Text("No current trip available")
+                        .foregroundColor(.red)
+                }
+
+                Slider(value: $routeProgress, in: 0...((vm.current_trip?.route?.totalTime() ?? 60) / 60), step: 1, label: { Text("Stop") }, minimumValueLabel: { Text("0 Mins") }, maximumValueLabel: { Text("\(Int((vm.current_trip?.route?.totalTime() ?? 60) / 60)) Mins") })
+                    .padding(.horizontal)
+                    .padding(.top)
+                    .onChange(of: routeProgress) { newValue in
+                        updateMarkerPosition(progress: newValue)
+                    }
+            }
+            
+            VStack(alignment: .leading, spacing: 10) {                
                 TabView(selection: $selectedTab) {
                     VStack(alignment: .leading, spacing: 16) {
                         VStack(spacing: 8) {
@@ -191,6 +174,7 @@ struct FindStopView: View {
         }.onAppear() {
             markerCoordinate = vm.current_trip?.getStartLocationCoordinates() ?? .init(latitude: 0, longitude: 0)
         }
+        .navigationBarBackButtonHidden()
     }
     
     private func dynamicHeight(for tab: Int) -> CGFloat {

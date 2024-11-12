@@ -48,11 +48,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 @main
 struct YourApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    @StateObject private var firebaseViewModel = FirebaseViewModel()
+    @StateObject private var firebaseViewModel = FirebaseViewModel.vm
 
     var body: some Scene {
         WindowGroup {
-            NavigationView {
+            VStack {
                 if firebaseViewModel.current_user != nil {
                     RootView(vm: UserViewModel(user: firebaseViewModel.current_user!))
                       .toolbar(.hidden, for: .navigationBar)

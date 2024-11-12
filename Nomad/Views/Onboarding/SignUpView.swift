@@ -212,5 +212,5 @@ struct SignUpView: View {
 
 
 #Preview {
-    SignUpView(vm: FirebaseViewModel())
+    SignUpView(vm: FirebaseViewModel.vm)
 }
