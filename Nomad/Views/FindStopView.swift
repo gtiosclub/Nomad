@@ -156,31 +156,7 @@ struct FindStopView: View {
                                 .padding(.top)
                         }
                     }
-<<<<<<< HEAD
-                    .frame(height: 300)
-                    
-                    if let currentTrip = vm.current_trip {
-                        NavigationLink(destination: PreviewRouteView(vm: vm, trip: currentTrip)) {
-                            Text("Continue")
-                                .font(.headline)
-                                .foregroundColor(.black)
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .background(Color.gray.opacity(0.3))
-                                .cornerRadius(15)
-                                .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
-                        }
-                    } else {
-                        Text("No trip available")
-                            .font(.headline)
-                            .foregroundColor(.gray)
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(Color.gray.opacity(0.2))
-                            .cornerRadius(15)
-                    }
 
-=======
                 }
                 .frame(height: 300)
                 
@@ -234,7 +210,6 @@ struct FindStopView: View {
                     }
                     .buttonStyle(PlainButtonStyle())
                     .frame(width: 90, height: 30)
->>>>>>> itinerary-main
                 }
             }
         }
