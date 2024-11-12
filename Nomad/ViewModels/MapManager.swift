@@ -313,7 +313,12 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         var minDistance = CLLocationDistanceMax
         
         for leg in route.legs {
-            if let step = determineCurrentStep(leg: leg) {
+            var step: NomadStep
+            if let currentStep = determineCurrentStep(leg: leg) {
+                step = currentStep
+            } else {
+                step = leg.steps.first!
+            }
                 let closestCoord = getClosestCoordinate(step: step)
                 if let userLocation = self.userLocation {
                     let distance = userLocation.distance(to: closestCoord)
@@ -322,7 +327,6 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                         closestLeg = leg
                     }
                 }
-            }
         }
         
         return closestLeg ?? route.legs.first
@@ -444,7 +448,12 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func getRemainingTime(leg: NomadLeg) -> TimeInterval {
         var totalTime: TimeInterval = 0
         
-        guard let step = determineCurrentStep(leg: leg) else { return 0 }
+        var step: NomadStep
+        if let currentStep = determineCurrentStep(leg: leg) {
+            step = currentStep
+        } else {
+            step = leg.steps.first!
+        }
         let step_index = leg.steps.firstIndex { $0.id == step.id }!
         // append time for all future steps
         for i in step_index+1..<leg.steps.count {
@@ -457,7 +466,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         let stepProgress = distance / step.direction.distance
         totalTime += stepProgress * TimeInterval(step.direction.expectedTravelTime)
         
-        print("total time remaining on leg: \(totalTime.description)")
+        // print("total time remaining on leg: \(totalTime.description)")
         return totalTime
     }
     
@@ -465,7 +474,13 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func getRemainingDistance(leg: NomadLeg) -> TimeInterval {
         var totalDistance: TimeInterval = 0
         
-        guard let step = determineCurrentStep(leg: leg) else { return 0 }
+        var step: NomadStep
+        if let currentStep = determineCurrentStep(leg: leg) {
+            step = currentStep
+        } else {
+            step = leg.steps.first!
+        }
+        
         let step_index = leg.steps.firstIndex { $0.id == step.id }!
         // append time for all future steps
         for i in step_index+1..<leg.steps.count {
@@ -504,7 +519,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                 closestCoordinate = coord
             }
         }
-        return closestCoordinate ?? CLLocationCoordinate2D()
+        return closestCoordinate ?? step.startCoordinate
     }
     
     func checkOnStep(step: NomadStep) -> Bool {
