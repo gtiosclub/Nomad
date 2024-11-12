@@ -493,7 +493,7 @@ class FirebaseViewModel: ObservableObject {
             do {
                 let tripDocuments = try await tripsDocRef.getDocuments()
                 for document in tripDocuments.documents {
-                    print("document is \(document.documentID)")
+//                    print("document is \(document.documentID)")
                     if (user_trip_ids.contains(document.documentID)) {continue}
                     
                     let tripData = document.data()
