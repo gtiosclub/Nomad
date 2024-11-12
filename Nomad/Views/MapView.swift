@@ -181,23 +181,24 @@ struct MapView: View {
                     navManager.setNavigatingRoute(route: newRoute)
                 }
             }
-        }.onReceive(timer) { _ in
-            if navManager.navigating {
-                self.remainingTime = mapManager.getRemainingTime(leg: navManager.navigatingLeg!)
-                self.remainingDistance = mapManager.getRemainingDistance(leg: navManager.navigatingLeg!)
-            }
         }
+//        .onReceive(timer) { _ in
+//            if navManager.navigating {
+//                self.remainingTime = mapManager.getRemainingTime(leg: navManager.navigatingLeg!)
+//                self.remainingDistance = mapManager.getRemainingDistance(leg: navManager.navigatingLeg!)
+//            }
+//        }
         
     }
     private func formattedRemainingTime() -> String {
-        let seconds = Int(self.remainingTime)
+        let seconds = Int(navManager.remainingTime ?? 0)
         let hours = Int(seconds) / 3600
         let minutes = (Int(seconds) % 3600) / 60
         
         return String(format: "%1d:%02d", hours, minutes)
     }
     private func formattedRemainingDistance() -> String {
-        return String(format: "%.1f", self.remainingDistance / 1609.34)
+        return String(format: "%.1f", (navManager.remainingDistance ?? 0) / 1609.34)
 //        var miles = self.remainingDistance / 1609.34
 //        if miles > 0.2 {
 //            return String(format: "%.1f miles", miles)
