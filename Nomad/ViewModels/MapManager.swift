@@ -331,7 +331,6 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     // Modified getFutureLocation
     func getFutureLocation(time: TimeInterval, route: NomadRoute) -> CLLocationCoordinate2D? {
         // Find current leg and step
-        print(time)
         let currentLeg = determineCurrentLeg(route: route)
         let currentStep = currentLeg.flatMap { determineCurrentStep(leg: $0) }
         
@@ -392,8 +391,6 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             lastCoordinate = coord
         }
         
-        print(lastCoordinate!.latitude)
-        print(lastCoordinate!.longitude)
         return lastCoordinate
     }
 
