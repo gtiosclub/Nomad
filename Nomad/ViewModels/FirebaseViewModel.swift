@@ -187,6 +187,29 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    func storeRoute(tripID: String, route: NomadRoute) async -> Bool {
+        let tripDocRef = db.collection("TRIPS").document(tripID)
+        
+        let routesData: [[String: Any]] = route.legs.map { leg in
+            let coordsStr = leg.getJSONCoordinates().map { coord in
+                "\(coord.latitude),\(coord.longitude)"
+            }
+            return [
+                "coords": coordsStr,
+                "distance": leg.distance,
+                "time": leg.expectedTravelTime
+            ]
+        }
+        
+        do {
+            try await tripDocRef.updateData(["trip": routesData])
+            return true
+        } catch {
+            print("Error adding route to a trip: \(error)")
+            return false
+        }
+    }
+    
     // Fetch coordinates JSON from firebase and convert to coordinates
     func fetchRoute(tripID: String, mapManager: MapManager) async -> NomadRoute? {
         let docRef = db.collection("TRIPS").document(tripID)
@@ -202,7 +225,6 @@ class FirebaseViewModel: ObservableObject {
             print(error)
             return nil
         }
-        return nil
     }
 
     func modifyStartDate(userID: String, tripID: String, newStartDate: String, modifiedDate: String) async -> Bool {
