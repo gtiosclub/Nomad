@@ -143,7 +143,7 @@ class Trip: Identifiable, Equatable, ObservableObject {
             }
         }
         
-        let url = URL(string: "https://pixabay.com/api/?key=46410552-0c1561d54d98701d038092a47&q=\(search_city)-city-GA-scenic&image_type=photo")!
+        let url = URL(string: "https://pixabay.com/api/?key=46410552-0c1561d54d98701d038092a47&q=\(search_city)-city-scenic&image_type=photo")!
         
         var request = URLRequest(url: url)
         request.httpMethod = "GET"

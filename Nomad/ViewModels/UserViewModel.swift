@@ -61,11 +61,13 @@ class UserViewModel: ObservableObject {
         let temp_trip = Trip(start_location: start_location, end_location: end_location, start_date: start_date, end_date: end_date, stops: stops, start_time: start_time)
 
         if await fbVM.createTrip(tripID: temp_trip.id, startLocationName: start_location.getName(), startLocationAddress: start_location.getAddress(), endLocationName: end_location.getName(), endLocationAddress: end_location.getAddress(), createdDate: Trip.getCurrentDateTime(), modifiedDate: temp_trip.modified_date) {
-            self.current_trip = temp_trip
-            let route = await getRoute()
-            self.current_trip?.route = route
-            
-            self.user.addTrip(trip: self.current_trip!)
+            if await fbVM.addTripToUser(userID: user.id, tripID: temp_trip.id) {
+                self.current_trip = temp_trip
+                let route = await getRoute()
+                self.current_trip?.route = route
+                
+                self.user.addTrip(trip: self.current_trip!)
+            }
         }
     }
     
