@@ -358,6 +358,7 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    
     func modifyStartLocationAndDate(tripID: String, start: any POI, modifiedDate: String) async -> Bool {
         //modify start
         do {
@@ -720,6 +721,7 @@ class FirebaseViewModel: ObservableObject {
 //        }
 //    }
     
+
     
     func getAllTrips(userID: String) async -> [String: [Trip]] {
         //        var trips: [Trip] = []
@@ -928,6 +930,15 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    func saveNameAndVisibility(tripID: String, name: String, visibility: Bool) async -> Bool {
+        do {
+            try await db.collection("TRIPS").document(tripID).updateData(["name": name, "isPrivate": visibility])
+            return true
+        } catch {
+            print(error)
+            return false;
+        }
+    }
     
     func getAPIKeys() async throws -> [String: String] {
         var apimap: [String: String] = [:]

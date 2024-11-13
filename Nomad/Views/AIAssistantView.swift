@@ -10,7 +10,7 @@ struct AIAssistantView: View {
 //    @State private var currentMessage: String = ""
 //    @State private var dotCount = 1
 //    let timer = Timer.publish(every:0.5, on: .main, in: .common).autoconnect()
-//    
+//
 //    var body: some View {
 //        VStack {
 //            // Header
@@ -28,9 +28,9 @@ struct AIAssistantView: View {
 //                    ForEach(chatViewModel.messages) { message in
 //                        HStack {
 //                            if message.sender == "AI" {
-//                                
+//
 //                                AtlasMessage(content: message.content, id: message.id)
-//                                
+//
 //                                Spacer()
 //                            } else {
 //                                Spacer()
@@ -39,7 +39,7 @@ struct AIAssistantView: View {
 //                                        .padding()
 //                                        .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
 //                                        .frame(maxWidth: 270, alignment: .trailing)
-//                                    
+//
 //                                    ZStack {
 //                                        Circle()
 //                                            .foregroundColor(Color.white)
@@ -48,7 +48,7 @@ struct AIAssistantView: View {
 //                                                Circle()
 //                                                    .stroke(Color.black, lineWidth: 1) // Adds a black outline with a width of 2
 //                                            )
-//                                        
+//
 //                                        // Image on top of the circle
 //                                        Image(systemName: "person")
 //                                            .resizable()
@@ -60,7 +60,7 @@ struct AIAssistantView: View {
 //                        }
 //                        .padding(.horizontal)
 //                    }
-//                    
+//
 //                    if chatViewModel.isQuerying{
 //                        //Detect if the ai is loading
 //                        HStack {
@@ -79,7 +79,7 @@ struct AIAssistantView: View {
 //                        .padding(.horizontal)
 //                        .frame(maxWidth: .infinity, alignment: .leading)
 //                    }
-//                    
+//
 //                }
 //                .background(Color.clear)
 //                .padding(.bottom)
@@ -90,7 +90,7 @@ struct AIAssistantView: View {
 //                    }
 //                }
 //            }
-//            
+//
 //            if !chatViewModel.pois.isEmpty {
 //                TabView {
 //                    ForEach(chatViewModel.pois) { poi in
@@ -102,7 +102,7 @@ struct AIAssistantView: View {
 //                .tabViewStyle(.page(indexDisplayMode: .never))
 //                .frame(height: 180)  // Adjust to fit the padding and content
 //            }
-//            
+//
 //
 //        }
 //        .background(Color.clear)
@@ -306,14 +306,14 @@ struct AtlasMessage: View {
 //struct LoadingIndicator: View {
 //    @State var dotCount: Int
 //    let timer: Publishers.Autoconnect<Timer.TimerPublisher>
-//    
+//
 //    var body: some View {
 //        HStack {
 //            Image("AtlasIcon")
 //                .resizable()
 //                .scaledToFit()
 //                .frame(width: 35, height: 35)
-//            
+//
 //            Text(String(repeating: ".", count: dotCount))
 //                .padding()
 //                .onReceive(timer) { _ in
@@ -351,7 +351,7 @@ struct POICarouselView: View {
 //    @State private var currentMessage: String
 //    @Binding var isMicrophone: Bool
 //    var speechRecognizer: SpeechRecognizer
-//    
+//
 //    var body: some View {
 //        HStack {
 //            Button(action: {
