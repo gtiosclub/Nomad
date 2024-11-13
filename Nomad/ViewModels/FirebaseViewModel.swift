@@ -265,38 +265,85 @@ class FirebaseViewModel: ObservableObject {
 //            return false
 //        }
 //    }
-    func createTrip(tripID: String, startLocationName: String, startLocationAddress: String, endLocationName: String, endLocationAddress: String, createdDate: String, modifiedDate: String) async -> Bool {
-        let tripDocRef = db.collection("TRIPS").document(tripID)
-        let tripData: [String: Any] = [
-            "created_date": createdDate,
-            "modified_date": modifiedDate,
-            "start_id": "start",
-            "end_id": "end",
-            "stops": []
-        ]
-        do {
-            try await tripDocRef.setData(tripData)
-            let stopsCollection = tripDocRef.collection("STOPS")
-            
-            let startData: [String: Any] = [
-                "name": startLocationName,
-                "address": startLocationAddress,
-                "type": "GeneralLocation"
-            ]
-            try await stopsCollection.document("start").setData(startData)
+//    func createTrip(tripID: String, startLocationName: String, startLocationAddress: String, endLocationName: String, endLocationAddress: String, createdDate: String, modifiedDate: String) async -> Bool {
+//        let tripDocRef = db.collection("TRIPS").document(tripID)
+//        let tripData: [String: Any] = [
+//            "created_date": createdDate,
+//            "modified_date": modifiedDate,
+//            "start_id": "start",
+//            "end_id": "end",
+//            "stops": []
+//        ]
+//        do {
+//            try await tripDocRef.setData(tripData)
+//            let stopsCollection = tripDocRef.collection("STOPS")
+//            
+//            let startData: [String: Any] = [
+//                "name": startLocationName,
+//                "address": startLocationAddress,
+//                "type": "GeneralLocation"
+//            ]
+//            try await stopsCollection.document("start").setData(startData)
+//
+//            let endData: [String: Any] = [
+//                "name": endLocationName,
+//                "address": endLocationAddress,
+//                "type": "GeneralLocation"
+//            ]
+//            try await stopsCollection.document("end").setData(endData)
+//            return true
+//        } catch {
+//            print("Error creating trip or stops: \(error)")
+//            return false
+//        }
+//    }
+    func createTrip(tripID: String, createdDate: String, modifiedDate: String, startDate: String, startTime: String, endDate: String, isPrivate: Bool,  startLocation: any POI , endLocation: any POI) async -> Bool {
+               
+               let tripDocRef = db.collection("TRIPS").document(tripID)
 
-            let endData: [String: Any] = [
-                "name": endLocationName,
-                "address": endLocationAddress,
-                "type": "GeneralLocation"
-            ]
-            try await stopsCollection.document("end").setData(endData)
-            return true
-        } catch {
-            print("Error creating trip or stops: \(error)")
-            return false
-        }
-    }
+               let tripData: [String: Any] = [
+                   "created_date": createdDate,
+                   "end_date" : endDate,
+                   "end_id" : "end",
+                   "isPrivate" : true,
+                   "modified_date": modifiedDate,
+                   "name" : "",
+                   "start_date" : startDate,
+                   "start_id" : "start",
+                   "start_time" : startTime,
+                   "images" : [],
+                   "stops" : []
+               ]
+               do {
+                   try await tripDocRef.setData(tripData)
+
+                   let stopsCollection = tripDocRef.collection("STOPS")
+
+                   let startData: [String: Any] = [
+                       "name": startLocation.getName(),
+                       "address": startLocation.getAddress(),
+                       "city" : startLocation.getCity() ?? "",
+                       "latitude" : startLocation.getLatitude(),
+                       "longitude" : startLocation.getLongitude(),
+                       "type": "GeneralLocation"
+                   ]
+                   try await stopsCollection.document("start").setData(startData)
+
+                   let endData: [String: Any] = [
+                       "name": endLocation.getName(),
+                       "address": endLocation.getAddress(),
+                       "city" : endLocation.getCity() ?? "",
+                        "latitude" : endLocation.getLatitude(),
+                        "longitude" : endLocation.getLongitude(),
+                        "type": "GeneralLocation"
+                    ]
+                    try await stopsCollection.document("end").setData(endData)
+                    return true
+                } catch {
+                    print("Error creating trip or stops: \(error)")
+                    return false
+                }
+            }
     
     func createCopyTrip(newTripID: String, oldTripID: String, createdDate: String) async -> Bool {
         let db = Firestore.firestore()
@@ -347,6 +394,7 @@ class FirebaseViewModel: ObservableObject {
             return false
         }
     }
+
     
     func modifyEndDate(userID: String, tripID: String, newEndDate: String, modifiedDate: String) async -> Bool {
         do {
@@ -357,6 +405,7 @@ class FirebaseViewModel: ObservableObject {
             return false
         }
     }
+    
     
     func modifyStartLocationAndDate(tripID: String, start: any POI, modifiedDate: String) async -> Bool {
         //modify start
@@ -720,6 +769,7 @@ class FirebaseViewModel: ObservableObject {
 //        }
 //    }
     
+
     
     func getAllTrips(userID: String) async -> [String: [Trip]] {
         //        var trips: [Trip] = []
@@ -928,6 +978,15 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    func saveNameAndVisibility(tripID: String, name: String, visibility: Bool) async -> Bool {
+        do {
+            try await db.collection("TRIPS").document(tripID).updateData(["name": name, "isPrivate": visibility])
+            return true
+        } catch {
+            print(error)
+            return false;
+        }
+    }
     
     func getAPIKeys() async throws -> [String: String] {
         var apimap: [String: String] = [:]
