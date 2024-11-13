@@ -166,24 +166,44 @@ class AIAssistantViewModel: ObservableObject {
             
             let coords = CLLocationCoordinate2D(latitude: business.coordinates.latitude, longitude: business.coordinates.longitude)
             
+            var poiDetail: POIDetail
             // Use await to get routeAdditions asynchronously
-            let routeAdditions = await MapManager.manager.determineRouteAdditions(route: (vm.current_trip?.route)!, newStop: coords)
+            if let route = vm.current_trip?.route {
+                let routeAdditions = await MapManager.manager.determineRouteAdditions(route: route, newStop: coords)
+                
+                print("route additions \(routeAdditions)")
+                
+                poiDetail = POIDetail(
+                    name: business.name,
+                    address: "\(business.location.address1), \(business.location.city), \(business.location.state) \(business.location.zipCode)",
+                    distance: routeAdditions?.distanceAdded ?? 2.2,  // Placeholder for actual distance calculation
+                    phoneNumber: business.phone,
+                    rating: business.rating ?? 4.0,
+                    price: business.price ?? "",
+                    image: business.imageUrl ?? "",
+                    time: (abs(routeAdditions?.timeAdded ?? 300) / 60.0),
+                    latitude: business.coordinates.latitude,
+                    longitude: business.coordinates.longitude,
+                    city: business.location.city
+                )
+            } else {
+                poiDetail = POIDetail(
+                    name: business.name,
+                    address: "\(business.location.address1), \(business.location.city), \(business.location.state) \(business.location.zipCode)",
+                    distance: 2.2,  // Placeholder for actual distance calculation
+                    phoneNumber: business.phone,
+                    rating: business.rating ?? 4.0,
+                    price: business.price ?? "",
+                    image: business.imageUrl ?? "",
+                    time: 300 / 60.0,
+                    latitude: business.coordinates.latitude,
+                    longitude: business.coordinates.longitude,
+                    city: business.location.city
+                    )
+            }
             
-            print("route additions \(routeAdditions)")
             
-            let poiDetail = POIDetail(
-                name: business.name,
-                address: "\(business.location.address1), \(business.location.city), \(business.location.state) \(business.location.zipCode)",
-                distance: routeAdditions?.distanceAdded ?? 2.2,  // Placeholder for actual distance calculation
-                phoneNumber: business.phone,
-                rating: business.rating ?? 4.0,
-                price: business.price ?? "",
-                image: business.imageUrl ?? "",
-                time: (abs(routeAdditions?.timeAdded ?? 300) / 60.0),
-                latitude: business.coordinates.latitude,
-                longitude: business.coordinates.longitude,
-                city: business.location.city
-            )
+            
             
             poiDetails.append(poiDetail)
         }

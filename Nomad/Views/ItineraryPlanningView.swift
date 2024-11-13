@@ -245,7 +245,7 @@ struct ItineraryPlanningView: View {
             }.overlay(
                 Group {
                     if isLoading {
-                        AtlasLoadingView()
+                        AtlasLoadingView(isAtlas: true)
                             .frame(width: 80, height: 80) // Adjust size if needed
                     }
                 }

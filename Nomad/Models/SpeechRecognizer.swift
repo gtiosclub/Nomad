@@ -41,6 +41,10 @@ actor SpeechRecognizer: ObservableObject {
     private var task: SFSpeechRecognitionTask?
     private let recognizer: SFSpeechRecognizer?
     
+    static let shared = SpeechRecognizer()  // Singleton instance
+
+    @Published var audioLevel: CGFloat = 0.0
+    
     @Published @MainActor var hasTimerRun: Bool = false
     
     @Published @MainActor var voiceRecordingTranscript: String = ""
@@ -140,11 +144,25 @@ actor SpeechRecognizer: ObservableObject {
         let recordingFormat = inputNode.outputFormat(forBus: 0)
         inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { (buffer: AVAudioPCMBuffer, when: AVAudioTime) in
             request.append(buffer)
+            SpeechRecognizer.processAudioBuffer(buffer: buffer)
         }
         audioEngine.prepare()
         try audioEngine.start()
         
         return (audioEngine, request)
+    }
+    
+    static func processAudioBuffer(buffer: AVAudioPCMBuffer) {
+        guard let channelData = buffer.floatChannelData?[0] else { return }
+        let channelDataArray = Array(UnsafeBufferPointer(start: channelData, count: Int(buffer.frameLength)))
+        
+        // Calculate RMS (Root Mean Square) for the audio levels
+        let rms = sqrt(channelDataArray.map { $0 * $0 }.reduce(0, +) / Float(buffer.frameLength))
+        let level = max(0, CGFloat(rms) * 20)  // Scale the value for display
+        
+        DispatchQueue.main.async {
+            SpeechRecognizer.shared.audioLevel = level
+        }
     }
     
     nonisolated private func recognitionHandler(audioEngine: AVAudioEngine, result: SFSpeechRecognitionResult?, error: Error?) {

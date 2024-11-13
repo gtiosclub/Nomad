@@ -1,14 +1,13 @@
-//
-//  POIDetailView.swift
-//  Nomad
-//
-//  Created by Connor on 10/17/24.
-//
-
+////
+////  POIDetailView.swift
+////  Nomad
+////
+////  Created by Connor on 10/17/24.
+////
 import SwiftUI
 
 struct POIDetailView: View {
-    
+    @State private var isExpanded = false
     var name: String
     var address: String
     var distance: Double
@@ -135,7 +134,42 @@ struct POIDetailView: View {
                 }
 
             }
+            .background(
+                RoundedRectangle(cornerRadius: 15)
+                    .fill(Color.white)
+                    .shadow(radius: 5)
+            )
             .padding()
+            
+            // Overlay the expanded image when `isExpanded` is true
+            if isExpanded {
+                Color.black.opacity(0.5)
+                    .edgesIgnoringSafeArea(.all)
+                    .onTapGesture {
+                        withAnimation {
+                            isExpanded.toggle()
+                        }
+                    }
+
+                AsyncImage(url: URL(string: image)) { image in
+                    image
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 300, height: 225)
+                        .cornerRadius(42)
+                        .shadow(radius: 10)
+                } placeholder: {
+                    ProgressView()
+                        .frame(width: 300, height: 225)
+                        .cornerRadius(42)
+                        .shadow(radius: 10)
+                }
+                .onTapGesture {
+                    withAnimation {
+                        isExpanded.toggle()
+                    }
+                }
+            }
         }
         .background(
             RoundedRectangle(cornerRadius: 15)
@@ -164,14 +198,6 @@ struct POIDetailView: View {
         }
     }
 }
-
-
-//struct ContentView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        ContentView()
-//    }
-//}
-
 #Preview {
     POIDetailView(name: "Speedway", address: "5 XYZ St, Atlanta, GA 06843", distance: 4.5, phoneNumber: "+19055759875", image: "", rating: 4.5, price: "$$", time: 4.2, latitude: 35.0, longitude: 34.0, city: "adsfsad", vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")), aiVM: AIAssistantViewModel())
 }
