@@ -2,111 +2,6 @@ import SwiftUI
 import Combine
 
 struct AIAssistantView: View {
-//    @ObservedObject var vm: UserViewModel
-//    @StateObject var aiViewModel = AIAssistantViewModel()
-//    @ObservedObject var chatViewModel: ChatViewModel
-//    @StateObject var speechRecognizer = SpeechRecognizer()
-//    @State private var isMicrophone = false
-//    @State private var currentMessage: String = ""
-//    @State private var dotCount = 1
-//    let timer = Timer.publish(every:0.5, on: .main, in: .common).autoconnect()
-//
-//    var body: some View {
-//        VStack {
-//            // Header
-//            if let trip = vm.current_trip {
-//                RoutePreviewView(vm: vm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(nil))
-//                    .frame(minHeight: 200.0)
-//            } else {
-//                Text("No current trip available")
-//                    .foregroundColor(.red)
-//            }
-//
-//            // Chat messages
-//            ScrollViewReader { reader in
-//                ScrollView {
-//                    ForEach(chatViewModel.messages) { message in
-//                        HStack {
-//                            if message.sender == "AI" {
-//
-//                                AtlasMessage(content: message.content, id: message.id)
-//
-//                                Spacer()
-//                            } else {
-//                                Spacer()
-//                                HStack {
-//                                    Text(message.content)
-//                                        .padding()
-//                                        .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
-//                                        .frame(maxWidth: 270, alignment: .trailing)
-//
-//                                    ZStack {
-//                                        Circle()
-//                                            .foregroundColor(Color.white)
-//                                            .frame(width: 30, height: 30) // Adjust size as needed
-//                                            .overlay(
-//                                                Circle()
-//                                                    .stroke(Color.black, lineWidth: 1) // Adds a black outline with a width of 2
-//                                            )
-//
-//                                        // Image on top of the circle
-//                                        Image(systemName: "person")
-//                                            .resizable()
-//                                            .scaledToFit()
-//                                            .frame(width: 20, height: 20)
-//                                    }
-//                                }
-//                            }
-//                        }
-//                        .padding(.horizontal)
-//                    }
-//
-//                    if chatViewModel.isQuerying{
-//                        //Detect if the ai is loading
-//                        HStack {
-//                            Image("AtlasIcon")
-//                                .resizable()
-//                                .scaledToFit()
-//                                .frame(width: 35, height: 35)
-//                            Text(String(repeating: ".", count: dotCount))
-//                                .padding()
-//                                .onReceive(timer) { _ in
-//                                    dotCount = (dotCount % 3) + 1
-//                                }
-//                                .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
-//                                .frame(maxWidth: 270, alignment: .leading)
-//                        }
-//                        .padding(.horizontal)
-//                        .frame(maxWidth: .infinity, alignment: .leading)
-//                    }
-//
-//                }
-//                .background(Color.clear)
-//                .padding(.bottom)
-//                .onChange(of: chatViewModel.messages.count) { _ in
-//                    if let lastMessage = chatViewModel.messages.last {
-//                        // Scroll to the latest message
-//                        reader.scrollTo(lastMessage.id, anchor: .bottom)
-//                    }
-//                }
-//            }
-//
-//            if !chatViewModel.pois.isEmpty {
-//                TabView {
-//                    ForEach(chatViewModel.pois) { poi in
-//                        POIDetailView(name: poi.name, address: poi.address, distance: poi.distance, phoneNumber: poi.phoneNumber, image: poi.image, rating: poi.rating, price: poi.price, time: poi.time, latitude: poi.latitude, longitude: poi.longitude, city: poi.city, vm: vm, aiVM: aiViewModel)
-//                            .frame(width: 400, height: 120) // Adjust width and height as needed
-//                            .padding(.horizontal, 5) // Adds padding at the top and bottom
-//                    }
-//                }
-//                .tabViewStyle(.page(indexDisplayMode: .never))
-//                .frame(height: 180)  // Adjust to fit the padding and content
-//            }
-//
-//
-//        }
-//        .background(Color.clear)
-//    }
     @ObservedObject var vm: UserViewModel
     @StateObject var aiViewModel = AIAssistantViewModel()
     @ObservedObject var chatViewModel: ChatViewModel
@@ -134,7 +29,7 @@ struct AIAssistantView: View {
                        
                        if !transcript.isEmpty {
                            chatViewModel.sendMessage(transcript, vm: vm)
-                           currentMessage = transcript
+                           currentMessage = ""
                        }
                        
                        isMicrophone = false
@@ -203,7 +98,7 @@ struct ChatMessagesView: View {
                         }
                     }
                     .padding(.horizontal)
-                }
+                }.padding(.top)
                 
                 if chatViewModel.isQuerying {
                     HStack {
@@ -294,7 +189,7 @@ struct AtlasMessage: View {
                 .background(
                     RoundedRectangle(cornerRadius: 10)
                         .stroke(Color.black, lineWidth: 1)
-                        .fill(Color.gray.opacity(0.2))
+                        .fill(Color.nomadLightBlue)
                 )
                 .frame(maxWidth: 270, alignment: .leading)
                 .id(id)
@@ -303,29 +198,6 @@ struct AtlasMessage: View {
     }
 }
 
-//struct LoadingIndicator: View {
-//    @State var dotCount: Int
-//    let timer: Publishers.Autoconnect<Timer.TimerPublisher>
-//
-//    var body: some View {
-//        HStack {
-//            Image("AtlasIcon")
-//                .resizable()
-//                .scaledToFit()
-//                .frame(width: 35, height: 35)
-//
-//            Text(String(repeating: ".", count: dotCount))
-//                .padding()
-//                .onReceive(timer) { _ in
-//                    self.dotCount = (dotCount % 3) + 1
-//                }
-//                .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
-//                .frame(maxWidth: 270, alignment: .leading)
-//        }
-//        .padding(.horizontal)
-//        .frame(maxWidth: .infinity, alignment: .leading)
-//    }
-//}
 
 struct POICarouselView: View {
     @ObservedObject var chatViewModel: ChatViewModel
@@ -340,68 +212,9 @@ struct POICarouselView: View {
                     .padding(.horizontal, 5)
             }
         }
-        .tabViewStyle(.page(indexDisplayMode: .never))
+        .tabViewStyle(.page(indexDisplayMode: .automatic))
         .frame(height: 180)
     }
 }
 
-//struct InputAreaView: View {
-//    @ObservedObject var chatViewModel: ChatViewModel
-//    var vm: UserViewModel
-//    @State private var currentMessage: String
-//    @Binding var isMicrophone: Bool
-//    var speechRecognizer: SpeechRecognizer
-//
-//    var body: some View {
-//        HStack {
-//            Button(action: {
-//                // Microphone action if necessary
-//                if isMicrophone {
-//                    speechRecognizer.stopTranscribing()
-//                    let transcript = speechRecognizer.transcript
-//
-//                    if !transcript.isEmpty {
-//                        chatViewModel.sendMessage(transcript, vm: vm)
-//                        currentMessage = transcript
-//                    }
-//
-//                    isMicrophone = false
-//                } else {
-//                    speechRecognizer.startTranscribing()
-//                    isMicrophone = true
-//                }
-//            }) {
-//                Image(systemName: "microphone.fill")
-//                    .resizable()
-//                    .scaledToFit()
-//                    .frame(width: 40, height: 40)
-//                    .clipShape(Circle())
-//                    .foregroundColor(isMicrophone ? .red : .gray)
-//            }
-//
-//            TextField("Ask me anything...", text: $currentMessage)
-//                .padding()
-//                .background(Color.gray.opacity(0.2))
-//                .cornerRadius(10)
-//                .frame(minHeight: 40)
-//                .onChange(of: speechRecognizer.transcript) { newTranscript in
-//                    currentMessage = newTranscript
-//                }
-//
-//            Button(action: {
-//                if !currentMessage.isEmpty {
-//                    dotCount = 1
-//                    chatViewModel.sendMessage(currentMessage, vm: vm)
-//                    currentMessage = ""
-//                }
-//            }) {
-//                Image(systemName: "paperplane.fill")
-//                    .padding()
-//                    .background(Color.blue)
-//                    .foregroundColor(.white)
-//                    .cornerRadius(10)
-//            }
-//        }
-//        .padding()
-//    }
-//}
+

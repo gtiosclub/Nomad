@@ -30,36 +30,39 @@ struct POIDetailView: View {
     var body: some View {
         VStack(spacing: 10) {
             // Top part: Image and POI Information
-            HStack(alignment: .top, spacing: 10) {
-                Button(action: {
-                    if(!isAdded) {
-                        isAdded = true // Set state to true after button click
-                        
-                        let locationType = aiVM.currentLocationType
-    
-                        var poi = GeneralLocation(address: address, name: name, latitude: latitude, longitude: longitude)
-                        
-                        Task {
-                            await vm.addStop(stop: poi)
-                            
-                            guard let start_loc = vm.current_trip?.getStartLocation() else { return }
-                            guard let end_loc = vm.current_trip?.getEndLocation() else { return }
-                            guard let all_stops = vm.current_trip?.getStops() else { return }
-                            
-                            var all_pois: [any POI] = []
-                            all_pois.append(start_loc)
-                            all_pois.append(contentsOf: all_stops)
-                            all_pois.append(end_loc)
-                            
-                            if let newRoutes = await MapManager.manager.generateRoute(pois: all_pois) {
-                                vm.setTripRoute(route: newRoutes[0])
+            HStack(alignment: .center, spacing: 1) {
+                
+                VStack {
+                    Spacer()
+                    
+                    Button(action: {
+                        withAnimation {
+                            if(!isAdded) {
+                                isAdded = true // Set state to true after button click
+            
+                                var poi = GeneralLocation(address: address, name: name, latitude: latitude, longitude: longitude)
+                                
+                                addStop(poi)
+                                
                             }
                         }
+                       
+                    }) {
+                        ZStack {
+                            Circle()
+                                .fill(isAdded ? Color.green : Color.white)
+                                .frame(width: 30, height: 30)
+                                .overlay(Circle().stroke(Color.gray, lineWidth: 1))
+                            
+                            Image(systemName: isAdded ? "checkmark" : "plus")
+                                .foregroundColor(isAdded ? .white : .gray)
+                                .font(.system(size: 24))
+                                .bold()
+                        }
                     }
-                }) {
-                    Image(systemName: "plus.circle")
-                        .resizable()
-                        .frame(width: 50)
+                        
+                    Spacer()
+                    
                 }
                 
                 VStack {
@@ -136,10 +139,29 @@ struct POIDetailView: View {
         }
         .background(
             RoundedRectangle(cornerRadius: 15)
-                .fill(Color.white)
+                .fill(Color.nomadLightBlue)
                 .shadow(radius: 5)
         )
         .padding()
+    }
+    
+    func addStop(_ stop: any POI) {
+        Task {
+            await vm.addStop(stop: stop)
+            
+            guard let start_loc = vm.current_trip?.getStartLocation() else { return }
+            guard let end_loc = vm.current_trip?.getEndLocation() else { return }
+            guard let all_stops = vm.current_trip?.getStops() else { return }
+            
+            var all_pois: [any POI] = []
+            all_pois.append(start_loc)
+            all_pois.append(contentsOf: all_stops)
+            all_pois.append(end_loc)
+            
+            if let newRoutes = await MapManager.manager.generateRoute(pois: all_pois) {
+                vm.setTripRoute(route: newRoutes[0])
+            }
+        }
     }
 }
 
