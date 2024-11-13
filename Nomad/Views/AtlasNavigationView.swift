@@ -13,6 +13,7 @@ struct AtlasNavigationView: View {
     @ObservedObject var vm: UserViewModel
     @State var selectedTab = 0
     @State private var mapboxSetUp: Bool = false
+    @State var isListening = false
     
     //@ObservedObject var AIVM = AIAssistantViewModel()
     @ObservedObject var ChatVM = ChatViewModel()
@@ -47,31 +48,15 @@ struct AtlasNavigationView: View {
             Spacer()
             
             // Title
-            Text("Where would you like to go?")
-                .font(.title3)
+            Text("Atlas")
+                .font(.title)
                 .padding(.bottom, 20)
+            
+            Divider()
             
             Spacer()
                 .padding(.top, 10)
-            // Microphone button
-            Button(action: handleMicrophonePress) {
-                Image(systemName: "mic.circle")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 100, height: 100)
-                    .padding(.top, 125)
-            }
-            .padding(.bottom, 50)
             
-            // "Type instead?" button
-//            Button(action: {
-//                // Action when "type instead" is pressed
-//                print("Type instead pressed")
-//            }) {
-//                Text("type instead?")
-//                    .foregroundColor(.gray)
-//                    .underline()
-//            }
             Text(currentMessage)
                 .padding(10)
                 .background(Color.gray.opacity(0.2))
@@ -98,11 +83,25 @@ struct AtlasNavigationView: View {
                 }
             
             if isLoading {
-                ProgressView("Loading...")
-                    .progressViewStyle(CircularProgressViewStyle())
-                    .foregroundColor(.white)
-                    .scaleEffect(1.5) // Adjust the size of the loading circle
+                AtlasLoadingView(isAtlas: false)
+                    .frame(width: 60, height: 60)
+            } else {
+                if isListening {
+                    SoundwaveView()
+                        .frame(height: 100)
+                        .padding()
+                } else {
+                    Button(action: handleMicrophonePress) {
+                        Image(systemName: "mic.circle")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 100, height: 100)
+                            .padding(.top, 125)
+                    }
+                    .padding(.bottom, 50)
+                }
             }
+
             
             if let response = ChatVM.latestAIResponse, !response.isEmpty {
                 HStack {
@@ -123,6 +122,7 @@ struct AtlasNavigationView: View {
                     speak(text: response)
                     //toggleIsLoading()
                     isLoading = false
+                    isListening = false
                 }
             }
             
@@ -133,6 +133,7 @@ struct AtlasNavigationView: View {
     
     func handleMicrophonePress() {
         print("Microphone button pressed")
+        isListening = true
 
         if isMicrophone {
             speechRecognizer.stopTranscribing()
@@ -161,3 +162,70 @@ struct AtlasNavigationView_Previews: PreviewProvider {
         AtlasNavigationView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")))
     }
 }
+
+
+struct SoundwaveView: View {
+    @ObservedObject var speechRecognizer = SpeechRecognizer.shared
+
+    var body: some View {
+        VStack {
+            HStack(spacing: 4) {
+                ForEach(0..<20) { index in
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(Color.blue)
+                        .frame(width: 5, height: self.barHeight(for: index))
+                }
+            }
+            .frame(height: 100)
+        }
+        .padding()
+    }
+    
+    private func barHeight(for index: Int) -> CGFloat {
+        let randomizedLevel = SpeechRecognizer.shared.audioLevel * CGFloat.random(in: 0.5...1.5)
+        return max(10, randomizedLevel * 100)
+    }
+}
+
+//class AudioLevelMonitor: ObservableObject {
+//    private var audioEngine: AVAudioEngine!
+//    private var inputNode: AVAudioInputNode!
+//    
+//    @Published var audioLevel: CGFloat = 0.0
+//    private var timer: Timer?
+//    
+//    init() {
+//        setupAudioEngine()
+//    }
+//    
+//    private func setupAudioEngine() {
+//        audioEngine = AVAudioEngine()
+//        inputNode = audioEngine.inputNode
+//        let inputFormat = inputNode.outputFormat(forBus: 0)
+//        
+//        inputNode.installTap(onBus: 0, bufferSize: 2048, format: inputFormat) { buffer, _ in
+//            self.processAudioBuffer(buffer: buffer)
+//        }
+//        
+//        try? audioEngine.start()
+//    }
+//    
+//    private func processAudioBuffer(buffer: AVAudioPCMBuffer) {
+//        guard let channelData = buffer.floatChannelData?[0] else { return }
+//        let channelDataArray = Array(UnsafeBufferPointer(start: channelData, count: Int(buffer.frameLength)))
+//        
+//        // Calculate RMS (Root Mean Square) for the audio levels
+//        let rms = sqrt(channelDataArray.map { $0 * $0 }.reduce(0, +) / Float(buffer.frameLength))
+//        let level = max(0, CGFloat(rms) * 20)  // Scale the value for display
+//        
+//        DispatchQueue.main.async {
+//            self.audioLevel = level
+//        }
+//    }
+//    
+//    deinit {
+//        audioEngine.stop()
+//        inputNode.removeTap(onBus: 0)
+//    }
+//}
+//
