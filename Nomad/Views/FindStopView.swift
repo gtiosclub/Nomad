@@ -29,6 +29,7 @@ struct FindStopView: View {
     @State private var isRatingDropdownOpen = false
     @State private var isPriceDropdownOpen = false
     @Environment(\.dismiss) var dismiss
+    @State private var dynamicHeight: CGFloat = 350
     @State var manualSearch: String = "Manual Search"
     var searchTypes = ["Manual Search", "Filter Search"]
     
@@ -231,11 +232,11 @@ struct FindStopView: View {
                     }
                     .tag(2)
                 }
-                .frame(height: dynamicHeight(for: selectedTab))
+                .frame(height: dynamicHeight)
+                .animation(.easeInOut(duration: 0.3), value: dynamicHeight)
+//                .frame(height: dynamicHeight(for: selectedTab))
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
                 .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
-                
-                
                 
                 ScrollView {
                     if isLoading {
@@ -274,11 +275,33 @@ struct FindStopView: View {
                 }
             }
             .padding(.top, 5)
+            .onChange(of: selectedTab) {
+                updateHeight()
+            }
+            .onChange(of: manualSearch) {
+                updateHeight()
+            }
+            .onChange(of: selection) {
+                updateHeight()
+            }
+            .onChange(of: isCuisineDropdownOpen) {
+                updateHeight()
+            }
+            .onChange(of: isRatingDropdownOpen) {
+                updateHeight()
+            }
+            .onChange(of: isPriceDropdownOpen) {
+                updateHeight()
+            }
         }.onAppear() {
             markerCoordinate = vm.current_trip?.getStartLocationCoordinates() ?? .init(latitude: 0, longitude: 0)
         }
         .navigationBarBackButtonHidden()
         .toolbar(.hidden, for: .navigationBar)
+    }
+    
+    private func updateHeight() {
+        dynamicHeight = dynamicHeight(for: selectedTab) // Update height with animation
     }
     
     private func dynamicHeight(for tab: Int) -> CGFloat {
@@ -349,6 +372,7 @@ struct FindStopView: View {
         Button(action: {
             isLoading = true
             hasSearched = true
+            searchString = ""
             Task {
                 do {
                     if let currentTrip = vm.current_trip {
@@ -541,21 +565,23 @@ struct FindStopView: View {
                         .font(.headline)
                         .lineLimit(1)
                     
-                    Text(stop.address)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
+                    HStack {
+                        Text(stop.address[..<(stop.address.firstIndex(of: ",") ?? stop.address.endIndex)])
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                        
+                        Text("\("•  " + (stop.city ?? ""))")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    }
+                    
                     HStack {
                         if let restaurant = stop as? Restaurant {
-                            Text(restaurant.cuisine ?? "")
+                            Text(restaurant.cuisine?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "")
                                 .font(.system(size: 16))
                                 .foregroundColor(.secondary)
-                            
-                            if let city = restaurant.city {
-                                Text("• \(city)")
-                                    .font(.system(size: 16))
-                                    .foregroundColor(.secondary)
-                            }
                             
                             if let price = restaurant.price {
                                 Text("•")
@@ -565,12 +591,26 @@ struct FindStopView: View {
                                     .font(.system(size: 16))
                                     .foregroundColor(.secondary)
                             }
+                            
+                            if let rating = restaurant.rating {
+                                Text("•")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(.secondary)
+                                HStack(spacing: 2) {
+                                    Text("\(String(format: "%.1f", rating))")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                    Image(systemName: "star")
+                                        .resizable()
+                                        .frame(width: 14, height: 14)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
                         }
                     }
+                    .padding(0)
                     
-                    if let restaurant = stop as? Restaurant {
-                        showRating(restaurant.rating)
-                    } else if let activity = stop as? Activity {
+                    if let activity = stop as? Activity {
                         showRating(activity.rating)
                     } else if let hotel = stop as? Hotel {
                         showRating(hotel.rating)
@@ -580,6 +620,8 @@ struct FindStopView: View {
                 Spacer()
             }
             .padding(4)
+            .padding(.leading, 10)
+            .padding(.trailing, 2)
             .background(Color.white)
             .cornerRadius(12)
         }
