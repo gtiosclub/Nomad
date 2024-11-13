@@ -272,22 +272,25 @@ struct AIAssistantButtonView: View {
             ZStack {
                 // White Circle with Drop Shadow
                 Circle()
-                    .fill(Color.white)
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color.blue, Color.purple]),
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
                     .frame(width: 50, height: 50) // Adjust size as needed
-                    .shadow(color: .gray.opacity(0.8), radius: 8, x: 0, y: 5)
+                    .shadow(radius: 4)
                 
                 // Image on top of the circle
-                Image(systemName: "pencil")
-                    .resizable()
-                    .scaledToFit()
-                    .foregroundColor(Color.black)
-                    .frame(width: 30, height: 30) // Adjust size as needed
+                Image(systemName: "wand.and.sparkles")
+                    .foregroundColor(.white)
             }
             .sheet(isPresented: $isAtlasActivated) {
                 print("Sheet dismissed")
                 isAtlasActivated = false
             } content: {
-                AIAssistantView(vm: vm, chatViewModel: ChatViewModel())
+                AtlasNavigationView(vm: vm)
             }
         }
         .padding()
