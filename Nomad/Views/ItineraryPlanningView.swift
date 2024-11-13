@@ -560,7 +560,7 @@ struct ItineraryPlanningView: View {
                                     dropdownMenu(inputAddress: $inputAddressEnd, inputName: $inputNameEnd, inputLatitude: $endLatitude, inputLongitude: $endLongitude)
                                 }
                             }.padding(20)
-                        }.background(Color.gray.opacity(0.3))
+                        }.background(Color.nomadLightBlue)
                             .cornerRadius(15)
                             .padding()
                     }
@@ -613,7 +613,7 @@ struct ItineraryPlanningView: View {
                                     Spacer(minLength: 60)
                                 }.padding()
                             }
-                        }.background(Color.gray.opacity(0.3))
+                        }.background(Color.nomadLightBlue)
                             .cornerRadius(15)
                             .padding()
                     }
@@ -727,9 +727,9 @@ struct ItineraryPlanningView: View {
                         }
                     }) {
                         Text("Continue").font(.headline)
-                            .foregroundColor(.black)
+                            .foregroundColor(.white)
                             .padding()
-                            .background(Color.gray.opacity(0.3))
+                            .background(Color.nomadDarkBlue)
                             .cornerRadius(15)
                             .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
                     }
