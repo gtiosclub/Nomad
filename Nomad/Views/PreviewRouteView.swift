@@ -99,7 +99,7 @@ struct PreviewRouteView: View {
                         }
                         
                         HStack {
-                            NavigationLink(destination: FindStopView(vm: vm)) {
+                            NavigationLink(destination: ItineraryParentView(vm: vm, cvm: ChatViewModel())) {
                                 Text("Edit Route")
                                     .padding()
                                     .background(Color.gray.opacity(0.2))
