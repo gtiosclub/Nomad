@@ -11,8 +11,8 @@ import MapKit
 struct RootView: View {
     @State var selectedTab = 2
     @State private var mapboxSetUp: Bool = false
-    
-    @ObservedObject var vm = UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard", trips: UserViewModel.my_trips))
+    @ObservedObject var vm: UserViewModel
+//    UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard"))
     
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -34,15 +34,23 @@ struct RootView: View {
                 }
                 .tag(3)
         }.environmentObject(vm)
-            .task {
-                if !mapboxSetUp {
-                    self.mapboxSetUp = true
-                    await MapManager.manager.setupMapbox()
+        .edgesIgnoringSafeArea(.all)
+        .task {
+            print("made it to root view")
+            if !mapboxSetUp {
+                self.mapboxSetUp = true
+                await MapManager.manager.setupMapbox()
+            }
+        }.onChange(of: vm.navigatingTrip) { oldValue, newValue in
+            if let newTrip = newValue {
+                if let _ = newTrip.route {
+                    self.selectedTab = 1
                 }
             }
+        }
     }
 }
 
 #Preview {
-    RootView()
+    RootView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")))
 }

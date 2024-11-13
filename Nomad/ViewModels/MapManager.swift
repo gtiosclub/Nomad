@@ -227,112 +227,248 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private var waypoints: [Waypoint] = []
     private var core: MapboxNavigation? = nil
     
-    //    // Add waypoint to route
-    //    func addWaypoint(to coords: CLLocationCoordinate2D) async throws {
-    //        let mapPoint = toMapPoint(coordinates: coords)
-    //        waypoints.append(Waypoint(coordinate: mapPoint.coordinate, name: mapPoint.name))
-    //        if waypoints.count > 1 {
-    //            try await updateRoutes()
-    //        }
-    //
-    //    }
-    //    // Add current location as waypoint to route
-    //    func addCurrentLocationWaypoint(currentLocation: CLLocation, isFirst: Bool) async throws {
-    //        var userWaypoint = Waypoint(location: currentLocation)
-    //        if currentLocation.course >= 0 {
-    //            userWaypoint.heading = currentLocation.course
-    //            userWaypoint.headingAccuracy = 90
-    //        }
-    //        if isFirst {
-    //            waypoints.insert(userWaypoint, at: 0)
-    //        } else {
-    //            waypoints.append(userWaypoint)
-    //        }
-    //    }
-    //    func modifyWaypointsOrdering(newWaypoints: [Waypoint]) async throws {
-    //        waypoints = newWaypoints
-    //        if waypoints.count > 1 {
-    //            try await updateRoutes()
-    //        }
-    //    }
-    //    // Remove waypoint on route
-    //    func removeWayPoint(waypoint: Waypoint) async throws {
-    //        if let index = waypoints.firstIndex(of: waypoint) {
-    //            waypoints.remove(at: index)
-    //        }
-    //        try await updateRoutes()
-    //    }
     // TODO: Update MapPoint name
     private func toMapPoint(coordinates: CLLocationCoordinate2D) -> MapPoint {
         return MapPoint(name: "", coordinate: coordinates)
     }
     
-    // Route progress functions
-    //    func getFutureLocation(time: TimeInterval) async throws -> CLLocationCoordinate2D {
-    //        var routeProgress: RouteProgress
-    //
-    //        if let rp = await self.core?.navigation().currentRouteProgress?.routeProgress {
-    //            routeProgress = rp
-    //            if routeProgress.durationRemaining <= time {
-    //                return self.mapMarkers.last?.coordinate ?? CLLocationCoordinate2D()
-    //            }
-    //        } else { // Creating a RouteProgress if this function called for a route that hasn't been started
-    //            getDirections()
-    //            if let currRoutes = self.currentPreviewRoutes {
-    //                routeProgress = RouteProgress(navigationRoutes: currRoutes, waypoints: self.waypoints)
-    //                // A newly-generated RouteProgress has no expected travel time in it
-    //                if currRoutes.mainRoute.route.expectedTravelTime <= time {
-    //                    return self.mapMarkers.last?.coordinate ?? CLLocationCoordinate2D()
-    //                }
-    //            } else {
-    //                throw("Cannot get future location with no routes")
-    //            }
-    //        }
-    //
-    //        var currTime = 0.0
-    //        var currStep = routeProgress.currentLegProgress.currentStep
-    //        var remainingSteps = routeProgress.currentLegProgress.remainingSteps
-    //        var remainingLegs = routeProgress.remainingLegs
-    //
-    //        while currTime < time {
-    //            if remainingSteps.isEmpty && !remainingLegs.isEmpty {
-    //                let newLeg = remainingLegs.removeFirst()
-    //                remainingSteps = newLeg.steps
-    //            }
-    //
-    //            currStep = remainingSteps.removeFirst()
-    //            currTime += currStep.typicalTravelTime ?? currStep.expectedTravelTime
-    //        }
-    //
-    //        return currStep.shape?.coordinates.last ?? CLLocationCoordinate2D()
-    //    }
-    
-    func getFutureLocation(time: TimeInterval, route: NomadRoute) -> CLLocationCoordinate2D? {
-        
-        var currTime = 0.0
+    // New method to find closest leg
+    func determineCurrentLeg(route: NomadRoute) -> NomadLeg? {
+        var closestLeg: NomadLeg?
+        var minDistance = CLLocationDistanceMax
         
         for leg in route.legs {
-            for step in leg.steps {
-                if currTime < time {
-                    currTime += step.direction.expectedTravelTime
-                } else {
-                    return step.endCoordinate
-                }
-                
+            var step: NomadStep
+            if let currentStep = determineCurrentStep(leg: leg) {
+                step = currentStep
+            } else {
+                step = leg.steps.first!
             }
+                let closestCoord = getClosestCoordinate(step: step)
+                if let userLocation = self.userLocation {
+                    let distance = userLocation.distance(to: closestCoord)
+                    if distance < minDistance {
+                        minDistance = distance
+                        closestLeg = leg
+                    }
+                }
+        }
+        
+        return closestLeg ?? route.legs.first
+    }
+    
+    struct RouteAdditions {
+        let timeAdded: TimeInterval // in s
+        let distanceAdded: Double // in m
+    }
+    // determine time and distance added to a route given a new stop
+    func determineRouteAdditions(route: NomadRoute, newStop: CLLocationCoordinate2D) async -> RouteAdditions? {
+        let updatedStops = addStopToRoute(route: route, new_coord: newStop)
+        
+        if let newRoutes = await generateRoute(stop_coords: updatedStops) {
+            let newRoute = newRoutes.first!
+            let timeAdded = newRoute.totalTime() - route.totalTime()
+            let distanceAdded = newRoute.totalDistance() - route.totalDistance()
+            return RouteAdditions(timeAdded: timeAdded, distanceAdded: distanceAdded)
         }
         return nil
     }
     
+    // append stop to route at right location/order
+    func addStopToRoute(route: NomadRoute, new_coord: CLLocationCoordinate2D) -> [CLLocationCoordinate2D] {
+        var stop_coords = [CLLocationCoordinate2D]()
+        for leg in route.legs {
+            stop_coords.append(leg.getStartLocation())
+        }
+        stop_coords.append(route.legs.last!.getEndLocation())
+        
+        var distances = [Double]()
+        for i in 0..<stop_coords.count {
+            distances.append(stop_coords[i].distance(to: new_coord))
+            
+        }
+        if let minIndex = distances.enumerated().min(by: { $0.1 < $1.1 })?.offset {
+                // Insert new coordinate after the closest stop
+                // If it's the last stop, append to end
+                let insertIndex = minIndex == stop_coords.count - 1 ? stop_coords.count : minIndex + 1
+                stop_coords.insert(new_coord, at: insertIndex)
+            }
+            
+        return stop_coords
+    }
+
+    // Modified getFutureLocation
+    func getFutureLocation(time: TimeInterval, route: NomadRoute) -> CLLocationCoordinate2D? {
+        // Find current leg and step
+        let currentLeg = determineCurrentLeg(route: route)
+        let currentStep = currentLeg.flatMap { determineCurrentStep(leg: $0) }
+        
+        // Get current position on route
+        let currentPosition = currentStep.flatMap { getClosestCoordinate(step: $0) }
+        
+        // Get all coordinates from the route
+        let allCoordinates = route.getCoordinates()
+        
+        // Find the index where we start from (closest to current position)
+        let startIndex = currentPosition.flatMap { coord in
+            allCoordinates.firstIndex { $0.latitude == coord.latitude && $0.longitude == coord.longitude }
+        }
+        
+        var accumulatedTime: TimeInterval = 0.0
+        var lastCoordinate = startIndex.flatMap { allCoordinates[$0] }
+        
+        // Calculate average speed across the remaining route
+        var totalDistance: CLLocationDistance = 0.0
+        var totalTime: TimeInterval = 0.0
+        
+        // Only count remaining legs/steps
+        var foundCurrentLeg = false
+        for leg in route.legs {
+            if let currentLeg = currentLeg, leg.id == currentLeg.id {
+                foundCurrentLeg = true
+            }
+            if foundCurrentLeg {
+                for step in leg.steps {
+                    totalDistance += step.direction.distance
+                    totalTime += step.direction.expectedTravelTime
+                }
+            }
+        }
+        
+        let averageSpeed = totalDistance / totalTime // meters per second
+        
+        // Iterate through remaining coordinates
+        for i in (startIndex ?? 0)+1..<allCoordinates.count {
+            let coord = allCoordinates[i]
+            let prevCoord = allCoordinates[i-1]
+            
+            // Calculate time to travel between these coordinates
+            let segmentDistance = prevCoord.distance(to: coord)
+            let segmentTime = segmentDistance / averageSpeed
+            
+            accumulatedTime += segmentTime
+            
+            if accumulatedTime >= time {
+                // Interpolate between previous and current coordinate
+                let overshootRatio = (accumulatedTime - time) / segmentTime
+                let lat = coord.latitude + (prevCoord.latitude - coord.latitude) * overshootRatio
+                let lon = coord.longitude + (prevCoord.longitude - coord.longitude) * overshootRatio
+                
+                return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+            }
+            
+            lastCoordinate = coord
+        }
+        
+        return lastCoordinate
+    }
+
+    // Modified getFutureLocationByDistance
+    func getFutureLocationByDistance(distance: CLLocationDistance, route: NomadRoute) -> CLLocationCoordinate2D? {
+        // Find current leg and step
+        let currentLeg = determineCurrentLeg(route: route)
+        let currentStep = currentLeg.flatMap { determineCurrentStep(leg: $0) }
+        
+        // Get current position on route
+        let currentPosition = currentStep.flatMap { getClosestCoordinate(step: $0) }
+        
+        // Get all coordinates from the route
+        let allCoordinates = route.getCoordinates()
+        
+        // Find the index where we start from (closest to current position)
+        let startIndex = currentPosition.flatMap { coord in
+            allCoordinates.firstIndex { $0.latitude == coord.latitude && $0.longitude == coord.longitude }
+        }
+        
+        var accumulatedDistance: CLLocationDistance = 0.0
+        var lastCoordinate = startIndex.flatMap { allCoordinates[$0] }
+        
+        // Iterate through remaining coordinates
+        for i in (startIndex ?? 0)+1..<allCoordinates.count {
+            let coord = allCoordinates[i]
+            let prevCoord = allCoordinates[i-1]
+            
+            let segmentDistance = prevCoord.distance(to: coord)
+            accumulatedDistance += segmentDistance
+            
+            if accumulatedDistance >= distance {
+                // Interpolate between previous and current coordinate
+                let overshootDistance = accumulatedDistance - distance
+                let ratio = 1 - (overshootDistance / segmentDistance)
+                
+                // Linear interpolation between coordinates
+                let lat = prevCoord.latitude + (coord.latitude - prevCoord.latitude) * ratio
+                let lon = prevCoord.longitude + (coord.longitude - prevCoord.longitude) * ratio
+                
+                return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+            }
+            
+            lastCoordinate = coord
+        }
+        
+        return lastCoordinate
+    }
+    
+    // get remaining time on current leg at current user location
+    func getRemainingTime(leg: NomadLeg) -> TimeInterval {
+        var totalTime: TimeInterval = 0
+        
+        var step: NomadStep
+        if let currentStep = determineCurrentStep(leg: leg) {
+            step = currentStep
+        } else {
+            step = leg.steps.first!
+        }
+        let step_index = leg.steps.firstIndex { $0.id == step.id }!
+        // append time for all future steps
+        for i in step_index+1..<leg.steps.count {
+            totalTime += TimeInterval(leg.steps[i].direction.expectedTravelTime)
+        }
+        let coord = getClosestCoordinate(step: step)
+        let coord_index = step.getCoordinates().firstIndex(where: { $0 == coord })!
+        let total_coord_count = step.getCoordinates().count
+        let distance = (Double(total_coord_count - coord_index)/Double(total_coord_count)) * step.direction.distance
+        let stepProgress = distance / step.direction.distance
+        totalTime += stepProgress * TimeInterval(step.direction.expectedTravelTime)
+        
+        // print("total time remaining on leg: \(totalTime.description)")
+        return totalTime
+    }
+    
+    // get remaining distance on current leg
+    func getRemainingDistance(leg: NomadLeg) -> TimeInterval {
+        var totalDistance: TimeInterval = 0
+        
+        var step: NomadStep
+        if let currentStep = determineCurrentStep(leg: leg) {
+            step = currentStep
+        } else {
+            step = leg.steps.first!
+        }
+        
+        let step_index = leg.steps.firstIndex { $0.id == step.id }!
+        // append time for all future steps
+        for i in step_index+1..<leg.steps.count {
+            totalDistance += leg.steps[i].direction.distance
+        }
+        let coord = getClosestCoordinate(step: step)
+        let coord_index = step.getCoordinates().firstIndex(where: { $0 == coord })!
+        let total_coord_count = step.getCoordinates().count
+        let distance = (Double(total_coord_count - coord_index)/Double(total_coord_count)) * step.direction.distance
+        totalDistance += distance
+        
+        return totalDistance
+    }
+    
     func determineCurrentStep(leg: NomadLeg) -> NomadStep? {
         for step in leg.steps {
-            if checkOnRoute(step: step) {
+            if checkOnStep(step: step) {
                 return step
             }
         }
         return nil
     }
-    
+        
     func getClosestCoordinate(step: NomadStep) -> CLLocationCoordinate2D {
         guard let userLocation = self.userLocation else { return CLLocationCoordinate2D() }
         let stepCoordinates = step.getCoordinates()
@@ -348,9 +484,10 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                 closestCoordinate = coord
             }
         }
-        return closestCoordinate ?? CLLocationCoordinate2D()
+        return closestCoordinate ?? step.startCoordinate
     }
-    func checkOnRoute(step: NomadStep) -> Bool {
+    
+    func checkOnStep(step: NomadStep) -> Bool {
         guard let userLocation = self.userLocation else { return false }
         let closest_coord = getClosestCoordinate(step: step)
         let measured_distance = userLocation.distance(to: closest_coord)
@@ -361,9 +498,29 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             return false
         }
     }
+    
+    func checkOnRouteDirection(step: NomadStep) -> Bool {
+        guard let userLocation = self.userLocation else { return false }
+        let coords = step.getCoordinates()
+
+        let closest_coord = getClosestCoordinate(step: step)
+        let next_coord_index = Int(coords.firstIndex(of: closest_coord) ?? coords.endIndex) + 1
+        guard let next_closest_coord = coords.dropFirst(next_coord_index).first else { return false }
+        
+        // TODO: Verify that this method words
+        // arcsin(x coord diff / distance between coords)
+        var expected_direction = asin((next_closest_coord.latitude - closest_coord.latitude) / next_closest_coord.distance(to: closest_coord)) * (180 / .pi)
+        if expected_direction < 0 {
+            expected_direction = 360 + expected_direction // Convert westward directions to 180+ degs isntead of negative
+        }
+        let user_direction = userLocation.direction(to: next_closest_coord)
+        
+        let thresholdDirection: Double = 90.0
+        return abs(expected_direction - user_direction) < thresholdDirection
+    }
  
     func getExampleRoute() async -> NomadRoute? {
-        let trip = UserViewModel.my_trips.first!
+        let trip = Trip(id: "austintrip2", start_location: Restaurant(address: "848 Spring Street, Atlanta, GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN 37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", created_date: "10-1-2024", modified_date: "10-1-2024", stops: [Activity(address: "1720 S Scenic Hwy, Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)], start_time: "10:00:00", name: "ATL to Nashville", isPrivate: true)
         var coords = [CLLocationCoordinate2D]()
         let start_coord = self.userLocation ?? trip.getStartLocationCoordinates()
         coords.append(start_coord)

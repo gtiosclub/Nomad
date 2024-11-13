@@ -34,10 +34,25 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             return nil
         }
     }
-
+    
     // MAP UI Components
     @Published var mapMarkers: [MapMarker] = []
     @Published var mapPolylines: [MKPolyline] = []
+    
+    var remainingTime: TimeInterval? {
+        if let leg = navigatingLeg {
+            return mapManager.getRemainingTime(leg: leg)
+        } else {
+            return nil
+        }
+    }
+    var remainingDistance: Double? {
+        if let leg = navigatingLeg {
+            return mapManager.getRemainingDistance(leg: leg)
+        } else {
+            return nil
+        }
+    }
     
     // Map UI Parameters
     @Published var mapPosition: MapCameraPosition = .userLocation(fallback: .camera(MapCamera(centerCoordinate: CLLocationCoordinate2D(latitude: .zero, longitude: .zero), distance: 0)))
@@ -61,9 +76,28 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     func setNavigatingRoute(route: NomadRoute) {
+        print("Set navigating route")
         self.navigatingRoute = route
         self.mapPolylines.removeAll()
+        self.mapMarkers.removeAll()
+        
         self.showPolyline(route: navigatingRoute!)
+        
+        for leg in route.legs {
+            for step in leg.steps {
+                if let intersections = step.direction.intersections {
+                    for intersection in intersections {
+                        if intersection.trafficSignal == true {
+                            showMarker("Traffic Light", coordinate: intersection.location, icon: .trafficLight)
+                        }
+                        
+                        if intersection.stopSign == true {
+                            showMarker("Stop Sign", coordinate: intersection.location, icon: .stopSign)
+                        }
+                    }
+                }
+            }
+        }
     }
     
     func setNavigatingLeg(leg: NomadLeg) {
@@ -129,17 +163,13 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     // UI GETTERS
     func assignDistanceToNextManeuver() -> Double {
-        print("1")
         guard let currentStep = self.navigatingStep else { return -1 }
-        print("2")
         let currLoc = mapManager.getClosestCoordinate(step: currentStep) // closest route coordinate to user location
         guard let coord_index = currentStep.getCoordinates().firstIndex(where: { coord in
             coord == currLoc
         }) else { return -1 }
-        print("3")
         let total_coord_count = currentStep.getCoordinates().count
         let distance = (Double(total_coord_count - coord_index)/Double(total_coord_count)) * currentStep.direction.distance
-        print(distance)
         return distance
     }
     func getNavBearing(motion: Motion) -> Double {
@@ -192,8 +222,8 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         guard let direction = userMotion.direction else { return }
         guard let speed = userMotion.speed else { return }
         let bearing = speed >= minSpeed ? direction : 0
-            withAnimation {
-                mapPosition = .camera(MapCamera(centerCoordinate: location, distance: navigating ? navDistance : normalDistance, heading: getNavBearing(motion: userMotion), pitch: navigating ? navPitch : 0))
+        withAnimation {
+            mapPosition = .camera(MapCamera(centerCoordinate: location, distance: navigating ? navDistance : normalDistance, heading: getNavBearing(motion: userMotion), pitch: navigating ? navPitch : 0))
         }
     }
     // MAPMARKER CRUD

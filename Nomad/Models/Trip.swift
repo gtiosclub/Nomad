@@ -61,7 +61,6 @@ class Trip: Identifiable, Equatable, ObservableObject {
         self.modified_date = modified_date
         self.coverImageURL = ""
         if coverImageURL.isEmpty {
-            print("find image for \(end_location.name)")
             Trip.getCityImage(location: end_location) { imageURL in
                 DispatchQueue.main.async {
                     self.coverImageURL = imageURL
@@ -85,65 +84,66 @@ class Trip: Identifiable, Equatable, ObservableObject {
 //        self.updateModifiedDate()
 //    }
     
-    @MainActor
-    static func getCityImageAsync(location: any POI) async -> String {
-        var search_city: String = ""
-        if let city = location.getCity() {
-            search_city = city
-        } else {
-            let location_split = location.getAddress().split(separator: ",")
-            if location_split.count > 1 {
-                search_city = location_split[1].description
-            }
-        }
-        
-        let urlString = "https://pixabay.com/api/?key=46410552-0c1561d54d98701d038092a47&q=\(search_city)-city-scenic&image_type=photo"
-        
-        guard let url = URL(string: urlString) else {
-            print("Invalid URL")
-            return ""
-        }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.timeoutInterval = 10
-        
-        struct PixabayResponse: Codable {
-            let hits: [PixabayPhoto]
-        }
-
-        struct PixabayPhoto: Codable {
-            let id: Int
-            let webformatURL: String
-        }
-        
-        do {
-            // Use async/await to fetch data
-            let (data, _) = try await URLSession.shared.data(for: request)
-            
-            // Decode the response data
-            let pixabayResponse = try JSONDecoder().decode(PixabayResponse.self, from: data)
-            let firstImageURL = pixabayResponse.hits.first?.webformatURL ?? ""
-            
-            return firstImageURL
-        } catch {
-            print("Error fetching or decoding data: \(error)")
-            return ""
-        }
-    }
+//    @MainActor
+//    static func getCityImageAsync(location: any POI) async -> String {
+//        var search_city: String = ""
+//        if let city = location.getCity() {
+//            search_city = city
+//        } else {
+//            let location_split = location.getAddress().split(separator: ",")
+//            if location_split.count > 1 {
+//                search_city = location_split[1].description
+//            }
+//        }
+//        
+//        let urlString = "https://pixabay.com/api/?key=46410552-0c1561d54d98701d038092a47&q=\(search_city)-city-scenic&image_type=photo"
+//        
+//        guard let url = URL(string: urlString) else {
+//            print("Invalid URL")
+//            return ""
+//        }
+//
+//        var request = URLRequest(url: url)
+//        request.httpMethod = "GET"
+//        request.timeoutInterval = 10
+//        
+//        struct PixabayResponse: Codable {
+//            let hits: [PixabayPhoto]
+//        }
+//
+//        struct PixabayPhoto: Codable {
+//            let id: Int
+//            let webformatURL: String
+//        }
+//        
+//        do {
+//            // Use async/await to fetch data
+//            let (data, _) = try await URLSession.shared.data(for: request)
+//            
+//            // Decode the response data
+//            let pixabayResponse = try JSONDecoder().decode(PixabayResponse.self, from: data)
+//            let firstImageURL = pixabayResponse.hits.first?.webformatURL ?? ""
+//            
+//            return firstImageURL
+//        } catch {
+//            print("Error fetching or decoding data: \(error)")
+//            return ""
+//        }
+//    }
     
     static func getCityImage(location: any POI, completion: @escaping (String) -> Void) {
         var search_city: String = ""
-        if let city = location.getCity() {
+        if let city = location.getCity(), !city.isEmpty {
             search_city = city
         } else {
             let location_split = location.getAddress().split(separator: ",")
             if location_split.count > 1 {
-                search_city = location_split[1].description
+                search_city = location_split[1].description.trimmingCharacters(in: .whitespacesAndNewlines)
             }
         }
         
-        let url = URL(string: "https://pixabay.com/api/?key=46410552-0c1561d54d98701d038092a47&q=\(search_city)-city-GA-scenic&image_type=photo")!
+        print("Finding cover image for \(search_city)")
+        let url = URL(string: "https://pixabay.com/api/?key=46410552-0c1561d54d98701d038092a47&q=\(search_city)-city-scenic&image_type=photo")!
         
         var request = URLRequest(url: url)
         request.httpMethod = "GET"

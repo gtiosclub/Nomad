@@ -17,8 +17,6 @@ struct Restaurant: POI, Identifiable, Ratable, Imagable {
     var price: Int?
     var website: String?
     var imageUrl: String?
-    var open_time: String?
-    var close_time: String?
     var longitude: Double
     var latitude: Double
     var city: String?
@@ -133,15 +131,7 @@ struct Restaurant: POI, Identifiable, Ratable, Imagable {
     func getImageUrl() -> String?  {
         return imageUrl
     }
-    
-    func getOpenTime() -> String? {
-        return open_time
-    }
-    
-    func getCloseTime() -> String? {
-        return close_time
-    }
-    
+
     func getId() -> String {
         return id
     }

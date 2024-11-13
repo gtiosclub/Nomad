@@ -14,7 +14,7 @@ struct DetailRecapView: View {
     @State var recapImages: [Image] = []
     @ObservedObject var vm: UserViewModel
     @State var trip: Trip
-    @State private var totalDist: Double = 0.0
+    @State var routePlanned: Bool = false
     
     var body: some View {
         ScrollView {
@@ -75,7 +75,7 @@ struct DetailRecapView: View {
                         .padding(.bottom, 10)
                     Spacer()
                 }
-                RoutePlanListView(vm: vm)
+                RoutePlanListView(vm: vm, reload: $routePlanned)
                     .padding(.bottom, 30)
                 HStack {
                     Text("Here's how you moved around")
@@ -90,18 +90,18 @@ struct DetailRecapView: View {
                 .pickerStyle(SegmentedPickerStyle())
                 .padding(.bottom, 10)
 
-                RoutePreviewView(vm: vm, trip: Binding.constant(trip))
+                RoutePreviewView(vm: vm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(nil))
                     .frame(width: .infinity, height: 300)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
 
             }.padding(.horizontal, 30)
                 .padding(.bottom, 30)
         }.onAppear{
-            Task {
-                let totalDistance = trip.route?.totalDistance()
-                let totalTime = trip.route?.totalTime()
-            }
             vm.setCurrentTrip(trip: trip)
+            Task {
+                await vm.updateRoute()
+                routePlanned = true
+            }
         }
     }
 }
