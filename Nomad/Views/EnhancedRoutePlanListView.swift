@@ -23,6 +23,7 @@ struct EnhancedRoutePlanListView: View {
                     let time = vm.times[safe: index]
                     createLocationView(location: stop, time: time, isLast: false, isFirst: false)
                 }
+                .onChange(of: vm.times) {}
             }
             
             if let endLocation = vm.current_trip?.getEndLocation() {

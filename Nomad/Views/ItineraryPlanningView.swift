@@ -54,25 +54,7 @@ struct ItineraryPlanningView: View {
                     .offset(y: -280)
                     
                     HStack {
-                        ZStack {
-                            Circle()
-                                .fill(Color.white)
-                                .frame(width: 24, height: 24)
-                                .overlay {
-                                    Circle()
-                                        .stroke(Color.gray, lineWidth: 1)
-                                }
-                            
-                            Text("1")
-                                .font(.system(size: 16))
-                                .foregroundColor(.gray)
-                        }
-                        
-                        Text("Enter your route information")
-                            .frame(alignment: .leading)
-                            .padding(.horizontal)
-                            .font(.headline)
-                        
+                        ItinerarySectionView(sectionNum: 1, sectionTitle: "Enter your route information")
                         Spacer()
                     }
                     .padding(.horizontal)
@@ -98,6 +80,9 @@ struct ItineraryPlanningView: View {
                                     
                                     Button(action: {
                                         inputAddressStart = vm.currentAddress ?? ""
+                                        if !inputAddressStart.isEmpty {
+                                            fetchCoordinates(for: inputAddressStart)
+                                        }
                                         mapSearch.locationResults.removeAll()
                                     }, label: {
                                         Image(systemName: "location.fill")
@@ -122,34 +107,12 @@ struct ItineraryPlanningView: View {
                                             }
                                         
                                         if !startAddressError.isEmpty {
-                                            Text(startAddressError)
-                                                .foregroundColor(.red)
-                                                .font(.caption)
-                                        }
-                                        
-                                        if !endAddressError.isEmpty {
-                                            Text(endAddressError)
-                                                .foregroundColor(.red)
-                                                .font(.caption)
-                                        }
-                                        
-                                        if !bothAddressError.isEmpty {
-                                            Text(bothAddressError)
+                                            Text(startAddressError + endAddressError + bothAddressError)
                                                 .foregroundColor(.red)
                                                 .font(.caption)
                                         }
                                     }
-                                    
-//                                    if lastEdited == completion.start && !isClicked {
-//                                        dropdownMenu(inputAddress: $inputAddressStart, inputName: $inputNameStart, inputLatitude: $startLatitude, inputLongitude: $startLongitude)
-//                                            .zIndex(10)
-//                                    }
                                 }
-                                
-//                                if lastEdited == completion.end && !isClicked {
-//                                    dropdownMenu(inputAddress: $inputAddressEnd, inputName: $inputNameEnd, inputLatitude: $endLatitude, inputLongitude: $endLongitude)
-//                                        .zIndex(10)
-//                                }
                             }
                             .padding(20)
                         }
@@ -164,10 +127,6 @@ struct ItineraryPlanningView: View {
                     .padding(.horizontal)
                     .offset(y: -110)
                     .frame(maxHeight: 100)
-                    //                }
-                    //                .padding(.horizontal)
-                    //                .frame(width: UIScreen.main.bounds.width - 20, height: 230, alignment: .leading)
-                    //                .font(.headline)
                     
                     if (lastEdited == .start || lastEdited == .end) && !isClicked {
                         dropdownMenu(inputAddress: lastEdited == .start ? $inputAddressStart : $inputAddressEnd,
@@ -184,24 +143,7 @@ struct ItineraryPlanningView: View {
                     }
                     
                     HStack {
-                        ZStack {
-                            Circle()
-                                .fill(Color.white)
-                                .frame(width: 24, height: 24)
-                                .overlay {
-                                    Circle()
-                                        .stroke(Color.gray, lineWidth: 1)
-                                }
-                            
-                            Text("2")
-                                .font(.system(size: 16))
-                                .foregroundColor(.gray)
-                        }
-                        
-                        Text("Enter your dates")
-                            .frame(alignment: .leading)
-                            .padding(.horizontal)
-                            .font(.headline)
+                        ItinerarySectionView(sectionNum: 1, sectionTitle: "Enter your dates")
                         
                         Spacer()
                     }
@@ -258,57 +200,11 @@ struct ItineraryPlanningView: View {
                     .offset(y: 170)
                 }
                 .frame(height: 600)
-//                }
-//                .padding(.horizontal)
-//                .frame(width: UIScreen.main.bounds.width - 20, height: 300, alignment: .leading)
-//                .font(.headline)
                 
                 HStack {
                     Button(action: {
-                        startAddressError = ""
-                        endAddressError = ""
-                        bothAddressError = ""
-                        
-                        if inputAddressStart.components(separatedBy: ",").count < 3 && inputAddressEnd.components(separatedBy: ",").count < 3 {
-                            bothAddressError = "Both addresses need to be entered with a street, city, and state."
-                        } else if inputAddressStart.components(separatedBy: ",").count < 3 {
-                            startAddressError = "Please enter a valid start location with a street, city, and state."
-                        } else if inputAddressEnd.components(separatedBy: ",").count < 3 {
-                            endAddressError = "Please enter a valid end location with a street, city, and state."
-                        }
-                        
-                        if inputAddressStart.contains(inputNameStart) {
-                            inputNameStart = "Start Location"
-                        }
-                        if inputAddressEnd.contains(inputNameEnd) {
-                            inputNameEnd = "End Location"
-                        }
-                        
-                        if startAddressError.isEmpty && endAddressError.isEmpty && bothAddressError.isEmpty {
-                            Task {
-                                isLoading = true
-                                
-                                await vm.createTrip(start_location: GeneralLocation(address: inputAddressStart, name: inputNameStart, latitude: startLatitude, longitude: startLongitude), end_location: GeneralLocation(address: inputAddressEnd, name: inputNameEnd, latitude: endLatitude, longitude: endLongitude), start_date: ItineraryPlanningView.dateToString(date: startDate), end_date: ItineraryPlanningView.dateToString(date: endDate), stops: [], start_time: ItineraryPlanningView.timeToString(date: startTime))
-                                
-                                await vm.aiVM.generateTripWithAtlas(userVM: vm)
-                                
-                                await vm.updateRoute()
-                                
-                                inputNameEnd = ""
-                                inputNameStart = ""
-                                inputAddressEnd = ""
-                                inputAddressStart = ""
-                                startDate = Date()
-                                endDate = Date()
-                                startTime = Date()
-                                startLatitude = 0.0
-                                startLongitude = 0.0
-                                endLatitude = 0.0
-                                endLongitude = 0.0
-                                editTripAtlas = true
-                                
-                                isLoading = false
-                            }
+                        Task {
+                            await createTrip("atlas")
                         }
                     }) {
                         Label("Generate with Atlas", systemImage: "wand.and.sparkles")
@@ -330,42 +226,8 @@ struct ItineraryPlanningView: View {
                     }
                     
                     Button(action: {
-                        startAddressError = ""
-                        endAddressError = ""
-                        bothAddressError = ""
-                        
-                        if inputAddressStart.components(separatedBy: ",").count < 3 && inputAddressEnd.components(separatedBy: ",").count < 3 {
-                            bothAddressError = "Both addresses need to be entered with a street, city, and state."
-                        } else if inputAddressStart.components(separatedBy: ",").count < 3 {
-                            startAddressError = "Please enter a valid start location with a street, city, and state."
-                        } else if inputAddressEnd.components(separatedBy: ",").count < 3 {
-                            endAddressError = "Please enter a valid end location with a street, city, and state."
-                        }
-                        
-                        if inputAddressStart.contains(inputNameStart) {
-                            inputNameStart = "Start Location"
-                        }
-                        if inputAddressEnd.contains(inputNameEnd) {
-                            inputNameEnd = "End Location"
-                        }
-                        
-                        if startAddressError.isEmpty && endAddressError.isEmpty && bothAddressError.isEmpty {
-                            Task {
-                                await vm.createTrip(start_location: GeneralLocation(address: inputAddressStart, name: inputNameStart, latitude: startLatitude, longitude: startLongitude), end_location: GeneralLocation(address: inputAddressEnd, name: inputNameEnd, latitude: endLatitude, longitude: endLongitude), start_date: ItineraryPlanningView.dateToString(date: startDate), end_date: ItineraryPlanningView.dateToString(date: endDate), stops: [], start_time: ItineraryPlanningView.timeToString(date: startTime))
-                                
-                                inputNameEnd = ""
-                                inputNameStart = ""
-                                inputAddressEnd = ""
-                                inputAddressStart = ""
-                                startDate = Date()
-                                endDate = Date()
-                                startTime = Date()
-                                startLatitude = 0.0
-                                startLongitude = 0.0
-                                endLatitude = 0.0
-                                endLongitude = 0.0
-                                editTripContinue = true
-                            }
+                        Task {
+                            await createTrip("manual")
                         }
                     }) {
                         Text("Continue").font(.headline)
@@ -390,6 +252,95 @@ struct ItineraryPlanningView: View {
             )
         }.onAppear() {
             vm.clearCurrentTrip()
+        }
+    }
+    
+    func fetchCoordinates(for address: String) {
+        Task {
+            if let coordinates = await vm.getCoordinates(for: address) {
+                startLatitude = coordinates.0
+                startLongitude = coordinates.1
+            }
+        }
+    }
+    
+    struct ItinerarySectionView : View {
+        var sectionNum: Int
+        var sectionTitle: String
+        
+        var body: some View {
+            ZStack {
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: 24, height: 24)
+                    .overlay {
+                        Circle()
+                            .stroke(Color.gray, lineWidth: 1)
+                    }
+                
+                Text("\(sectionNum)")
+                    .font(.system(size: 16))
+                    .foregroundColor(.gray)
+            }
+            
+            Text("\(sectionTitle)")
+                .frame(alignment: .leading)
+                .padding(.horizontal)
+                .font(.headline)
+        }
+    }
+    
+    func createTrip(_ version: String) async {
+        startAddressError = ""
+        endAddressError = ""
+        bothAddressError = ""
+        
+        if inputAddressStart.components(separatedBy: ",").count < 3 && inputAddressEnd.components(separatedBy: ",").count < 3 {
+            bothAddressError = "Both addresses need to be entered with a street, city, and state."
+        } else if inputAddressStart.components(separatedBy: ",").count < 3 {
+            startAddressError = "Please enter a valid start location with a street, city, and state."
+        } else if inputAddressEnd.components(separatedBy: ",").count < 3 {
+            endAddressError = "Please enter a valid end location with a street, city, and state."
+        }
+        
+        if inputAddressStart.contains(inputNameStart) || inputNameStart.isEmpty {
+            inputNameStart = "Start Location"
+        }
+        if inputAddressEnd.contains(inputNameEnd) || inputNameEnd.isEmpty {
+            inputNameEnd = "End Location"
+        }
+        
+        if startAddressError.isEmpty && endAddressError.isEmpty && bothAddressError.isEmpty {
+            Task {
+                if version == "atlas" {
+                    isLoading = true
+                }
+                
+                await vm.createTrip(start_location: GeneralLocation(address: inputAddressStart, name: inputNameStart, latitude: startLatitude, longitude: startLongitude), end_location: GeneralLocation(address: inputAddressEnd, name: inputNameEnd, latitude: endLatitude, longitude: endLongitude), start_date: ItineraryPlanningView.dateToString(date: startDate), end_date: ItineraryPlanningView.dateToString(date: endDate), stops: [], start_time: ItineraryPlanningView.timeToString(date: startTime))
+                
+                if version == "atlas" {
+                    await vm.aiVM.generateTripWithAtlas(userVM: vm)
+                    await vm.updateRoute()
+                }
+                
+                inputNameEnd = ""
+                inputNameStart = ""
+                inputAddressEnd = ""
+                inputAddressStart = ""
+                startDate = Date()
+                endDate = Date()
+                startTime = Date()
+                startLatitude = 0.0
+                startLongitude = 0.0
+                endLatitude = 0.0
+                endLongitude = 0.0
+                if version == "atlas" {
+                    editTripAtlas = true
+                    isLoading = false
+                } else {
+                    editTripContinue = true
+                }
+            }
         }
     }
     
