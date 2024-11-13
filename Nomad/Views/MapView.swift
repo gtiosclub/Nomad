@@ -15,6 +15,7 @@ struct MapView: View {
     @ObservedObject var mapManager = MapManager.manager
     @StateObject private var voiceManager = LocationVoiceManager.shared
     @State private var isVoiceEnabled: Bool = false
+    @State private var isAtlasActivated: Bool = false
     @State private var cameraDistance: CLLocationDistance = 400
     
     @State private var remainingTime: TimeInterval = 0
@@ -90,6 +91,11 @@ struct MapView: View {
                         // Add Voice Announcer Button
                         VoiceAnnouncerButtonView(onPress: announceCurrentLocation, isVoiceEnabled: $isVoiceEnabled)
                             .frame(width: 50, height: 50)
+                        
+                        AIAssistantButtonView(onPress: {}, isAtlasActivated: $isAtlasActivated, vm: vm)
+                            .frame(width: 50, height: 50)
+                        
+                        
                     }
                 }
                 Spacer()
@@ -251,6 +257,43 @@ class LocationVoiceManager: ObservableObject {
     }
 }
 
+// Button to open AI Assistant View
+struct AIAssistantButtonView: View {
+    let onPress: () -> Void
+    @Binding var isAtlasActivated: Bool
+    @ObservedObject var vm: UserViewModel
+    
+    // TODO: Add the proper colors n styling
+    var body: some View {
+        Button(action: {
+            onPress()
+            isAtlasActivated = true
+        }) {
+            ZStack {
+                // White Circle with Drop Shadow
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: 50, height: 50) // Adjust size as needed
+                    .shadow(color: .gray.opacity(0.8), radius: 8, x: 0, y: 5)
+                
+                // Image on top of the circle
+                Image(systemName: "pencil")
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundColor(Color.black)
+                    .frame(width: 30, height: 30) // Adjust size as needed
+            }
+            .sheet(isPresented: $isAtlasActivated) {
+                print("Sheet dismissed")
+                isAtlasActivated = false
+            } content: {
+                AIAssistantView(vm: vm, chatViewModel: ChatViewModel())
+            }
+        }
+        .padding()
+
+    }
+}
 
 #Preview {
     MapView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")))
