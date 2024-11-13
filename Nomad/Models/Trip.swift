@@ -275,6 +275,7 @@ class Trip: Identifiable, Equatable, ObservableObject {
     
     func setRoute(route: NomadRoute) {
         self.route = route
+        self.updateModifiedDate()
     }
     
     func getRoute() -> NomadRoute? {

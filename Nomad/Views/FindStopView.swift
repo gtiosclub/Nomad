@@ -293,6 +293,9 @@ struct FindStopView: View {
             .onChange(of: isPriceDropdownOpen) {
                 updateHeight()
             }
+            .onChange(of: vm.current_trip) {
+                updateHeight()
+            }
         }.onAppear() {
             markerCoordinate = vm.current_trip?.getStartLocationCoordinates() ?? .init(latitude: 0, longitude: 0)
         }
@@ -313,13 +316,6 @@ struct FindStopView: View {
             } else {
                 
                 if selection == "Restaurants" {
-                    //                if (isCuisineDropdownOpen) {
-                    //                    size = 240
-                    //                } else if (isRatingDropdownOpen) {
-                    //                    size = 200
-                    //                } else if (isPriceDropdownOpen) {
-                    //                    size = 170
-                    //                }
                     size = 200
                     if isPriceDropdownOpen || isCuisineDropdownOpen || isRatingDropdownOpen {
                         size += 50
@@ -421,30 +417,17 @@ struct FindStopView: View {
 
     func removeStop(stop: any POI) async {
         vm.current_trip?.removeStops(removedStops: [stop])
-        await self.updateTripRoute()
+        await vm.updateRoute()
+        vm.populateLegInfo()
     }
     
     func replaceStop(oldStop: any POI, newStop: any POI) async {
         vm.current_trip?.removeStops(removedStops: [oldStop])
         vm.current_trip?.addStops(additionalStops: [newStop])
-        await self.updateTripRoute()
+        await vm.updateRoute()
+        vm.populateLegInfo()
     }
-    
-    func updateTripRoute() async {
-        guard let start_loc = vm.current_trip?.getStartLocation() else { return }
-        guard let end_loc = vm.current_trip?.getEndLocation() else { return }
-        guard let all_stops = vm.current_trip?.getStops() else { return }
         
-        var all_pois: [any POI] = []
-        all_pois.append(start_loc)
-        all_pois.append(contentsOf: all_stops)
-        all_pois.append(end_loc)
-        
-        if let newRoutes = await MapManager.manager.generateRoute(pois: all_pois) {
-            vm.setTripRoute(route: newRoutes[0])
-        }
-    }
-    
     private func getVM() -> [any POI] {
         switch selection {
         case "Restaurants":
@@ -465,7 +448,8 @@ struct FindStopView: View {
     func addStop(_ stop: any POI) {
         Task {
             await vm.addStop(stop: stop)
-            await self.updateTripRoute()
+            await vm.updateRoute()
+            vm.populateLegInfo()
         }
     }
     
@@ -510,6 +494,7 @@ struct FindStopView: View {
         var stop: any POI
         var selection: String
         var addStop: (any POI) -> Void
+        @State var hasAdded: Bool = false
         
         private func showRating(_ rating: Double?) -> some View {
             Group {
@@ -533,14 +518,17 @@ struct FindStopView: View {
 
         var body: some View {
             HStack(spacing: 12) {
-                Button(action: { addStop(stop) }) {
+                Button(action: {
+                    addStop(stop)
+                    hasAdded = true
+                }) {
                     ZStack {
                         Circle()
                             .fill(Color.white)
                             .frame(width: 24, height: 24)
-                            .overlay(Circle().stroke(Color.gray, lineWidth: 1))
-                        Image(systemName: "plus")
-                            .foregroundColor(.gray)
+                            .overlay(Circle().stroke(hasAdded ? Color.green : Color.gray, lineWidth: 1))
+                        Image(systemName: hasAdded ? "checkmark" : "plus")
+                            .foregroundColor(hasAdded ? .green : .gray)
                             .font(.system(size: 18))
                             .bold()
                     }
