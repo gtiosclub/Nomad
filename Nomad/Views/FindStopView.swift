@@ -227,8 +227,9 @@ struct FindStopView: View {
                         }
                         
                         EnhancedRoutePlanListView(vm: vm)
-                            .tag(2)
+                        Spacer()
                     }
+                    .tag(2)
                 }
                 .frame(height: dynamicHeight(for: selectedTab))
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
@@ -307,7 +308,7 @@ struct FindStopView: View {
                 }
             }
         case 2:
-            return 275 + CGFloat((vm.current_trip?.getStops().count ?? 0) * 100)
+            return 275 + CGFloat((vm.current_trip?.getStops().count ?? 0) * 95)
         default:
             return 300
         }
@@ -315,7 +316,6 @@ struct FindStopView: View {
         if tab == 1 && $manualSearch.wrappedValue == "Filter Search" {
             size += 100
         }
-        
         return size + 200
     }
 

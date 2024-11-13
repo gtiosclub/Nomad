@@ -106,9 +106,9 @@ struct AIAssistantView: View {
                             Button(action: {
                                 isAdded = true // Set state to true after button click
                                 //add all the tabs
-                                ForEach(chatViewModel.pois) { poi in
-                                    vm.addStop(stop: poi)
-                                }
+//                                ForEach(chatViewModel.pois) { poi in
+//                                    vm.addStop(stop: poi)
+//                                }
                                 
                                     // Reset to "Add Stop" after 2 seconds
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
