@@ -330,7 +330,7 @@ class FirebaseViewModel: ObservableObject {
 
                    let endData: [String: Any] = [
                        "name": endLocation.getName(),
-                       "address": endLocation.getAddress,
+                       "address": endLocation.getAddress(),
                        "city" : endLocation.getCity() ?? "",
                         "latitude" : endLocation.getLatitude(),
                         "longitude" : endLocation.getLongitude(),
