@@ -31,7 +31,6 @@ struct ExploreTripsView: View {
                             }
                             Spacer()
                         }
-                                                
                         HStack {
                             Text("Plan your next trip, \(vm.user.getName().split(separator: " ").first!)!")
                                 .bold()
