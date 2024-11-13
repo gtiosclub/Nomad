@@ -198,6 +198,7 @@ struct AtlasMessage: View {
     }
 }
 
+
 struct POICarouselView: View {
     @ObservedObject var chatViewModel: ChatViewModel
     var vm: UserViewModel
@@ -215,4 +216,5 @@ struct POICarouselView: View {
         .frame(height: 180)
     }
 }
+
 
