@@ -15,6 +15,7 @@ struct PreviewRouteView: View {
     @State private var isPrivate: Bool = true
     @Environment(\.dismiss) var dismiss
     @ObservedObject var trip: Trip
+    @State var routePlanned: Bool = false
     
     var body: some View {
         ScrollView {
@@ -37,7 +38,7 @@ struct PreviewRouteView: View {
                             .fontWeight(.bold)
                             .background(Color.gray.opacity(0.2))
                             .cornerRadius(8)
-                    Text(formatDistance(distance: trip.route?.route?.distance ?? 0))                            
+                    Text(formatDistance(distance: trip.route?.totalDistance() ?? 0))
                             .padding()
                             .fontWeight(.bold)
                             .background(Color.gray.opacity(0.2))
@@ -54,7 +55,7 @@ struct PreviewRouteView: View {
                         
             
                     if vm.current_trip != nil {
-                        RoutePlanListView(vm: vm)
+                        RoutePlanListView(vm: vm, reload: $routePlanned)
                             .padding()
                     } else {
                         Rectangle()
@@ -155,10 +156,13 @@ struct PreviewRouteView: View {
             tripTitle = vm.current_trip?.getName() ?? ""
             isPrivate = vm.current_trip?.isPrivate ?? true
             if let route = trip.route {
-                trip.route = route
+                vm.populateLegInfo()
+                routePlanned = true
             } else {
                 Task {
                     await updateTripRoute()
+                    vm.populateLegInfo()
+                    routePlanned = true
                 }
             }
         }

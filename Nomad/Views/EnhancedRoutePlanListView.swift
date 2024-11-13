@@ -39,9 +39,7 @@ struct EnhancedRoutePlanListView: View {
         .cornerRadius(10)
         .shadow(radius: 5)
         .onAppear {
-            Task {
-                await vm.calculateLegInfo()
-            }
+            vm.populateLegInfo()
         }
     }
     
