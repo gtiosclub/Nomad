@@ -36,9 +36,10 @@ struct AtlasNavigationView: View {
     let speechSynthesizer = AVSpeechSynthesizer()
     
     func speak(text: String) {
-       let utterance = AVSpeechUtterance(string: text)
-       utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
-       utterance.rate = 0.5
+        let utterance = AVSpeechUtterance(string: text)
+        utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
+        utterance.rate = 0.55  // Try increasing this value to speed up the speech
+        utterance.volume = 1.0
         
        speechSynthesizer.speak(utterance)
    }
@@ -84,7 +85,7 @@ struct AtlasNavigationView: View {
             
             if isLoading {
                 AtlasLoadingView(isAtlas: false)
-                    .frame(width: 60, height: 60)
+                    .frame(width: 40, height: 40)
             } else {
                 if isListening {
                     SoundwaveView()
@@ -118,7 +119,7 @@ struct AtlasNavigationView: View {
             if !ChatVM.pois.isEmpty {
                 TabView {
                     ForEach(ChatVM.pois) { poi in
-                        POIDetailView(name: poi.name, address: poi.address, distance: poi.distance, image: poi.image)
+                        POIDetailView(name: poi.name, address: poi.address, distance: poi.distance, phoneNumber: poi.phoneNumber, image: poi.image, rating: poi.rating, price: poi.price, time: poi.time, latitude: poi.latitude, longitude: poi.longitude, city: poi.city, vm: vm, aiVM: AIVM)
                             .frame(width: 400, height: 120) // Adjust width and height as needed
                             .padding(.horizontal, 5) // Adds padding at the top and bottom
                     }
@@ -129,13 +130,11 @@ struct AtlasNavigationView: View {
             Spacer()
                 .padding(.bottom, 60)
             }
-            .onChange(of: ChatVM.latestAIResponse) { response in
-                if let response = response, !response.isEmpty {
-                    speak(text: response)
-                    //toggleIsLoading()
-                    isLoading = false
-                    isListening = false
-                }
+            .onChange(of: ChatVM.pois) { response in
+                speak(text: ChatVM.latestAIResponse ?? "")
+                //toggleIsLoading()
+                isLoading = false
+                isListening = false
             }
             
 

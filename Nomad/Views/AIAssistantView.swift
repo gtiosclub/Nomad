@@ -210,9 +210,12 @@ struct POICarouselView: View {
                 POIDetailView(name: poi.name, address: poi.address, distance: poi.distance, phoneNumber: poi.phoneNumber, image: poi.image, rating: poi.rating, price: poi.price, time: poi.time, latitude: poi.latitude, longitude: poi.longitude, city: poi.city, vm: vm, aiVM: aiViewModel)
                     .frame(width: 400, height: 120)
                     .padding(.horizontal, 5)
+                    .padding(.bottom, 30)
             }
+            
         }
-        .tabViewStyle(.page(indexDisplayMode: .automatic))
+        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
+        .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
         .frame(height: 180)
     }
 }
