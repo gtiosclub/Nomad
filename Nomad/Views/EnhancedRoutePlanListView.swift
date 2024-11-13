@@ -29,19 +29,15 @@ struct EnhancedRoutePlanListView: View {
                 createLocationView(location: endLocation, time: vm.times.last, isLast: true, isFirst: false)
             }
         }
-        .padding(.horizontal, 25)
+        .padding(.leading, 15)
         .padding(.top, -30)
         .padding(.vertical, 15)
-        .padding(.leading, 0)
-        .padding(.trailing, 10)
         .frame(maxWidth: UIScreen.main.bounds.width - 40)
         .background(Color.white)
         .cornerRadius(10)
         .shadow(radius: 5)
         .onAppear {
-            Task {
-                await vm.calculateLegInfo()
-            }
+            vm.populateLegInfo()
         }
     }
     
@@ -115,6 +111,7 @@ struct EnhancedRoutePlanListView: View {
                         Text(location.getName())
                             .font(.headline)
                             .foregroundColor(.black)
+                            .lineLimit(1)
                         
                         if let cuisine = (location as? Restaurant)?.getCuisine() {
                             Text("\(cuisine) Cuisine")
