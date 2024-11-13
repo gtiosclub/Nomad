@@ -940,6 +940,125 @@ class FirebaseViewModel: ObservableObject {
         return ["past": driven_trips, "present": in_progress_trips, "future": future_trips]
     }
     
+    func storeImageAndReturnURL(image: UIImage, tripID: String, completion: @escaping (URL?) -> Void) {
+                print("started")
+                guard let imageData = image.jpegData(compressionQuality: 0.8) else {
+                    //completion(nil)
+                    print("image with url")
+                    return
+                }
+                    // create random image path
+                let imagePath = "images/\(UUID().uuidString).jpg"
+                let storageRef = Storage.storage().reference()
+                // create reference to file you want to upload
+                let imageRef = storageRef.child(imagePath)
+                var urlString: String = ""
+                //upload image
+                
+                imageRef.putData(imageData, metadata: nil) { (metadata, error) in
+                    if let error = error {
+                        print("Error uploading image: \(error.localizedDescription)")
+                    } else {
+                        // Image successfully uploaded
+                        imageRef.downloadURL { url, error in
+                            if let downloadURL = url {
+                                urlString = downloadURL.absoluteString
+                                Task {
+                                    await self.addURLToUser(tripID: tripID, urlString: urlString)
+                                }
+                                completion(url)
+                                print("urlString: \(urlString)")
+                            } else {
+                                print("Error getting download URL: (String(describing: error?.localizedDescription))")
+                            }
+                        }
+                    }
+                }
+            
+                
+            }
+            
+    private func addURLToUser(tripID: String, urlString: String) async -> Void {
+        let docRef = db.collection("TRIPS").document(tripID)
+        print("tripID = \(tripID)")
+        do {
+            let document = try await docRef.getDocument()
+            guard var images = document.data()?["images"] as? [String] else {
+                print("Document does not exist or 'images' is not an array.")
+                return
+            }
+            if (!images.contains(urlString)) {
+                images.append(urlString)
+                try await db.collection("TRIPS").document(tripID).updateData(["images": images])
+                print("updated firebase")
+                //return true
+                
+            } else {
+                print("Image already in user image list")
+                //return false;
+            }
+        } catch {
+            print(error)
+            //return false
+        }
+    }
+    
+    func clearTripImages(tripID: String) async -> Void {
+        let docRef = db.collection("TRIPS").document(tripID)
+        do {
+            let document = try await docRef.getDocument()
+            guard var images = document.data()?["images"] as? [String] else {
+                print("Document does not exist or 'images' is not an array.")
+                return
+            }
+            images.removeAll()
+            try await db.collection("TRIPS").document(tripID).updateData(["images": images])
+            print("updated firebase")
+                //return true
+        } catch {
+            print(error)
+            //return false
+        }
+    }
+        
+    func getAllImages(tripID: String) async -> [String] {
+        let docRef = db.collection("TRIPS").document(tripID)
+        var images_list: [String] = []
+        do {
+            let document = try await docRef.getDocument()
+            guard var images = document.data()?["images"] as? [String] else {
+                print("Document does not exist or 'images' is not an array.")
+                return images_list
+            }
+            images_list = images
+        } catch {
+            print(error)
+        }
+        return images_list
+    }
+        
+    func getImageFromURL(urlString: String, completion: @escaping (UIImage?) -> Void) {
+        guard let url = URL(string: urlString) else {
+            print("Invalid URL string: \(urlString)")
+            completion(nil)
+            return
+        }
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("Error loading image from URL: \(error.localizedDescription)")
+                    completion(nil)
+                } else if let data = data, let image = UIImage(data: data) {
+                    completion(image)
+                } else {
+                    print("Could not load image from URL: \(urlString)")
+                    completion(nil)
+                }
+            }
+        }.resume()
+    }
+
+    
     private func getPOI(name: String, address: String, type: String, longitude: Double, latitude: Double, city: String?, cuisine: String? = nil, rating: Double? = nil, price: Int? = nil, website: String? = nil) -> any POI {
         switch type {
         case "Restaurant":
