@@ -44,6 +44,7 @@
 		8419ED942C99536E003AD5C2 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED932C99536E003AD5C2 /* FirebaseStorage */; };
 		8419ED962C99536E003AD5C2 /* FirebaseStorageCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED952C99536E003AD5C2 /* FirebaseStorageCombine-Community */; };
 		8419ED982C99536E003AD5C2 /* FirebaseVertexAI-Preview in Frameworks */ = {isa = PBXBuildFile; productRef = 8419ED972C99536E003AD5C2 /* FirebaseVertexAI-Preview */; };
+		84DE8BB22CE154090030A4BC /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84DE8BB12CE154040030A4BC /* ProfileView.swift */; };
 		944E9E9B2CACBBEE0032FD34 /* NomadRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 944E9E9A2CACBBEC0032FD34 /* NomadRoute.swift */; };
 		947F53C22CA0F59F00238C4F /* MapboxNavigationCore in Frameworks */ = {isa = PBXBuildFile; productRef = 947F53C12CA0F59F00238C4F /* MapboxNavigationCore */; };
 		B208F21F2CE3EDC7009BCA45 /* NomadColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = B208F21E2CE3EDC4009BCA45 /* NomadColors.swift */; };
@@ -113,6 +114,7 @@
 		66443CD62CADDB77000D3F12 /* RoutePlanListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePlanListView.swift; sourceTree = "<group>"; };
 		6646001B2CC815A10033541C /* Shopping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shopping.swift; sourceTree = "<group>"; };
 		6B3E9F672CAF60A100C24BDB /* ExploreTripsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreTripsView.swift; sourceTree = "<group>"; };
+		84DE8BB12CE154040030A4BC /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		944E9E9A2CACBBEC0032FD34 /* NomadRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NomadRoute.swift; sourceTree = "<group>"; };
 		9455F54A2C9F99F0006D03D6 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		94F91F652C9F875F00A63F7A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -270,6 +272,10 @@
 		B2F8F3482C97BC6400B9618E /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				48C802BC2CDAEC1200392C4F /* CuisineFilterView.swift */,
+				48C802BD2CDAEC1200392C4F /* PriceFilterView.swift */,
+				48C802BE2CDAEC1200392C4F /* RatingFilterView.swift */,
+				84DE8BB12CE154040030A4BC /* ProfileView.swift */,
 				E93AD24B2CC9A16800D1B27C /* AtlasNavigationView.swift */,
 				84FC27152CAC741D008C8339 /* Onboarding */,
 				B2F8F3492C97BC7700B9618E /* RecapView.swift */,
@@ -523,6 +529,7 @@
 				B2F8F3642C97BD9B00B9618E /* UserViewModel.swift in Sources */,
 				08C4C61F2CCB068C00C9B8D9 /* FilterView.swift in Sources */,
 				391165FA2CB53542004B8695 /* PreviewRouteView.swift in Sources */,
+				84DE8BB22CE154090030A4BC /* ProfileView.swift in Sources */,
 				F7C4929A2CD1988D00E8F255 /* ItineraryParentView.swift in Sources */,
 				B2DE8FD52CC81C7000EEDE37 /* NavigationManager.swift in Sources */,
 				E90E9AB82CAF5C1F00A7C4FA /* SpeechRecognizer.swift in Sources */,
