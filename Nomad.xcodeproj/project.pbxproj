@@ -73,10 +73,12 @@
 		B2F8F3642C97BD9B00B9618E /* UserViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2F8F3632C97BD9B00B9618E /* UserViewModel.swift */; };
 		B2F8F3672C97BE2E00B9618E /* ChatGPTSwift in Frameworks */ = {isa = PBXBuildFile; productRef = B2F8F3662C97BE2E00B9618E /* ChatGPTSwift */; };
 		B35A09032CB6181C00C8F02B /* Businesses.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35A09022CB6181400C8F02B /* Businesses.swift */; };
+		B3E575E72CC1CA44009E0355 /* POIDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E575E62CC1CA44009E0355 /* POIDetailView.swift */; };
 		C49A65502C9CE53400A8B9BA /* MapSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = C49A654F2C9CE53400A8B9BA /* MapSearch.swift */; };
 		C49A65522C9CE6D600A8B9BA /* LocationSearchBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = C49A65512C9CE6D600A8B9BA /* LocationSearchBox.swift */; };
 		E90E9AB82CAF5C1F00A7C4FA /* SpeechRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90E9AB72CAF5C1400A7C4FA /* SpeechRecognizer.swift */; };
 		E90E9ABA2CAF5C7000A7C4FA /* VoiceInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = E90E9AB92CAF5C6900A7C4FA /* VoiceInput.swift */; };
+		E93AD24C2CC9A17400D1B27C /* AtlasNavigationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E93AD24B2CC9A16800D1B27C /* AtlasNavigationView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -132,14 +134,15 @@
 		B2F8F3632C97BD9B00B9618E /* UserViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserViewModel.swift; sourceTree = "<group>"; };
 		B35A09022CB6181400C8F02B /* Businesses.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Businesses.swift; sourceTree = "<group>"; };
 		B35B621F2C9A444700AB215E /* AIUnitTesting.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AIUnitTesting.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B3E575E62CC1CA44009E0355 /* POIDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = POIDetailView.swift; sourceTree = "<group>"; };
 		C49A654F2C9CE53400A8B9BA /* MapSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapSearch.swift; sourceTree = "<group>"; };
 		C49A65512C9CE6D600A8B9BA /* LocationSearchBox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationSearchBox.swift; sourceTree = "<group>"; };
 		E90E9AB72CAF5C1400A7C4FA /* SpeechRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognizer.swift; sourceTree = "<group>"; };
 		E90E9AB92CAF5C6900A7C4FA /* VoiceInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceInput.swift; sourceTree = "<group>"; };
+		E93AD24B2CC9A16800D1B27C /* AtlasNavigationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtlasNavigationView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		846DAB0C2CC1D33800CFFDA0 /* FirebaseTesting */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = FirebaseTesting; sourceTree = "<group>"; };
 		84FC27152CAC741D008C8339 /* Onboarding */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Onboarding; sourceTree = "<group>"; };
 		B35B62202C9A444700AB215E /* AIUnitTesting */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = AIUnitTesting; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -210,7 +213,6 @@
 		B2F8F32A2C97BB3C00B9618E = {
 			isa = PBXGroup;
 			children = (
-				846DAB0C2CC1D33800CFFDA0 /* FirebaseTesting */,
 				B2F8F3352C97BB3C00B9618E /* Nomad */,
 				B35B62202C9A444700AB215E /* AIUnitTesting */,
 				9455F5492C9F99F0006D03D6 /* Frameworks */,
@@ -254,6 +256,7 @@
 		B2F8F3482C97BC6400B9618E /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				E93AD24B2CC9A16800D1B27C /* AtlasNavigationView.swift */,
 				84FC27152CAC741D008C8339 /* Onboarding */,
 				B2F8F3492C97BC7700B9618E /* RecapView.swift */,
 				48BBC2D12C9CE5070093D9D0 /* DetailRecapView.swift */,
@@ -268,6 +271,7 @@
 				48974BA02CB04B420057B073 /* RoutePreviewView.swift */,
 				66443CD62CADDB77000D3F12 /* RoutePlanListView.swift */,
 				48974BAE2CB30AAF0057B073 /* EnhancedRoutePlanListView.swift */,
+				B3E575E62CC1CA44009E0355 /* POIDetailView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -373,7 +377,6 @@
 				B35B62242C9A444700AB215E /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				846DAB0C2CC1D33800CFFDA0 /* FirebaseTesting */,
 				B35B62202C9A444700AB215E /* AIUnitTesting */,
 			);
 			name = AIUnitTesting;
@@ -453,6 +456,7 @@
 			files = (
 				599F66172C9CE4F90025A8F8 /* Motion.swift in Sources */,
 				B2154CD02C9E2DF400A6F238 /* CompassView.swift in Sources */,
+				B3E575E72CC1CA44009E0355 /* POIDetailView.swift in Sources */,
 				B2154CD22C9E319C00A6F238 /* RecenterMapView.swift in Sources */,
 				B2F8F35D2C97BD3000B9618E /* GasStation.swift in Sources */,
 				B2F8F3592C97BCD400B9618E /* Restaurant.swift in Sources */,
@@ -471,6 +475,7 @@
 				B2F8F3502C97BC9600B9618E /* ItineraryPlanningView.swift in Sources */,
 				48974B8F2CA0A6130057B073 /* GeneralLocation.swift in Sources */,
 				48974B842C9A438B0057B073 /* Activity.swift in Sources */,
+				E93AD24C2CC9A17400D1B27C /* AtlasNavigationView.swift in Sources */,
 				B2154CD42C9E333700A6F238 /* ChangeMapTypeView.swift in Sources */,
 				B2F8F34C2C97BC7F00B9618E /* MapView.swift in Sources */,
 				B2F8F34E2C97BC8A00B9618E /* AIAssistantView.swift in Sources */,
