@@ -297,7 +297,7 @@ class FirebaseViewModel: ObservableObject {
 //            return false
 //        }
 //    }
-    func modifyCreateTrip(tripID: String, createdDate: String, modifiedDate: String, startDate: String, startTime: String, endDate: String, isPrivate: Bool,  startLocation: any POI , endLocation: any POI) async -> Bool {
+    func createTrip(tripID: String, createdDate: String, modifiedDate: String, startDate: String, startTime: String, endDate: String, isPrivate: Bool,  startLocation: any POI , endLocation: any POI) async -> Bool {
                
                let tripDocRef = db.collection("TRIPS").document(tripID)
 
