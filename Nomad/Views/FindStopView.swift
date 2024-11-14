@@ -29,6 +29,7 @@ struct FindStopView: View {
     @State private var isRatingDropdownOpen = false
     @State private var isPriceDropdownOpen = false
     @Environment(\.dismiss) var dismiss
+    @State private var dynamicHeight: CGFloat = 350
     @State var manualSearch: String = "Manual Search"
     var searchTypes = ["Manual Search", "Filter Search"]
     
@@ -227,14 +228,15 @@ struct FindStopView: View {
                         }
                         
                         EnhancedRoutePlanListView(vm: vm)
-                            .tag(2)
+                        Spacer()
                     }
+                    .tag(2)
                 }
-                .frame(height: dynamicHeight(for: selectedTab))
+                .frame(height: dynamicHeight)
+                .animation(.easeInOut(duration: 0.3), value: dynamicHeight)
+//                .frame(height: dynamicHeight(for: selectedTab))
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
                 .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
-                
-                
                 
                 ScrollView {
                     if isLoading {
@@ -273,11 +275,36 @@ struct FindStopView: View {
                 }
             }
             .padding(.top, 5)
+            .onChange(of: selectedTab) {
+                updateHeight()
+            }
+            .onChange(of: manualSearch) {
+                updateHeight()
+            }
+            .onChange(of: selection) {
+                updateHeight()
+            }
+            .onChange(of: isCuisineDropdownOpen) {
+                updateHeight()
+            }
+            .onChange(of: isRatingDropdownOpen) {
+                updateHeight()
+            }
+            .onChange(of: isPriceDropdownOpen) {
+                updateHeight()
+            }
+            .onChange(of: vm.current_trip) {
+                updateHeight()
+            }
         }.onAppear() {
             markerCoordinate = vm.current_trip?.getStartLocationCoordinates() ?? .init(latitude: 0, longitude: 0)
         }
         .navigationBarBackButtonHidden()
         .toolbar(.hidden, for: .navigationBar)
+    }
+    
+    private func updateHeight() {
+        dynamicHeight = dynamicHeight(for: selectedTab) // Update height with animation
     }
     
     private func dynamicHeight(for tab: Int) -> CGFloat {
@@ -289,13 +316,6 @@ struct FindStopView: View {
             } else {
                 
                 if selection == "Restaurants" {
-                    //                if (isCuisineDropdownOpen) {
-                    //                    size = 240
-                    //                } else if (isRatingDropdownOpen) {
-                    //                    size = 200
-                    //                } else if (isPriceDropdownOpen) {
-                    //                    size = 170
-                    //                }
                     size = 200
                     if isPriceDropdownOpen || isCuisineDropdownOpen || isRatingDropdownOpen {
                         size += 50
@@ -307,7 +327,7 @@ struct FindStopView: View {
                 }
             }
         case 2:
-            return 275 + CGFloat((vm.current_trip?.getStops().count ?? 0) * 100)
+            return 275 + CGFloat((vm.current_trip?.getStops().count ?? 0) * 95)
         default:
             return 300
         }
@@ -315,7 +335,6 @@ struct FindStopView: View {
         if tab == 1 && $manualSearch.wrappedValue == "Filter Search" {
             size += 100
         }
-        
         return size + 200
     }
 
@@ -349,6 +368,7 @@ struct FindStopView: View {
         Button(action: {
             isLoading = true
             hasSearched = true
+            searchString = ""
             Task {
                 do {
                     if let currentTrip = vm.current_trip {
@@ -397,30 +417,17 @@ struct FindStopView: View {
 
     func removeStop(stop: any POI) async {
         vm.current_trip?.removeStops(removedStops: [stop])
-        await self.updateTripRoute()
+        await vm.updateRoute()
+        vm.populateLegInfo()
     }
     
     func replaceStop(oldStop: any POI, newStop: any POI) async {
         vm.current_trip?.removeStops(removedStops: [oldStop])
         vm.current_trip?.addStops(additionalStops: [newStop])
-        await self.updateTripRoute()
+        await vm.updateRoute()
+        vm.populateLegInfo()
     }
-    
-    func updateTripRoute() async {
-        guard let start_loc = vm.current_trip?.getStartLocation() else { return }
-        guard let end_loc = vm.current_trip?.getEndLocation() else { return }
-        guard let all_stops = vm.current_trip?.getStops() else { return }
         
-        var all_pois: [any POI] = []
-        all_pois.append(start_loc)
-        all_pois.append(contentsOf: all_stops)
-        all_pois.append(end_loc)
-        
-        if let newRoutes = await MapManager.manager.generateRoute(pois: all_pois) {
-            vm.setTripRoute(route: newRoutes[0])
-        }
-    }
-    
     private func getVM() -> [any POI] {
         switch selection {
         case "Restaurants":
@@ -441,7 +448,8 @@ struct FindStopView: View {
     func addStop(_ stop: any POI) {
         Task {
             await vm.addStop(stop: stop)
-            await self.updateTripRoute()
+            await vm.updateRoute()
+            vm.populateLegInfo()
         }
     }
     
@@ -486,6 +494,7 @@ struct FindStopView: View {
         var stop: any POI
         var selection: String
         var addStop: (any POI) -> Void
+        @State var hasAdded: Bool = false
         
         private func showRating(_ rating: Double?) -> some View {
             Group {
@@ -509,14 +518,17 @@ struct FindStopView: View {
 
         var body: some View {
             HStack(spacing: 12) {
-                Button(action: { addStop(stop) }) {
+                Button(action: {
+                    addStop(stop)
+                    hasAdded = true
+                }) {
                     ZStack {
                         Circle()
                             .fill(Color.white)
                             .frame(width: 24, height: 24)
-                            .overlay(Circle().stroke(Color.gray, lineWidth: 1))
-                        Image(systemName: "plus")
-                            .foregroundColor(.gray)
+                            .overlay(Circle().stroke(hasAdded ? Color.green : Color.gray, lineWidth: 1))
+                        Image(systemName: hasAdded ? "checkmark" : "plus")
+                            .foregroundColor(hasAdded ? .green : .gray)
                             .font(.system(size: 18))
                             .bold()
                     }
@@ -541,21 +553,23 @@ struct FindStopView: View {
                         .font(.headline)
                         .lineLimit(1)
                     
-                    Text(stop.address)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
+                    HStack {
+                        Text(stop.address[..<(stop.address.firstIndex(of: ",") ?? stop.address.endIndex)])
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                        
+                        Text("\("•  " + (stop.city ?? ""))")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    }
+                    
                     HStack {
                         if let restaurant = stop as? Restaurant {
-                            Text(restaurant.cuisine ?? "")
+                            Text(restaurant.cuisine?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "")
                                 .font(.system(size: 16))
                                 .foregroundColor(.secondary)
-                            
-                            if let city = restaurant.city {
-                                Text("• \(city)")
-                                    .font(.system(size: 16))
-                                    .foregroundColor(.secondary)
-                            }
                             
                             if let price = restaurant.price {
                                 Text("•")
@@ -565,12 +579,26 @@ struct FindStopView: View {
                                     .font(.system(size: 16))
                                     .foregroundColor(.secondary)
                             }
+                            
+                            if let rating = restaurant.rating {
+                                Text("•")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(.secondary)
+                                HStack(spacing: 2) {
+                                    Text("\(String(format: "%.1f", rating))")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                    Image(systemName: "star")
+                                        .resizable()
+                                        .frame(width: 14, height: 14)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
                         }
                     }
+                    .padding(0)
                     
-                    if let restaurant = stop as? Restaurant {
-                        showRating(restaurant.rating)
-                    } else if let activity = stop as? Activity {
+                    if let activity = stop as? Activity {
                         showRating(activity.rating)
                     } else if let hotel = stop as? Hotel {
                         showRating(hotel.rating)
@@ -580,6 +608,8 @@ struct FindStopView: View {
                 Spacer()
             }
             .padding(4)
+            .padding(.leading, 10)
+            .padding(.trailing, 2)
             .background(Color.white)
             .cornerRadius(12)
         }

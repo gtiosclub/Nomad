@@ -20,18 +20,18 @@ import SwiftUI
 //    @Published var isLoading: Bool = false
 //    @Published var isAuthenticated = false  // Add this new property
 //    var onSetupCompleted: ((FirebaseViewModel) -> Void)?
-//    
+//
 //    init(current_user: User? = nil, errorText: String? = nil) {
 //        print("inside fbVM init")
 //        if self.current_user == nil {
 //            self.current_user = current_user
 //            self.errorText = errorText
-//            
+//
 //            // Combine both auth listeners
 //            auth.addStateDidChangeListener { [weak self] auth, user in
 //                DispatchQueue.main.async {
 //                    self?.isAuthenticated = user != nil  // Update authentication state
-//                    
+//
 //                    if let user = user {
 //                        print("User Found")
 //                        if let username = user.displayName {
@@ -243,16 +243,16 @@ class FirebaseViewModel: ObservableObject {
 //    func storeRoute(route: NomadRoute) async -> Bool {
 //        do {
 //            try await tripDocRef.setData(tripData)
-//            
+//
 //            let stopsCollection = tripDocRef.collection("STOPS")
-//            
+//
 //            let startData: [String: Any] = [
 //                "name": startLocationName,
 //                "address": startLocationAddress,
 //                "type": "GeneralLocation"
 //            ]
 //            try await stopsCollection.document("start").setData(startData)
-//            
+//
 //            let endData: [String: Any] = [
 //                "name": endLocationName,
 //                "address": endLocationAddress,
@@ -277,7 +277,7 @@ class FirebaseViewModel: ObservableObject {
 //        do {
 //            try await tripDocRef.setData(tripData)
 //            let stopsCollection = tripDocRef.collection("STOPS")
-//            
+//
 //            let startData: [String: Any] = [
 //                "name": startLocationName,
 //                "address": startLocationAddress,
@@ -297,21 +297,22 @@ class FirebaseViewModel: ObservableObject {
 //            return false
 //        }
 //    }
-    func createTrip(tripID: String, createdDate: String, modifiedDate: String, startDate: String, startTime: String, endDate: String, isPrivate: Bool,  startLocation: any POI , endLocation: any POI) async -> Bool {
+    func createTrip(tripID: String, createdDate: String, modifiedDate: String, startDate: String, startTime: String, endDate: String, isPrivate: Bool,  startLocation: any POI , endLocation: any POI, routeName: String, stops: [any POI]) async -> Bool {
                
                let tripDocRef = db.collection("TRIPS").document(tripID)
-
+            let stopIDs = stops.map { $0.id }
                let tripData: [String: Any] = [
                    "created_date": createdDate,
                    "end_date" : endDate,
                    "end_id" : "end",
-                   "isPrivate" : true,
+                   "isPrivate" : isPrivate,
                    "modified_date": modifiedDate,
-                   "name" : "",
+                   "name" : routeName,
                    "start_date" : startDate,
                    "start_id" : "start",
                    "start_time" : startTime,
-                   "images" : []
+                   "images" : [],
+                   "stops": stopIDs
                ]
                do {
                    try await tripDocRef.setData(tripData)
@@ -337,6 +338,14 @@ class FirebaseViewModel: ObservableObject {
                         "type": "GeneralLocation"
                     ]
                     try await stopsCollection.document("end").setData(endData)
+                   
+                   for (index, stop) in stops.enumerated() {
+                       let stopAdded = await addStopToTrip(tripID: tripID, stop: stop, index: index + 1)
+                       if !stopAdded {
+                           print("Failed to add stop \(stop.name)")
+                           return false
+                       }
+                   }
                     return true
                 } catch {
                     print("Error creating trip or stops: \(error)")
@@ -435,6 +444,16 @@ class FirebaseViewModel: ObservableObject {
         // modify date
         do {
             try await db.collection("TRIPS").document(tripID).updateData(["modified_date" : modifiedDate])
+            return true
+        } catch {
+            print(error)
+            return false
+        }
+    }
+    
+    func modifyHasDriven(tripID: String, hasDriven: Int) async -> Bool {
+        do {
+            try await db.collection("TRIPS").document(tripID).updateData(["hasDriven" : hasDriven])
             return true
         } catch {
             print(error)
@@ -568,6 +587,7 @@ class FirebaseViewModel: ObservableObject {
             return false
         }
     }
+    
     
     func getAllPublicTrips(userID: String) async -> [Trip] {
             var public_trips : [Trip] = []
@@ -755,7 +775,8 @@ class FirebaseViewModel: ObservableObject {
 //    func modifyTrips(userID: String, trip: Trip) async -> Bool {
 //        let tripID = trip.id
 //        let user = db.collection("USERS").document(userID)
-//        
+//
+//
 //        do {
 //            let trip_document = try await user.getDocument()
 //            guard let tripDocs = trip_document.data()?["trips"] as? [String] else {
