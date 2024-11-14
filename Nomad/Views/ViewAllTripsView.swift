@@ -30,7 +30,7 @@ struct ViewAllTripsView: View {
                                 Ellipse()
                                     .fill(Color.gray)
                                     .frame(width: 40, height: 40)
-                                Text((vm.user?.getName() ?? "User").prefix(1))
+                                Text((vm.user.getName() ?? "User").prefix(1))
                                     .foregroundColor(.white)
                                     .font(.system(size: 25))
                             }
@@ -56,7 +56,7 @@ struct ViewAllTripsView: View {
                             
                             ScrollView(.horizontal) {
                                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())]) {
-                                    ForEach(vm.my_trips) { trip in
+                                    ForEach(UserViewModel.my_trips) { trip in
                                         NavigationLink(destination: {
                                             PreviewRouteView(vm: vm, trip: trip)
                                         }, label: {
@@ -91,9 +91,9 @@ struct ViewAllTripsView: View {
                     }
                 }
             }
-        }.onAppear() {
+        }.task() {
             print("populating trips")
-            vm.populate_my_trips()
+            await vm.populateUserTrips()
         }
     }
     
