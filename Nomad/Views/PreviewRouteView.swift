@@ -48,6 +48,7 @@ struct PreviewRouteView: View {
                             .cornerRadius(8)
                     }
                     .padding(.horizontal)
+                    .onChange(of: vm.times) {}
                     
                     Text("Route Details")
                         .font(.headline)

@@ -11,7 +11,7 @@ import MapKit
 class Trip: Identifiable, Equatable, ObservableObject {
     var id: String
     @Published var route: NomadRoute?
-    private var stops: [any POI]
+    @Published var stops: [any POI]
     private var start_location: any POI
     private var end_location: any POI
     private var start_date: String
@@ -171,7 +171,9 @@ class Trip: Identifiable, Equatable, ObservableObject {
     }
     
     func updateModifiedDate() {
-        self.modified_date = Trip.getCurrentDateTime()
+        DispatchQueue.main.async {
+            self.modified_date = Trip.getCurrentDateTime()
+        }
     }
     
     static func getCurrentDateTime() -> String {
@@ -303,6 +305,7 @@ class Trip: Identifiable, Equatable, ObservableObject {
     }
     
     func reorderStops(fromOffsets: IndexSet, toOffset: Int) {
-        stops.move(fromOffsets: fromOffsets, toOffset: toOffset)
+        self.stops.move(fromOffsets: fromOffsets, toOffset: toOffset)
+        self.updateModifiedDate()
     }
 }

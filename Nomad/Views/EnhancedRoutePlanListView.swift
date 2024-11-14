@@ -22,12 +22,12 @@ struct EnhancedRoutePlanListView: View {
             }
             
             //if let stops = vm.current_trip?.getStops() {
-                ForEach(stops.indices, id: \.self) { index in
-                    let stop = stops[index]
-                    let time = vm.times[safe: index]
-                    createLocationView(location: stop, time: time, isLast: false, isFirst: false, index: index)
-                        .offset(draggingIndex == index ? dragOffset : .zero)
-                        .gesture(
+            ForEach(stops.indices, id: \.self) { index in
+                let stop = stops[index]
+                let time = vm.times[safe: index]
+                createLocationView(location: stop, time: time, isLast: false, isFirst: false, index: index)
+                    .offset(draggingIndex == index ? dragOffset : .zero)
+                    .gesture(
                         DragGesture()
                             .onChanged { value in
                                 if isEditing {
@@ -45,16 +45,21 @@ struct EnhancedRoutePlanListView: View {
                             .onEnded { _ in
                                 if isEditing {
                                     if let draggedIndex = draggingIndex, let targetIndex = newIndex, draggedIndex != targetIndex {
-                                        moveStop(from: draggedIndex, to: targetIndex)
+                                        Task {
+                                            await moveStop(from: draggedIndex, to: targetIndex)
+                                        }
                                     }
                                     draggingIndex = nil
                                     newIndex = nil
                                     dragOffset = .zero
                                     stops = vm.current_trip?.getStops() ?? []
+                                    
+                                    if stops.isEmpty {
+                                        isEditing = false
+                                    }
                                 }
                             })
-                }
-            //}
+            }
             
             if let endLocation = vm.current_trip?.getEndLocation() {
                 createLocationView(location: endLocation, time: vm.times.last, isLast: true, isFirst: false, index: -1)
@@ -71,9 +76,17 @@ struct EnhancedRoutePlanListView: View {
             stops = vm.current_trip?.getStops() ?? []
             vm.populateLegInfo()
         }
+        .onChange(of: vm.current_trip?.modified_date) {
+            print("updating stops")
+            stops = vm.current_trip?.getStops() ?? []
+            if stops.isEmpty {
+                isEditing = false
+            }
+        }
+    }
       
     func formatTimeDuration(duration: TimeInterval?) -> String {
-        var new_duration = TimeInterval(duration ?? 60.0)
+        let new_duration = TimeInterval(duration ?? 60.0)
         let minsLeft = Int(new_duration.truncatingRemainder(dividingBy: 60))
         let hours = Int(new_duration / 60)
         if hours > 0 {
@@ -86,19 +99,6 @@ struct EnhancedRoutePlanListView: View {
     private func createLocationView(location: any POI, time: Double?, isLast: Bool, isFirst: Bool, index: Int) -> some View {
         HStack(alignment: .center, spacing: 10) {
             let stops = vm.current_trip?.getStops() ?? []
-            // Left part: Circle + Vertical line
-            /*
-             VStack(spacing: 0) {
-             RouteCircle()
-             if !isLast {
-             Rectangle()
-             .fill(Color.gray.opacity(0.5))
-             .frame(width: 2, height: 120)
-             }
-             
-             }
-             .padding(.top, 0)
-             */
             if !isEditing {
                 VStack(alignment: .leading, spacing: 0) {
                     ZStack {
@@ -116,8 +116,12 @@ struct EnhancedRoutePlanListView: View {
                 if (!isLast && !isFirst) {
                     Button(action: {
                         if vm.current_trip != nil {
-                            vm.current_trip?.removeStop(stopId: stops[index].id)
-                            vm.objectWillChange.send()
+                            Task {
+                                vm.removeStop(stopId: stops[index].id)
+                                await vm.updateRoute()
+                                vm.populateLegInfo()
+                            }
+//                            vm.objectWillChange.send()
                         }
                         if stops.isEmpty {
                             isEditing = false
@@ -230,15 +234,13 @@ struct EnhancedRoutePlanListView: View {
                     }
                     if isEditing && !isFirst && !isLast {
                         Spacer()
-                        VStack {
-                            HStack {
-                                Image(systemName: "line.horizontal.3")
-                                    .font(.system(size: 22))
-                                    .foregroundColor(.gray)
-                                    .padding(.top, -4)
-                            }
-                            .padding(.top, 10)
+                        HStack {
+                            Image(systemName: "line.horizontal.3")
+                                .font(.system(size: 22))
+                                .foregroundColor(.gray)
+                                .padding(.top, -4)
                         }
+                        .padding(.top, 10)
                     }
 
                     if isFirst, !stops.isEmpty {
@@ -259,6 +261,7 @@ struct EnhancedRoutePlanListView: View {
                                 .stroke(Color.black, lineWidth: 0.5)
                         )
                         .offset(x: 3, y: -31)
+                        .padding(0)
                     }
                 }
                 .padding(.top, isFirst ? 30 : 0)
@@ -281,7 +284,7 @@ struct EnhancedRoutePlanListView: View {
         }
     }
 
-    private func moveStop(from sourceIndex: Int, to destinationIndex: Int) {
+    private func moveStop(from sourceIndex: Int, to destinationIndex: Int) async {
         guard sourceIndex != destinationIndex else { return }
         let adjustedDestinationIndex: Int
         if destinationIndex > sourceIndex {
@@ -291,7 +294,9 @@ struct EnhancedRoutePlanListView: View {
         }
         let indexSet = IndexSet([sourceIndex])
 
-        vm.current_trip?.reorderStops(fromOffsets: indexSet, toOffset: adjustedDestinationIndex)
+        vm.reorderStops(fromOffsets: indexSet, toOffset: adjustedDestinationIndex)
+        await vm.updateRoute()
+        vm.populateLegInfo()
     }
 }
 

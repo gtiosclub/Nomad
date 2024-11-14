@@ -103,6 +103,7 @@ struct DetailRecapView: View {
                 routePlanned = true
             }
         }
+        .onChange(of: routePlanned) {}
     }
 }
 
