@@ -189,6 +189,19 @@ struct NomadStep {
             self.names = step.names
         }
         
+        init(distance: CLLocationDistance, instructions: String, expectedTravelTime: TimeInterval, exitCodes: [String]?, exitIndex: Int?, instructionsDisplayedAlongStep: [VisualInstructionBanner]?, maneuverDirection: ManeuverDirection?, maneuverType: ManeuverType, intersections: [Intersection]?, names: [String]?) {
+            self.distance = distance
+            self.instructions = instructions
+            self.expectedTravelTime = expectedTravelTime
+            self.exitCodes = exitCodes
+            self.exitIndex = exitIndex
+            self.instructionsDisplayedAlongStep = instructionsDisplayedAlongStep
+            self.maneuverDirection = maneuverDirection
+            self.maneuverType = maneuverType
+            self.intersections = intersections
+            self.names = names
+        } //The names of the road or path leading from this step’s maneuver to the next step’s maneuver.
+        
         init() {
             self.distance = 500
             self.instructions = "Turn right in 0.4 miles"
@@ -231,14 +244,15 @@ struct NomadStep {
     }
     
     // placeholder data
-    init() {
+    init(direction: Direction) {
         self.startCoordinate = CLLocationCoordinate2D(latitude: 33.7501, longitude: 84.3885)
         self.endCoordinate = CLLocationCoordinate2D(latitude: 32.7501, longitude: 83.3885)
         self.coords = []
         self.routeShape = NomadRoute.convertToMKPolyline([startCoordinate, endCoordinate])
-        self.direction = Direction()
+        self.direction = direction
         self.exit = Exit(destinations: ["Atlanta", "New York"], exitCodes: ["78", "79"], exitNames: ["Georgia Ave.","Peachtree St."])
     }
+    
     
     
     func getStartLocation() -> CLLocationCoordinate2D {
