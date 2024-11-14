@@ -29,278 +29,323 @@ struct FindStopView: View {
     @State private var isRatingDropdownOpen = false
     @State private var isPriceDropdownOpen = false
     @Environment(\.dismiss) var dismiss
-    @State private var dynamicHeight: CGFloat = 350
-    @State var manualSearch: String = "Manual Search"
-    var searchTypes = ["Manual Search", "Filter Search"]
+    @State private var dynamicHeight: CGFloat = 500
+    @State var manualSearch: String = "Filter Search"
+    var searchTypes = ["Filter Search", "Manual Search"]
     
     let stop_types = ["Restaurants", "Activities", "Rest Stops", "Hotels", "Tours & Landmarks", "Entertainment", "Shopping"]
     let cuisines = ["Chinese", "Italian", "Indian", "American", "Japanese", "Korean"]
     
+    @State var backToDetails: Bool = false
+    @State var toPreview: Bool = false
+    
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading) {
-                HStack {
-                    ZStack {
-                        Circle()
-                            .fill(Color.white)
-                            .frame(width: 24, height: 24)
-                            .overlay {
-                                Circle()
-                                    .stroke(Color.gray, lineWidth: 1)
-                            }
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading) {
+                    HStack {
+                        ZStack {
+                            Circle()
+                                .fill(Color.white)
+                                .frame(width: 24, height: 24)
+                                .overlay {
+                                    Circle()
+                                        .stroke(Color.gray, lineWidth: 1)
+                                }
+                            
+                            Text("3")
+                                .font(.system(size: 16))
+                                .foregroundColor(.gray)
+                        }
+                        .padding(.leading)
                         
-                        Text("3")
-                            .font(.system(size: 16))
-                            .foregroundColor(.gray)
-                    }
-                    .padding(.leading)
-                    
-                    Text("Explore Stops")
-                        .font(.headline)
-                        .padding(.bottom, 5)
-                        .offset(x: 12, y: 3)
-                }
-                
-                if let trip = vm.current_trip {
-                    RoutePreviewView(vm: vm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(markerCoordinate), showStopMarker: true)
-                        .frame(minHeight: 250.0)
-                } else {
-                    Text("No current trip available")
-                        .foregroundColor(.red)
-                }
-                
-                TabView(selection: $selectedTab) {
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("Time into Route")
+                        Text("Explore Stops")
                             .font(.headline)
-                        
-                        HStack {
-                            Text("0 Mins")
-                            VStack {
-                                GeometryReader { geometry in
-                                    ZStack(alignment: .leading) {
-                                        Slider(
-                                            value: $routeProgress,
-                                            in: 0...((vm.current_trip?.route?.totalTime() ?? 60) / 60),
-                                            step: 1
-                                        )
-                                        .padding(.top)
-                                        .onChange(of: routeProgress) { newValue in
-                                            updateMarkerPosition(progress: newValue)
-                                        }
-                                        
-                                        ZStack {
-                                            RoundedRectangle(cornerRadius: 5)
-                                                .fill(Color.gray)
-                                                .frame(width: 75, height: 25)
-                                                .offset(y: 5)
-                                            
-                                            Text("\(Int(routeProgress)) Mins")
-                                                .foregroundColor(.white)
-                                                .offset(y: 5)
-                                            
-                                            Triangle()
-                                                .fill(Color.gray)
-                                                .frame(width: 15, height: 10)
-                                                .offset(y: 20) // Position the triangle below the rectangle
-                                        }
-                                        .offset(x: CGFloat(routeProgress) / CGFloat((vm.current_trip?.route?.totalTime() ?? 60) / 60) * (geometry.size.width - 25) - 25, y: -25)
-                                        .frame(alignment: .center)
-                                    }
-                                    .offset(y: 10)
-                                }
-                                .frame(height: 80)
-                            }
-                            Text("\(Int((vm.current_trip?.route?.totalTime() ?? 60) / 60)) Mins")
-                        }
-                        .padding(.horizontal)
-                        .frame(alignment: .center)
-                        
-                        VStack {
-                            Picker("Flavor", selection: $manualSearch) {
-                                ForEach(searchTypes, id: \.self) { type in
-                                    Text(type)
-                                }
-                            }
-                        }
-                        .pickerStyle(.segmented)
-                        .padding(.horizontal)
-                        
-                        if $manualSearch.wrappedValue == "Manual Search" {
-                            HStack {
-                                Image(systemName: "magnifyingglass")
-                                    .foregroundColor(.gray)
-                                    .padding(.leading, 10)
-                                TextField("Search stops...", text: $searchString)
-                                    .padding(.vertical, 10)
-                                    .padding(.horizontal, 10)
-                                    .background(.white)
-                                    .cornerRadius(8)
-                                    .padding(.trailing, 10)
-                            }
-                            .padding(.horizontal, 30)
-                            .background(.white)
-                            .cornerRadius(12)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(Color.gray, lineWidth: 1)
-                                    .padding(.horizontal, 30)
-                            )
-                            
-                            fetchResults //Runs parameters through yelp api when search button is clicked
-                                .offset(y: -20)
-                        } else {
-                            VStack(spacing: 8) {
-                                listCuisines //Lists out stops type that can be selected
-                            }
-                            .padding(5)
-                            .padding(.bottom, 0)
-                            
-                            if selection == "Restaurants" {
-                                ZStack {
-                                    HStack() {
-                                        Spacer(minLength: 2)
-                                        
-                                        FilterDropdownView(
-                                            title: "Cuisine",
-                                            options: cuisines,
-                                            selectedOptions: $selectedCuisines,
-                                            selectedOption: .constant(0),
-                                            isDropdownOpen: $isCuisineDropdownOpen,
-                                            allowsMultipleSelection: true
-                                        )
-                                        .frame(minWidth: 120)
-
-                                        FilterDropdownView(
-                                            title: "Rating",
-                                            options: ["1 ★", "2 ★", "3 ★", "4 ★", "5 ★"],
-                                            selectedOptions: .constant([]),
-                                            selectedOption: $rating,
-                                            isDropdownOpen: $isRatingDropdownOpen,
-                                            allowsMultipleSelection: false
-                                        )
-                                        .frame(minWidth: 100)
-
-                                        FilterDropdownView(
-                                            title: "Price",
-                                            options: ["$", "$$", "$$$", "$$$$"],
-                                            selectedOptions: .constant([]),
-                                            selectedOption: $price,
-                                            isDropdownOpen: $isPriceDropdownOpen,
-                                            allowsMultipleSelection: false
-                                        )
-                                        .frame(minWidth: 100)
-                                        
-                                        Spacer(minLength: 2)
-                                    }
-                                    .padding(.horizontal)
-                                    .zIndex(1)
-//                                    .offset(y: -30)
-                                    
-                                    fetchResults //Runs parameters through yelp api when search button is clicked
-                                    .offset(y: 90)
-                                    .zIndex(0)
-                                }
-                            } else if selection == "Activities" || selection == "Hotels" {
-                                RatingUI(rating: $rating)
-                                    .padding(.top, 10)
-                                    .frame(alignment: .center)
-                                
-                                fetchResults //Runs parameters through yelp api when search button is clicked
-                            } else {
-                                fetchResults
-                                    .offset(y: -20)
-                            }
-                        }
-                        Spacer()
+                            .padding(.bottom, 5)
+                            .offset(x: 12, y: 3)
                     }
-                    .padding(.horizontal)
-                    .tag(1)
                     
-                    VStack {
-                        HStack {
-                            Text("Route Plan")
+                    if let trip = vm.current_trip {
+                        RoutePreviewView(vm: vm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(markerCoordinate), showStopMarker: true)
+                            .frame(minHeight: 250.0)
+                    } else {
+                        Text("No current trip available")
+                            .foregroundColor(.red)
+                    }
+                    
+                    TabView(selection: $selectedTab) {
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("Time into Route")
                                 .font(.headline)
-                                .padding(.horizontal)
-                                .frame(alignment: .leading)
                             
+                            HStack {
+                                Text("0 Mins")
+                                VStack {
+                                    GeometryReader { geometry in
+                                        ZStack(alignment: .leading) {
+                                            Slider(
+                                                value: $routeProgress,
+                                                in: 0...((vm.current_trip?.route?.totalTime() ?? 60) / 60),
+                                                step: 1
+                                            )
+                                            .padding(.top)
+                                            .onChange(of: routeProgress) { newValue in
+                                                updateMarkerPosition(progress: newValue)
+                                            }
+                                            
+                                            ZStack {
+                                                RoundedRectangle(cornerRadius: 5)
+                                                    .fill(Color.nomadDarkBlue)
+                                                    .frame(width: 100, height: 25)
+                                                    .offset(y: 5)
+                                                
+                                                Text(formatTimeDuration(duration: TimeInterval(routeProgress * 60)))
+                                                    .foregroundColor(.white)
+                                                    .offset(y: 5)
+                                                
+                                                Triangle()
+                                                    .fill(Color.nomadDarkBlue)
+                                                    .frame(width: 15, height: 10)
+                                                    .offset(y: 20) // Position the triangle below the rectangle
+                                                    .foregroundStyle(Color.nomadDarkBlue)
+                                            }
+                                            .offset(x: CGFloat(routeProgress) / CGFloat((vm.current_trip?.route?.totalTime() ?? 60) / 60) * (geometry.size.width - 25) - 37, y: -25)
+                                            .frame(alignment: .center)
+                                        }
+                                        .offset(y: 10)
+                                    }
+                                    .frame(height: 80)
+                                }
+                                Text(formatTimeDuration(duration: vm.current_trip?.route?.totalTime()))
+                            }
+                            .padding(.horizontal)
+                            .frame(alignment: .center)
+                            
+                            VStack {
+                                Picker("Flavor", selection: $manualSearch) {
+                                    ForEach(searchTypes, id: \.self) { type in
+                                        Text(type)
+                                    }
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                            .padding(.horizontal)
+                            
+                            if $manualSearch.wrappedValue == "Manual Search" {
+                                HStack {
+                                    Image(systemName: "magnifyingglass")
+                                        .foregroundColor(.gray)
+                                        .padding(.leading, 10)
+                                    TextField("Search stops...", text: $searchString)
+                                        .padding(.vertical, 10)
+                                        .padding(.horizontal, 10)
+                                        .background(.white)
+                                        .cornerRadius(8)
+                                        .padding(.trailing, 10)
+                                }
+                                .padding(.horizontal, 30)
+                                .background(.white)
+                                .cornerRadius(12)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.gray, lineWidth: 1)
+                                        .padding(.horizontal, 30)
+                                )
+                                
+                                HStack {
+                                    Spacer()
+                                    fetchResults
+                                    Spacer()
+                                } //Runs parameters through yelp api when search button is clicked
+                                .offset(y: -20)
+                            } else {
+                                VStack(spacing: 8) {
+                                    listCuisines //Lists out stops type that can be selected
+                                }
+                                .padding(5)
+                                .padding(.bottom, 0)
+                                
+                                if selection == "Restaurants" {
+                                    ZStack {
+                                        HStack() {
+                                            Spacer(minLength: 2)
+                                            
+                                            FilterDropdownView(
+                                                title: "Cuisine",
+                                                options: cuisines,
+                                                selectedOptions: $selectedCuisines,
+                                                selectedOption: .constant(0),
+                                                isDropdownOpen: $isCuisineDropdownOpen,
+                                                allowsMultipleSelection: true
+                                            )
+                                            .frame(minWidth: 120)
+                                            
+                                            FilterDropdownView(
+                                                title: "Rating",
+                                                options: ["1 ★", "2 ★", "3 ★", "4 ★", "5 ★"],
+                                                selectedOptions: .constant([]),
+                                                selectedOption: $rating,
+                                                isDropdownOpen: $isRatingDropdownOpen,
+                                                allowsMultipleSelection: false
+                                            )
+                                            .frame(minWidth: 100)
+                                            
+                                            FilterDropdownView(
+                                                title: "Price",
+                                                options: ["$", "$$", "$$$", "$$$$"],
+                                                selectedOptions: .constant([]),
+                                                selectedOption: $price,
+                                                isDropdownOpen: $isPriceDropdownOpen,
+                                                allowsMultipleSelection: false
+                                            )
+                                            .frame(minWidth: 100)
+                                            
+                                            Spacer(minLength: 2)
+                                        }
+                                        .padding(.horizontal)
+                                        .zIndex(1)
+                                        //                                    .offset(y: -30)
+                                        
+                                        HStack {
+                                            Spacer()
+                                            fetchResults
+                                            Spacer()
+                                        } //Runs parameters through yelp api when search button is clicked
+                                        .offset(y: 90)
+                                        .zIndex(0)
+                                    }
+                                } else if selection == "Activities" || selection == "Hotels" {
+                                    RatingUI(rating: $rating)
+                                        .padding(.top, 10)
+                                        .frame(alignment: .center)
+                                    
+                                    HStack {
+                                        Spacer()
+                                        fetchResults
+                                        Spacer()
+                                    } //Runs parameters through yelp api when search button is clicked
+                                } else {
+                                    HStack {
+                                        Spacer()
+                                        fetchResults
+                                        Spacer()
+                                    }
+                                    .offset(y: -20)
+                                }
+                            }
                             Spacer()
                         }
+                        .padding(.horizontal)
+                        .tag(1)
                         
-                        EnhancedRoutePlanListView(vm: vm)
-                        Spacer()
+                        VStack {
+                            HStack {
+                                Text("Route Plan")
+                                    .font(.headline)
+                                    .padding(.horizontal)
+                                    .frame(alignment: .leading)
+                                
+                                Spacer()
+                            }
+                            
+                            EnhancedRoutePlanListView(vm: vm)
+                            Spacer()
+                        }
+                        .tag(2)
                     }
-                    .tag(2)
-                }
-                .frame(height: dynamicHeight)
-                .animation(.easeInOut(duration: 0.3), value: dynamicHeight)
-//                .frame(height: dynamicHeight(for: selectedTab))
-                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
-                .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
-                
-                ScrollView {
-                    if isLoading {
-                        ProgressView("Loading...")
-                            .padding()
-                    } else {
-                        if hasSearched {
-                            if (!getVM().isEmpty) {
-                                ForEach(getVM(), id: \.id) { stop in
-                                    ListQueryResults(stop: stop, selection: selection, addStop: addStop)
+                    .frame(height: dynamicHeight)
+                    .animation(.easeInOut(duration: 0.3), value: dynamicHeight)
+                    //                .frame(height: dynamicHeight(for: selectedTab))
+                    .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
+                    .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
+                    
+                    ScrollView {
+                        if isLoading {
+                            ProgressView("Loading...")
+                                .padding()
+                        } else {
+                            if hasSearched {
+                                if (!getVM().isEmpty) {
+                                    ForEach(getVM(), id: \.id) { stop in
+                                        ListQueryResults(stop: stop, selection: selection, addStop: addStop)
+                                    }
+                                } else {
+                                    Text("No results found.")
+                                        .foregroundColor(.secondary)
+                                        .padding(.top)
                                 }
-                            } else {
-                                Text("No results found.")
-                                    .foregroundColor(.secondary)
-                                    .padding(.top)
                             }
                         }
                     }
+                    .frame(height: hasSearched ? 300 : nil)
+                    
+                    HStack {
+                        Spacer()
+                        
+                        Button {
+                            backToDetails = true
+                        } label: {
+                            Text("Edit Trip")
+                                .foregroundColor(.black)
+                                .padding()
+                                .frame(maxWidth: 100)
+                                .background(Color.gray.opacity(0.4))
+                                .cornerRadius(10)
+                                .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
+                                .font(.headline)
+                        }
+                        .navigationDestination(isPresented: $backToDetails, destination: {
+                            ItineraryPlanningView(vm: vm, use_current_trip: true, letBack: false)
+                        })
+                        
+                        Button {
+                            toPreview = true
+                        } label: {
+                            Text("Preview Route")
+                                .foregroundColor(.white)
+                                .padding()
+                                .frame(maxWidth: 160)
+                                .background(Color.nomadDarkBlue)
+                                .cornerRadius(10)
+                                .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
+                                .font(.headline)
+                        }
+                        .navigationDestination(isPresented: $toPreview, destination: {
+                            PreviewRouteView(vm: vm, trip: vm.current_trip!, letBack: false)
+                        })
+                        
+                        Spacer(minLength: 80)
+                    }
+                    .padding(.bottom, 15)
                 }
-                .frame(height: hasSearched ? 300 : nil)
-                
-                NavigationLink(destination: PreviewRouteView(vm: vm, trip: vm.current_trip!)) {
-                    Spacer()
-                    Text("Preview Route").font(.system(size: 16))
-                        .foregroundColor(.black)
-                        .padding()
-                        .frame(maxWidth: 140)
-                        .background(Color.gray.opacity(0.05))
-                        .cornerRadius(10)
-                        .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.gray, lineWidth: 0.5)
-                        )
-                    Spacer()
+                .padding(.top, 5)
+                .onChange(of: selectedTab) {
+                    updateHeight()
                 }
+                .onChange(of: manualSearch) {
+                    updateHeight()
+                }
+                .onChange(of: selection) {
+                    updateHeight()
+                }
+                .onChange(of: isCuisineDropdownOpen) {
+                    updateHeight()
+                }
+                .onChange(of: isRatingDropdownOpen) {
+                    updateHeight()
+                }
+                .onChange(of: isPriceDropdownOpen) {
+                    updateHeight()
+                }
+                .onChange(of: vm.times) {
+                    updateHeight()
+                }
+            }.onAppear() {
+                markerCoordinate = vm.current_trip?.getStartLocationCoordinates() ?? .init(latitude: 0, longitude: 0)
             }
-            .padding(.top, 5)
-            .onChange(of: selectedTab) {
-                updateHeight()
-            }
-            .onChange(of: manualSearch) {
-                updateHeight()
-            }
-            .onChange(of: selection) {
-                updateHeight()
-            }
-            .onChange(of: isCuisineDropdownOpen) {
-                updateHeight()
-            }
-            .onChange(of: isRatingDropdownOpen) {
-                updateHeight()
-            }
-            .onChange(of: isPriceDropdownOpen) {
-                updateHeight()
-            }
-            .onChange(of: vm.current_trip) {
-                updateHeight()
-            }
-        }.onAppear() {
-            markerCoordinate = vm.current_trip?.getStartLocationCoordinates() ?? .init(latitude: 0, longitude: 0)
+            .navigationBarBackButtonHidden()
+            .toolbar(.hidden, for: .navigationBar)
         }
-        .navigationBarBackButtonHidden()
-        .toolbar(.hidden, for: .navigationBar)
     }
     
     private func updateHeight() {
@@ -401,16 +446,12 @@ struct FindStopView: View {
                 isLoading = false
             }
         }) {
-            HStack {
-                Spacer()
-                Text("Search")
-                    .font(.headline)
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                Spacer()
-            }
+            Text("Search")
+                .font(.headline)
+                .padding()
+                .background(Color.nomadDarkBlue)
+                .foregroundColor(.white)
+                .cornerRadius(10)
         }
         .padding()
     }
@@ -426,6 +467,12 @@ struct FindStopView: View {
         vm.current_trip?.addStops(additionalStops: [newStop])
         await vm.updateRoute()
         vm.populateLegInfo()
+    }
+    
+    func formatTimeDuration(duration: TimeInterval?) -> String {
+        var new_duration = duration ?? TimeInterval(3600.0)
+        let minsLeft = Int(new_duration.truncatingRemainder(dividingBy: 3600))
+        return "\(Int(new_duration / 3600)) hr \(Int(minsLeft / 60)) min"
     }
         
     private func getVM() -> [any POI] {

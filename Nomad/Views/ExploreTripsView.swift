@@ -53,7 +53,7 @@ struct ExploreTripsView: View {
                         
                         // Itineraries
                         VStack(alignment: .leading) {
-                            SectionHeaderView(title: "Upcoming Itineraries")
+                            SectionHeaderView(title: "Upcoming Trips")
                                 .padding(.horizontal)
                             
                             ScrollView(.horizontal) {
@@ -73,7 +73,7 @@ struct ExploreTripsView: View {
                             }
                             .padding(.horizontal)
                             
-                            SectionHeaderView(title: "Previous Itineraries")
+                            SectionHeaderView(title: "Previous Trips")
                                 .padding(.top, 5)
                                 .padding(.horizontal)
                             
@@ -135,7 +135,8 @@ struct ExploreTripsView: View {
                     }
                 }
             }
-        }.task {
+        }
+        .task {
             print("populating trips and current location")
 //            vm.populate_my_trips()
 //            vm.populate_previous_trips()
@@ -146,6 +147,12 @@ struct ExploreTripsView: View {
                 pulled_trips = true
             }
             current_trips = vm.user.trips
+        }
+        .onAppear() {
+            if pulled_trips {
+                print("repopulating trips")
+                current_trips = vm.user.trips
+            }
         }
     }
     

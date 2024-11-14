@@ -31,6 +31,10 @@ struct ItineraryPlanningView: View {
     @State var endAddressError: String = ""
     @State var isLoading: Bool = false
     @State var bothAddressError: String = ""
+    @State var generatingRoute: Bool = false
+    
+    var use_current_trip: Bool = false
+    var letBack: Bool = true
     
     enum completion {
         case null, start, end
@@ -143,7 +147,7 @@ struct ItineraryPlanningView: View {
                     }
                     
                     HStack {
-                        ItinerarySectionView(sectionNum: 1, sectionTitle: "Enter your dates")
+                        ItinerarySectionView(sectionNum: 2, sectionTitle: "Enter your dates")
                         
                         Spacer()
                     }
@@ -203,39 +207,63 @@ struct ItineraryPlanningView: View {
                 
                 HStack {
                     Button(action: {
-                        Task {
-                            await createTrip("atlas")
+                        if !isLoading {
+                            isLoading = true
+                            Task {
+                                await createTrip("atlas")
+                            }
                         }
                     }) {
-                        Label("Generate with Atlas", systemImage: "wand.and.sparkles")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [Color.blue, Color.purple]),
-                                    startPoint: .leading,
-                                    endPoint: .trailing
+                        if !generatingRoute {
+                            Label("Generate with Atlas", systemImage: "wand.and.sparkles")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .padding()
+                                .background(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [Color.blue, Color.purple]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
                                 )
-                            )
-                            .cornerRadius(15)
-                            .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
+                                .cornerRadius(15)
+                                .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
+                        }
                     }
                     .navigationDestination(isPresented: $editTripAtlas) {
                         ItineraryParentView(vm: vm, cvm: ChatViewModel())
                     }
                     
                     Button(action: {
-                        Task {
-                            await createTrip("manual")
+                        if !generatingRoute {
+                            generatingRoute = true
+                            Task {
+                                await createTrip("manual")
+                            }
                         }
                     }) {
-                        Text("Continue").font(.headline)
-                            .foregroundColor(.white)
+                        if !generatingRoute && !isLoading {
+                            Text("Continue").font(.headline)
+                                .foregroundColor(.white)
+                                .padding()
+                                .background(Color.nomadDarkBlue)
+                                .cornerRadius(15)
+                                .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
+                        } else if generatingRoute {
+                            HStack {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                
+                                Text("Generating Route")
+                                    .font(.headline)
+                                    .foregroundColor(.white)
+                            }
                             .padding()
                             .background(Color.nomadDarkBlue)
                             .cornerRadius(15)
                             .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
+                            .frame(minWidth: 300)
+                        }
                     }
                     .navigationDestination(isPresented: $editTripContinue) {
                         ItineraryParentView(vm: vm, cvm: ChatViewModel())
@@ -251,7 +279,50 @@ struct ItineraryPlanningView: View {
                 }
             )
         }.onAppear() {
-            vm.clearCurrentTrip()
+            if !use_current_trip {
+                vm.clearCurrentTrip()
+            } else {
+                print("filling out current trip info")
+                startTime = timeFormatter(vm.current_trip?.getStartTime())
+                startDate = dateFormatter(vm.current_trip?.getStartDate())
+                endDate = dateFormatter(vm.current_trip?.getEndDate())
+                inputAddressStart = vm.current_trip?.getStartLocation().address ?? ""
+                inputAddressEnd = vm.current_trip?.getEndLocation().address ?? ""
+                startLatitude = vm.current_trip?.getStartLocation().latitude ?? 0.0
+                startLongitude = vm.current_trip?.getStartLocation().longitude ?? 0.0
+                endLatitude = vm.current_trip?.getEndLocation().latitude ?? 0.0
+                endLongitude = vm.current_trip?.getEndLocation().longitude ?? 0.0
+                inputNameStart = vm.current_trip?.getStartLocation().name ?? ""
+                inputNameEnd = vm.current_trip?.getEndLocation().name ?? ""
+            }
+        }
+        .navigationBarBackButtonHidden(!letBack)
+        .toolbar(letBack ? .visible : .hidden, for: .navigationBar)
+    }
+    
+    func timeFormatter(_ time: String?) -> Date {
+        guard let time else { return Date() }
+        
+        let timeFormat = DateFormatter()
+        timeFormat.dateFormat = "hh:mm a"
+        
+        if let date = timeFormat.date(from: time) {
+            return date
+        } else {
+            return Date()
+        }
+    }
+    
+    func dateFormatter(_ date: String?) -> Date {
+        guard let date else { return Date() }
+        
+        let dateFormat = DateFormatter()
+        dateFormat.dateFormat = "MM-dd-yyyy"
+        
+        if let date = dateFormat.date(from: date) {
+            return date
+        } else {
+            return Date()
         }
     }
     
@@ -312,10 +383,6 @@ struct ItineraryPlanningView: View {
         
         if startAddressError.isEmpty && endAddressError.isEmpty && bothAddressError.isEmpty {
             Task {
-                if version == "atlas" {
-                    isLoading = true
-                }
-                
                 var start_location = GeneralLocation(address: inputAddressStart, name: inputNameStart, latitude: startLatitude, longitude: startLongitude)
                 
                 start_location.imageUrl = await Trip.getCityImageAsync(location: start_location)
@@ -353,12 +420,12 @@ struct ItineraryPlanningView: View {
     }
     
     static func dateToString(date: Date) -> String {
-        dateformatter.dateFormat = "MM/dd/yyyy"
+        dateformatter.dateFormat = "MM-dd-yyyy"
         return dateformatter.string(from: date)
     }
     
     static func timeToString(date: Date) -> String {
-        dateformatter.dateFormat = "HH:mm"
+        dateformatter.dateFormat = "hh:mm a"
         return dateformatter.string(from: date)
     }
     

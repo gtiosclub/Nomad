@@ -42,6 +42,17 @@ struct EnhancedRoutePlanListView: View {
         }
     }
     
+    func formatTimeDuration(duration: TimeInterval?) -> String {
+        var new_duration = TimeInterval(duration ?? 60.0)
+        let minsLeft = Int(new_duration.truncatingRemainder(dividingBy: 60))
+        let hours = Int(new_duration / 60)
+        if hours > 0 {
+            return "\(Int(new_duration / 60)) HR \(Int(minsLeft)) MIN DRIVE"
+        } else {
+            return "\(Int(minsLeft)) MIN DRIVE"
+        }
+    }
+    
     private func createLocationView(location: any POI, time: Double?, isLast: Bool, isFirst: Bool) -> some View {
         HStack(alignment: .center, spacing: 10) {
             // Left part: Circle + Vertical line
@@ -72,7 +83,7 @@ struct EnhancedRoutePlanListView: View {
             VStack(alignment: .leading, spacing: 0) {
                 // Drive Time
                 if let time = time {
-                    Text("\(time, specifier: "%.0f") MIN DRIVE")
+                    Text(formatTimeDuration(duration: time))
                         .font(.caption)
                         .foregroundColor(.black)
                         .padding(.top, 10)
