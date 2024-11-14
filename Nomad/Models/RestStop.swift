@@ -16,7 +16,7 @@ struct RestStop: POI, Identifiable, Imagable {
     var city: String?
     var imageUrl: String?
     
-    init(address: String, name: String, latitude: Double, longitude: Double, city: String? = nil) {
+    init(address: String, name: String, latitude: Double, longitude: Double, city: String? = nil, imageURL: String? = nil) {
         self.id = UUID().uuidString
         self.address = address
         self.name = name
