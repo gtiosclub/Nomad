@@ -53,8 +53,8 @@ struct AIAssistantView: View {
                         }
                         .padding(.horizontal)
                     }
-                    if chatViewModel.isQuerying{
-                        //Detect if the ai is loading
+                    if chatViewModel.isQuerying {
+                        // Detect if the AI is loading
                         HStack {
                             Circle()
                                 .frame(width: 30, height: 30)
@@ -70,7 +70,6 @@ struct AIAssistantView: View {
                         .padding(.horizontal)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    
                 }
                 .background(Color.clear)
                 .padding(.bottom)
@@ -83,19 +82,6 @@ struct AIAssistantView: View {
             }
             
             // Horizontal scroll view for POIs
-//            if !chatViewModel.pois.isEmpty {
-//                ScrollView(.horizontal, showsIndicators: false) {
-//                    HStack(spacing: 20) {
-//                        ForEach(chatViewModel.pois) { poi in
-//                            POIDetailView(name: poi.name, address: poi.address, distance: poi.distance)
-//                                .frame(width: 400) // Adjust width as necessary
-//                        }
-//                    }
-//                    .padding(.horizontal)
-//                }
-//                .frame(height: 110)  // Adjust height as needed
-//            }
-            
             if !chatViewModel.pois.isEmpty {
                 TabView {
                     ForEach(chatViewModel.pois) { poi in
@@ -107,8 +93,8 @@ struct AIAssistantView: View {
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .frame(height: 180)  // Adjust to fit the padding and content
             }
-            
 
+            // Input section with TextField, microphone, and send button
             HStack {
                 Button(action: {
                     // Microphone action if necessary
@@ -159,6 +145,18 @@ struct AIAssistantView: View {
                 }
             }
             .padding()
+            
+            // New Chat Button
+            Button(action: {
+                chatViewModel.startNewChat()
+            }) {
+                Text("New Chat")
+                    .padding()
+                    .background(Color.red.opacity(0.7))
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+            }
+            .padding(.top)
         }
         .background(Color.clear)
     }

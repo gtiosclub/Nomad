@@ -4,6 +4,7 @@
 //
 //  Created by Connor on 10/29/24.
 //
+
 import Foundation
 
 class ChatViewModel: ObservableObject {
@@ -14,19 +15,18 @@ class ChatViewModel: ObservableObject {
     
     @Published var pois: [POIDetail] = []
     @Published var latestAIResponse: String?
-    @Published var isQuerying = false //the additional global variable for detecting if the gpt api is calling or not
-    
+    @Published var isQuerying = false
+
     func sendMessage(_ content: String, vm: UserViewModel) {
         let newMessage = Message(content: content, sender: "User")
         messages.append(newMessage)
-        isQuerying = true //before calling the API
-        // Now call getPOIDetails to fetch POIs based on the user query
+        isQuerying = true
         Task {
-            defer { DispatchQueue.main.async {self.isQuerying = false}}
+            defer { DispatchQueue.main.async { self.isQuerying = false }}
             if let pois = await self.aiViewModel.getPOIDetails(query: content, vm: vm) {
                 DispatchQueue.main.async {
                     let aiMessage = Message(content: self.aiViewModel.atlasResponse, sender: "AI")
-                    self.pois = pois  // Update pois with fetched data
+                    self.pois = pois
                     self.latestAIResponse = "Response"
                     self.messages.append(aiMessage)
                 }
@@ -39,20 +39,14 @@ class ChatViewModel: ObservableObject {
             }
         }
     }
-    
-    //For Testing the Horizontal Scroll View
-//    @Published var pois: [POIDetail] = [
-//        POIDetail(name: "Speedway", address: "901 Gas Station Avenue, Duluth GA", distance: "in 30 mi"),
-//        POIDetail(name: "Shell", address: "123 Main Street, Atlanta GA", distance: "in 40 mi"),
-//        POIDetail(name: "BP", address: "456 Elm Street, Lawrenceville GA", distance: "in 20 mi")
-//    ]
-    // Example function to generate sample POIs (you would use real data here)
-    func generateSamplePOIs() -> [POIDetail] {
-        return [
-            POIDetail(name: "Speedway", address: "901 Gas Station Avenue, Duluth GA", distance: "in 30 mi", phoneNumber: "4045949429", rating: "3.3/5", price: "$", image: ""),
-            POIDetail(name: "Shell", address: "123 Main Street, Atlanta GA", distance: "in 40 mi", phoneNumber: "4045949429", rating: "5/5", price: "$$$", image: ""),
-            POIDetail(name: "BP", address: "456 Elm Street, Lawrenceville GA", distance: "in 20 mi", phoneNumber: "4045949429", rating: "4/5", price: "$$", image: "")
+
+    // New Chat Function
+    func startNewChat() {
+        messages = [
+            Message(content: "Hi! I'm Atlas, your AI assistant", sender: "AI")
         ]
+        pois.removeAll()
+        latestAIResponse = nil
     }
 }
 
@@ -62,8 +56,6 @@ struct Message: Identifiable {
     let sender: String
 }
 
-
-// Add a model for POI details
 struct POIDetail: Identifiable {
     var id = UUID()
     var name: String
@@ -73,8 +65,7 @@ struct POIDetail: Identifiable {
     var rating: String
     var price: String
     var image: String
-    
-    // Static property for a null POIDetail instance
+
     static let null = POIDetail(
         name: "Unavailable",
         address: "Unavailable",
@@ -85,4 +76,3 @@ struct POIDetail: Identifiable {
         image: ""
     )
 }
-
