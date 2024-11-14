@@ -27,7 +27,7 @@ class ChatViewModel: ObservableObject {
                 DispatchQueue.main.async {
                     let aiMessage = Message(content: self.aiViewModel.atlasResponse, sender: "AI")
                     self.pois = pois  // Update pois with fetched data
-                    self.latestAIResponse = "Response"
+                    self.latestAIResponse = aiMessage.content
                     self.messages.append(aiMessage)
                 }
             } else {
@@ -47,13 +47,13 @@ class ChatViewModel: ObservableObject {
 //        POIDetail(name: "BP", address: "456 Elm Street, Lawrenceville GA", distance: "in 20 mi")
 //    ]
     // Example function to generate sample POIs (you would use real data here)
-    func generateSamplePOIs() -> [POIDetail] {
-        return [
-            POIDetail(name: "Speedway", address: "901 Gas Station Avenue, Duluth GA", distance: 15, phoneNumber: "4045949429", rating: 3.3, price: "$", image: "", time: 3.0),
-            POIDetail(name: "Shell", address: "123 Main Street, Atlanta GA", distance: 5, phoneNumber: "4045949429", rating: 3.2, price: "$$$", image: "", time: 4.1),
-            POIDetail(name: "BP", address: "456 Elm Street, Lawrenceville GA", distance: 7, phoneNumber: "4045949429", rating: 5, price: "$$", image: "", time: 7.2)
-        ]
-    }
+//    func generateSamplePOIs() -> [POIDetail] {
+//        return [
+//            POIDetail(name: "Speedway", address: "901 Gas Station Avenue, Duluth GA", distance: 15, phoneNumber: "4045949429", rating: 3.3, price: "$", image: "", time: 3.0),
+//            POIDetail(name: "Shell", address: "123 Main Street, Atlanta GA", distance: 5, phoneNumber: "4045949429", rating: 3.2, price: "$$$", image: "", time: 4.1),
+//            POIDetail(name: "BP", address: "456 Elm Street, Lawrenceville GA", distance: 7, phoneNumber: "4045949429", rating: 5, price: "$$", image: "", time: 7.2)
+//        ]
+//    }
 }
 
 struct Message: Identifiable {
@@ -64,7 +64,7 @@ struct Message: Identifiable {
 
 
 // Add a model for POI details
-struct POIDetail: Identifiable {
+struct POIDetail: Identifiable, Equatable {
     var id = UUID()
     var name: String
     var address: String
@@ -74,6 +74,9 @@ struct POIDetail: Identifiable {
     var price: String
     var image: String
     var time: Double
+    var latitude: Double
+    var longitude: Double
+    var city: String
     
     // Static property for a null POIDetail instance
     static let null = POIDetail(
@@ -84,7 +87,10 @@ struct POIDetail: Identifiable {
         rating: 0.0,
         price: "Unavailable",
         image: "",
-        time: 0.0
+        time: 0.0,
+        latitude: 45.0,
+        longitude: 34.0,
+        city: ""
     )
 }
 

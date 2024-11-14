@@ -15,6 +15,8 @@ class AIAssistantViewModel: ObservableObject {
     var gasPricesAPIKey = "<PUT GAS KEY HERE>"
     @Published var atlasResponse = ""
     
+    @Published var currentLocationType: String = "Restaurant"
+    
     //used as context in chat so Atlas knows the last thing the user asked
     var currentLocationQuery: LocationInfo = LocationInfo(locationType: "", locationInformation: "", distance: 0.0, time: 0.0, price: "1,2,3,4", location: "", preferences: [], atlasResponse: "")
     var currentAtlasTrip: AtlasTrip = AtlasTrip(stops: [])
@@ -164,21 +166,44 @@ class AIAssistantViewModel: ObservableObject {
             
             let coords = CLLocationCoordinate2D(latitude: business.coordinates.latitude, longitude: business.coordinates.longitude)
             
+            var poiDetail: POIDetail
             // Use await to get routeAdditions asynchronously
-            let routeAdditions = await MapManager.manager.determineRouteAdditions(route: (vm.current_trip?.route)!, newStop: coords)
+            if let route = vm.current_trip?.route {
+                let routeAdditions = await MapManager.manager.determineRouteAdditions(route: route, newStop: coords)
+                
+                print("route additions \(routeAdditions)")
+                
+                poiDetail = POIDetail(
+                    name: business.name,
+                    address: "\(business.location.address1), \(business.location.city), \(business.location.state) \(business.location.zipCode)",
+                    distance: routeAdditions?.distanceAdded ?? 2.2,  // Placeholder for actual distance calculation
+                    phoneNumber: business.phone,
+                    rating: business.rating ?? 4.0,
+                    price: business.price ?? "",
+                    image: business.imageUrl ?? "",
+                    time: (abs(routeAdditions?.timeAdded ?? 300) / 60.0),
+                    latitude: business.coordinates.latitude,
+                    longitude: business.coordinates.longitude,
+                    city: business.location.city
+                )
+            } else {
+                poiDetail = POIDetail(
+                    name: business.name,
+                    address: "\(business.location.address1), \(business.location.city), \(business.location.state) \(business.location.zipCode)",
+                    distance: 2.2,  // Placeholder for actual distance calculation
+                    phoneNumber: business.phone,
+                    rating: business.rating ?? 4.0,
+                    price: business.price ?? "",
+                    image: business.imageUrl ?? "",
+                    time: 300 / 60.0,
+                    latitude: business.coordinates.latitude,
+                    longitude: business.coordinates.longitude,
+                    city: business.location.city
+                    )
+            }
             
-            print("route additions \(routeAdditions)")
             
-            let poiDetail = POIDetail(
-                name: business.name,
-                address: "\(business.location.address1), \(business.location.city), \(business.location.state) \(business.location.zipCode)",
-                distance: routeAdditions?.distanceAdded ?? 2.2,  // Placeholder for actual distance calculation
-                phoneNumber: business.phone,
-                rating: business.rating ?? 4.0,
-                price: business.price ?? "",
-                image: business.imageUrl ?? "",
-                time: (abs(routeAdditions?.timeAdded ?? 300) / 60.0)
-            )
+            
             
             poiDetails.append(poiDetail)
         }
@@ -200,7 +225,7 @@ class AIAssistantViewModel: ObservableObject {
                 let totalStops = stopsData.stops.count
                 
                 for (index, locationInfo) in stopsData.stops.enumerated() {
-                    currentAtlasTrip.stops.append(locationInfo)
+                    //currentAtlasTrip.stops.append(locationInfo)
                     let locationType = locationInfo.locationType
                     let locationInformation = locationInfo.locationInformation
                     let distance = locationInfo.distance
@@ -238,27 +263,9 @@ class AIAssistantViewModel: ObservableObject {
                     if businessResponse.businesses.count > 0 {
                         let business = businessResponse.businesses[0]
                         
-                        switch locationType {
-                        case "Restaurant":
-                            poi = Restaurant(address: "\(business.location.address1), \(business.location.city), \(business.location.state) \(business.location.zipCode)", name: business.name, latitude: business.coordinates.latitude, longitude: business.coordinates.longitude)
-                            print("asdfsdf")
-                        case "Gas Station":
-                            poi = GasStation(address: "\(business.location.address1), \(business.location.city), \(business.location.state) \(business.location.zipCode)", name: business.name, latitude: business.coordinates.latitude, longitude: business.coordinates.longitude)
-                        case "Hotel":
-                            poi = Hotel(address: "\(business.location.address1), \(business.location.city), \(business.location.state) \(business.location.zipCode)", name: business.name, latitude: business.coordinates.latitude, longitude: business.coordinates.longitude)
-                        case "Rest Stop":
-                            poi = RestStop(address: "\(business.location.address1), \(business.location.city), \(business.location.state) \(business.location.zipCode)", name: business.name, latitude: business.coordinates.latitude, longitude: business.coordinates.longitude)
-                        case "Activity":
-                            poi = Activity(address: "\(business.location.address1), \(business.location.city), \(business.location.state) \(business.location.zipCode)", name: business.name, latitude: business.coordinates.latitude, longitude: business.coordinates.longitude)
-                        case "Shopping":
-                            poi = Shopping(address: "\(business.location.address1), \(business.location.city), \(business.location.state) \(business.location.zipCode)", name: business.name, latitude: business.coordinates.latitude, longitude: business.coordinates.longitude)
-                        default:
-                            poi = Restaurant(address: "\(business.location.address1), \(business.location.city), \(business.location.state) \(business.location.zipCode)", name: business.name, latitude: business.coordinates.latitude, longitude: business.coordinates.longitude)
-                            
-                        }
+                        poi = GeneralLocation(address: "\(business.location.address1), \(business.location.city), \(business.location.state) \(business.location.zipCode)", name: business.name, latitude: business.coordinates.latitude, longitude: business.coordinates.longitude)
                         
                         await userVM.addStop(stop: poi)
-                        
                     }
                 }
                 
@@ -285,7 +292,7 @@ class AIAssistantViewModel: ObservableObject {
         do {
             let response = try await openAIAPIKey.sendMessage(
                 text: """
-                   A road trip starts at \(startTime) from \(startLocation) and ends at \(endLocation), with an expected travel time of \(expectedTravelTime). Your task is to suggest stops for the trip. Ensure the number of activities/shopping stops is limited to one per day and that the travel time to each stop does not exceed the expected travel time. The location should default to "MyLocation" unless a city or landmark is mentioned,. Location information should be a blank String unless locationType is "Activity". The price range should be adjusted based on user preferences once provided. Price range (defaults to "1,2,3,4" but should be adjusted based on user preferences). Each stop should be a JSON object with the following fields:
+                   A road trip starts at \(startTime) from \(startLocation) and ends at \(endLocation), with an expected travel time of \(expectedTravelTime). Your task is to suggest stops for the trip. Number of activities/shopping stops is limited to one per day, total stops is max 3 per day, and that the travel time to each stop does not exceed the expected travel time. The location should default to "MyLocation" unless a city or landmark is mentioned. Location information should be a blank String unless locationType is "Activity". The price range should be adjusted based on user preferences once provided. Price range (defaults to "1,2,3,4" but should be adjusted based on user preferences). Each stop should be a JSON object with the following fields:
                     { stops: [{
                     locationType: <Restaurant/Gas Station/Hotel/Rest Stop/Activity/Shopping>
                     locationInformation: <String> (e.g., "Museum" for Activity, or specific name)
@@ -312,9 +319,9 @@ class AIAssistantViewModel: ObservableObject {
         do {
             let response = try await openAIAPIKey.sendMessage(
                 text: """
-                    I will give you a question or statement. From this, extract the following information and format it as JSON. The price field should default to "1,2,3,4" and be adjusted to include upper or lower ranges based on the user's price preference. If the user mentions their own location or route, set the location field to "MyLocation." If the user does not mention a time, set the time field to -1. For locationInformation, default is a blank string, unless there is more specific info about the location type (e.g., "Museum" if the locationType is "Activity"). Include a one-line response to the user's query asking for more information or incorporating their feedback, such as "Here's what I found."
+                    I will give you a question or statement. From this, extract the following information and format it as JSON. The price field should default to "1,2,3,4" and be adjusted to include upper or lower ranges based on the user's price preference. Location is default "MyLocation", unless user mentions a different location. If the user does not mention a time, set the time field to -1. For locationInformation, default is a blank string, unless there is more specific info about the location type (e.g., "Museum" if the locationType is "Activity"). Include a one-line response to the user's query asking for more information or incorporating their feedback, such as "Here's what I found."
                     {
-                    locationType: <Restaurant/Gas Station/Hotel/Rest Stop/Activity/Shopping>
+                    locationType: <Restaurant/Gas Station/Hotel/Rest Stop/Activity/Shopping> (Default "Restaurant")
                     locationInformation: <String>
                     distance: <Double>
                     time: <Double (in seconds)>
@@ -346,16 +353,28 @@ class AIAssistantViewModel: ObservableObject {
         }
         currentLocationQuery = locationInfo
         let locationType = locationInfo.locationType
+        currentLocationType = locationType
         let locationInformation = locationInfo.locationInformation
         let distance = locationInfo.distance
         let location = locationInfo.location
-        let time = locationInfo.time
+        var time = locationInfo.time
         let price = locationInfo.price
         let preferences = locationInfo.preferences.joined(separator: ", ")
         atlasResponse = locationInfo.atlasResponse ?? "Here's what I found"
         
-        if(time != -1 && location == "MyLocation") {
-            let coords = await getCoordsFromTime(time: time, userVM: userVM)
+        if(location == "MyLocation") {
+            var coords: CLLocationCoordinate2D
+            if(time == -1) {
+                if(distance == -1) {
+                    time = 0
+                    coords = await getCoordsFromTime(time: time, userVM: userVM)
+                } else {
+                    coords = await getCoordsFromDistance(distance: distance, userVM: userVM)
+                }
+            } else {
+                coords = await getCoordsFromTime(time: time, userVM: userVM)
+            }
+            
             
             
             guard let businessInformation = await fetchSpecificBusinesses(locationType: (locationInformation == "") ? locationType : locationInformation, distance: 2, price: price, location: "UseCoords", preferences: preferences, latitude: coords.latitude, longitutde: coords.longitude, limit: 3) else {
@@ -374,18 +393,24 @@ class AIAssistantViewModel: ObservableObject {
     
     func getCoordsFromTime(time: Double, userVM: UserViewModel) async -> CLLocationCoordinate2D{
         let sampleRoute = await MapManager.manager.getExampleRoute()!
-        
-        
-        while userVM.current_trip?.route == nil {
-           // Pause for a short duration to avoid busy-waiting
-           try? await Task.sleep(nanoseconds: 100_000_000) // 100 milliseconds
-       }
         let route = userVM.current_trip?.route
         
         print("route")
         print(route)
         
         let coords = MapManager.manager.getFutureLocation(time: time, route: route ?? sampleRoute) ?? CLLocationCoordinate2D(latitude: 0.0, longitude: 0.0)
+        
+        return coords
+    }
+    
+    func getCoordsFromDistance(distance: Double, userVM: UserViewModel) async -> CLLocationCoordinate2D{
+        let sampleRoute = await MapManager.manager.getExampleRoute()!
+        let route = userVM.current_trip?.route
+        
+        print("route")
+        print(route)
+        
+        let coords = MapManager.manager.getFutureLocationByDistance(distance: distance, route: route ?? sampleRoute) ?? CLLocationCoordinate2D(latitude: 0.0, longitude: 0.0)
         
         return coords
     }

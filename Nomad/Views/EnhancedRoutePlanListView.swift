@@ -68,12 +68,9 @@ struct EnhancedRoutePlanListView: View {
         .cornerRadius(10)
         .shadow(radius: 5)
         .onAppear {
-            Task {
-                stops = vm.current_trip?.getStops() ?? []
-                await vm.calculateLegInfo()
-            }
+            stops = vm.current_trip?.getStops() ?? []
+            vm.populateLegInfo()
         }
-    }
     
     private func createLocationView(location: any POI, time: Double?, isLast: Bool, isFirst: Bool, index: Int) -> some View {
         HStack(alignment: .center, spacing: 10) {

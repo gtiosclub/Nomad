@@ -31,12 +31,6 @@ struct ExploreTripsView: View {
                             }
                             Spacer()
                         }
-                        .task {
-                            //await vm.getCurrentCity()
-                        }
-                        
-                        //TEMPORARY JUST FOR MID SEM DEMO
-                        
                         HStack {
                             Text("Plan your next trip, \(vm.user.getName().split(separator: " ").first!)!")
                                 .bold()
@@ -94,6 +88,9 @@ struct ExploreTripsView: View {
                                         })
                                     }
                                 }
+                                .onChange(of: vm.previous_trips, initial: true) { oldTrips, newTrips in
+                                    
+                                }
                             }
                             .padding(.horizontal)
                             
@@ -111,6 +108,9 @@ struct ExploreTripsView: View {
                                                 .frame(alignment: .top)
                                         })
                                     }
+                                }
+                                .onChange(of: vm.community_trips, initial: true) { oldTrips, newTrips in
+                                    
                                 }
                             }
                             .padding(.horizontal)
@@ -136,15 +136,16 @@ struct ExploreTripsView: View {
                 }
             }
         }.task {
-            print("populating trips")
+            print("populating trips and current location")
 //            vm.populate_my_trips()
 //            vm.populate_previous_trips()
 //            vm.populate_community_trips()
             if !pulled_trips {
                 await vm.populateUserTrips()
-                current_trips = vm.user.trips
+                await vm.getCurrentCity()
                 pulled_trips = true
             }
+            current_trips = vm.user.trips
         }
     }
     
