@@ -245,6 +245,17 @@ class Trip: Identifiable, Equatable, ObservableObject {
         self.updateModifiedDate()
     }
     
+    func removeStop(stopId: String) {
+        if let index = self.stops.firstIndex(where: { $0.id == stopId }) {
+            self.stops.remove(at: index)
+        }
+        self.updateModifiedDate()
+    }
+    
+    func getStop(stopId: String) -> (any POI)? {
+        return stops.first { $0.id == stopId }
+    }
+    
     func getStops() -> [any POI] {
         return stops
     }

@@ -308,7 +308,7 @@ struct FindStopView: View {
                 }
             }
         case 2:
-            return 275 + CGFloat((vm.current_trip?.getStops().count ?? 0) * 95)
+            return 290 + CGFloat((vm.current_trip?.getStops().count ?? 0) * 95)
         default:
             return 300
         }
