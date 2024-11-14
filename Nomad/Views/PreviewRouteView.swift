@@ -70,6 +70,16 @@ struct PreviewRouteView: View {
                     VStack {
                         if !isCommunityTrip {
                             VStack(alignment: .leading) {
+                                RadioButton(text: "Public", isSelected: $isPrivate, value: false)
+                                RadioButton(text: "Private", isSelected: $isPrivate, value: true)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.leading, 30)
+                        }
+                        
+                        HStack {
+                            NavigationLink(destination: FindStopView(vm: vm)) {
+                                Text("Edit Route")
                                 Text("Finalize Your Route")
                                     .font(.headline)
                                     .fontWeight(.bold)

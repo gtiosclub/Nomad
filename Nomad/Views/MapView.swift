@@ -21,6 +21,7 @@ struct MapView: View {
     @State private var remainingDistance: Double = 0
     @State private var isSheetPresented = false
 
+
     
     let timer = Timer.publish(every: 7, on: .main, in: .common).autoconnect()
     
@@ -168,13 +169,6 @@ struct MapView: View {
             AtlasNavigationView(vm: vm)
                 .presentationDetents([.medium, .large])
         }
-//        .onReceive(timer) { _ in
-//            if navManager.navigating {
-//                self.remainingTime = mapManager.getRemainingTime(leg: navManager.navigatingLeg!)
-//                self.remainingDistance = mapManager.getRemainingDistance(leg: navManager.navigatingLeg!)
-//            }
-//        }
-        
     }
     private func formattedRemainingTime() -> String {
         let seconds = Int(navManager.remainingTime ?? 0)
