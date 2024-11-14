@@ -12,12 +12,13 @@ struct AIAssistantView: View {
     let timer = Timer.publish(every:0.5, on: .main, in: .common).autoconnect()
 
     var body: some View {
-       VStack {
+       VStack(spacing: 0){
            HeaderView(vm: vm)
            ChatMessagesView(chatViewModel: chatViewModel, dotCount: dotCount, timer: timer)
            
            if !chatViewModel.pois.isEmpty {
                POICarouselView(chatViewModel: chatViewModel, vm: vm, aiViewModel: aiViewModel)
+                   .padding(.bottom, 0)
            }
            
            HStack {
@@ -210,13 +211,12 @@ struct POICarouselView: View {
                 POIDetailView(name: poi.name, address: poi.address, distance: poi.distance, phoneNumber: poi.phoneNumber, image: poi.image, rating: poi.rating, price: poi.price, time: poi.time, latitude: poi.latitude, longitude: poi.longitude, city: poi.city, vm: vm, aiVM: aiViewModel)
                     .frame(width: 400, height: 120)
                     .padding(.horizontal, 5)
-                    .padding(.bottom, 30)
+                    .padding(.bottom, 15)
             }
-            
         }
         .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
         .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
-        .frame(height: 180)
+        .frame(height: 150)
     }
 }
 
