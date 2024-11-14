@@ -115,6 +115,9 @@ struct ItineraryParentView: View {
             }
         }
         .animation(.easeInOut, value: showAtlas) // Apply animation to the view transition
+        .onAppear() {
+            print("made it to itinerary parent")
+        }
     }
 }
 

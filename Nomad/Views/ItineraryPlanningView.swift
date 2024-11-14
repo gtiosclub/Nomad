@@ -316,7 +316,15 @@ struct ItineraryPlanningView: View {
                     isLoading = true
                 }
                 
-                await vm.createTrip(start_location: GeneralLocation(address: inputAddressStart, name: inputNameStart, latitude: startLatitude, longitude: startLongitude), end_location: GeneralLocation(address: inputAddressEnd, name: inputNameEnd, latitude: endLatitude, longitude: endLongitude), start_date: ItineraryPlanningView.dateToString(date: startDate), end_date: ItineraryPlanningView.dateToString(date: endDate), stops: [], start_time: ItineraryPlanningView.timeToString(date: startTime))
+                var start_location = GeneralLocation(address: inputAddressStart, name: inputNameStart, latitude: startLatitude, longitude: startLongitude)
+                
+                start_location.imageUrl = await Trip.getCityImageAsync(location: start_location)
+                
+                var end_location = GeneralLocation(address: inputAddressEnd, name: inputNameEnd, latitude: endLatitude, longitude: endLongitude)
+                
+                end_location.imageUrl = await Trip.getCityImageAsync(location: end_location)
+                
+                await vm.createTrip(start_location: start_location, end_location: end_location, start_date: ItineraryPlanningView.dateToString(date: startDate), end_date: ItineraryPlanningView.dateToString(date: endDate), stops: [], start_time: ItineraryPlanningView.timeToString(date: startTime), coverImageURL: end_location.imageUrl!)
                 
                 if version == "atlas" {
                     await vm.aiVM.generateTripWithAtlas(userVM: vm)

@@ -23,6 +23,7 @@ struct GeneralLocation: POI, Identifiable, Imagable {
         self.latitude = latitude
         self.longitude = longitude
         self.city = city
+        self.imageUrl = nil // Initialize imageUrl with a default value
     }
     
     init(from business: Business) {
