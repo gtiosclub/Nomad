@@ -7,21 +7,23 @@
 
 import Foundation
 
-struct GasStation: POI {
+struct GasStation: POI, Imagable, Identifiable {
     var id: String
     var name: String
     var address: String
     var longitude: Double
     var latitude: Double
     var city: String?
+    var imageUrl: String?
     
-    init(address: String, name: String, latitude: Double, longitude: Double, city: String? = nil) {
+    init(address: String, name: String, latitude: Double, longitude: Double, city: String? = nil, imageURL: String? = nil) {
         self.id = UUID().uuidString
         self.address = address
         self.name = name
         self.latitude = latitude
         self.longitude = longitude
         self.city = city
+        self.imageUrl = imageURL
     }
     
     static func == (lhs: GasStation, rhs: GasStation) -> Bool {
@@ -71,4 +73,9 @@ struct GasStation: POI {
     func getId() -> String {
         return id
     }
+    
+    func getImageUrl() -> String? {
+        return imageUrl
+    }
+
 }

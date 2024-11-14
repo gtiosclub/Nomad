@@ -140,7 +140,6 @@ class AIAssistantViewModel: ObservableObject {
             return [POIDetail.null]
         }
         
-        print(businessResponse)
         if(businessResponse.businesses.isEmpty) {
             atlasResponse = "I couldn’t find any stops with the current criteria. Try broadening your search for more results."
         }
@@ -162,7 +161,6 @@ class AIAssistantViewModel: ObservableObject {
 
         for i in 0..<min(3, businessResponse.businesses.count) {
             let business = businessResponse.businesses[i]
-            print(business.imageUrl)
             
             let coords = CLLocationCoordinate2D(latitude: business.coordinates.latitude, longitude: business.coordinates.longitude)
             
@@ -213,70 +211,70 @@ class AIAssistantViewModel: ObservableObject {
     
     func generateTripWithAtlas(userVM: UserViewModel) async -> String {
         let expectedTravelTime = userVM.current_trip?.route?.route?.expectedTravelTime ?? 0.0
-//
-        let brainstormedStops = await gptGenerateStops(startTime: userVM.current_trip?.getStartTime() ?? "", startLocation: userVM.current_trip?.getStartLocation().address ?? "", endLocation: userVM.current_trip?.getEndLocation().address ?? "", expectedTravelTime: String(expectedTravelTime)) ?? ""
-        
-        
+        let brainstormedStops = await gptGenerateStops(startTime: userVM.current_trip?.getStartTime() ?? "",
+                                                       startLocation: userVM.current_trip?.getStartLocation().address ?? "",
+                                                       endLocation: userVM.current_trip?.getEndLocation().address ?? "",
+                                                       expectedTravelTime: String(expectedTravelTime)) ?? ""
         
         if let jsonData = brainstormedStops.data(using: .utf8) {
             do {
                 let stopsData = try JSONDecoder().decode(AtlasTrip.self, from: jsonData)
                 
                 let totalStops = stopsData.stops.count
+                var businessInformationResults: [String] = []
                 
-                for (index, locationInfo) in stopsData.stops.enumerated() {
-                    //currentAtlasTrip.stops.append(locationInfo)
-                    let locationType = locationInfo.locationType
-                    let locationInformation = locationInfo.locationInformation
-                    let distance = locationInfo.distance
-                    let location = locationInfo.location
-                    let time = locationInfo.time
-                    let price = locationInfo.price
-                    let preferences = locationInfo.preferences.joined(separator: ", ")
-                    
-                    var businessInformation: String = ""
-                    
-                    if(time != -1 && location == "MyLocation") {
-                        let coords = await getCoordsFromTime(time: time, userVM: userVM)
-//                        
-//                        print("Coords \(coords)")
-//
-                        print("cool cool")
-                        print(locationInfo)
-                        
-                        businessInformation = await fetchSpecificBusinesses(locationType: (locationInformation == "") ? locationType : locationInformation, distance: 2, price: price, location: "UseCoords", preferences: preferences, latitude: coords.latitude, longitutde: coords.longitude, limit: 1) ?? ""
-                    
-                        
-                    } else {
-                        businessInformation = await fetchSpecificBusinesses(locationType: (locationInformation == "") ? locationType : locationInformation, distance: distance, price: price, location: location, preferences: preferences, latitude: 0.0, longitutde: 0.0, limit: 1) ?? ""
+                // Create an array of async tasks for fetching businesses
+                await withTaskGroup(of: (Int, String).self) { group in
+                    for (index, locationInfo) in stopsData.stops.enumerated() {
+                        group.addTask { [self] in
+                            let locationType = locationInfo.locationType
+                            let locationInformation = locationInfo.locationInformation
+                            let distance = locationInfo.distance
+                            let location = locationInfo.location
+                            let time = locationInfo.time
+                            let price = locationInfo.price
+                            let preferences = locationInfo.preferences.joined(separator: ", ")
+                            
+                            var businessInformation: String = ""
+                            
+                            if time != -1 && location == "MyLocation" {
+                                let coords = await getCoordsFromTime(time: time, userVM: userVM)
+                                businessInformation = await fetchSpecificBusinesses(locationType: (locationInformation == "") ? locationType : locationInformation, distance: 2, price: price, location: "UseCoords", preferences: preferences, latitude: coords.latitude, longitutde: coords.longitude, limit: 1) ?? ""
+                            } else {
+                                businessInformation = await fetchSpecificBusinesses(locationType: (locationInformation == "") ? locationType : locationInformation, distance: distance, price: price, location: location, preferences: preferences, latitude: 0.0, longitutde: 0.0, limit: 1) ?? ""
+                            }
+                            
+                            return (index, businessInformation)
+                        }
                     }
                     
+                    // Collect all results
+                    for await (index, businessInformation) in group {
+                        businessInformationResults.append(businessInformation)
+                    }
+                }
+                
+                // Process the results of all business fetches
+                for (index, businessInformation) in businessInformationResults.enumerated() {
                     guard let businessResponse = parseGetBusinessesIntoModel(yelpInfo: businessInformation) else {
                         return ""
                     }
                     
-                    print(businessInformation)
-                    
-                    var poi: any POI;
-                    print("business response \(businessResponse)")
-                    
                     if businessResponse.businesses.count > 0 {
                         let business = businessResponse.businesses[0]
-                        
-                        poi = GeneralLocation(address: "\(business.location.address1), \(business.location.city), \(business.location.state) \(business.location.zipCode)", name: business.name, latitude: business.coordinates.latitude, longitude: business.coordinates.longitude)
-                        
+                        let poi = GeneralLocation(address: "\(business.location.address1), \(business.location.city), \(business.location.state) \(business.location.zipCode)",
+                                                  name: business.name,
+                                                  latitude: business.coordinates.latitude,
+                                                  longitude: business.coordinates.longitude)
                         await userVM.addStop(stop: poi)
                     }
                 }
-                
             } catch {
                 print("Failed to decode JSON: \(error)")
             }
         }
         return ""
     }
-
-     //-------------------------------------------------
     
     /*----------------------------------------------------
      Helper Methods
@@ -319,9 +317,9 @@ class AIAssistantViewModel: ObservableObject {
         do {
             let response = try await openAIAPIKey.sendMessage(
                 text: """
-                    I will give you a question or statement. From this, extract the following information and format it as JSON. The price field should default to "1,2,3,4" and be adjusted to include upper or lower ranges based on the user's price preference. Location is default "MyLocation", unless user mentions a different location. If the user does not mention a time, set the time field to -1. For locationInformation, default is a blank string, unless there is more specific info about the location type (e.g., "Museum" if the locationType is "Activity"). Include a one-line response to the user's query asking for more information or incorporating their feedback, such as "Here's what I found."
+                    I will give you a question or statement. From this, extract the following information and format it as JSON. The price field should default to "1,2,3,4" and be adjusted to include upper or lower ranges based on the user's price preference. Location is default "MyLocation", unless user mentions a different location. If the user does not mention a time, set the time field to -1. Same with distance. For locationInformation, default is a blank string, unless there is more specific info about the location type (e.g., "Museum" if the locationType is "Activity"). Include a one-line response to the user's query asking for more information or incorporating their feedback, such as "Here's what I found."
                     {
-                    locationType: <Restaurant/Gas Station/Hotel/Rest Stop/Activity/Shopping> (Default "Restaurant")
+                    locationType: <Restaurant/Gas Station/Hotel/Rest Stop/Activity/Shopping>
                     locationInformation: <String>
                     distance: <Double>
                     time: <Double (in seconds)>
@@ -364,16 +362,21 @@ class AIAssistantViewModel: ObservableObject {
         
         if(location == "MyLocation") {
             var coords: CLLocationCoordinate2D
-            if(time == -1) {
-                if(distance == -1) {
+            if(time == -1.0) {
+                if(distance != -1.0) {
                     time = 0
                     coords = await getCoordsFromTime(time: time, userVM: userVM)
+                    print("trytyrtry")
                 } else {
                     coords = await getCoordsFromDistance(distance: distance, userVM: userVM)
+                    print("lmlmlml")
                 }
             } else {
                 coords = await getCoordsFromTime(time: time, userVM: userVM)
+                print("weee")
             }
+            
+            print("ai coords \(coords)")
             
             
             
@@ -395,9 +398,6 @@ class AIAssistantViewModel: ObservableObject {
         let sampleRoute = await MapManager.manager.getExampleRoute()!
         let route = userVM.current_trip?.route
         
-        print("route")
-        print(route)
-        
         let coords = MapManager.manager.getFutureLocation(time: time, route: route ?? sampleRoute) ?? CLLocationCoordinate2D(latitude: 0.0, longitude: 0.0)
         
         return coords
@@ -407,8 +407,6 @@ class AIAssistantViewModel: ObservableObject {
         let sampleRoute = await MapManager.manager.getExampleRoute()!
         let route = userVM.current_trip?.route
         
-        print("route")
-        print(route)
         
         let coords = MapManager.manager.getFutureLocationByDistance(distance: distance, route: route ?? sampleRoute) ?? CLLocationCoordinate2D(latitude: 0.0, longitude: 0.0)
         
@@ -451,7 +449,6 @@ class AIAssistantViewModel: ObservableObject {
             // Decode the JSON data into a YelpLocation instance
             let decoder = JSONDecoder()
             let businessesResponse = try decoder.decode(BusinessResponse.self, from: jsonData)
-//            print("parseGetBusinessesIntoModel \(businessesResponse)")
             return businessesResponse
         } catch {
             print("Error decoding JSON (parseGetBusinessesIntoModel): \(error)")

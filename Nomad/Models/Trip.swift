@@ -22,6 +22,7 @@ class Trip: Identifiable, Equatable, ObservableObject {
     @Published var coverImageURL: String
     @Published var name: String
     var isPrivate: Bool = true
+    private var images: [String]
 
     init(route: NomadRoute? = nil, start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM", name: String = "", coverImageURL: String = "") {
         self.route = route
@@ -36,6 +37,7 @@ class Trip: Identifiable, Equatable, ObservableObject {
         self.start_time = start_time
         self.coverImageURL = coverImageURL
         self.name = name
+        self.images = []
         if coverImageURL.isEmpty {
             //print("find image for \(end_location.name)")
             Trip.getCityImage(location: end_location) { imageURL in
@@ -45,6 +47,7 @@ class Trip: Identifiable, Equatable, ObservableObject {
                 }
             }
         }
+        
     }
     
     init(id: String, start_location: any POI, end_location: any POI, start_date: String, end_date: String, created_date: String, modified_date: String, stops: [any POI], start_time: String, name: String, isPrivate: Bool) {
@@ -60,6 +63,7 @@ class Trip: Identifiable, Equatable, ObservableObject {
         self.created_date = created_date
         self.modified_date = modified_date
         self.coverImageURL = ""
+        self.images = []
         if coverImageURL.isEmpty {
             Trip.getCityImage(location: end_location) { imageURL in
                 DispatchQueue.main.async {
@@ -196,6 +200,10 @@ class Trip: Identifiable, Equatable, ObservableObject {
 //        }
     }
     
+    func getModifyDate() -> String {
+        return self.modified_date
+    }
+    
     func setStartDate(newDate: String) {
         self.start_date = newDate
         self.updateModifiedDate()
@@ -204,6 +212,10 @@ class Trip: Identifiable, Equatable, ObservableObject {
     func setEndDate(newDate: String) {
         self.end_date = newDate
         self.updateModifiedDate()
+    }
+    
+    func getCreatedDate() -> String {
+        return self.created_date
     }
     
     func setStartTime(newTime: String) {
@@ -307,5 +319,13 @@ class Trip: Identifiable, Equatable, ObservableObject {
     func reorderStops(fromOffsets: IndexSet, toOffset: Int) {
         self.stops.move(fromOffsets: fromOffsets, toOffset: toOffset)
         self.updateModifiedDate()
+    }
+    
+    func getImages() -> [String] {
+        return self.images
+    }
+    
+    func setImages(images: [String]) {
+        self.images = images
     }
 }

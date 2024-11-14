@@ -14,6 +14,8 @@ struct AtlasNavigationView: View {
     @State var selectedTab = 0
     @State private var mapboxSetUp: Bool = false
     @State var isListening = false
+    @State private var dotCount = 1
+    let timer = Timer.publish(every:0.5, on: .main, in: .common).autoconnect()
     
     @ObservedObject var AIVM = AIAssistantViewModel()
     @ObservedObject var ChatVM = ChatViewModel()
@@ -38,58 +40,75 @@ struct AtlasNavigationView: View {
     func speak(text: String) {
         let utterance = AVSpeechUtterance(string: text)
         utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
-        utterance.rate = 0.55  // Try increasing this value to speed up the speech
-        utterance.volume = 1.0
+        utterance.rate = 0.50  // Try increasing this value to speed up the speech
+        utterance.pitchMultiplier = 1.0
+        utterance.volume = 1
         
        speechSynthesizer.speak(utterance)
    }
     
     var body: some View {
         VStack {
-            Spacer()
             
             // Title
             Text("Atlas")
                 .font(.title)
-                .padding(.bottom, 20)
-            
-            Divider()
-            
-            Spacer()
+                .fontWeight(.bold)
                 .padding(.top, 10)
             
-            Text(currentMessage)
-                .padding(10)
-                .background(Color.gray.opacity(0.2))
-                .cornerRadius(10)
-                .padding(.horizontal, 10)
-                .onChange(of: speechRecognizer.transcript) { newTranscript in
-                    if newTranscript != ""
-                    {
-                        currentMessage = newTranscript
-                        print("on change of speechRecognizer.transcript")
+            Divider()
+                .padding(.top, -8)
+            
+            ChatMessagesView(chatViewModel: ChatVM, dotCount: dotCount, timer: timer)
+            
+            if !ChatVM.pois.isEmpty {
+                POICarouselView(chatViewModel: ChatVM, vm: vm, aiViewModel: AIVM)
+                    .padding(.bottom, 0)
+            }
+            
+            if isListening {
+                Text(currentMessage)
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .font(.title3)
+                    .fontWeight(.bold)
+                    .foregroundStyle(
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color.blue, Color.purple]),
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .padding(.horizontal, 10)
+                    .padding(.bottom, 10)
+                    .onChange(of: speechRecognizer.transcript) { newTranscript in
+                        if newTranscript != ""
+                        {
+                            currentMessage = newTranscript
+                            print("on change of speechRecognizer.transcript")
+                        }
+                       
                     }
-                   
-                }
-                .onChange(of: speechRecognizer.voiceRecordingTranscript) { newValue in
-                    // Handle the change here
-                    if newValue != ""{
-                        print("Atlas Navigation View: \(newValue)")
-                        currentMessage = newValue
-                        ChatVM.sendMessage(currentMessage, vm: vm)
-                        isLoading = true
-                        isMicrophone = false
+                    .onChange(of: speechRecognizer.voiceRecordingTranscript) { newValue in
+                        // Handle the change here
+                        if newValue != ""{
+                            print("Atlas Navigation View: \(newValue)")
+                            currentMessage = newValue
+                            ChatVM.sendMessage(currentMessage, vm: vm)
+                            isLoading = true
+                            isMicrophone = false
+                        }
                     }
-
-                }
+            }
+            
             
             if isLoading {
                 AtlasLoadingView(isAtlas: false)
-                    .frame(width: 40, height: 40)
+                    .frame(width: 100, height: 100)
             } else {
                 if isListening {
                     SoundwaveView()
-                        .frame(height: 100)
+                        .frame(height: 50)
                         .padding()
                 } else {
                     Button(action: handleMicrophonePress) {
@@ -97,47 +116,23 @@ struct AtlasNavigationView: View {
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 100, height: 100)
-                            .padding(.top, 125)
-                    }
-                    .padding(.bottom, 50)
-                }
-            }
-
-            
-            if let response = ChatVM.latestAIResponse, !response.isEmpty {
-                HStack {
-                    Text(response)
-                        .padding(10)
-                        .background(Color.gray.opacity(0.2))
-                        .cornerRadius(10)
-                        .padding(.horizontal, 10)
-                    Spacer()
-                }
-                .transition(.opacity)
-            }
-            
-            if !ChatVM.pois.isEmpty {
-                TabView {
-                    ForEach(ChatVM.pois) { poi in
-                        POIDetailView(name: poi.name, address: poi.address, distance: poi.distance, phoneNumber: poi.phoneNumber, image: poi.image, rating: poi.rating, price: poi.price, time: poi.time, latitude: poi.latitude, longitude: poi.longitude, city: poi.city, vm: vm, aiVM: AIVM)
-                            .frame(width: 400, height: 120) // Adjust width and height as needed
-                            .padding(.horizontal, 5) // Adds padding at the top and bottom
                     }
                 }
-                .tabViewStyle(.page(indexDisplayMode: .never))
-                .frame(height: 180)  // Adjust to fit the padding and content
             }
-            Spacer()
-                .padding(.bottom, 60)
+        }
+        .onChange(of: speechRecognizer.atlasSaid) { atlasSaid in
+            if atlasSaid {
+                handleMicrophonePress()
+                speechRecognizer.atlasSaid = false
             }
-            .onChange(of: ChatVM.pois) { response in
-                speak(text: ChatVM.latestAIResponse ?? "")
-                //toggleIsLoading()
-                isLoading = false
-                isListening = false
-            }
-            
-
+        }
+        .onChange(of: ChatVM.pois) { response in
+            speak(text: ChatVM.latestAIResponse ?? "")
+            //toggleIsLoading()
+            isLoading = false
+            isListening = false
+            currentMessage = ""
+        }
         
     }
     
@@ -168,13 +163,9 @@ struct AtlasNavigationView: View {
     }
 }
 
-struct AtlasNavigationView_Previews: PreviewProvider {
-    static var previews: some View {
-        AtlasNavigationView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")))
-    }
+#Preview {
+    AtlasNavigationView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")))
 }
-
-
 struct SoundwaveView: View {
     @ObservedObject var speechRecognizer = SpeechRecognizer.shared
 
@@ -198,45 +189,3 @@ struct SoundwaveView: View {
     }
 }
 
-//class AudioLevelMonitor: ObservableObject {
-//    private var audioEngine: AVAudioEngine!
-//    private var inputNode: AVAudioInputNode!
-//    
-//    @Published var audioLevel: CGFloat = 0.0
-//    private var timer: Timer?
-//    
-//    init() {
-//        setupAudioEngine()
-//    }
-//    
-//    private func setupAudioEngine() {
-//        audioEngine = AVAudioEngine()
-//        inputNode = audioEngine.inputNode
-//        let inputFormat = inputNode.outputFormat(forBus: 0)
-//        
-//        inputNode.installTap(onBus: 0, bufferSize: 2048, format: inputFormat) { buffer, _ in
-//            self.processAudioBuffer(buffer: buffer)
-//        }
-//        
-//        try? audioEngine.start()
-//    }
-//    
-//    private func processAudioBuffer(buffer: AVAudioPCMBuffer) {
-//        guard let channelData = buffer.floatChannelData?[0] else { return }
-//        let channelDataArray = Array(UnsafeBufferPointer(start: channelData, count: Int(buffer.frameLength)))
-//        
-//        // Calculate RMS (Root Mean Square) for the audio levels
-//        let rms = sqrt(channelDataArray.map { $0 * $0 }.reduce(0, +) / Float(buffer.frameLength))
-//        let level = max(0, CGFloat(rms) * 20)  // Scale the value for display
-//        
-//        DispatchQueue.main.async {
-//            self.audioLevel = level
-//        }
-//    }
-//    
-//    deinit {
-//        audioEngine.stop()
-//        inputNode.removeTap(onBus: 0)
-//    }
-//}
-//
