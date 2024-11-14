@@ -436,6 +436,13 @@ class UserViewModel: ObservableObject {
         return nil
     }
     
+    
+    static let my_trips = [
+        Trip(id: "austintrip2", start_location: Restaurant(address: "848 Spring Street, Atlanta, GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN 37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", created_date: "10-1-2024", modified_date: "10-1-2024", stops: [Activity(address: "1720 S Scenic Hwy, Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)], start_time: "10:00:00", name: "ATL to Nashville", isPrivate: true),
+        Trip(id: "austintrip1", start_location: Activity(address: "1 City Hall Square Suite 500, Boston, MA 02201 United States", name: "Boston City Hall", latitude: 42.360388, longitude: -71.058026, city: "Boston"), end_location: Hotel(address: "145 W 44th St, New York, NY 10036 United States", name: "Millennium Hotel Broadway Times Square", latitude: 40.757067, longitude: -73.984734, city: "New York City"), start_date: "10-12-2024", end_date: "10-12-2024", created_date: "10-1-2024", modified_date: "10-1-2024", stops: [GeneralLocation(address: "127 Wall St, New Haven, CT  06511 United States", name: "Yale University", latitude: 41.311930, longitude: -72.927877)], start_time: "10:00:00", name: "Cross Country", isPrivate: true),
+        Trip(id: "austintrip3", start_location: Hotel(address: "533 State St, Santa Barbara, CA  93101 United States", name: "Hotel Santa Barbara", latitude: 34.417535, longitude: -119.696807, city: "Santa Barbara"), end_location: GeneralLocation(address: "1 World Way, Los Angeles, CA  90045 United States", name: "LAX Airport", latitude: 33.944007, longitude: -118.403811, city: "Los Angeles"), start_date: "10-19-2024", end_date: "10-19-2024", created_date: "10-1-2024", modified_date: "10-1-2024", stops: [Activity(address: "727 N Broadway, Los Angeles, CA 90012", name: "Chinatown", latitude: 34.061303, longitude: -118.239277)], start_time: "10:00:00", name: "GA Mountains", isPrivate: true)
+    ]
+  
     func setTripTitle(newTitle: String) {
         current_trip?.setName(newName: newTitle)
         user.updateTrip(trip: current_trip!)

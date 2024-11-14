@@ -169,6 +169,16 @@ struct MapView: View {
             AtlasNavigationView(vm: vm)
                 .presentationDetents([.medium, .large])
         }
+        .onReceive(timer) { _ in
+            // reset remaining time and distance
+            if navManager.navigating {
+                self.remainingTime = mapManager.getRemainingTime(leg: navManager.navigatingLeg!)
+                self.remainingDistance = mapManager.getRemainingDistance(leg: navManager.navigatingLeg!)
+            }
+            
+            // REROUTING SHOULD GO HERE
+            
+        }
     }
     private func formattedRemainingTime() -> String {
         let seconds = Int(navManager.remainingTime ?? 0)
