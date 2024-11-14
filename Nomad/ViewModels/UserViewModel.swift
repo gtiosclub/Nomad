@@ -41,8 +41,9 @@ class UserViewModel: ObservableObject {
         DispatchQueue.main.async {
             self.user.trips = allTrips["future"]!
             self.previous_trips = allTrips["past"]!
+            self.user.pastTrips = allTrips["past"]!
         }
-//        self.previous_trips = user.pastTrips
+
         let communityTrips = await fbVM.getAllPublicTrips(userID: user.id)
         DispatchQueue.main.async {
             self.community_trips = communityTrips

@@ -11,6 +11,8 @@ struct ExploreTripsView: View {
     @ObservedObject var vm: UserViewModel
     @State private var currentCity: String? = nil
     @State var current_trips: [Trip] = []
+    @State var previous_trips: [Trip] = []
+    @State var community_trips: [Trip] = []
     @State var pulled_trips: Bool = false
     
     var body: some View {
@@ -53,7 +55,7 @@ struct ExploreTripsView: View {
                         
                         // Itineraries
                         VStack(alignment: .leading) {
-                            SectionHeaderView(title: "Upcoming Trips")
+                            SectionHeaderView(vm: vm, title: "Upcoming Trips", trips: vm.user.trips)
                                 .padding(.horizontal)
                             
                             ScrollView(.horizontal) {
@@ -73,7 +75,7 @@ struct ExploreTripsView: View {
                             }
                             .padding(.horizontal)
                             
-                            SectionHeaderView(title: "Previous Trips")
+                            SectionHeaderView(vm: vm, title: "Previous Trips", trips: vm.previous_trips)
                                 .padding(.top, 5)
                                 .padding(.horizontal)
                             
@@ -94,7 +96,7 @@ struct ExploreTripsView: View {
                             }
                             .padding(.horizontal)
                             
-                            SectionHeaderView(title: "Community Favorites")
+                            SectionHeaderView(vm: vm, title: "Community Favorites", trips: vm.community_trips)
                                 .padding(.top, 5)
                                 .padding(.horizontal)
                             
@@ -137,37 +139,48 @@ struct ExploreTripsView: View {
             }
         }
         .task {
-            print("populating trips and current location")
-//            vm.populate_my_trips()
-//            vm.populate_previous_trips()
-//            vm.populate_community_trips()
             if !pulled_trips {
+                print("populating trips and current location")
                 await vm.populateUserTrips()
                 await vm.getCurrentCity()
                 pulled_trips = true
+                
+                current_trips = vm.user.trips
+                previous_trips = vm.user.pastTrips
+                community_trips = vm.community_trips
             }
-            current_trips = vm.user.trips
         }
         .onAppear() {
             if pulled_trips {
                 print("repopulating trips")
                 current_trips = vm.user.trips
+                previous_trips = vm.user.pastTrips
+                community_trips = vm.community_trips
             }
         }
     }
     
     struct SectionHeaderView: View {
+        var vm: UserViewModel
         var title: String
+        var trips: [Trip]
+        @State var navigateToAll: Bool = false
+        
         var body: some View {
             HStack {
                 Text(title)
                     .font(.headline)
                     .bold()
                 Spacer()
-                Button(action: {}) {
+                Button(action: {
+                    navigateToAll = true
+                }) {
                     Text("View all")
                         .foregroundColor(.gray)
                 }
+                .navigationDestination(isPresented: $navigateToAll, destination: {
+                    ViewAllTripsView(vm: vm, header: title, trips: trips)
+                })
             }
             .padding(.vertical, 5)
         }

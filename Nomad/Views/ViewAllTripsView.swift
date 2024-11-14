@@ -10,114 +10,46 @@ import SwiftUI
 struct ViewAllTripsView: View {
     @ObservedObject var vm: UserViewModel
     @State private var currentCity: String? = nil
+    var header: String
+    @State var trips: [Trip]
     
     var body: some View {
         NavigationStack {
-            ZStack {
-                ScrollView {
-                    VStack(alignment: .leading) {
-                        
-                        HStack {
-                            Text("Upcoming Itineraries")
-                                .bold()
-                                .font(.system(size: 20))
-                                .padding(.horizontal)
-                            
-                            Spacer()
-                            
-                            // Profile picture
-                            ZStack {
-                                Ellipse()
-                                    .fill(Color.gray)
-                                    .frame(width: 40, height: 40)
-                                Text((vm.user.getName() ?? "User").prefix(1))
-                                    .foregroundColor(.white)
-                                    .font(.system(size: 25))
-                            }
-                            .padding(.trailing)
-                        }
-                        
-                        NavigationLink(destination: ExploreTripsView()) {
-                            HStack {
-                                Image(systemName: "chevron.left")
-                                    .font(.system(size: 20))
-                                    .foregroundColor(.blue)
-                                    .padding(.trailing, -50)
-
-                                Text("Back")
-                                    .font(.system(size: 17))
-                                    .padding()
-                                    .foregroundColor(.blue)
-                                    .cornerRadius(8)
-                                }
-                                .padding(.leading, 18)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                            
-                            ScrollView(.horizontal) {
-                                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())]) {
-                                    ForEach(UserViewModel.my_trips) { trip in
-                                        NavigationLink(destination: {
-                                            PreviewRouteView(vm: vm, trip: trip)
-                                        }, label: {
-                                            TripGridView(trip: trip)
-                                                .frame(alignment: .top)
-                                        })
-                                    }
-                                }
-                            }
-                            .padding(.horizontal)
-                    }
-                }
-                
-                
-                
-                
-                VStack {
-                    Spacer()
+            ScrollView {
+                VStack(alignment: .leading) {
                     HStack {
+                        Text(header)
+                            .bold()
+                            .font(.system(size: 20))
+                            .padding(.horizontal)
+                        
                         Spacer()
-                        NavigationLink(destination: ItineraryPlanningView(vm: vm)) {
-                            Image(systemName: "plus")
-                                .font(.system(size: 24))
-                                .padding()
-                                .background(Color(.systemGray4))
-                                .foregroundColor(.black)
-                                .clipShape(Circle())
-                                .shadow(radius: 2)
+                        
+                        // Profile picture
+                        ZStack {
+                            Ellipse()
+                                .fill(Color.gray)
+                                .frame(width: 40, height: 40)
+                            Text((vm.user.getName()).prefix(1).uppercased())
+                                .foregroundColor(.white)
+                                .font(.system(size: 25))
                         }
-                        .padding(.bottom, 10)
-                        .padding(.trailing, 15)
+                        .padding(.trailing)
                     }
+                    
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())]) {
+                        ForEach(trips) { trip in
+                            NavigationLink(destination: {
+                                PreviewRouteView(vm: vm, trip: trip)
+                            }, label: {
+                                TripGridView(trip: trip)
+                                    .frame(alignment: .top)
+                            })
+                        }
+                    }
+                    .padding(.horizontal)
                 }
             }
-        }.task() {
-            print("populating trips")
-            await vm.populateUserTrips()
-        }
-    }
-    
-    struct SectionHeaderView: View {
-        var title: String
-        var body: some View {
-            HStack {
-                Text(title)
-                    .font(.headline)
-                    .bold()
-                Spacer()
-                Button(action: {}) {
-                    Text("View all")
-                        .foregroundColor(.gray)
-                }
-            }
-            .padding(.vertical, 5)
-        }
-    }
-    
-    struct ExploreTripsView: View {
-        var body: some View {
-            Text("Explore Trips View")
-                .navigationTitle("Explore Trips")
         }
     }
     
@@ -129,7 +61,7 @@ struct ViewAllTripsView: View {
                 if trip.coverImageURL.isEmpty {
                     Rectangle()
                         .fill(Color.gray.opacity(0.3))
-                        .frame(width: 120, height: 120)
+                        .frame(width: 150, height: 150)
                         .cornerRadius(10)
                         .padding(.horizontal, 10)
                 } else {
@@ -137,50 +69,46 @@ struct ViewAllTripsView: View {
                         image
                             .resizable()
                             .scaledToFill()
-                            .frame(width: 120, height: 120)
+                            .frame(width: 150, height: 150)
                             .cornerRadius(10)
                             .padding(.horizontal, 10)
-//                            .id($trip.coverImageURL.wrappedValue)
+                        //                            .id($trip.coverImageURL.wrappedValue)
                     } placeholder: {
                         ProgressView()
-                            .frame(width: 120, height: 120)
+                            .frame(width: 150, height: 150)
                             .cornerRadius(10)
                             .padding(.horizontal, 10)
                     }
                     
                 }
                 
-                Text(trip.name)
+                Text(trip.name.isEmpty ? "New Trip" : trip.name)
                     .lineLimit(3)
                     .multilineTextAlignment(.center)
                     .frame(width: 120)
                     .font(.system(size: 14))
                     .foregroundStyle(.black)
+                    .padding(.bottom, 0)
                 
                 HStack {
-                  //  Text(trip.getStartLocation().name)
-                    //    .font(.caption)
-                    //    .padding(4)
-                    //    .background(Color.gray.opacity(0.7))
-                   //     .cornerRadius(5)
-                   //     .foregroundColor(.black)
-                                
-               //     Text(trip.getEndLocation().name)
-                //        .font(.caption)
-                //        .padding(4)
-                //        .background(Color.gray.opacity(0.5))
-                //        .cornerRadius(5)
-                 //       .foregroundColor(.black)
-
-                    Text("\(trip.getStops().count) \(trip.getStops().count == 1 ? "stop" : "stops")")
-                        .font(.caption)
-                        .padding(4)
-                        .background(Color.gray.opacity(0.3))
-                        .cornerRadius(5)
-                        .foregroundColor(.black)
+                    Text("\(getCityName(trip.getStartLocation().address))")
+                    Image(systemName: "arrowshape.right.fill")
+                    Text("\(getCityName(trip.getEndLocation().address))")
                 }
-                .padding(.top, 2)
+                .padding(4)
+                .font(.caption)
+                .background(Color.gray.opacity(0.4))
+                .cornerRadius(5)
+                .foregroundColor(.black)
+                
+                Text("\(trip.getStops().count) \(trip.getStops().count == 1 ? "stop" : "stops")")
+                    .font(.caption)
+                    .padding(4)
+                    .background(Color.nomadDarkBlue)
+                    .cornerRadius(5)
+                    .foregroundColor(.white)
             }
+            .padding(.bottom, 15)
             .padding(.leading, 5)
             .padding(.vertical, 5)
             .frame(width: 180)
@@ -190,8 +118,17 @@ struct ViewAllTripsView: View {
         }
     }
 }
-    
-    #Preview {
-        ViewAllTripsView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")))
+
+func getCityName(_ address: String) -> String {
+    let addressSplit = address.split(separator: ",")
+    if addressSplit.count > 1 {
+        return addressSplit[1].trimmingCharacters(in: .whitespacesAndNewlines)
+    } else {
+        return "City"
     }
+}
+    
+//#Preview {
+//    ViewAllTripsView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")))
+//}
 
