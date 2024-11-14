@@ -406,6 +406,13 @@ class FirebaseViewModel: ObservableObject {
             rating = hotel.rating ?? -1.0
             website = hotel.website ?? ""
         }
+        if let shopping = stop as? Shopping {
+            website = shopping.website ?? ""
+        }
+        if let activity = stop as? Activity {
+            rating = activity.rating ?? -1.0
+            website = activity.website ?? ""
+        }
         do {
             try await db.collection("TRIPS").document(tripID).collection("STOPS").document(stop.name).setData(["name" : stop.name, "address" : stop.address, "type" : "\(type(of: stop))", "latitude" : stop.latitude, "longitude" : stop.longitude, "city" : stop.city ?? "", "cuisine" : cuisine, "price" : price, "rating" : rating, "website" : website, "imageURL": stop.imageUrl ?? ""])
             return true
