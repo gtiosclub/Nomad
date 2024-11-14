@@ -59,8 +59,8 @@ class UserViewModel: ObservableObject {
     }
     
     @MainActor
-    func createTrip(start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM") async {
-        let temp_trip = Trip(start_location: start_location, end_location: end_location, start_date: start_date, end_date: end_date, stops: stops, start_time: start_time)
+    func createTrip(start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM", coverImageURL: String = "") async {
+        let temp_trip = Trip(start_location: start_location, end_location: end_location, start_date: start_date, end_date: end_date, stops: stops, start_time: start_time, coverImageURL: coverImageURL)
 
         if await fbVM.createTrip(tripID: temp_trip.id, createdDate: Trip.getCurrentDateTime(), modifiedDate: temp_trip.modified_date, startDate: start_date, startTime: start_time, endDate: end_date, isPrivate: false, startLocation: start_location, endLocation: end_location) {
             if await fbVM.addTripToUser(userID: user.id, tripID: temp_trip.id) {
