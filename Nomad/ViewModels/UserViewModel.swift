@@ -37,7 +37,6 @@ class UserViewModel: ObservableObject {
     }
     
     func populateUserTrips() async {
-        print(user.id)
         let allTrips = await fbVM.getAllTrips(userID: user.id)
         DispatchQueue.main.async {
             self.user.trips = allTrips["future"]!

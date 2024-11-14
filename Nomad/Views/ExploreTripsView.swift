@@ -88,6 +88,9 @@ struct ExploreTripsView: View {
                                         })
                                     }
                                 }
+                                .onChange(of: vm.previous_trips, initial: true) { oldTrips, newTrips in
+                                    
+                                }
                             }
                             .padding(.horizontal)
                             
@@ -105,6 +108,9 @@ struct ExploreTripsView: View {
                                                 .frame(alignment: .top)
                                         })
                                     }
+                                }
+                                .onChange(of: vm.community_trips, initial: true) { oldTrips, newTrips in
+                                    
                                 }
                             }
                             .padding(.horizontal)
