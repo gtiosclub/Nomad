@@ -209,14 +209,13 @@ struct POICarouselView: View {
         TabView {
             ForEach(chatViewModel.pois) { poi in
                 POIDetailView(name: poi.name, address: poi.address, distance: poi.distance, phoneNumber: poi.phoneNumber, image: poi.image, rating: poi.rating, price: poi.price, time: poi.time, latitude: poi.latitude, longitude: poi.longitude, city: poi.city, vm: vm, aiVM: aiViewModel)
-                    .frame(width: 400, height: 120)
                     .padding(.horizontal, 5)
-                    .padding(.bottom, 15)
+                    .padding(.bottom, 35)
             }
         }
         .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
         .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
-        .frame(height: 150)
+        .frame(height: 200)
     }
 }
 

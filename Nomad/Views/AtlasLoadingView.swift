@@ -14,9 +14,6 @@ import SwiftUI
 //  Created by Rik Roy on 11/8/24.
 //
 
-
-import SwiftUI
-
 struct AtlasLoadingView: View {
     @State private var rotation: Double = 0
     var isAtlas: Bool
