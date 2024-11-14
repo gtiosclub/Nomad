@@ -14,27 +14,24 @@ import SwiftUI
 //  Created by Rik Roy on 11/8/24.
 //
 
-
-import SwiftUI
-
 struct AtlasLoadingView: View {
     @State private var rotation: Double = 0
+    var isAtlas: Bool
     
     var body: some View {
         ZStack {
             // Background circle (static)
+            if isAtlas {
+                GIFImageView("AtlasAnimation")
+                    .frame(width: 140, height: 140)
+            }
             
-            GIFImageView("AtlasAnimation")
-                .frame(width: 140, height: 140)
             Circle()
                 .stroke(lineWidth: 10.0)
                 .opacity(0.3)
                 .foregroundColor(.blue)
                 .frame(width: 100, height: 100)
             
-//            Image("AtlasIcon")
-//                .resizable()
-//                .frame(width: 50, height: 50)
     
             
             // Spinning circle (outline)
@@ -59,5 +56,5 @@ struct AtlasLoadingView: View {
 }
 
 #Preview {
-    AtlasLoadingView()
+    AtlasLoadingView(isAtlas: true)
 }

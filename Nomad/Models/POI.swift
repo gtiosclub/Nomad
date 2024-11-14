@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol POI: Equatable, Identifiable {
+protocol POI: Equatable, Identifiable, Imagable {
     var id: String { get }
     var address: String { get set }
     var name: String { get set }

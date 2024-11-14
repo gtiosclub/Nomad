@@ -19,6 +19,9 @@ struct MapView: View {
     
     @State private var remainingTime: TimeInterval = 0
     @State private var remainingDistance: Double = 0
+    @State private var isSheetPresented = false
+
+
     
     let timer = Timer.publish(every: 7, on: .main, in: .common).autoconnect()
     
@@ -90,8 +93,32 @@ struct MapView: View {
                         // Add Voice Announcer Button
                         VoiceAnnouncerButtonView(onPress: announceCurrentLocation, isVoiceEnabled: $isVoiceEnabled)
                             .frame(width: 50, height: 50)
+                        
+                        Spacer()
+                        
+                        Button {
+                            isSheetPresented = true
+                        } label: {
+                            ZStack {
+                                // White Circle with Drop Shadow
+                                Circle()
+                                    .fill(Color.white)
+                                    .frame(width: 60, height: 60) // Adjust size as needed
+                                    .shadow(color: .gray.opacity(0.8), radius: 8, x: 0, y: 5)
+                                
+                                // Image on top of the circle
+                                Image("AtlasIcon")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 50, height: 50) // Adjust size as needed
+                            }
+                        }
                     }
                 }
+                
+                
+                
+                
                 Spacer()
                 if !navManager.navigating {
                     Button {
@@ -138,6 +165,10 @@ struct MapView: View {
                 }
             }
         }
+        .sheet(isPresented: $isSheetPresented) {
+            AtlasNavigationView(vm: vm)
+                .presentationDetents([.medium, .large])
+        }
         .onReceive(timer) { _ in
             // reset remaining time and distance
             if navManager.navigating {
@@ -148,7 +179,6 @@ struct MapView: View {
             // REROUTING SHOULD GO HERE
             
         }
-        
     }
     private func formattedRemainingTime() -> String {
         let seconds = Int(navManager.remainingTime ?? 0)

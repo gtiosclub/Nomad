@@ -16,13 +16,14 @@ struct GeneralLocation: POI, Identifiable, Imagable {
     var latitude: Double
     var city: String?
     
-    init(address: String, name: String, latitude: Double, longitude: Double, city: String? = nil) {
+    init(address: String, name: String, latitude: Double, longitude: Double, city: String? = nil, imageUrl: String? = nil) {
         self.id = UUID().uuidString
         self.address = address
         self.name = name
         self.latitude = latitude
         self.longitude = longitude
         self.city = city
+        self.imageUrl = imageUrl // Initialize imageUrl with a default value
     }
     
     init(from business: Business) {

@@ -41,7 +41,13 @@ actor SpeechRecognizer: ObservableObject {
     private var task: SFSpeechRecognitionTask?
     private let recognizer: SFSpeechRecognizer?
     
+    static let shared = SpeechRecognizer()  // Singleton instance
+
+    @Published var audioLevel: CGFloat = 0.0
+    
     @Published @MainActor var hasTimerRun: Bool = false
+    @Published @MainActor var isListening: Bool = false
+    @Published @MainActor var atlasSaid: Bool = false
     
     @Published @MainActor var voiceRecordingTranscript: String = ""
 
@@ -69,10 +75,13 @@ actor SpeechRecognizer: ObservableObject {
                 transcribe(error)
             }
         }
+        pollForAtlas()
     }
     
     @MainActor func startTranscribing() {
         Task {
+            await reset()
+            isListening = true
             await transcribe()
             hasTimerRun = false
         }
@@ -88,7 +97,9 @@ actor SpeechRecognizer: ObservableObject {
         Task {
             print("in the main actor Stop Transcribing")
             await reset()
+            isListening = false
             hasTimerRun = false
+            await pollForAtlas()
         }
     }
     
@@ -110,6 +121,25 @@ actor SpeechRecognizer: ObservableObject {
             self.request = request
             self.task = recognizer.recognitionTask(with: request, resultHandler: { [weak self] result, error in
                 self?.recognitionHandler(audioEngine: audioEngine, result: result, error: error)
+            })
+        } catch {
+            self.reset()
+            self.transcribe(error)
+        }
+    }
+    
+    private func pollForAtlas() {
+        guard let recognizer, recognizer.isAvailable else {
+            self.transcribe(RecognizerError.recognizerIsUnavailable)
+            return
+        }
+        
+        do {
+            let (audioEngine, request) = try Self.prepareEngine()
+            self.audioEngine = audioEngine
+            self.request = request
+            self.task = recognizer.recognitionTask(with: request, resultHandler: { [weak self] result, error in
+                self?.pollAtlasHandler(audioEngine: audioEngine, result: result, error: error)
             })
         } catch {
             self.reset()
@@ -140,6 +170,7 @@ actor SpeechRecognizer: ObservableObject {
         let recordingFormat = inputNode.outputFormat(forBus: 0)
         inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { (buffer: AVAudioPCMBuffer, when: AVAudioTime) in
             request.append(buffer)
+            SpeechRecognizer.processAudioBuffer(buffer: buffer)
         }
         audioEngine.prepare()
         try audioEngine.start()
@@ -147,8 +178,20 @@ actor SpeechRecognizer: ObservableObject {
         return (audioEngine, request)
     }
     
-    nonisolated private func recognitionHandler(audioEngine: AVAudioEngine, result: SFSpeechRecognitionResult?, error: Error?) {
+    static func processAudioBuffer(buffer: AVAudioPCMBuffer) {
+        guard let channelData = buffer.floatChannelData?[0] else { return }
+        let channelDataArray = Array(UnsafeBufferPointer(start: channelData, count: Int(buffer.frameLength)))
         
+        // Calculate RMS (Root Mean Square) for the audio levels
+        let rms = sqrt(channelDataArray.map { $0 * $0 }.reduce(0, +) / Float(buffer.frameLength))
+        let level = max(0, CGFloat(rms) * 20)  // Scale the value for display
+        
+        DispatchQueue.main.async {
+            SpeechRecognizer.shared.audioLevel = level
+        }
+    }
+    
+    nonisolated private func pollAtlasHandler(audioEngine: AVAudioEngine, result: SFSpeechRecognitionResult?, error: Error?) {
         let receivedFinalResult = result?.isFinal ?? false
         let receivedError = error != nil
 
@@ -159,6 +202,39 @@ actor SpeechRecognizer: ObservableObject {
 
         if let result {
             let transcription = result.bestTranscription.formattedString.lowercased()
+            print(transcription)
+            
+            if transcription.contains("hey atlas") {
+                print("lalalalala")
+                Task { @MainActor in
+                    atlasSaid = true
+                }
+            }
+        }
+    }
+    
+    nonisolated private func recognitionHandler(audioEngine: AVAudioEngine, result: SFSpeechRecognitionResult?, error: Error?) {
+        let receivedFinalResult = result?.isFinal ?? false
+        let receivedError = error != nil
+
+        if receivedFinalResult || receivedError {
+            audioEngine.stop()
+            audioEngine.inputNode.removeTap(onBus: 0)
+        }
+
+        if let result {
+            let transcription = result.bestTranscription.formattedString.lowercased()
+            
+            if transcription.contains("hey atlas") {
+                Task { @MainActor in
+                    print("sadfasdfsdfasdfsdfsf")
+                    startTranscribing()
+                }
+            }
+            
+            Task { @MainActor in
+                guard isListening else { return }
+            }
 
             // Transcribe the result
             transcribe(transcription)
@@ -172,13 +248,10 @@ actor SpeechRecognizer: ObservableObject {
                 print("New transcription received: \(transcription)")
                 // self.silenceTimer?.invalidate()  // Invalidate any previous timer
                 await self.startSilenceTimer()         // Start a new silence timer
-                print("started new silence timer")
             }
             
             // Check if the word "done" was spoken
             if transcription.contains("done") {
-                print("Detected the word 'done', stopping transcription.")
-                
                 // Stop transcription by calling stopTranscribing()
                 Task { @MainActor in
                     await stopTranscribing()  // Stop the transcription process
@@ -207,33 +280,6 @@ actor SpeechRecognizer: ObservableObject {
             transcript = "<< \(errorMessage) >>"
         }
     }
-    
-    // This function should be part of the audio setup
-//    private func startMonitoringForSilence() {
-//        let inputNode = audioEngine?.inputNode
-//        let recordingFormat = inputNode?.outputFormat(forBus: 0)
-//
-//        inputNode?.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { buffer, _ in
-//            let level = self.averagePower(forBuffer: buffer)
-//            if level < -30.0 {
-//                print("Silence detected starting silence timer")
-//                self.startSilenceTimer()
-//            } else {
-//                self.silenceTimer?.invalidate()
-//            }
-//        }
-//    }
-//
-//    private func averagePower(forBuffer buffer: AVAudioPCMBuffer) -> Float {
-//        let channelData = buffer.floatChannelData![0]
-//        let channelDataValueArray = stride(from: 0,
-//                                           to: Int(buffer.frameLength),
-//                                           by: buffer.stride).map { channelData[$0] }
-//
-//        let rms = sqrt(channelDataValueArray.map { $0 * $0 }.reduce(0, +) / Float(buffer.frameLength))
-//        let avgPower = 20 * log10(rms)
-//        return avgPower
-//    }
 
     private func startSilenceTimer() {
         silenceTimer?.invalidate()
@@ -243,15 +289,15 @@ actor SpeechRecognizer: ObservableObject {
             self.silenceTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { [weak self] _ in
                 Task { @MainActor in
                     print("Sending Transcript: \(self?.voiceRecordingTranscript)")
-                    if(self!.hasTimerRun == false && self!.transcript != "")
+                    if(self?.hasTimerRun == false && self?.transcript != "")
                     {
-                        self?.voiceRecordingTranscript = self!.transcript
+                        self?.voiceRecordingTranscript = self?.transcript ?? ""
                         print("Voice Recording Transcript: \(self?.voiceRecordingTranscript)")
                         self?.stopTranscribing()
                         print("we have stopped transcribing because of silence")
 
                     }
-                    self!.hasTimerRun = true
+                    self?.hasTimerRun = true
                     
                     
                     //self?.updateTranscriptAfterSilence(with: capturedTranscript)
