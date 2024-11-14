@@ -176,19 +176,6 @@ struct NomadStep {
         let intersections: [Intersection]?
         let names: [String]? //The names of the road or path leading from this step’s maneuver to the next step’s maneuver.
         
-        init(step: RouteStep) {
-            self.distance = step.distance
-            self.instructions = step.instructions
-            self.expectedTravelTime = step.expectedTravelTime
-            self.exitCodes = step.exitCodes
-            self.exitIndex = step.exitIndex
-            self.instructionsDisplayedAlongStep = step.instructionsDisplayedAlongStep
-            self.maneuverDirection = step.maneuverDirection
-            self.maneuverType = step.maneuverType
-            self.intersections = step.intersections
-            self.names = step.names
-        }
-        
         init(distance: CLLocationDistance, instructions: String, expectedTravelTime: TimeInterval, exitCodes: [String]?, exitIndex: Int?, instructionsDisplayedAlongStep: [VisualInstructionBanner]?, maneuverDirection: ManeuverDirection?, maneuverType: ManeuverType, intersections: [Intersection]?, names: [String]?) {
             self.distance = distance
             self.instructions = instructions
@@ -202,17 +189,26 @@ struct NomadStep {
             self.names = names
         } //The names of the road or path leading from this step’s maneuver to the next step’s maneuver.
         
+        init(step: RouteStep) {
+            self.init(distance: step.distance, instructions: step.instructions, expectedTravelTime: step.expectedTravelTime, exitCodes: step.exitCodes, exitIndex: step.exitIndex, instructionsDisplayedAlongStep: step.instructionsDisplayedAlongStep, maneuverDirection: step.maneuverDirection, maneuverType: step.maneuverType, intersections: step.intersections, names: step.names)
+        }
         init() {
-            self.distance = 500
-            self.instructions = "Turn right in 0.4 miles"
-            self.expectedTravelTime = TimeInterval(50)
-            self.exitCodes = nil
-            self.exitIndex = nil
-            self.instructionsDisplayedAlongStep = nil
-            self.maneuverDirection = nil
-            self.maneuverType = .turn
-            self.intersections = nil
-            self.names = nil
+            self.init(distance: 500, instructions: "Turn right in 0.4 miles", expectedTravelTime: TimeInterval(50), exitCodes: nil, exitIndex: nil, instructionsDisplayedAlongStep: nil, maneuverDirection: nil, maneuverType: .turn, intersections: nil, names: nil)
+        }
+        
+        func toString() -> String {
+            return """
+            Distance: \(distance) m
+            Instructions: \(instructions)
+            Expected Travel Time: \(expectedTravelTime / 60) mins
+            Exit Codes: \(exitCodes ?? [])
+            Exit Index: \(exitIndex ?? -1)
+            Instructions Displayed Along Step: \(instructionsDisplayedAlongStep?.description ?? "NONE")
+            Maneuver Type: \(maneuverType.rawValue)
+            Maneuver Direction: \(maneuverDirection?.rawValue ?? "NONE")
+            Intersections: \(intersections ?? [])
+            Names: \(names ?? [])
+            """
         }
     }
     
