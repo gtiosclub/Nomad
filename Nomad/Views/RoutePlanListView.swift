@@ -9,7 +9,8 @@ import SwiftUI
 
 struct RoutePlanListView: View {
     @ObservedObject var vm: UserViewModel
-
+    @Binding var reload: Bool
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
 
@@ -18,10 +19,12 @@ struct RoutePlanListView: View {
             }
 
             if let stops = vm.current_trip?.getStops() {
-                ForEach(stops.indices, id: \.self) { index in
-                    let stopName = stops[index].name
-                    let time = vm.times[safe: index]
-                    createLocationView(locationName: "Stop at \(stopName)", time: time, isLast: false)
+                if $reload.wrappedValue {
+                    ForEach(stops.indices, id: \.self) { index in
+                        let stopName = stops[index].name
+                        let time = vm.times[safe: index]
+                        createLocationView(locationName: "Stop at \(stopName)", time: time, isLast: false)
+                    }
                 }
             }
 
@@ -38,9 +41,7 @@ struct RoutePlanListView: View {
         .cornerRadius(10)
         .shadow(radius: 5)
         .onAppear {
-            Task {
-                await vm.calculateLegInfo()
-            }
+            vm.populateLegInfo()
         }
     }
 
@@ -93,16 +94,17 @@ struct RoutePlanListView: View {
     let user = User(id: "89379", name: "Austin", trips: [trip])
     var vm = UserViewModel(user: user)
     vm.current_trip = trip
-
-    return RoutePlanListView(vm: vm)
+    @State var reload = true
+    return RoutePlanListView(vm: vm, reload: $reload)
 }
 
 struct RouteCircle: View {
     var body: some View {
         Circle()
-            .fill(Color.white)
-            .shadow(radius: 2)
+            .stroke(Color(red: 0.18, green: 0.55, blue: 0.54), lineWidth: 1.5)
+            .background(Circle().fill(Color.white))
             .frame(width: 12, height: 12)
+            .shadow(radius: 0.2)
     }
 }
 

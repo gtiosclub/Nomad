@@ -13,8 +13,6 @@ struct Shopping: POI, Identifiable, Imagable {
     var name: String
     var website: String?
     var imageUrl: String?
-    var open_time: String?
-    var close_time: String?
     var longitude: Double
     var latitude: Double
     var city: String?

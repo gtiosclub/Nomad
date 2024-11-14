@@ -11,7 +11,7 @@ import MapKit
 class Trip: Identifiable, Equatable, ObservableObject {
     var id: String
     @Published var route: NomadRoute?
-    private var stops: [any POI]
+    @Published var stops: [any POI]
     private var start_location: any POI
     private var end_location: any POI
     private var start_date: String
@@ -61,7 +61,6 @@ class Trip: Identifiable, Equatable, ObservableObject {
         self.modified_date = modified_date
         self.coverImageURL = ""
         if coverImageURL.isEmpty {
-            print("find image for \(end_location.name)")
             Trip.getCityImage(location: end_location) { imageURL in
                 DispatchQueue.main.async {
                     self.coverImageURL = imageURL
@@ -71,38 +70,19 @@ class Trip: Identifiable, Equatable, ObservableObject {
         }
     }
     
-//    func generateRoute() async {
-//        var pois = [self.getStartLocation()]
-//        pois.append(contentsOf: self.getStops())
-//        pois.append(self.getEndLocation())
-//        if let routes = await RootView.mapManager.generateRoute(pois: pois) {
-//            self.setRoute(route: routes[0]) // set main route
-//        }
-//    }
-//    
-//    func setCoverImageURL(newURL: String) {
-//        self.coverImageURL = newURL
-//        self.updateModifiedDate()
-//    }
-    
-    @MainActor
     static func getCityImageAsync(location: any POI) async -> String {
         var search_city: String = ""
-        if let city = location.getCity() {
+        if let city = location.getCity(), !city.isEmpty {
             search_city = city
         } else {
             let location_split = location.getAddress().split(separator: ",")
             if location_split.count > 1 {
-                search_city = location_split[1].description
+                search_city = location_split[1].description.trimmingCharacters(in: .whitespacesAndNewlines)
             }
         }
         
-        let urlString = "https://pixabay.com/api/?key=46410552-0c1561d54d98701d038092a47&q=\(search_city)-city-scenic&image_type=photo"
-        
-        guard let url = URL(string: urlString) else {
-            print("Invalid URL")
-            return ""
-        }
+        print("Finding cover image for \(search_city)")
+        let url = URL(string: "https://pixabay.com/api/?key=46410552-0c1561d54d98701d038092a47&q=\(search_city)-city-scenic&image_type=photo")!
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
@@ -134,16 +114,17 @@ class Trip: Identifiable, Equatable, ObservableObject {
     
     static func getCityImage(location: any POI, completion: @escaping (String) -> Void) {
         var search_city: String = ""
-        if let city = location.getCity() {
+        if let city = location.getCity(), !city.isEmpty {
             search_city = city
         } else {
             let location_split = location.getAddress().split(separator: ",")
             if location_split.count > 1 {
-                search_city = location_split[1].description
+                search_city = location_split[1].description.trimmingCharacters(in: .whitespacesAndNewlines)
             }
         }
         
-        let url = URL(string: "https://pixabay.com/api/?key=46410552-0c1561d54d98701d038092a47&q=\(search_city)-city-GA-scenic&image_type=photo")!
+        print("Finding cover image for \(search_city)")
+        let url = URL(string: "https://pixabay.com/api/?key=46410552-0c1561d54d98701d038092a47&q=\(search_city)-city-scenic&image_type=photo")!
         
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
@@ -190,7 +171,9 @@ class Trip: Identifiable, Equatable, ObservableObject {
     }
     
     func updateModifiedDate() {
-        self.modified_date = Trip.getCurrentDateTime()
+        DispatchQueue.main.async {
+            self.modified_date = Trip.getCurrentDateTime()
+        }
     }
     
     static func getCurrentDateTime() -> String {
@@ -245,6 +228,17 @@ class Trip: Identifiable, Equatable, ObservableObject {
         self.updateModifiedDate()
     }
     
+    func removeStop(stopId: String) {
+        if let index = self.stops.firstIndex(where: { $0.id == stopId }) {
+            self.stops.remove(at: index)
+        }
+        self.updateModifiedDate()
+    }
+    
+    func getStop(stopId: String) -> (any POI)? {
+        return stops.first { $0.id == stopId }
+    }
+    
     func getStops() -> [any POI] {
         return stops
     }
@@ -275,6 +269,7 @@ class Trip: Identifiable, Equatable, ObservableObject {
     
     func setRoute(route: NomadRoute) {
         self.route = route
+        self.updateModifiedDate()
     }
     
     func getRoute() -> NomadRoute? {
@@ -310,6 +305,7 @@ class Trip: Identifiable, Equatable, ObservableObject {
     }
     
     func reorderStops(fromOffsets: IndexSet, toOffset: Int) {
-        stops.move(fromOffsets: fromOffsets, toOffset: toOffset)
+        self.stops.move(fromOffsets: fromOffsets, toOffset: toOffset)
+        self.updateModifiedDate()
     }
 }

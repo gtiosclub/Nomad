@@ -4,12 +4,14 @@ struct ItineraryParentView: View {
     @State private var showAtlas = false
     @State private var showWipeOverlay = false
     @ObservedObject var vm: UserViewModel
+    @ObservedObject var cvm: ChatViewModel
+    
 
     var body: some View {
         ZStack {
             // Background views that will transition
             if showAtlas {
-                AIAssistantView()
+                AIAssistantView(vm: vm, chatViewModel: cvm)
                     .transition(.identity) // No animation on the content itself
             } else {
                 FindStopView(vm: vm)
@@ -23,14 +25,15 @@ struct ItineraryParentView: View {
                     .transition(.wipe)
                     .zIndex(1) // Ensure the blue overlay is on top
                 
-                Image(systemName: "pencil.circle") // Replace "YourLogo" with the name of your logo asset
-                .resizable()
-                .scaledToFit()
-                .frame(width: 100, height: 100) // Adjust size as needed
-                .foregroundColor(.white) // Set logo color if it’s a template
-                .opacity(showWipeOverlay ? 1 : 0) // Fade in and out
-                .animation(.easeInOut(duration: 0.5), value: showWipeOverlay)
-                .zIndex(2)// Fade animation for the logo
+                Image("AtlasIcon")
+                    .renderingMode(.template)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 300, height: 300) // Adjust size as needed
+                    .foregroundColor(.white) // Set logo color if it’s a template
+                    .opacity(showWipeOverlay ? 1 : 0) // Fade in and out
+                    .animation(.easeInOut(duration: 0.5), value: showWipeOverlay)
+                    .zIndex(2)// Fade animation for the logo
             }
 
             // Floating button
@@ -44,6 +47,8 @@ struct ItineraryParentView: View {
                             withAnimation(.easeInOut(duration: 0.5)) {
                                 showWipeOverlay = true
                             }
+                            
+                            
                             // Delay the screen transition
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                                 withAnimation(.easeInOut(duration: 0.5)) {
@@ -52,12 +57,20 @@ struct ItineraryParentView: View {
                                 }
                             }
                         }) {
-                            Text("Return To Manual")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .padding()
-                                .background(Color.blue)
-                                .cornerRadius(10)
+                            ZStack {
+                                // White Circle with Drop Shadow
+                                Circle()
+                                    .fill(Color.white)
+                                    .frame(width: 50, height: 50) // Adjust size as needed
+                                    .shadow(color: .gray.opacity(0.8), radius: 8, x: 0, y: 5)
+                                
+                                // Image on top of the circle
+                                Image(systemName: "pencil")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .foregroundColor(Color.black)
+                                    .frame(width: 30, height: 30) // Adjust size as needed
+                            }
                         }
                         .padding()
                     }
@@ -81,14 +94,22 @@ struct ItineraryParentView: View {
                                 }
                             }
                         }) {
-                            Text("Consult Atlas")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .padding()
-                                .background(Color.blue)
-                                .cornerRadius(10)
+                            ZStack {
+                                // White Circle with Drop Shadow
+                                Circle()
+                                    .fill(Color.white)
+                                    .frame(width: 60, height: 60) // Adjust size as needed
+                                    .shadow(color: .gray.opacity(0.8), radius: 8, x: 0, y: 5)
+                                
+                                // Image on top of the circle
+                                Image("AtlasIcon")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 50, height: 50) // Adjust size as needed
+                            }
+                            .padding(.trailing, 10) // Increase this to push further right
+                            .padding(.bottom, 10)
                         }
-                        .padding()
                     }
                 }
             }
@@ -135,5 +156,5 @@ struct WipeShape: Shape {
 }
 
 #Preview {
-    ItineraryParentView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")))
+    ItineraryParentView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")), cvm: ChatViewModel())
 }

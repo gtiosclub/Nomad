@@ -9,14 +9,17 @@ import SwiftUI
 
 struct RecapView: View {
     @ObservedObject var vm: UserViewModel
+//    @ObservedObject var firebaseVM: FirebaseViewModel
     
     var body: some View {
         NavigationStack {
             VStack {
-                Text("Let's see where you've been!")
-                    .font(.system(size: 18, weight: .semibold))
-                    .padding(.bottom, 20)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                HStack{
+                    Text("Let's see where you've been!")
+                        .font(.system(size: 18, weight: .semibold))
+                        .padding(.bottom, 20)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
                 let columns = [GridItem(.flexible(), spacing: 20), GridItem(.flexible(), spacing: 10)]
                 LazyVGrid(columns: columns, spacing: 20) {
                     ForEach(vm.getTrips()) { trip in

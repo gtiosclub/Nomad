@@ -8,6 +8,235 @@ import SwiftUI
 import MapKit
 import AVFoundation
 
+@available(iOS 17.0, *)
+struct MapView: View {
+    @ObservedObject var vm: UserViewModel
+    @ObservedObject var navManager: NavigationManager = NavigationManager()
+    @ObservedObject var mapManager = MapManager.manager
+    @StateObject private var voiceManager = LocationVoiceManager.shared
+    @State private var isVoiceEnabled: Bool = false
+    @State private var cameraDistance: CLLocationDistance = 400
+    
+    @State private var remainingTime: TimeInterval = 0
+    @State private var remainingDistance: Double = 0
+    @State private var isSheetPresented = false
+
+    
+    let timer = Timer.publish(every: 7, on: .main, in: .common).autoconnect()
+    
+    var body: some View {
+        ZStack {
+            // All views within Map
+            Map(position: $navManager.mapPosition) {
+                UserAnnotation()
+                
+                ForEach(navManager.mapMarkers) { marker in
+                    Annotation("", coordinate: marker.coordinate) {
+                        VStack {
+                            Image(marker.icon.image_path)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: min(100000 / (cameraDistance), 40), height: min(40, 100000 / (cameraDistance)))
+                                .opacity(cameraDistance > 8000 ? 0 : 1)
+                                .clipShape(Circle())
+                                .animation(.easeInOut, value: cameraDistance)
+                            
+                        }
+                    }
+                }
+                // show all polylines
+                ForEach(navManager.mapPolylines, id:\.self) { polyline in
+                    MapPolyline(polyline)
+                        .stroke(.blue, lineWidth: 5)
+                }
+                
+            }
+            
+            .onChange(of: mapManager.motion, initial: true) { oldMotion, newMotion in
+                if let _ = newMotion.coordinate {
+                    navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
+                    navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
+                    if let camera = navManager.mapPosition.camera {
+                        let movingMap = navManager.movingMap(camera: camera.centerCoordinate)
+                        if !movingMap {
+                            withAnimation {
+                                navManager.updateMapPosition(newMotion)
+                            }
+                        }
+                    }
+                }
+            }
+            .onAppear() {
+                let motion = mapManager.motion
+                navManager.updateMapPosition(motion)
+            }.onMapCameraChange { camera in
+                withAnimation {
+                    cameraDistance = camera.camera.distance
+                }
+                
+            }
+            
+            // All Map HUD
+            VStack {
+                if navManager.navigating {
+                    DirectionView(step: navManager.navigatingStep!)
+                }
+                HStack {
+                    Spacer()
+                    VStack {
+                        RecenterMapView(recenterMap: {
+                            navManager.recenterMap()
+                        })
+                        .frame(width: 50, height: 50)
+                        
+                        // Add Voice Announcer Button
+                        VoiceAnnouncerButtonView(onPress: announceCurrentLocation, isVoiceEnabled: $isVoiceEnabled)
+                            .frame(width: 50, height: 50)
+                        
+                        Spacer()
+                        
+                        Button {
+                            isSheetPresented = true
+                        } label: {
+                            ZStack {
+                                // White Circle with Drop Shadow
+                                Circle()
+                                    .fill(Color.white)
+                                    .frame(width: 60, height: 60) // Adjust size as needed
+                                    .shadow(color: .gray.opacity(0.8), radius: 8, x: 0, y: 5)
+                                
+                                // Image on top of the circle
+                                Image("AtlasIcon")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 50, height: 50) // Adjust size as needed
+                            }
+                        }
+                    }
+                }
+                
+                
+                
+                
+                Spacer()
+                if !navManager.navigating {
+                    Button {
+                        if navManager.navigatingRoute == nil {
+                            if let trip = vm.navigatingTrip {
+                                if let route = trip.route {
+                                    navManager.setNavigatingRoute(route: route)
+                                    navManager.startNavigating()
+                                }
+                            }
+                        } else {
+                            navManager.startNavigating()
+                        }
+                    } label: {
+                        Text("Start Navigating")
+                            .padding()
+                            .background(.blue)
+                            .foregroundStyle(.white)
+                            .padding()
+                    }
+                } else {
+                    HStack(spacing: 100) {
+                        VStack {
+                            Text("\(formattedRemainingTime())")
+                                .font(.largeTitle)
+                            Text("hrs")
+                        }
+                        VStack {
+                            Text("\(formattedRemainingDistance())")
+                                .font(.largeTitle)
+                            Text("mi")
+                        }
+                    }.padding()
+                    .frame(maxWidth: .infinity, idealHeight: 150)
+                        .background(.white)
+                    
+                }
+                
+            }
+        }.onChange(of: vm.navigatingTrip) { old, new in
+            if let newTrip = new {
+                if let newRoute = newTrip.route {
+                    navManager.setNavigatingRoute(route: newRoute)
+                }
+            }
+        }
+        .sheet(isPresented: $isSheetPresented) {
+            AtlasNavigationView(vm: vm)
+                .presentationDetents([.medium, .large])
+        }
+//        .onReceive(timer) { _ in
+//            if navManager.navigating {
+//                self.remainingTime = mapManager.getRemainingTime(leg: navManager.navigatingLeg!)
+//                self.remainingDistance = mapManager.getRemainingDistance(leg: navManager.navigatingLeg!)
+//            }
+//        }
+        
+    }
+    private func formattedRemainingTime() -> String {
+        let seconds = Int(navManager.remainingTime ?? 0)
+        let hours = Int(seconds) / 3600
+        let minutes = (Int(seconds) % 3600) / 60
+        
+        return String(format: "%1d:%02d", hours, minutes)
+    }
+    private func formattedRemainingDistance() -> String {
+        return String(format: "%.1f", (navManager.remainingDistance ?? 0) / 1609.34)
+//        var miles = self.remainingDistance / 1609.34
+//        if miles > 0.2 {
+//            return String(format: "%.1f miles", miles)
+//        } else {
+//            let feet = 100 * floor(miles * 5280 / 100)
+//            return String(format: "%3.0f feet", feet)
+//        }
+    }
+    // Function to announce current location
+    private func announceCurrentLocation() {
+        guard let userLocation = MapManager.manager.userLocation else { return }
+        
+        // Create a CLGeocoder instance
+        let geocoder = CLGeocoder()
+        let location = CLLocation(latitude: userLocation.latitude, longitude: userLocation.longitude)
+        
+        // Reverse geocode the location
+        geocoder.reverseGeocodeLocation(location) { placemarks, error in
+            if let error = error {
+                print("Reverse geocoding error: \(error.localizedDescription)")
+                // If geocoding fails, announce coordinates
+                let announcement = "You are currently at latitude \(String(format: "%.4f", userLocation.latitude)) and longitude \(String(format: "%.4f", userLocation.longitude))"
+                voiceManager.announceLocation(announcement)
+                return
+            }
+            
+            if let placemark = placemarks?.first {
+                // Build location description
+                var locationDescription = "You are currently at"
+                
+                if let streetNumber = placemark.subThoroughfare {
+                    locationDescription += " \(streetNumber)"
+                }
+                
+                if let street = placemark.thoroughfare {
+                    locationDescription += " \(street)"
+                }
+                
+                if let city = placemark.locality {
+                    locationDescription += " in \(city)"
+                }
+                
+                if let state = placemark.administrativeArea {
+                    locationDescription += ", \(state)"
+                }
+                
+                voiceManager.announceLocation(locationDescription)
+            }
+        }
+    }
+}
+
 // Voice Button View
 struct VoiceAnnouncerButtonView: View {
     let onPress: () -> Void
@@ -52,155 +281,6 @@ class LocationVoiceManager: ObservableObject {
     }
 }
 
-@available(iOS 17.0, *)
-struct MapView: View {
-    @ObservedObject var vm: UserViewModel
-    @ObservedObject var navManager: NavigationManager = NavigationManager()
-    @ObservedObject var mapManager = MapManager.manager
-    @StateObject private var voiceManager = LocationVoiceManager.shared
-    @State private var isVoiceEnabled: Bool = false
-
-    var body: some View {
-        ZStack {
-            // All views within Map
-            Map(position: $navManager.mapPosition) {
-                // Adding markers for the start and finish points
-                Annotation("", coordinate: mapManager.userLocation ?? CLLocationCoordinate2D()) {
-                    Image("nav_user_icon")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 50)
-                        .background(.white)
-                        .clipShape(Circle())
-                        .rotationEffect(.degrees((mapManager.motion.direction ?? navManager.mapPosition.camera?.heading) ?? 0))
-                }
-                
-                //show all markers
-                ForEach(navManager.mapMarkers) { marker in
-                    Marker(marker.title, coordinate: marker.coordinate)
-                }
-                // show all polylines
-                ForEach(navManager.mapPolylines, id:\.self) { polyline in
-                    MapPolyline(polyline)
-                        .stroke(.blue, lineWidth: 5)
-                }
-                
-            }
-            .onChange(of: mapManager.motion, initial: true) { oldMotion, newMotion in
-                if let newLoc = newMotion.coordinate {
-                    print("New User Location")
-                    navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
-                    navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
-                    if let camera = navManager.mapPosition.camera {
-                        let movingMap = navManager.movingMap(camera: camera.centerCoordinate)
-                        if !movingMap {
-                            withAnimation {
-                                navManager.updateMapPosition(newMotion)
-                            }
-                        }
-                    }
-                }
-            }
-            .onAppear() {
-                let motion = mapManager.motion
-                navManager.updateMapPosition(motion)
-            }
-            
-            // All Map HUD
-            VStack {
-                if navManager.navigating {
-                    DirectionView(distance: $navManager.distanceToNextManeuver, nextStep: navManager.nextStepManeuver)
-                }
-                HStack {
-                    Spacer()
-                    VStack {
-                        RecenterMapView(recenterMap: {
-                            navManager.recenterMap()
-                        })
-                        .frame(width: 50, height: 50)
-                      
-                        // Add Voice Announcer Button
-                        VoiceAnnouncerButtonView(onPress: announceCurrentLocation, isVoiceEnabled: $isVoiceEnabled)
-                            .frame(width: 50, height: 50)
-                    }
-                }
-                Spacer()
-                VStack {
-                    Text("Add debugging info below:")
-                    Text("ENTER HERE")
-                }
-                HStack {
-                    Button {
-                        // set example route
-                        Task {
-                            if let route = await mapManager.getExampleRoute() {
-                                navManager.setNavigatingRoute(route: route)
-                            }
-                            
-                        }
-                    } label: {
-                        Text("Generate Route")
-                            .padding()
-                            .background(.blue)
-                            .foregroundStyle(.white)
-                            .padding()
-                    }
-                    Button {
-                        navManager.startNavigating()
-                    } label: {
-                        Text("Start Navigating")
-                            .padding()
-                            .background(.blue)
-                            .foregroundStyle(.white)
-                            .padding()
-                    }
-                }
-            }
-        }
-    }    
-    // Function to announce current location
-    private func announceCurrentLocation() {
-        guard let userLocation = MapManager.manager.userLocation else { return }
-        
-        // Create a CLGeocoder instance
-        let geocoder = CLGeocoder()
-        let location = CLLocation(latitude: userLocation.latitude, longitude: userLocation.longitude)
-        
-        // Reverse geocode the location
-        geocoder.reverseGeocodeLocation(location) { placemarks, error in
-            if let error = error {
-                print("Reverse geocoding error: \(error.localizedDescription)")
-                // If geocoding fails, announce coordinates
-                let announcement = "You are currently at latitude \(String(format: "%.4f", userLocation.latitude)) and longitude \(String(format: "%.4f", userLocation.longitude))"
-                voiceManager.announceLocation(announcement)
-                return
-            }
-            
-            if let placemark = placemarks?.first {
-                // Build location description
-                var locationDescription = "You are currently at"
-                
-                if let streetNumber = placemark.subThoroughfare {
-                    locationDescription += " \(streetNumber)"
-                }
-                
-                if let street = placemark.thoroughfare {
-                    locationDescription += " \(street)"
-                }
-                
-                if let city = placemark.locality {
-                    locationDescription += " in \(city)"
-                }
-                
-                if let state = placemark.administrativeArea {
-                    locationDescription += ", \(state)"
-                }
-                
-                voiceManager.announceLocation(locationDescription)
-            }
-        }
-    }
-}
 
 #Preview {
     MapView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")))

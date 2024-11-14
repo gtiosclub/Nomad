@@ -7,30 +7,19 @@
 
 import SwiftUI
 
-struct LogInView: View {
+struct LoginView: View {
     @ObservedObject var vm: FirebaseViewModel
     @State var isChecked = false
     @State var email = ""
     @State var password = ""
     private let screenWidth = UIScreen.main.bounds.size.width
     private let screenHeight = UIScreen.main.bounds.size.height
-    @State var navigateToHome: Bool = false
+    @State private var isLoggedIn = false
     
     var body: some View {
         NavigationStack {
             VStack {
-                ZStack {
-                    Image("")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: screenWidth, height: screenHeight / 4)
-                        .padding(.top, -8)
-                    Image("")
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: screenWidth * 2 / 3, height: screenHeight / 5)
-                }
-                
+                Spacer()
                 Text("Sign In")
                     .font(Font.custom("Quicksand-Medium", size: 32))
                     .foregroundColor(Color.gray)
@@ -99,7 +88,9 @@ struct LogInView: View {
                 }
                 .padding([.leading, .trailing], 20)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                
+//                NavigationLink(destination: RootView(vm: UserViewModel(user: (vm.current_user ?? User(id: "Default", name: "Default User")))), isActive: $isLoggedIn) {
+//                    EmptyView()
+//                }
                 Spacer()
                 
                 HStack {
@@ -118,6 +109,11 @@ struct LogInView: View {
             }
             .ignoresSafeArea()
         }
+        .onChange(of: vm.isAuthenticated) { _, newValue in
+            if newValue {
+                self.isLoggedIn = true
+            }
+        }
     }
     
     private func signIn() {
@@ -128,7 +124,9 @@ struct LogInView: View {
         if !email.isEmpty && !password.isEmpty {
             vm.firebase_email_password_sign_in(email: email, password: password) { success in
                 if success {
-                    navigateToHome = true
+                    DispatchQueue.main.async {
+                        self.isLoggedIn = true
+                    }
                 }
                 
             }
@@ -139,5 +137,5 @@ struct LogInView: View {
 }
 
 #Preview {
-    LogInView(vm: FirebaseViewModel())
+    LoginView(vm: FirebaseViewModel.vm)
 }
