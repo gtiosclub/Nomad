@@ -60,17 +60,33 @@ class UserViewModel: ObservableObject {
     
     @MainActor
     func createTrip(start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM", coverImageURL: String = "") async {
-        let temp_trip = Trip(start_location: start_location, end_location: end_location, start_date: start_date, end_date: end_date, stops: stops, start_time: start_time, coverImageURL: coverImageURL)
+        let new_trip = Trip(start_location: start_location, end_location: end_location, start_date: start_date, end_date: end_date, stops: stops, start_time: start_time, coverImageURL: coverImageURL)
 
-        if await fbVM.createTrip(tripID: temp_trip.id, createdDate: Trip.getCurrentDateTime(), modifiedDate: temp_trip.modified_date, startDate: start_date, startTime: start_time, endDate: end_date, isPrivate: false, startLocation: start_location, endLocation: end_location, routeName: "", stops: []) {
-            if await fbVM.addTripToUser(userID: user.id, tripID: temp_trip.id) {
-                self.current_trip = temp_trip
-                let route = await getRoute()
-                self.current_trip?.route = route
-                
-                self.user.addTrip(trip: self.current_trip!)
+        self.current_trip = new_trip
+        let route = await getRoute()
+        self.current_trip?.route = route
+        
+        self.user.addTrip(trip: self.current_trip!)
+    }
+    
+    func addTripToFirebase() async -> Bool {
+        if let trip = current_trip {
+            if await fbVM.createTrip(tripID: trip.id, createdDate: trip.getCreatedDate(), modifiedDate: trip.modified_date, startDate: trip.getStartDate(), startTime: trip.getStartTime(), endDate: trip.getEndDate(), isPrivate: trip.isPrivate, startLocation: trip.getStartLocation(), endLocation: trip.getEndLocation(), routeName: trip.getName(), stops: trip.getStops()) {
+                if await fbVM.addTripToUser(userID: user.id, tripID: trip.id) {
+                    return true
+                }
             }
         }
+        return false
+    }
+    
+    func modifyTripInFirebase() async -> Bool {
+        if let trip = current_trip {
+            if await fbVM.modifyTrip(tripID: trip.id, trip: trip) {
+                return true
+            }
+        }
+        return false
     }
     
     func addTripToUser(trip: Trip) {
