@@ -17,6 +17,7 @@ struct PreviewRouteView: View {
     @ObservedObject var trip: Trip
     @State var routePlanned: Bool = false
     @State var backToEdit: Bool = false
+    var letBack: Bool = true
     
     var body: some View {
         NavigationStack {
@@ -47,6 +48,7 @@ struct PreviewRouteView: View {
                             .cornerRadius(8)
                     }
                     .padding(.horizontal)
+                    .onChange(of: vm.times) {}
                     
                     Text("Route Details")
                         .font(.headline)
@@ -57,7 +59,7 @@ struct PreviewRouteView: View {
                     
                     
                     if vm.current_trip != nil {
-                        RoutePlanListView(vm: vm, reload: $routePlanned)
+                        EnhancedRoutePlanListView(vm: vm)
                             .padding()
                     } else {
                         Rectangle()
@@ -70,16 +72,6 @@ struct PreviewRouteView: View {
                     VStack {
                         if !isCommunityTrip {
                             VStack(alignment: .leading) {
-                                RadioButton(text: "Public", isSelected: $isPrivate, value: false)
-                                RadioButton(text: "Private", isSelected: $isPrivate, value: true)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.leading, 30)
-                        }
-                        
-                        HStack {
-                            NavigationLink(destination: FindStopView(vm: vm)) {
-                                Text("Edit Route")
                                 Text("Finalize Your Route")
                                     .font(.headline)
                                     .fontWeight(.bold)
@@ -183,6 +175,8 @@ struct PreviewRouteView: View {
                     }
                 }
             }
+            .navigationBarBackButtonHidden(!letBack)
+            .toolbar(letBack ? .visible : .hidden, for: .navigationBar)
         }
     }
         
@@ -208,6 +202,7 @@ struct PreviewRouteView: View {
         let minsLeft = Int(duration.truncatingRemainder(dividingBy: 3600))
         return "\(Int(duration / 3600)) hr \(Int(minsLeft / 60)) min"
     }
+    
     func formatDistance(distance: Double) -> String {
         return String(format: "%.0f miles", distance)
     }

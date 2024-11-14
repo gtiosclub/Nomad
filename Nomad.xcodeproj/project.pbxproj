@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		08C4C61F2CCB068C00C9B8D9 /* FilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08C4C61E2CCB068C00C9B8D9 /* FilterView.swift */; };
 		391165FA2CB53542004B8695 /* PreviewRouteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 391165F92CB53542004B8695 /* PreviewRouteView.swift */; };
+		397D567F2CCB0BA20020EA99 /* ViewAllTripsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 397D567E2CCB0BA20020EA99 /* ViewAllTripsView.swift */; };
 		48974B842C9A438B0057B073 /* Activity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B832C9A43880057B073 /* Activity.swift */; };
 		48974B862C9A44A30057B073 /* Hotel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B852C9A449F0057B073 /* Hotel.swift */; };
 		48974B8D2CA0A3CB0057B073 /* FindStopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B8C2CA0A3CB0057B073 /* FindStopView.swift */; };
@@ -102,6 +103,7 @@
 /* Begin PBXFileReference section */
 		08C4C61E2CCB068C00C9B8D9 /* FilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterView.swift; sourceTree = "<group>"; };
 		391165F92CB53542004B8695 /* PreviewRouteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewRouteView.swift; sourceTree = "<group>"; };
+		397D567E2CCB0BA20020EA99 /* ViewAllTripsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewAllTripsView.swift; sourceTree = "<group>"; };
 		48974B832C9A43880057B073 /* Activity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Activity.swift; sourceTree = "<group>"; };
 		48974B852C9A449F0057B073 /* Hotel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hotel.swift; sourceTree = "<group>"; };
 		48974B8C2CA0A3CB0057B073 /* FindStopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindStopView.swift; sourceTree = "<group>"; };
@@ -293,6 +295,7 @@
 				48974BA02CB04B420057B073 /* RoutePreviewView.swift */,
 				66443CD62CADDB77000D3F12 /* RoutePlanListView.swift */,
 				48974BAE2CB30AAF0057B073 /* EnhancedRoutePlanListView.swift */,
+				397D567E2CCB0BA20020EA99 /* ViewAllTripsView.swift */,
 				B3E575E62CC1CA44009E0355 /* POIDetailView.swift */,
 				48FF8FCD2CE40A0600BB65E5 /* FilterDropdownView.swift */,
 			);
@@ -523,6 +526,7 @@
 				66443CD72CADDB77000D3F12 /* RoutePlanListView.swift in Sources */,
 				B2F8F3532C97BCAB00B9618E /* User.swift in Sources */,
 				48974B862C9A44A30057B073 /* Hotel.swift in Sources */,
+				397D567F2CCB0BA20020EA99 /* ViewAllTripsView.swift in Sources */,
 				B2F8F3642C97BD9B00B9618E /* UserViewModel.swift in Sources */,
 				08C4C61F2CCB068C00C9B8D9 /* FilterView.swift in Sources */,
 				391165FA2CB53542004B8695 /* PreviewRouteView.swift in Sources */,

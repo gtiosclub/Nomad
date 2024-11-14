@@ -73,7 +73,7 @@ struct FilterDropdownView: View {
     // Determine what to display as the dropdown title based on selection state
     private var selectedOptionTitle: String {
         if allowsMultipleSelection {
-            return selectedOptions.isEmpty ? title : selectedOptions.joined(separator: ", ")
+            return title
         } else {
             return selectedOption == 0 ? title : options[selectedOption - 1]
         }

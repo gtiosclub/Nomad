@@ -12,45 +12,6 @@ import FirebaseStorage
 import MapKit
 import SwiftUI
 
-//class FirebaseViewModel: ObservableObject {
-//    let auth = Auth.auth()
-//    let db = Firestore.firestore()
-//    @Published var current_user: User? = nil
-//    @Published var errorText: String? = nil
-//    @Published var isLoading: Bool = false
-//    @Published var isAuthenticated = false  // Add this new property
-//    var onSetupCompleted: ((FirebaseViewModel) -> Void)?
-//
-//    init(current_user: User? = nil, errorText: String? = nil) {
-//        print("inside fbVM init")
-//        if self.current_user == nil {
-//            self.current_user = current_user
-//            self.errorText = errorText
-//
-//            // Combine both auth listeners
-//            auth.addStateDidChangeListener { [weak self] auth, user in
-//                DispatchQueue.main.async {
-//                    self?.isAuthenticated = user != nil  // Update authentication state
-//
-//                    if let user = user {
-//                        print("User Found")
-//                        if let username = user.displayName {
-//                            if current_user == nil || current_user!.id != username {
-//                                print("Setting User: \(username)")
-//                                Task {
-//                                    await self?.setCurrentUser(userId: username)
-//                                    UserDefaults.standard.setValue(true, forKey: "log_Status")
-//                                }
-//                            }
-//                        }
-//                    } else {
-//                        UserDefaults.standard.setValue(false, forKey: "log_Status")
-//                    }
-//                }
-//            }
-//        }
-//    }
-
 class FirebaseViewModel: ObservableObject {
     static var isListenerInitialized = false  // Static variable to prevent multiple listeners
 
@@ -392,64 +353,6 @@ class FirebaseViewModel: ObservableObject {
         let mapManager = MapManager.manager
         return try await mapManager.docsToNomadRoute(docs: getdocs.documents)
     }
-
-//    func modifyStartDate(userID: String, tripID: String, newStartDate: String, modifiedDate: String) async -> Bool {
-//        do {
-//            try await db.collection("TRIPS").document(tripID).updateData(["start_date" : newStartDate, "modified_date" : modifiedDate])
-//            return true
-//        } catch {
-//            print(error)
-//            return false
-//        }
-//    }
-
-    
-//    func modifyEndDate(userID: String, tripID: String, newEndDate: String, modifiedDate: String) async -> Bool {
-//        do {
-//            try await db.collection("TRIPS").document(tripID).updateData(["end_date" : newEndDate, "modified_date" : modifiedDate])
-//            return true
-//        } catch {
-//            print(error)
-//            return false
-//        }
-//    }
-    
-    
-//    func modifyStartLocationAndDate(tripID: String, start: any POI, modifiedDate: String) async -> Bool {
-//        //modify start
-//        do {
-//            try await db.collection("TRIPS").document(tripID).collection("STOPS").document("start").updateData(["address" : start.address, "name" : start.name, "city" : start.city ?? "", "latitude" : start.latitude, "longitude" : start.longitude])
-//        } catch {
-//            print(error)
-//            return false
-//        }
-//        // modify date
-//        do {
-//            try await db.collection("TRIPS").document(tripID).updateData(["modified_date" : modifiedDate])
-//            return true
-//        } catch {
-//            print(error)
-//            return false
-//        }
-//    }
-
-//    func modifyEndLocationAndDate(tripID: String, stop: any POI, modifiedDate: String) async -> Bool {
-//        //modify start
-//        do {
-//            try await db.collection("TRIPS").document(tripID).collection("STOPS").document("end").updateData(["address" : stop.address, "name" : stop.name, "city" : stop.city ?? "", "latitude" : stop.latitude, "longitude" : stop.longitude])
-//        } catch {
-//            print(error)
-//            return false
-//        }
-//        // modify date
-//        do {
-//            try await db.collection("TRIPS").document(tripID).updateData(["modified_date" : modifiedDate])
-//            return true
-//        } catch {
-//            print(error)
-//            return false
-//        }
-//    }
     
     func modifyHasDriven(tripID: String, hasDriven: Int) async -> Bool {
         do {
@@ -807,25 +710,6 @@ class FirebaseViewModel: ObservableObject {
             } catch {
                 print(error)
             }
-            //Exclude User trips
-//            let userDocRef = db.collection("USERS").document(userID)
-//            do {
-//                let document = try await userDocRef.getDocument()
-//                guard var trips = document.data()?["trips"] as? [String] else {
-//                    print("Document does not exist or 'trips' is not an array.")
-//                    return public_trips
-//                }
-//                for tripID in trips {
-//                    if public_trip_names.contains(tripID) {
-//                        if let index = public_trip_names.firstIndex(of: tripID) {
-//                            public_trip_names.remove(at: index)
-//                            public_trips.remove(at: index)
-//                        }
-//                    }
-//                }
-//            } catch {
-//                print(error)
-//            }
             return public_trips
         }
     
@@ -893,13 +777,11 @@ class FirebaseViewModel: ObservableObject {
     }
 
     
-
-    
     func getAllTrips(userID: String) async -> [String: [Trip]] {
-        //        var trips: [Trip] = []
-        var in_progress_trips : [Trip] = []
-        var driven_trips : [Trip] = []
-        var future_trips : [Trip] = []
+        var in_progress_trips: [Trip] = []
+        var driven_trips: [Trip] = []
+        var future_trips: [Trip] = []
+        
         let user = db.collection("USERS").document(userID)
         
         do {
@@ -909,163 +791,114 @@ class FirebaseViewModel: ObservableObject {
                 return [:]
             }
             
-            for tripID in tripDocs {
-                let tripRef = db.collection("TRIPS").document(tripID)
-                
-                do {
-                    let tripDoc = try await tripRef.getDocument()
-                    guard let tripData = tripDoc.data() else {
-                        print("Trip document \(tripID) does not exist or is empty")
-                        continue
-                    }
-                    
-                    let start_location_id = tripData["start_id"] as? String ?? ""
-                    let end_location_id = tripData["end_id"] as? String ?? ""
-                    let hasDriven = tripData["hasDriven"] as? Int ?? 2
-                    
-                    var start_location: (any POI)?
-                    var end_location: (any POI)?
-                    
-                    let startRef = tripDoc.reference.collection("STOPS").document(start_location_id)
-                    let endRef = tripDoc.reference.collection("STOPS").document(end_location_id)
-                    do {
-                        let startDoc = try await startRef.getDocument()
-                        let endDoc = try await endRef.getDocument()
+            // Use TaskGroup to fetch and process each trip concurrently
+            await withTaskGroup(of: (Trip, Int)?.self) { group in
+                for tripID in tripDocs {
+                    group.addTask {
+                        let tripRef = self.db.collection("TRIPS").document(tripID)
                         
-                        guard let startData = startDoc.data() else {
-                            print("Cannot find start point for trip \(tripID)")
-                            continue
-                        }
-                        guard let endData = endDoc.data() else {
-                            print("Cannot find end point for trip \(tripID)")
-                            continue
-                        }
-                        
-                        let start_name = startData["name"] as? String ?? ""
-                        let start_address = startData["address"] as? String ?? ""
-                        let start_type = startData["type"] as? String ?? ""
-                        let start_lat = startData["latitude"] as? Double ?? 0.0
-                        let start_long = startData["longitude"] as? Double ?? 0.0
-                        let start_city = startData["city"] as? String ?? ""
-                        
-                        start_location = getPOI(
-                            name: start_name,
-                            address: start_address,
-                            type: start_type,
-                            longitude: start_long,
-                            latitude: start_lat,
-                            city: start_city
-                        )
-                        
-                        let end_name = endData["name"] as? String ?? ""
-                        let end_address = endData["address"] as? String ?? ""
-                        let end_type = endData["type"] as? String ?? ""
-                        let end_lat = endData["latitude"] as? Double ?? 0.0
-                        let end_long = endData["longitude"] as? Double ?? 0.0
-                        let end_city = endData["city"] as? String ?? ""
-                        
-                        end_location = getPOI(
-                            name: end_name,
-                            address: end_address,
-                            type: end_type,
-                            longitude: end_long,
-                            latitude: end_lat,
-                            city: end_city
-                        )
-                        
-                    } catch {
-                        print("Error fetching start or end location: \(error)")
-                        continue
-                    }
-                    
-                    guard let validStartLocation = start_location, let validEndLocation = end_location else {
-                        print("Start or end location is missing for trip \(tripID)")
-                        continue
-                    }
-                    
-                    let start_date = tripData["start_date"] as? String ?? ""
-                    let start_time = tripData["start_time"] as? String ?? ""
-                    let end_date = tripData["end_date"] as? String ?? ""
-                    let created_date = tripData["created_date"] as? String ?? ""
-                    let modified_date = tripData["modified_date"] as? String ?? ""
-                    let name = tripData["name"] as? String ?? ""
-                    let isPrivate = tripData["isPrivate"] as? Bool ?? true
-                    
-                    let stops_data = tripData["stops"] as? [String] ?? []
-                    var stops: [any POI] = []
-                    
-                    for stop in stops_data {
-                        let stopRef = tripDoc.reference.collection("STOPS").document(stop)
                         do {
-                            let stopDoc = try await stopRef.getDocument()
-                            guard let stopData = stopDoc.data() else {
-                                print("Cannot find stop \(stop)")
-                                continue
+                            let tripDoc = try await tripRef.getDocument()
+                            guard let tripData = tripDoc.data() else {
+                                print("Trip document \(tripID) does not exist or is empty")
+                                return nil
                             }
                             
-                            let poi_name = stopData["name"] as? String ?? ""
-                            let poi_address = stopData["address"] as? String ?? ""
-                            let poi_type = stopData["type"] as? String ?? ""
-                            let poi_latitude = stopData["latitude"] as? Double ?? 0.0
-                            let poi_longitude = stopData["longitude"] as? Double ?? 0.0
-                            let poi_city = stopData["city"] as? String ?? ""
-                            let poi_price: Int? = stopData["price"] as? Int
-                            let poi_rating: Double? = stopData["rating"] as? Double
-                            let poi_website: String? = stopData["website"] as? String
-                            let poi_cuisine: String? = stopData["cuisine"] as? String
-                            let poi_image: String? = stopData["imageURL"] as? String
+                            let start_location_id = tripData["start_id"] as? String ?? ""
+                            let end_location_id = tripData["end_id"] as? String ?? ""
+                            let hasDriven = tripData["hasDriven"] as? Int ?? 2
                             
-                            let poi = getPOI(
-                                name: poi_name,
-                                address: poi_address,
-                                type: poi_type,
-                                longitude: poi_longitude,
-                                latitude: poi_latitude,
-                                city: poi_city,
-                                cuisine: poi_cuisine,
-                                rating: poi_rating,
-                                price: poi_price,
-                                website: poi_website
-                        
+                            // Concurrently fetch start and end locations
+                            async let startLocationResult = self.fetchLocationData(from: tripDoc.reference.collection("STOPS").document(start_location_id))
+                            async let endLocationResult = self.fetchLocationData(from: tripDoc.reference.collection("STOPS").document(end_location_id))
+                            
+                            guard let start_location = await startLocationResult,
+                                  let end_location = await endLocationResult else {
+                                print("Start or end location is missing for trip \(tripID)")
+                                return nil
+                            }
+                            
+                            // Fetch stops concurrently for each trip
+                            let stops_data = tripData["stops"] as? [String] ?? []
+                            var stops: [any POI] = []
+                            for stopID in stops_data {
+                                async let stopResult = self.fetchLocationData(from: tripDoc.reference.collection("STOPS").document(stopID))
+                                if let stop = await stopResult {
+                                    stops.append(stop)
+                                }
+                            }
+                            
+                            // Create the new trip
+                            let newTrip = Trip(
+                                id: tripID,
+                                start_location: start_location,
+                                end_location: end_location,
+                                start_date: tripData["start_date"] as? String ?? "",
+                                end_date: tripData["end_date"] as? String ?? "",
+                                created_date: tripData["created_date"] as? String ?? "",
+                                modified_date: tripData["modified_date"] as? String ?? "",
+                                stops: stops,
+                                start_time: tripData["start_time"] as? String ?? "",
+                                name: tripData["name"] as? String ?? "",
+                                isPrivate: tripData["isPrivate"] as? Bool ?? true
                             )
-                            stops.append(poi)
+                            
+                            // Return the trip along with its `hasDriven` status
+                            return (newTrip, hasDriven)
+                            
                         } catch {
-                            print("Error fetching stop \(stop): \(error)")
+                            print("Error fetching trip \(tripID): \(error)")
+                            return nil
                         }
                     }
-                    
-                    let newTrip = Trip(
-                        id: tripID,
-                        start_location: validStartLocation,
-                        end_location: validEndLocation,
-                        start_date: start_date,
-                        end_date: end_date,
-                        created_date: created_date,
-                        modified_date: modified_date,
-                        stops: stops,
-                        start_time: start_time,
-                        name: name,
-                        isPrivate: isPrivate
-                    )
-                    if (hasDriven == 0) {
-                        driven_trips.append(newTrip)
-                    } else if (hasDriven == 1) {
-                        in_progress_trips.append(newTrip)
-                    } else if (hasDriven == 2){
-                        future_trips.append(newTrip)
+                }
+                
+                for await result in group {
+                    if let (trip, hasDriven) = result {
+                        switch hasDriven {
+                        case 0: driven_trips.append(trip)
+                        case 1: in_progress_trips.append(trip)
+                        case 2: future_trips.append(trip)
+                        default: break
+                        }
                     }
-                    //                    trips.append(newTrip)
-                    
-                } catch {
-                    print("Error fetching trip \(tripID): \(error)")
                 }
             }
+            
         } catch {
             print("Error fetching user document: \(error)")
             return [:]
         }
+        
         return ["past": driven_trips, "present": in_progress_trips, "future": future_trips]
     }
+
+
+    // Helper function to fetch POI data from a document
+    func fetchLocationData(from docRef: DocumentReference) async -> (any POI)? {
+        do {
+            let doc = try await docRef.getDocument()
+            guard let data = doc.data() else { return nil }
+            
+            return getPOI(
+                name: data["name"] as? String ?? "",
+                address: data["address"] as? String ?? "",
+                type: data["type"] as? String ?? "",
+                longitude: data["longitude"] as? Double ?? 0.0,
+                latitude: data["latitude"] as? Double ?? 0.0,
+                city: data["city"] as? String ?? "",
+                cuisine: data["cuisine"] as? String,
+                rating: data["rating"] as? Double,
+                price: data["price"] as? Int,
+                website: data["website"] as? String,
+                imageURL: data["imageUrl"] as? String
+            )
+        } catch {
+            print("Error fetching location data: \(error)")
+            return nil
+        }
+    }
+
     
     func storeImageAndReturnURL(image: UIImage, tripID: String, completion: @escaping (URL?) -> Void) {
                 print("started")

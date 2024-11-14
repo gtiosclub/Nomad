@@ -13,21 +13,21 @@ import Combine
 class UserViewModel: ObservableObject {
     @Published var user: User
     @Published var current_trip: Trip?
-    @Published var total_distance: Double = 0
-    @Published var total_time: Double = 0
+    
+    @Published var previous_trips: [Trip] = []
+    @Published var community_trips: [Trip] = []
+    
+    @Published var distances: [Double] = []
+    @Published var times: [Double] = []
+    @Published var currentCity: String?
+    @Published var currentAddress: String?
+    
     @Published var restaurants: [Restaurant] = []
     @Published var hotels: [Hotel] = []
     @Published var activities: [Activity] = []
     @Published var shopping: [Shopping] = []
     @Published var generalLocations: [GeneralLocation] = []
     @Published var reststops: [RestStop] = []
-    @Published var distances: [Double] = []
-    @Published var times: [Double] = []
-    @Published var currentCity: String?
-    @Published var currentAddress: String?
-    
-    @Published var previous_trips: [Trip] = []
-    @Published var community_trips: [Trip] = []
     
     var aiVM = AIAssistantViewModel()
     var fbVM = FirebaseViewModel.vm
@@ -37,13 +37,13 @@ class UserViewModel: ObservableObject {
     }
     
     func populateUserTrips() async {
-        print(user.id)
         let allTrips = await fbVM.getAllTrips(userID: user.id)
         DispatchQueue.main.async {
             self.user.trips = allTrips["future"]!
             self.previous_trips = allTrips["past"]!
+            self.user.pastTrips = allTrips["past"]!
         }
-//        self.previous_trips = user.pastTrips
+
         let communityTrips = await fbVM.getAllPublicTrips(userID: user.id)
         DispatchQueue.main.async {
             self.community_trips = communityTrips
@@ -125,63 +125,40 @@ class UserViewModel: ObservableObject {
                 }
             }
             
-            // Adding the stop to the trip
-            if await fbVM.addStopToTrip(tripID: trip.id, stop: stop, index: index) {
-                current_trip?.addStopAtIndex(newStop: stop, index: index)
-                user.updateTrip(trip: current_trip!)
-                DispatchQueue.main.async {
-                    self.user = self.user
-                }
-            } else {
-                print("Failed to add stop")
+            current_trip?.addStopAtIndex(newStop: stop, index: index)
+            user.updateTrip(trip: current_trip!)
+            DispatchQueue.main.async {
+                self.user = self.user
             }
         }
     }
     
-    func removeStop(stop: any POI) async {
-        if await fbVM.removeStopFromTrip(tripID: current_trip!.id, stop: stop) {
-            current_trip?.removeStops(removedStops: [stop])
-            user.updateTrip(trip: current_trip!)
-            self.user = user
-        }
+    func removeStop(stopId: String) {
+        current_trip?.removeStop(stopId: stopId)
     }
     
     func setCurrentTrip(trip: Trip) {
         self.current_trip = trip
-        Task{
-            await getTotalDistance()
-            await getTotalTime()
-        }
     }
     
     func setStartLocation(new_start_location: any POI) {
         current_trip?.setStartLocation(new_start_location: new_start_location)
-        user.updateTrip(trip: current_trip!)
-        self.user = user
     }
     
     func setEndLocation(new_end_location: any POI) {
         current_trip?.setEndLocation(new_end_location: new_end_location)
-        user.updateTrip(trip: current_trip!)
-        self.user = user
     }
     
     func setStartDate(startDate: String) {
         current_trip?.setStartDate(newDate: startDate)
-        user.updateTrip(trip: current_trip!)
-        self.user = user
     }
     
     func setEndDate(endDate: String) {
         current_trip?.setEndDate(newDate: endDate)
-        user.updateTrip(trip: current_trip!)
-        self.user = user
     }
     
     func setStartTime(startTime: String) {
         current_trip?.setStartTime(newTime: startTime)
-        user.updateTrip(trip: current_trip!)
-        self.user = user
     }
     
     func updateRoute() async {
@@ -215,92 +192,6 @@ class UserViewModel: ObservableObject {
         user.updateTrip(trip: current_trip!)
         self.user = user
     }
-
-    func setCurrentTrip(by tripID: String) {
-        if let trip = user.findTrip(id: tripID) {
-            current_trip = trip
-        }
-        
-        Task{
-            await getTotalDistance()
-            await getTotalTime()
-        }
-    }
-    
-    func getTotalDistance() async {
-        guard let current_trip else { return }
-        
-        var totalDist = 0.0
-        let stops = current_trip.getStops()
-        if stops.count == 0 {
-            totalDist = await getDistance(fromAddress: current_trip.getStartLocation().address, toAddress: current_trip.getEndLocation().address)
-        } else {
-            totalDist += await getDistance(fromAddress: current_trip.getStartLocation().address, toAddress: stops[0].address)
-            for i in 1..<stops.count {
-                totalDist += await getDistance(fromAddress: stops[i-1].address, toAddress: stops[i].address)
-            }
-            totalDist += await getDistance(fromAddress: stops[stops.count-1].address, toAddress: current_trip.getEndLocation().address)
-        }
-        DispatchQueue.main.async {
-            self.total_distance = totalDist * 0.000621371
-        }
-    }
-    
-    func getTotalTime() async {
-        guard let current_trip else { return }
-        
-        var totalTime = 0.0
-        let stops = current_trip.getStops()
-        if stops.count == 0 {
-            totalTime = await getTime(fromAddress: current_trip.getStartLocation().address, toAddress: current_trip.getEndLocation().address)
-        } else {
-            totalTime += await getTime(fromAddress: current_trip.getStartLocation().address, toAddress: stops[0].address)
-            for i in 1..<stops.count {
-                totalTime += await getTime(fromAddress: stops[i-1].address, toAddress: stops[i].address)
-            }
-            totalTime += await getTime(fromAddress: stops[stops.count-1].address, toAddress: current_trip.getEndLocation().address)
-        }
-        DispatchQueue.main.async {
-            self.total_time = totalTime / 60
-        }
-    }
-
-    func getDistance(fromAddress: String, toAddress: String) async -> (Double) {
-        let geoCoder = CLGeocoder()
-        var fromLocation: CLLocation?
-        var toLocation: CLLocation?
-        
-        do {
-            if let fromPlacemark = try await geoCoder.geocodeAddressString(fromAddress).first,
-               let toPlacemark = try await geoCoder.geocodeAddressString(toAddress).first {
-                fromLocation = fromPlacemark.location
-                toLocation = toPlacemark.location
-            }
-        } catch {
-            print("Error during geocoding: \(error)")
-            return 0.0
-        }
-        
-        guard let fromLocation, let toLocation else { return 0.0 }
-        
-        let fromPlacemark = MKPlacemark(coordinate: fromLocation.coordinate)
-        let toPlacemark = MKPlacemark(coordinate: toLocation.coordinate)
-        
-        let request = MKDirections.Request()
-        request.source = MKMapItem(placemark: fromPlacemark)
-        request.destination = MKMapItem(placemark: toPlacemark)
-        request.transportType = .automobile
-        
-        let directions = MKDirections(request: request)
-        do {
-            let response = try await directions.calculate()
-            return response.routes.first?.distance ?? 0.0
-        } catch {
-            print("Error: \(error)")
-        }
-        
-        return 0.0
-    }
     
     func getDistanceCoordinates(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) async -> (Double) {
         let request = MKDirections.Request()
@@ -319,54 +210,19 @@ class UserViewModel: ObservableObject {
         return 0.0
     }
     
-    func getTime(fromAddress: String, toAddress: String) async -> (Double) {
-        let geoCoder = CLGeocoder()
-        var fromLocation: CLLocation?
-        var toLocation: CLLocation?
-        
-        do {
-            if let fromPlacemark = try await geoCoder.geocodeAddressString(fromAddress).first,
-               let toPlacemark = try await geoCoder.geocodeAddressString(toAddress).first {
-                fromLocation = fromPlacemark.location
-                toLocation = toPlacemark.location
-            }
-        } catch {
-            print("Error during geocoding: \(error)")
-            return 0.0
-        }
-        
-        guard let fromLocation, let toLocation else { return 0.0 }
-        
-        let fromPlacemark = MKPlacemark(coordinate: fromLocation.coordinate)
-        let toPlacemark = MKPlacemark(coordinate: toLocation.coordinate)
-        
-        let request = MKDirections.Request()
-        request.source = MKMapItem(placemark: fromPlacemark)
-        request.destination = MKMapItem(placemark: toPlacemark)
-        request.transportType = .automobile
-        
-        let directions = MKDirections(request: request)
-        do {
-            let response = try await directions.calculate()
-            return response.routes.first?.expectedTravelTime ?? 0.0
-        } catch {
-            print("Error: \(error)")
-        }
-        
-        return 0.0
-    }
-    
     @Published var navigatingTrip: Trip? = nil
     func startTrip(trip: Trip) {
         self.navigatingTrip = trip
     }
     
     func populateLegInfo() {
-        self.distances.removeAll()
-        self.times.removeAll()
-        for leg in current_trip?.route?.legs ?? [] {
-            self.times.append(leg.totalTime() / 60)
-            self.distances.append(leg.totalDistance())
+        DispatchQueue.main.async {
+            self.distances.removeAll()
+            self.times.removeAll()
+            for leg in self.current_trip?.route?.legs ?? [] {
+                self.times.append(leg.totalTime() / 60)
+                self.distances.append(leg.totalDistance())
+            }
         }
     }
 
@@ -606,8 +462,8 @@ class UserViewModel: ObservableObject {
 
     func clearCurrentTrip() {
         current_trip = nil
-        total_time = 0
-        total_distance = 0
+        times = []
+        distances = []
     }
     
     func getUser() -> User {
