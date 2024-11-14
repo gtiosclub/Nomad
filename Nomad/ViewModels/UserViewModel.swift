@@ -145,6 +145,20 @@ class UserViewModel: ObservableObject {
         }
     }
     
+    func removeStop(stopId: String) {
+        if let stop = current_trip?.getStop(stopId: stopId) {
+            Task {
+                let success = await fbVM.removeStopFromTrip(tripID: current_trip!.id, stop: stop)
+                if success {
+                    current_trip?.removeStop(stopId: stopId)
+                    user.updateTrip(trip: current_trip!)
+                    self.user = user
+                }
+            }
+        }
+    }
+
+    
     func setCurrentTrip(trip: Trip) {
         self.current_trip = trip
         Task{
