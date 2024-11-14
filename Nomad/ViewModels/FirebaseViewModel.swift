@@ -20,18 +20,18 @@ import SwiftUI
 //    @Published var isLoading: Bool = false
 //    @Published var isAuthenticated = false  // Add this new property
 //    var onSetupCompleted: ((FirebaseViewModel) -> Void)?
-//    
+//
 //    init(current_user: User? = nil, errorText: String? = nil) {
 //        print("inside fbVM init")
 //        if self.current_user == nil {
 //            self.current_user = current_user
 //            self.errorText = errorText
-//            
+//
 //            // Combine both auth listeners
 //            auth.addStateDidChangeListener { [weak self] auth, user in
 //                DispatchQueue.main.async {
 //                    self?.isAuthenticated = user != nil  // Update authentication state
-//                    
+//
 //                    if let user = user {
 //                        print("User Found")
 //                        if let username = user.displayName {
@@ -243,16 +243,16 @@ class FirebaseViewModel: ObservableObject {
 //    func storeRoute(route: NomadRoute) async -> Bool {
 //        do {
 //            try await tripDocRef.setData(tripData)
-//            
+//
 //            let stopsCollection = tripDocRef.collection("STOPS")
-//            
+//
 //            let startData: [String: Any] = [
 //                "name": startLocationName,
 //                "address": startLocationAddress,
 //                "type": "GeneralLocation"
 //            ]
 //            try await stopsCollection.document("start").setData(startData)
-//            
+//
 //            let endData: [String: Any] = [
 //                "name": endLocationName,
 //                "address": endLocationAddress,
@@ -277,7 +277,7 @@ class FirebaseViewModel: ObservableObject {
 //        do {
 //            try await tripDocRef.setData(tripData)
 //            let stopsCollection = tripDocRef.collection("STOPS")
-//            
+//
 //            let startData: [String: Any] = [
 //                "name": startLocationName,
 //                "address": startLocationAddress,
@@ -297,22 +297,22 @@ class FirebaseViewModel: ObservableObject {
 //            return false
 //        }
 //    }
-    func createTrip(tripID: String, createdDate: String, modifiedDate: String, startDate: String, startTime: String, endDate: String, isPrivate: Bool,  startLocation: any POI , endLocation: any POI) async -> Bool {
+    func createTrip(tripID: String, createdDate: String, modifiedDate: String, startDate: String, startTime: String, endDate: String, isPrivate: Bool,  startLocation: any POI , endLocation: any POI, routeName: String, stops: [any POI]) async -> Bool {
                
                let tripDocRef = db.collection("TRIPS").document(tripID)
-
+            let stopIDs = stops.map { $0.id }
                let tripData: [String: Any] = [
                    "created_date": createdDate,
                    "end_date" : endDate,
                    "end_id" : "end",
-                   "isPrivate" : true,
+                   "isPrivate" : isPrivate,
                    "modified_date": modifiedDate,
-                   "name" : "",
+                   "name" : routeName,
                    "start_date" : startDate,
                    "start_id" : "start",
                    "start_time" : startTime,
                    "images" : [],
-                   "stops" : []
+                   "stops": stopIDs
                ]
                do {
                    try await tripDocRef.setData(tripData)
@@ -338,6 +338,14 @@ class FirebaseViewModel: ObservableObject {
                         "type": "GeneralLocation"
                     ]
                     try await stopsCollection.document("end").setData(endData)
+                   
+                   for (index, stop) in stops.enumerated() {
+                       let stopAdded = await addStopToTrip(tripID: tripID, stop: stop, index: index + 1)
+                       if !stopAdded {
+                           print("Failed to add stop \(stop.name)")
+                           return false
+                       }
+                   }
                     return true
                 } catch {
                     print("Error creating trip or stops: \(error)")
@@ -385,57 +393,67 @@ class FirebaseViewModel: ObservableObject {
         return try await mapManager.docsToNomadRoute(docs: getdocs.documents)
     }
 
-    func modifyStartDate(userID: String, tripID: String, newStartDate: String, modifiedDate: String) async -> Bool {
-        do {
-            try await db.collection("TRIPS").document(tripID).updateData(["start_date" : newStartDate, "modified_date" : modifiedDate])
-            return true
-        } catch {
-            print(error)
-            return false
-        }
-    }
+//    func modifyStartDate(userID: String, tripID: String, newStartDate: String, modifiedDate: String) async -> Bool {
+//        do {
+//            try await db.collection("TRIPS").document(tripID).updateData(["start_date" : newStartDate, "modified_date" : modifiedDate])
+//            return true
+//        } catch {
+//            print(error)
+//            return false
+//        }
+//    }
 
     
-    func modifyEndDate(userID: String, tripID: String, newEndDate: String, modifiedDate: String) async -> Bool {
-        do {
-            try await db.collection("TRIPS").document(tripID).updateData(["end_date" : newEndDate, "modified_date" : modifiedDate])
-            return true
-        } catch {
-            print(error)
-            return false
-        }
-    }
+//    func modifyEndDate(userID: String, tripID: String, newEndDate: String, modifiedDate: String) async -> Bool {
+//        do {
+//            try await db.collection("TRIPS").document(tripID).updateData(["end_date" : newEndDate, "modified_date" : modifiedDate])
+//            return true
+//        } catch {
+//            print(error)
+//            return false
+//        }
+//    }
     
     
-    func modifyStartLocationAndDate(tripID: String, start: any POI, modifiedDate: String) async -> Bool {
-        //modify start
-        do {
-            try await db.collection("TRIPS").document(tripID).collection("STOPS").document("start").updateData(["address" : start.address, "name" : start.name, "city" : start.city ?? "", "latitude" : start.latitude, "longitude" : start.longitude])
-        } catch {
-            print(error)
-            return false
-        }
-        // modify date
-        do {
-            try await db.collection("TRIPS").document(tripID).updateData(["modified_date" : modifiedDate])
-            return true
-        } catch {
-            print(error)
-            return false
-        }
-    }
+//    func modifyStartLocationAndDate(tripID: String, start: any POI, modifiedDate: String) async -> Bool {
+//        //modify start
+//        do {
+//            try await db.collection("TRIPS").document(tripID).collection("STOPS").document("start").updateData(["address" : start.address, "name" : start.name, "city" : start.city ?? "", "latitude" : start.latitude, "longitude" : start.longitude])
+//        } catch {
+//            print(error)
+//            return false
+//        }
+//        // modify date
+//        do {
+//            try await db.collection("TRIPS").document(tripID).updateData(["modified_date" : modifiedDate])
+//            return true
+//        } catch {
+//            print(error)
+//            return false
+//        }
+//    }
 
-    func modifyEndLocationAndDate(tripID: String, stop: any POI, modifiedDate: String) async -> Bool {
-        //modify start
+//    func modifyEndLocationAndDate(tripID: String, stop: any POI, modifiedDate: String) async -> Bool {
+//        //modify start
+//        do {
+//            try await db.collection("TRIPS").document(tripID).collection("STOPS").document("end").updateData(["address" : stop.address, "name" : stop.name, "city" : stop.city ?? "", "latitude" : stop.latitude, "longitude" : stop.longitude])
+//        } catch {
+//            print(error)
+//            return false
+//        }
+//        // modify date
+//        do {
+//            try await db.collection("TRIPS").document(tripID).updateData(["modified_date" : modifiedDate])
+//            return true
+//        } catch {
+//            print(error)
+//            return false
+//        }
+//    }
+    
+    func modifyHasDriven(tripID: String, hasDriven: Int) async -> Bool {
         do {
-            try await db.collection("TRIPS").document(tripID).collection("STOPS").document("end").updateData(["address" : stop.address, "name" : stop.name, "city" : stop.city ?? "", "latitude" : stop.latitude, "longitude" : stop.longitude])
-        } catch {
-            print(error)
-            return false
-        }
-        // modify date
-        do {
-            try await db.collection("TRIPS").document(tripID).updateData(["modified_date" : modifiedDate])
+            try await db.collection("TRIPS").document(tripID).updateData(["hasDriven" : hasDriven])
             return true
         } catch {
             print(error)
@@ -486,15 +504,74 @@ class FirebaseViewModel: ObservableObject {
             website = hotel.website ?? ""
         }
         do {
-            try await db.collection("TRIPS").document(tripID).collection("STOPS").document(stop.name).setData(["name" : stop.name, "address" : stop.address, "type" : "\(type(of: stop))", "latitude" : stop.latitude, "longitude" : stop.longitude, "city" : stop.city ?? "", "cuisine" : cuisine, "price" : price, "rating" : rating, "website" : website])
+            try await db.collection("TRIPS").document(tripID).collection("STOPS").document(stop.name).setData(["name" : stop.name, "address" : stop.address, "type" : "\(type(of: stop))", "latitude" : stop.latitude, "longitude" : stop.longitude, "city" : stop.city ?? "", "cuisine" : cuisine, "price" : price, "rating" : rating, "website" : website, "imageURL": stop.imageUrl ?? ""])
             return true
         } catch {
             print(error)
             return false
         }
     }
-
     
+    func updateStop(tripID: String, stop: any POI, index: Int, document: DocumentSnapshot) async -> Bool {
+        let stopDocRef = document.reference
+        
+        var updateData = [String: Any]()
+        
+        if document.data()?["name"] as? String != stop.getName() {
+            updateData["name"] = stop.getName()
+        }
+        if document.data()?["address"] as? String != stop.getAddress() {
+            updateData["address"] = stop.getAddress()
+        }
+        if document.data()?["city"] as? String != stop.getCity() {
+            updateData["city"] = stop.getCity() ?? ""
+        }
+        if document.data()?["latitude"] as? Double != stop.getLatitude() {
+            updateData["latitude"] = stop.getLatitude()
+        }
+        if document.data()?["longitude"] as? Double != stop.getLongitude() {
+            updateData["longitude"] = stop.getLongitude()
+        }
+        if document.data()?["type"] as? String != "\(type(of: stop))" {
+            updateData["type"] = "\(type(of: stop))"
+        }
+        
+        if let restaurant = stop as? Restaurant {
+            if document.data()?["cuisine"] as? String != restaurant.cuisine {
+                updateData["cuisine"] = restaurant.cuisine ?? ""
+            }
+            if document.data()?["price"] as? Int != restaurant.price {
+                updateData["price"] = restaurant.price ?? -1
+            }
+            if document.data()?["rating"] as? Double != restaurant.rating {
+                updateData["rating"] = restaurant.rating ?? -1.0
+            }
+            if document.data()?["website"] as? String != restaurant.website {
+                updateData["website"] = restaurant.website ?? ""
+            }
+        } else if let hotel = stop as? Hotel {
+            if document.data()?["rating"] as? Double != hotel.rating {
+                updateData["rating"] = hotel.rating ?? -1.0
+            }
+            if document.data()?["website"] as? String != hotel.website {
+                updateData["website"] = hotel.website ?? ""
+            }
+        }
+
+        if !updateData.isEmpty {
+            do {
+                try await stopDocRef.setData(updateData, merge: true)
+                print("Updated stop \(stop.getName())")
+                return true
+            } catch {
+                print("Error updating stop: \(error)")
+                return false
+            }
+        }
+        return true
+    }
+
+
     
     func removeStopFromTrip(tripID: String, stop: any POI) async -> Bool {
         // Remove stop from tripID array
@@ -530,7 +607,6 @@ class FirebaseViewModel: ObservableObject {
         //remove stop from collection
         
     }
-    
     
     func updateStopArray(tripID: String, stops: [String]) async -> Bool {
         if Set(stops).count != stops.count {
@@ -570,6 +646,7 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
+    
     func getAllPublicTrips(userID: String) async -> [Trip] {
             var public_trips : [Trip] = []
             var public_trip_names : [String] = []
@@ -603,9 +680,6 @@ class FirebaseViewModel: ObservableObject {
                     var end_location: (any POI)?
                     let startRef = document.reference.collection("STOPS").document(start_location_id)
                     let endRef = document.reference.collection("STOPS").document(end_location_id)
-                    
-                    
-                    
                     
                     do {
                         let startDoc = try await startRef.getDocument()
@@ -691,6 +765,7 @@ class FirebaseViewModel: ObservableObject {
                             let poi_rating: Double? = stopData["rating"] as? Double
                             let poi_website: String? = stopData["website"] as? String
                             let poi_cuisine: String? = stopData["cuisine"] as? String
+                            let poi_image: String? = stopData["imageURL"] as? String ?? ""
 
                             let poi = getPOI(
                                 name: poi_name,
@@ -702,7 +777,8 @@ class FirebaseViewModel: ObservableObject {
                                 cuisine: poi_cuisine,
                                 rating: poi_rating,
                                 price: poi_price,
-                                website: poi_website
+                                website: poi_website,
+                                imageURL: poi_image
                             )
                             stops.append(poi)
                         } catch {
@@ -753,21 +829,69 @@ class FirebaseViewModel: ObservableObject {
             return public_trips
         }
     
-//    func modifyTrips(userID: String, trip: Trip) async -> Bool {
-//        let tripID = trip.id
-//        let user = db.collection("USERS").document(userID)
-//        
-//        do {
-//            let trip_document = try await user.getDocument()
-//            guard let tripDocs = trip_document.data()?["trips"] as? [String] else {
-//                print("Unable to retrieve trips array from user document")
-//                return false
-//            }
-//        } catch {
-//            print("Error fetching user document: \(error)")
-//            return false
-//        }
-//    }
+    func modifyTrip(tripID: String, trip: Trip) async -> Bool {
+
+        let tripDocRef = db.collection("TRIPS").document(tripID)
+        let stopsCollectionRef = tripDocRef.collection("STOPS")
+
+        let stopIDs = trip.getStops().map { $0.id }
+        let tripData: [String: Any] = [
+            "created_date": trip.getCreatedDate(),
+            "end_date": trip.getEndDate(),
+            "isPrivate": trip.isPrivate,
+            "modified_date": trip.getModifyDate(),
+            "name": trip.getName(),
+            "start_date": trip.getStartDate(),
+            "start_time": trip.getStartTime(),
+            "images": trip.getImages(),
+            "stops": stopIDs
+        ]
+
+        do {
+            try await tripDocRef.setData(tripData, merge: true)
+
+            let existingStopsSnapshot = try await stopsCollectionRef.getDocuments()
+            var existingStopsMap = [String: DocumentSnapshot]()
+            
+            for document in existingStopsSnapshot.documents {
+                existingStopsMap[document.documentID] = document
+            }
+
+            var processedStopIDs = Set<String>()
+
+            for (index, stop) in trip.getStops().enumerated() {
+                processedStopIDs.insert(stop.id)
+                
+                if let existingStopDoc = existingStopsMap[stop.id] {
+                    let updated = await updateStop(tripID: tripID, stop: stop, index: index + 1, document: existingStopDoc)
+                    if !updated {
+                        print("Failed to update stop \(stop.getName())")
+                        return false
+                    }
+                } else {
+                    let added = await addStopToTrip(tripID: tripID, stop: stop, index: index + 1)
+                    if !added {
+                        print("Failed to add new stop \(stop.getName())")
+                        return false
+                    }
+                }
+            }
+
+            for (stopID, document) in existingStopsMap {
+                if !processedStopIDs.contains(stopID) {
+                    try await document.reference.delete()
+                    print("Deleted stop with ID \(stopID)")
+                }
+            }
+
+            print("Trip modified successfully.")
+            return true
+        } catch {
+            print("Error modifying trip: \(error)")
+            return false
+        }
+    }
+
     
 
     
@@ -889,6 +1013,7 @@ class FirebaseViewModel: ObservableObject {
                             let poi_rating: Double? = stopData["rating"] as? Double
                             let poi_website: String? = stopData["website"] as? String
                             let poi_cuisine: String? = stopData["cuisine"] as? String
+                            let poi_image: String? = stopData["imageURL"] as? String
                             
                             let poi = getPOI(
                                 name: poi_name,
@@ -901,6 +1026,7 @@ class FirebaseViewModel: ObservableObject {
                                 rating: poi_rating,
                                 price: poi_price,
                                 website: poi_website
+                        
                             )
                             stops.append(poi)
                         } catch {
@@ -941,20 +1067,143 @@ class FirebaseViewModel: ObservableObject {
         return ["past": driven_trips, "present": in_progress_trips, "future": future_trips]
     }
     
-    private func getPOI(name: String, address: String, type: String, longitude: Double, latitude: Double, city: String?, cuisine: String? = nil, rating: Double? = nil, price: Int? = nil, website: String? = nil) -> any POI {
+    func storeImageAndReturnURL(image: UIImage, tripID: String, completion: @escaping (URL?) -> Void) {
+                print("started")
+                guard let imageData = image.jpegData(compressionQuality: 0.8) else {
+                    //completion(nil)
+                    print("image with url")
+                    return
+                }
+                    // create random image path
+                let imagePath = "images/\(UUID().uuidString).jpg"
+                let storageRef = Storage.storage().reference()
+                // create reference to file you want to upload
+                let imageRef = storageRef.child(imagePath)
+                var urlString: String = ""
+                //upload image
+                
+                imageRef.putData(imageData, metadata: nil) { (metadata, error) in
+                    if let error = error {
+                        print("Error uploading image: \(error.localizedDescription)")
+                    } else {
+                        // Image successfully uploaded
+                        imageRef.downloadURL { url, error in
+                            if let downloadURL = url {
+                                urlString = downloadURL.absoluteString
+                                Task {
+                                    await self.addURLToUser(tripID: tripID, urlString: urlString)
+                                }
+                                completion(url)
+                                print("urlString: \(urlString)")
+                            } else {
+                                print("Error getting download URL: (String(describing: error?.localizedDescription))")
+                            }
+                        }
+                    }
+                }
+            
+                
+            }
+            
+    private func addURLToUser(tripID: String, urlString: String) async -> Void {
+        let docRef = db.collection("TRIPS").document(tripID)
+        print("tripID = \(tripID)")
+        do {
+            let document = try await docRef.getDocument()
+            guard var images = document.data()?["images"] as? [String] else {
+                print("Document does not exist or 'images' is not an array.")
+                return
+            }
+            if (!images.contains(urlString)) {
+                images.append(urlString)
+                try await db.collection("TRIPS").document(tripID).updateData(["images": images])
+                print("updated firebase")
+                //return true
+                
+            } else {
+                print("Image already in user image list")
+                //return false;
+            }
+        } catch {
+            print(error)
+            //return false
+        }
+    }
+    
+    func clearTripImages(tripID: String) async -> Void {
+        let docRef = db.collection("TRIPS").document(tripID)
+        do {
+            let document = try await docRef.getDocument()
+            guard var images = document.data()?["images"] as? [String] else {
+                print("Document does not exist or 'images' is not an array.")
+                return
+            }
+            images.removeAll()
+            try await db.collection("TRIPS").document(tripID).updateData(["images": images])
+            print("updated firebase")
+                //return true
+        } catch {
+            print(error)
+            //return false
+        }
+    }
+        
+    func getAllImages(tripID: String) async -> [String] {
+        let docRef = db.collection("TRIPS").document(tripID)
+        var images_list: [String] = []
+        do {
+            let document = try await docRef.getDocument()
+            guard var images = document.data()?["images"] as? [String] else {
+                print("Document does not exist or 'images' is not an array.")
+                return images_list
+            }
+            images_list = images
+        } catch {
+            print(error)
+        }
+        return images_list
+    }
+        
+    func getImageFromURL(urlString: String, completion: @escaping (UIImage?) -> Void) {
+        guard let url = URL(string: urlString) else {
+            print("Invalid URL string: \(urlString)")
+            completion(nil)
+            return
+        }
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("Error loading image from URL: \(error.localizedDescription)")
+                    completion(nil)
+                } else if let data = data, let image = UIImage(data: data) {
+                    completion(image)
+                } else {
+                    print("Could not load image from URL: \(urlString)")
+                    completion(nil)
+                }
+            }
+        }.resume()
+    }
+
+    
+    private func getPOI(name: String, address: String, type: String, longitude: Double, latitude: Double, city: String?, cuisine: String? = nil, rating: Double? = nil, price: Int? = nil, website: String? = nil, imageURL: String? = nil) -> any POI {
         switch type {
         case "Restaurant":
-            return Restaurant(address: address, name: name, rating: rating, cuisine: cuisine, price: price, website: website, latitude: latitude, longitude: longitude, city: city)
+            return Restaurant(address: address, name: name, rating: rating, cuisine: cuisine, price: price, website: website, latitude: latitude, longitude: longitude, city: city, imageURL: imageURL)
         case "RestStop":
-            return RestStop(address: address, name: name, latitude: latitude, longitude: longitude, city: city)
+            return RestStop(address: address, name: name, latitude: latitude, longitude: longitude, city: city, imageURL: imageURL)
         case "GasStation":
-            return GasStation(address: address, name: name, latitude: latitude, longitude: longitude, city: city)
+            return GasStation(address: address, name: name, latitude: latitude, longitude: longitude, city: city, imageURL: imageURL)
         case "GeneralLocation":
-            return GeneralLocation(address: address, name: name, latitude: latitude, longitude: longitude, city: city)
+            return GeneralLocation(address: address, name: name, latitude: latitude, longitude: longitude, city: city, imageUrl: imageURL)
         case "Hotel":
-            return Hotel(address: address, name: name, rating: rating, website: website, latitude: latitude, longitude: longitude, city: city)
+            return Hotel(address: address, name: name, rating: rating, website: website, latitude: latitude, longitude: longitude, city: city, imageUrl: imageURL)
+        case "Shopping":
+            return Shopping(address: address, name: name, latitude: latitude, longitude: longitude, city: city, imageUrl: imageURL)
+        case "Activity":
+            return Activity(address: address, name: name, latitude: latitude, longitude: longitude, city: city, imageUrl: imageURL)
         default:
-            return GeneralLocation(address: address, name: name, latitude: latitude, longitude: longitude, city: city)
+            return GeneralLocation(address: address, name: name, latitude: latitude, longitude: longitude, city: city, imageUrl: imageURL)
         }
     }
     

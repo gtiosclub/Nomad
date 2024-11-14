@@ -18,7 +18,7 @@ struct Activity: POI, Identifiable, Ratable, Imagable {
     var latitude: Double
     var city: String?
 
-    init(address: String, name: String, rating: Double? = nil, website: String? = nil, latitude: Double, longitude: Double, city: String? = nil) {
+    init(address: String, name: String, rating: Double? = nil, website: String? = nil, latitude: Double, longitude: Double, city: String? = nil, imageUrl: String? = nil) {
         self.id = UUID().uuidString
         self.address = address
         self.name = name
@@ -27,6 +27,7 @@ struct Activity: POI, Identifiable, Ratable, Imagable {
         self.latitude = latitude
         self.longitude = longitude
         self.city = city
+        self.imageUrl = imageUrl
     }
 
     init(from business: Business) {

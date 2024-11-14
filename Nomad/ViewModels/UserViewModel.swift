@@ -59,10 +59,10 @@ class UserViewModel: ObservableObject {
     }
     
     @MainActor
-    func createTrip(start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM") async {
-        let temp_trip = Trip(start_location: start_location, end_location: end_location, start_date: start_date, end_date: end_date, stops: stops, start_time: start_time)
+    func createTrip(start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM", coverImageURL: String = "") async {
+        let temp_trip = Trip(start_location: start_location, end_location: end_location, start_date: start_date, end_date: end_date, stops: stops, start_time: start_time, coverImageURL: coverImageURL)
 
-        if await fbVM.createTrip(tripID: temp_trip.id, createdDate: Trip.getCurrentDateTime(), modifiedDate: temp_trip.modified_date, startDate: start_date, startTime: start_time, endDate: end_date, isPrivate: false, startLocation: start_location, endLocation: end_location) {
+        if await fbVM.createTrip(tripID: temp_trip.id, createdDate: Trip.getCurrentDateTime(), modifiedDate: temp_trip.modified_date, startDate: start_date, startTime: start_time, endDate: end_date, isPrivate: false, startLocation: start_location, endLocation: end_location, routeName: "", stops: []) {
             if await fbVM.addTripToUser(userID: user.id, tripID: temp_trip.id) {
                 self.current_trip = temp_trip
                 let route = await getRoute()
@@ -86,28 +86,55 @@ class UserViewModel: ObservableObject {
         if let trip = current_trip {
             let start_coordinates = CLLocationCoordinate2D(latitude: trip.getStartLocation().getLatitude(), longitude: trip.getStartLocation().getLongitude())
             let stop_coordinates = CLLocationCoordinate2D(latitude: stop.getLatitude(), longitude: stop.getLongitude())
-            let from_start = await getDistanceCoordinates(from: start_coordinates, to: stop_coordinates)
-            var from_stops: [Double] = []
-            for current_stop in trip.getStops() {
-                let current_stop_coordinates = CLLocationCoordinate2D(latitude: current_stop.getLatitude(), longitude: current_stop.getLongitude())
-                from_stops.append(await getDistanceCoordinates(from: current_stop_coordinates, to: stop_coordinates))
-            }
-            let min_stop_distance = from_stops.min() ?? 10000000
             
-            let index: Int
-            if min_stop_distance < from_start {
-                index = from_stops.firstIndex(of: min_stop_distance)!
-            } else {
-                index = 0
+            // Calculate distance from the start to the new stop
+            let from_start_to_new_stop = await getDistanceCoordinates(from: start_coordinates, to: stop_coordinates)
+            
+            var index = 0 // Default to inserting right after the start location
+            if !trip.getStops().isEmpty {
+                // Compute cumulative distances from start to each stop
+                var cumulative_distances: [Double] = []
+                var previous_stop_coordinates = start_coordinates
+                var cumulative_distance = 0.0
+                
+                for existing_stop in trip.getStops() {
+                    let current_stop_coordinates = CLLocationCoordinate2D(latitude: existing_stop.getLatitude(), longitude: existing_stop.getLongitude())
+                    cumulative_distance += await getDistanceCoordinates(from: previous_stop_coordinates, to: current_stop_coordinates)
+                    cumulative_distances.append(cumulative_distance)
+                    previous_stop_coordinates = current_stop_coordinates
+                }
+                
+                // Calculate total distance to the end location to insert after the last stop if necessary
+                let end_coordinates = CLLocationCoordinate2D(latitude: trip.getEndLocation().getLatitude(), longitude: trip.getEndLocation().getLongitude())
+                let last_stop_to_end = await getDistanceCoordinates(from: previous_stop_coordinates, to: end_coordinates)
+                let total_distance = cumulative_distance + last_stop_to_end
+                
+                // Find insertion index by comparing cumulative distances
+                index = cumulative_distances.count
+                if from_start_to_new_stop < cumulative_distances.first! {
+                    // Insert after start, before first stop
+                    index = 0
+                } else if from_start_to_new_stop <= total_distance {
+                    // Find the correct place between stops
+                    for (i, distance) in cumulative_distances.enumerated() {
+                        if from_start_to_new_stop < distance {
+                            index = i // Insert at this position
+                            break
+                        }
+                    }
+                }
             }
-            if await fbVM.addStopToTrip(tripID: current_trip!.id, stop:stop, index: index) {
-                current_trip?.addStopAtIndex(newStop: stop, index: (index > 0 ? index + 1: 0))
+            
+            // Adding the stop to the trip
+            if await fbVM.addStopToTrip(tripID: trip.id, stop: stop, index: index) {
+                current_trip?.addStopAtIndex(newStop: stop, index: index)
                 user.updateTrip(trip: current_trip!)
-                self.user = user
+                DispatchQueue.main.async {
+                    self.user = self.user
+                }
             } else {
                 print("Failed to add stop")
             }
-            
         }
     }
     
@@ -340,72 +367,6 @@ class UserViewModel: ObservableObject {
         for leg in current_trip?.route?.legs ?? [] {
             self.times.append(leg.totalTime() / 60)
             self.distances.append(leg.totalDistance())
-        }
-    }
-    
-    func calculateLegInfo() async {
-        DispatchQueue.main.async {
-            
-        }
-        
-        guard let currentTrip = current_trip else { return }
-        let stops = currentTrip.getStops()
-        
-        let startLocation = currentTrip.getStartLocation()
-        let startAddress = startLocation.address
-        let endLocation = currentTrip.getEndLocation()
-        let endAddress = endLocation.address
-        
-        if !stops.isEmpty {
-            let firstStopAddress = stops[0].address
-            
-            let estimatedTimeToFirstStop = await getTime(fromAddress: startAddress, toAddress: firstStopAddress)
-            DispatchQueue.main.async {
-                self.times.append(estimatedTimeToFirstStop / 60)
-            }
-            let estimatedDistanceToFirstStop = await getDistance(fromAddress: startAddress, toAddress: firstStopAddress)
-            DispatchQueue.main.async {
-                self.distances.append(estimatedDistanceToFirstStop * 0.000621371)
-            }
-        } else {
-            let estimatedTimeToEnd = await getTime(fromAddress: startAddress, toAddress: endAddress)
-            DispatchQueue.main.async {
-                self.times.append(estimatedTimeToEnd / 60)
-            }
-            let estimatedDistanceToEnd = await getDistance(fromAddress: startAddress, toAddress: endAddress)
-            DispatchQueue.main.async {
-                self.distances.append(estimatedDistanceToEnd * 0.000621371)
-            }
-        }
-        
-        if stops.count != 0 {
-            for i in 0..<stops.count - 1 {
-                let startLocationAddress = stops[i].address
-                let endLocationAddress = stops[i + 1].address
-                
-                let estimatedTime = await getTime(fromAddress: startLocationAddress, toAddress: endLocationAddress)
-                DispatchQueue.main.async {
-                    self.times.append(estimatedTime / 60)
-                }
-                
-                let distance = await getDistance(fromAddress: startLocationAddress, toAddress: endLocationAddress)
-                DispatchQueue.main.async {
-                    self.distances.append(distance * 0.000621371)
-                }
-            }
-        }
-        
-        if let lastStop = stops.last {
-            let lastStopAddress = lastStop.address
-            let estimatedTimeToEnd = await getTime(fromAddress: lastStopAddress, toAddress: endAddress)
-            DispatchQueue.main.async {
-                self.times.append(estimatedTimeToEnd / 60)
-            }
-            
-            let estimatedDistanceToEnd = await getDistance(fromAddress: lastStopAddress, toAddress: endAddress)
-            DispatchQueue.main.async {
-                self.distances.append(estimatedDistanceToEnd * 0.000621371)
-            }
         }
     }
 
