@@ -18,7 +18,6 @@ struct MapView: View {
     @State private var remainingTime: TimeInterval = 0
     @State private var remainingDistance: Double = 0
     @State var isSheetPresented = false
-    @StateObject var speechRecognizer = SpeechRecognizer()
 
 
     
@@ -91,6 +90,7 @@ struct MapHUDView: View {
     @State private var remainingDistance: Double = 0
     @State private var atlasSheetPresented = false
     @State private var navSheetPresented = false
+    @StateObject var speechRecognizer = SpeechRecognizer()
 
     let timer = Timer.publish(every: 7, on: .main, in: .common).autoconnect()
 
@@ -193,7 +193,7 @@ struct MapHUDView: View {
             }
         }
         .onChange(of: speechRecognizer.atlasSaid) { atlasSaid in
-            isSheetPresented = true
+            atlasSheetPresented = true
         }
         .sheet(isPresented: $atlasSheetPresented) {
             AtlasNavigationView(vm: vm)
