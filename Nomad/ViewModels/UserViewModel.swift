@@ -266,7 +266,7 @@ class UserViewModel: ObservableObject {
                 print("Searching via search bar address")
                 queryItems = [
                     URLQueryItem(name: "location", value: searchString),
-                    URLQueryItem(name: "sort_by", value: "rating"),
+                    URLQueryItem(name: "sort_by", value: "distance"),
                     URLQueryItem(name: "limit", value: "50")
                 ]
             } else {
