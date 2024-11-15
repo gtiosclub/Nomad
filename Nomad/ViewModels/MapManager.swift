@@ -462,13 +462,13 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     func determineCurrentStep(leg: NomadLeg) -> NomadStep? {
-        for step in leg.steps {
-            if checkOnStep(step: step) {
-                return step
+            for step in leg.steps {
+                if checkOnRouteDistance(step: step, thresholdDistance: 80) {
+                    return step
+                }
             }
+            return nil
         }
-        return nil
-    }
         
     func getClosestCoordinate(step: NomadStep) -> CLLocationCoordinate2D {
         guard let userLocation = self.userLocation else { return CLLocationCoordinate2D() }
@@ -505,8 +505,10 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         guard let speed = motion.speed else { return false }
         let endCoord = leg.endCoordinate
         let measured_distance = userLocation.distance(to: endCoord)
-        let thresholdDistance: CLLocationDistance = 100
-        let thresholdSpeed: CLLocationSpeed = 1.5
+        let thresholdDistance: CLLocationDistance = 150
+        let thresholdSpeed: CLLocationSpeed = 3.5
+        // print(measured_distance)
+        // print(speed)
         if measured_distance <= thresholdDistance && speed <= thresholdSpeed {
             return true
         }
@@ -529,6 +531,17 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
         return abs(expectedDirection - motion.direction!) < thresholdDirection
     }
+    
+    func checkOnRouteDistance(step: NomadStep, thresholdDistance: CLLocationDistance) -> Bool {
+            guard let userLocation = self.userLocation else { return false }
+            let closest_coord = getClosestCoordinate(step: step)
+            let measured_distance = userLocation.distance(to: closest_coord)
+            if measured_distance <= thresholdDistance {
+                return true
+            } else {
+                return false
+            }
+        }
     
     // Helper function to calculate heading between two coordinates
     func calculateHeading(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) -> CLLocationDirection {
