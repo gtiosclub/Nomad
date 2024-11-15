@@ -10,9 +10,9 @@ import PhotosUI
 
 struct DetailRecapView: View {
     @State var selectedItems: [PhotosPickerItem] = []
-    @State var recapImages: [Image] = []
     @ObservedObject var vm: UserViewModel
     @State var trip: Trip
+    @State var images: [UIImage] = []
     @State var routePlanned: Bool = false
     
     var body: some View {
@@ -23,23 +23,52 @@ struct DetailRecapView: View {
                         Text(vm.current_trip?.getName() ?? "Trip Name")
                             .font(.system(size: 22, weight: .bold))
                             .padding(.vertical, 15)
-                        PhotosPicker(selection: $selectedItems,
-                                     matching: .any(of: [.images, .not(.screenshots)])) {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 10)
-                                    .strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [2]))
-                                    .frame(width: 200, height: 150)
-                                Image(systemName: "plus.circle")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 30)
-                            }.padding(.bottom, 30)
-                        }
+                        ScrollView(.horizontal, showsIndicators: true) {
+                            HStack {
+                                ForEach(images, id: \.self) { image in
+                                    Image(uiImage: image)
+                                        .resizable()
+                                        .frame(width: 200.0, height: 150.0)
+                                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                                }.padding(.bottom, 30)
+                                PhotosPicker(selection: $selectedItems,
+                                             matching: .any(of: [.images, .not(.screenshots)])) {
+                                    ZStack {
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [2]))
+                                            .frame(width: 200, height: 150)
+                                        Image(systemName: "plus.circle")
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(width: 30)
+                                    }.padding(.bottom, 30)
+                                }
+                            }
+                        }   .scrollIndicators(.visible)
+                            .onChange(of: selectedItems) { _, _ in
+                                if !selectedItems.isEmpty {
+                                    for eachItem in selectedItems {
+                                        Task {
+                                            if let imageData = try? await eachItem.loadTransferable(type: Data.self) {
+                                                if let image = UIImage(data: imageData) {
+                                                    images.append(image)
+                                                    print("image appended")
+                                                    FirebaseViewModel.vm.storeImageAndReturnURL(image: image, tripID: trip.id, completion: {
+                                                        url in
+                                                    })
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                selectedItems.removeAll()
+                            }
                         Text("Trip Details")
                             .font(.system(size: 18, weight: .semibold))
                             .padding(.bottom, 10)
                         HStack {
                             Image(systemName: "mappin")
+                                .foregroundStyle(.red)
                             Text((vm.current_trip?.getEndLocation().getName() ?? "Destination"))
                         }.padding(.bottom, 10)
                     }
@@ -93,6 +122,12 @@ struct DetailRecapView: View {
             Task {
                 await vm.updateRoute()
                 routePlanned = true
+                let imageURLs: [String] = await FirebaseViewModel.vm.getAllImages(tripID: trip.id)
+                for image in imageURLs {
+                    FirebaseViewModel.vm.getImageFromURL(urlString: image, completion: { uiImage in
+                        images.append(uiImage!)
+                    })
+                }
             }
         }
         .onChange(of: routePlanned) {}

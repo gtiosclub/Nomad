@@ -26,7 +26,7 @@ struct RecapView: View {
                         NavigationLink {
                             DetailRecapView(vm: vm, trip: trip)
                         } label: {
-                            CardView(title: trip.getName(), imageURL: trip.getCoverImageURL(), attributes: ["4-6 Hours", "Pet-friendly"])
+                            CardView(title: trip.getName(), imageURL: trip.getCoverImageURL(), numStops: trip.getStops().count)
                         }.buttonStyle(PlainButtonStyle())
                     }
                 }
@@ -40,7 +40,7 @@ struct CardView: View, Identifiable {
     let id = UUID()
     let title: String
     var imageURL: String
-    let attributes: [String]
+    var numStops: Int
 
     var body: some View {
         VStack {
@@ -74,16 +74,14 @@ struct CardView: View, Identifiable {
                 .font(.subheadline)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.top, 5)
-
-            let columns = [GridItem(.flexible()), GridItem(.flexible())]
-            LazyVGrid(columns: columns, spacing: 8) {
-                ForEach(attributes, id: \.self) { attribute in
+            HStack {
+                ZStack{
                     RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.gray.opacity(0.5))
-                        .frame(height: 20)
-                        .overlay(Text(attribute)
-                                    .font(.caption2))
+                        .fill(Color.nomadDarkBlue.opacity(0.5))
+                        .frame(width: 60, height: 20)
+                    (numStops == 1 ? Text("1 stop").font(.caption) : Text("\(numStops) stops").font(.caption))
                 }
+                Spacer()
             }
         }
     }
