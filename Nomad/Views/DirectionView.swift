@@ -87,11 +87,11 @@ struct DirectionView: View {
                         .lineLimit(2)
                         .bold()
                         .font(.system(size: image != nil ? 30 : 40))
-                    if let formattedSubInstructions = formattedSubIntructions() {
-                        Text(formattedSubInstructions)
-                            .lineLimit(1)
-                            .font(.system(size: 15))
-                    }
+//                    if let formattedSubInstructions = formattedSubIntructions() {
+//                        Text(formattedSubInstructions)
+//                            .lineLimit(1)
+//                            .font(.system(size: 15))
+//                    }
                 }.frame(maxWidth: .infinity)
 
             }
@@ -166,13 +166,13 @@ struct DirectionView: View {
         }
     }
     
-    func formattedSubIntructions() -> String? {
-        if showHighwayIcon() {
-            return step.direction.names!.last
-        } else {
-            return nil
-        }
-    }
+//    func formattedSubIntructions() -> String? {
+//        if showHighwayIcon() {
+//            return step.direction.names!.last
+//        } else {
+//            return nil
+//        }
+//    }
 }
 
 #Preview {

@@ -16,7 +16,6 @@ struct MapView: View {
     @ObservedObject var mapManager = MapManager.manager
     @State private var cameraDistance: CLLocationDistance = 400
     
-    
     var body: some View {
         ZStack {
             // All views within Map
@@ -53,11 +52,14 @@ struct MapView: View {
         
         .onChange(of: mapManager.motion, initial: true) { oldMotion, newMotion in
             if let _ = newMotion.coordinate {
+                print("1")
                 navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
                 navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
                 if let camera = navManager.mapPosition.camera {
+                    print("2")
                     let movingMap = navManager.movingMap(camera: camera.centerCoordinate)
                     if !movingMap {
+                        print("3")
                         withAnimation {
                             navManager.updateMapPosition(newMotion)
                         }
@@ -187,6 +189,9 @@ struct MapHUDView: View {
                     navManager.setNavigatingRoute(route: newRoute, trip: newTrip)
                 }
             }
+        }
+        .onChange(of: navManager.navigatingStep) { oldValue, newValue in
+            navManager.recenterMap()
         }
         .sheet(isPresented: $atlasSheetPresented) {
             AtlasNavigationView(vm: vm)

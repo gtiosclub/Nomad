@@ -285,7 +285,7 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     func movingMap(camera: CLLocationCoordinate2D) -> Bool {
         let userLocation = mapManager.userLocation ?? CLLocationCoordinate2D()
-        let variance = 0.001 // about 111 feet
+        let variance = 0.001 // about 111 feet per latitude and longitude
         guard let camera = mapPosition.camera else { return false }
         if abs(userLocation.latitude - camera.centerCoordinate.latitude) > variance || abs(userLocation.longitude - camera.centerCoordinate.longitude) > variance {
             return true
