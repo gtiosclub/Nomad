@@ -11,7 +11,7 @@ import CoreLocation
 struct FindStopView: View {
     @ObservedObject var vm: UserViewModel
     @State var selection: String = "Restaurants"
-    @State private var searchTerm: String = ""
+    //@State private var searchTerm: String = ""
     @State private var searchString: String = ""
     @State private var price: Int = 0
     @State private var rating: Int = 0
@@ -415,7 +415,6 @@ struct FindStopView: View {
         Button(action: {
             isLoading = true
             hasSearched = true
-            searchString = ""
             Task {
                 do {
                     if let currentTrip = vm.current_trip {
@@ -433,6 +432,13 @@ struct FindStopView: View {
                                 longitude: "\(coordinates.longitude)"
                             )
                         } else {
+                            for index in selectedCuisines.indices {
+                                if selectedCuisines[index] == "American" {
+                                    selectedCuisines[index] = "tradamerican"
+                                } else if selectedCuisines[index] == "Indian" {
+                                    selectedCuisines[index] = "indpak"
+                                }
+                            }
                             await vm.fetchPlaces(
                                 latitude: "\(coordinates.latitude)",
                                 longitude: "\(coordinates.longitude)",
@@ -442,9 +448,17 @@ struct FindStopView: View {
                                 cuisine: selectedCuisines.joined(separator: ","),
                                 searchString: searchString
                             )
+                            for index in selectedCuisines.indices {
+                                if selectedCuisines[index] == "tradamerican" {
+                                    selectedCuisines[index] = "American"
+                                } else if selectedCuisines[index] == "indpak" {
+                                    selectedCuisines[index] = "Indian"
+                                }
+                            }
                         }
                     }
                 }
+                searchString = ""
                 isLoading = false
             }
         }) {
@@ -478,6 +492,9 @@ struct FindStopView: View {
     }
         
     private func getVM() -> [any POI] {
+        if $manualSearch.wrappedValue == "Manual Search" {
+            return vm.generalLocations
+        }
         switch selection {
         case "Restaurants":
             return vm.restaurants
