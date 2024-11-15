@@ -191,6 +191,32 @@ class Trip: Identifiable, Equatable, ObservableObject {
         }
     }
     
+    func getStartCity() -> String {
+        var search_city: String = ""
+        if let city = self.start_location.getCity(), !city.isEmpty {
+            search_city = city
+        } else {
+            let location_split = self.start_location.getAddress().split(separator: ",")
+            if location_split.count > 1 {
+                search_city = location_split[1].description.trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+        }
+        return search_city
+    }
+    
+    func getEndCity() -> String {
+        var search_city: String = ""
+        if let city = self.end_location.getCity(), !city.isEmpty {
+            search_city = city
+        } else {
+            let location_split = self.end_location.getAddress().split(separator: ",")
+            if location_split.count > 1 {
+                search_city = location_split[1].description.trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+        }
+        return search_city
+    }
+    
     static func getCurrentDateTime() -> String {
         let currentDate = Date()
         let dateFormatter = DateFormatter()

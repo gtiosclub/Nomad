@@ -24,58 +24,47 @@ struct PreviewRouteView: View {
         NavigationStack {
             ScrollView {
                 VStack {
-                    Text("Preview Your Route")
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.leading)
-                        .padding(.top)
-                    
                     RoutePreviewView(vm: vm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(nil))
                         .frame(height: 300)
                     
                     Spacer().frame(height: 20)
                     
+                    Text("Preview")
+                        .font(.system(size: 20))
+                        .fontWeight(.bold)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading)
+                        
                     HStack {
-                        Button("Start Route") {
-                            vm.startTrip(trip: trip)
-                        }
-                        .padding()
-                        .background(Color.nomadDarkBlue)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
-                        .shadow(radius: 5)
-                        .frame(minHeight: 70)
-                        
-                        Spacer()
-                        
-                        HStack {
-                            VStack {
-                                Text(formatTimeDuration(duration: trip.route?.route?.expectedTravelTime ?? TimeInterval(0)))
-                                    .padding(.bottom, 0)
-                                Text("Time")
-                                    .padding(.top, 0)
-                                    .font(.system(size: 12))
-                                    .foregroundStyle(.secondary)
-                            }
-                            .padding()
+                        VStack {
+                            Text(formatTimeDuration(duration: trip.route?.route?.expectedTravelTime ?? TimeInterval(0)))
+                                .padding(.bottom, 0)
+                                .font(.system(size: 22))
                             
-                            VStack {
-                                Text(formatDistance(distance: trip.route?.totalDistance() ?? 0))
-                                    .padding(.bottom, 0)
-                                Text("Distance")
-                                    .padding(.top, 0)
-                                    .font(.system(size: 12))
-                                    .foregroundStyle(.secondary)
-                            }
-                            .padding()
+                            Text("Time")
+                                .padding(.top, 0)
+                                .font(.system(size: 14))
+                                .foregroundStyle(.secondary)
                         }
-                        .background(Color.gray.opacity(0.2))
-                        .cornerRadius(8)
-                        .padding()
+                        .padding(.horizontal)
+                        
+                        VStack {
+                            Text(formatDistance(distance: trip.route?.totalDistance() ?? 0))
+                                .padding(.bottom, 0)
+                                .font(.system(size: 22))
+                            
+                            Text("Distance")
+                                .padding(.top, 0)
+                                .font(.system(size: 14))
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.horizontal)
                     }
+                    .padding()
                     .padding(.trailing, 10)
                     .padding(.leading, 20)
+                    .background(Color.nomadLightBlue)
+                    .cornerRadius(8)
                     .onChange(of: vm.times) {}
                     
                     Text("Route Details")
@@ -88,7 +77,9 @@ struct PreviewRouteView: View {
                     
                     if vm.current_trip != nil {
                         EnhancedRoutePlanListView(vm: vm)
-                            .padding()
+                            .padding(.top, 0)
+                            .padding(.horizontal)
+                            .padding(.bottom, 20)
                     } else {
                         Rectangle()
                             .fill(Color.gray.opacity(0.3))
@@ -141,23 +132,35 @@ struct PreviewRouteView: View {
                                 Button {
                                     backToEdit = true
                                 } label: {
-                                    ZStack {
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .fill(Color.gray.opacity(0.2))
-                                            .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 3)
-                                            .frame(maxWidth: 150)
-                                        Text("Edit Route")
-                                            .foregroundColor(Color.black)
-                                            .padding()
+                                    Button("Edit") {
+                                        backToEdit = true
                                     }
+                                    .padding()
+                                    .padding(.horizontal, 15)
+                                    .background(Color.gray.opacity(0.2))
+                                    .foregroundColor(.black)
+                                    .cornerRadius(8)
+                                    .shadow(radius: 5)
                                 }
                                 .navigationDestination(isPresented: $backToEdit, destination: {
                                     ItineraryParentView(vm: vm, cvm: ChatViewModel())
                                 })
                                 
-                                Spacer()
+                                Spacer(minLength: 20)
+                                                                
+                                Button("Start") {
+                                    vm.startTrip(trip: trip)
+                                }
+                                .padding()
+                                .padding(.horizontal, 15)
+                                .background(Color.nomadLightBlue)
+                                .foregroundColor(.black)
+                                .cornerRadius(8)
+                                .shadow(radius: 5)
                                 
-                                Button("Save Route") {
+                                Spacer(minLength: 20)
+                                                                
+                                Button("Save") {
                                     vm.setTripTitle(newTitle: $tripTitle.wrappedValue)
                                     vm.setIsPrivate(isPrivate: $privacy.wrappedValue == "Private")
                                     
@@ -180,7 +183,6 @@ struct PreviewRouteView: View {
                                 .foregroundColor(.white)
                                 .cornerRadius(8)
                                 .shadow(radius: 5)
-                                .frame(width: 150)
                                 
                                 Spacer()
                             }
@@ -204,6 +206,7 @@ struct PreviewRouteView: View {
                             .cornerRadius(8)
                             .foregroundColor(.black)
                             .padding(.horizontal)
+                            .padding(.bottom, 20)
                         }
                     }
                 }

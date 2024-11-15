@@ -36,19 +36,22 @@ class UserViewModel: ObservableObject {
         self.user = user
     }
     
+    @MainActor
     func populateUserTrips() async {
-        let allTrips = await fbVM.getAllTrips(userID: user.id)
-        DispatchQueue.main.async {
-            self.user.trips = allTrips["future"]!
-            self.previous_trips = allTrips["past"]!
-            self.user.pastTrips = allTrips["past"]!
-        }
-
-        let communityTrips = await fbVM.getAllPublicTrips(userID: user.id)
-        DispatchQueue.main.async {
-            self.community_trips = communityTrips
-        }
+        async let allTrips = fbVM.getAllTrips(userID: user.id)
+        async let communityTrips = fbVM.getAllPublicTrips(userID: user.id)
+        
+        let allTripsResult = await allTrips
+        self.user.trips = allTripsResult["future"] ?? []
+        self.previous_trips = allTripsResult["past"] ?? []
+        self.user.pastTrips = allTripsResult["past"] ?? []
+        
+        let communityTripsResult = await communityTrips
+        self.community_trips = communityTripsResult
     }
+
+
+
     
     func setUser(user: User) {
         self.user = user
@@ -427,7 +430,11 @@ class UserViewModel: ObservableObject {
                 DispatchQueue.main.async {
                     self.currentCity = placemark.locality!
                     let pa = placemark.postalAddress
+                    let state = pa?.state ?? ""
                     self.currentAddress = "\(pa?.street ?? ""), \(pa?.city ?? ""), \(pa?.state ?? "") \(pa?.postalCode ?? "")"
+                    if !state.isEmpty {
+                        self.currentCity = "\(self.currentCity?.description ?? ""), \(state)"
+                    }
                 }
             }
         } catch {

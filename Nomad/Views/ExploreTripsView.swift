@@ -20,36 +20,61 @@ struct ExploreTripsView: View {
             ZStack {
                 ScrollView {
                     VStack(alignment: .leading) {
-                        HStack {
-                            Image(systemName: "mappin.and.ellipse")
-                                .padding(.trailing, 0)
-                                .padding(.leading)
-                            if let city = vm.currentCity {
-                                Text("\(city)")
-                            } else {
-                                Text("Retrieving Location")
+                        VStack(spacing: 0) {
+                            HStack {
+                                Text("Let's Explore, \(vm.user.getName().split(separator: " ").first!)!")
+                                    .bold()
+                                    .font(.system(size: 20))
+                                    .padding(.horizontal)
+                                
+                                Spacer()
+                                
+                                // Profile picture
+                                ZStack {
+                                    Ellipse()
+                                        .fill(Color.gray)
+                                        .frame(width: 40, height: 40)
+                                    Text((vm.user.getName()).prefix(1).uppercased())
+                                        .foregroundColor(.white)
+                                        .font(.system(size: 25))
+                                }
+                                .padding(.trailing)
+                                .offset(y: 20)
                             }
-                            Spacer()
-                        }
-                        HStack {
-                            Text("Plan your next trip, \(vm.user.getName().split(separator: " ").first!)!")
-                                .bold()
-                                .font(.system(size: 20))
-                                .padding(.horizontal)
                             
-                            Spacer()
-                            
-                            // Profile picture
-                            ZStack {
-                                Ellipse()
-                                    .fill(Color.gray)
-                                    .frame(width: 40, height: 40)
-                                Text((vm.user.getName()).prefix(1).uppercased())
-                                    .foregroundColor(.white)
-                                    .font(.system(size: 25))
+                            HStack {
+                                HStack {
+                                    ZStack {
+                                        MapPinShape()
+                                            .fill(Color.white)
+                                            .frame(width: 10, height: 16) // Adjust as needed
+                                        
+                                        Circle()
+                                            .frame(width: 4, height: 4)
+                                            .foregroundColor(.nomadDarkBlue)
+                                            .offset(y: -3)
+                                            .zIndex(3)
+                                    }
+                                    .padding(.leading, 10)
+                                    .padding(.vertical, 5)
+                                    
+                                    Text("\(vm.currentCity ?? "Retrieving Location")")
+                                        .foregroundStyle(Color.white)
+                                        .padding(.leading, 5)
+                                        .padding(.trailing, 10)
+                                        .font(.system(size: 14))
+                                }
+                                .padding(1)
+                                .background(Color.nomadDarkBlue)
+                                .cornerRadius(14)
+                                .foregroundColor(.black.opacity(0.7))
+                                .padding(.leading, 5)
+                                .padding(.horizontal, 10)
+                                
+                                Spacer()
                             }
-                            .padding(.trailing)
                         }
+                        .padding(.bottom, 15)
                         
                         // Itineraries
                         VStack(alignment: .leading) {
@@ -57,54 +82,63 @@ struct ExploreTripsView: View {
                                 .padding(.horizontal)
                             
                             ScrollView(.horizontal) {
-                                HStack {
+                                HStack(spacing: 15) {
                                     ForEach($current_trips.wrappedValue) { trip in
                                         NavigationLink(destination: {
                                             PreviewRouteView(vm: vm, trip: trip)
                                         }, label: {
                                             TripGridView(trip: trip)
                                                 .frame(alignment: .top)
+                                                .frame(minWidth: 140)
                                         })
                                     }
                                 }
                             }
-                            .padding(.horizontal)
+                            .padding(.horizontal, 15)
+                            
+                            Divider()
+                                .foregroundStyle(Color.nomadDarkBlue.opacity(0.3))
                             
                             SectionHeaderView(vm: vm, title: "Previous Trips", trips: vm.previous_trips)
                                 .padding(.top, 5)
                                 .padding(.horizontal)
                             
                             ScrollView(.horizontal) {
-                                HStack {
+                                HStack(spacing: 15) {
                                     ForEach($previous_trips.wrappedValue) { trip in
                                         NavigationLink(destination: {
                                             PreviewRouteView(vm: vm, trip: trip)
                                         }, label: {
                                             TripGridView(trip: trip)
                                                 .frame(alignment: .top)
+                                                .frame(minWidth: 140)
                                         })
                                     }
                                 }
                             }
-                            .padding(.horizontal)
+                            .padding(.horizontal, 15)
+                            
+                            Divider()
+                                .foregroundStyle(Color.nomadDarkBlue.opacity(0.3))
                             
                             SectionHeaderView(vm: vm, title: "Community Favorites", trips: vm.community_trips)
                                 .padding(.top, 5)
                                 .padding(.horizontal)
                             
                             ScrollView(.horizontal) {
-                                HStack {
+                                HStack(spacing: 15) {
                                     ForEach($community_trips.wrappedValue) { trip in
                                         NavigationLink(destination: {
                                             PreviewRouteView(vm: vm, trip: trip)
                                         }, label: {
                                             TripGridView(trip: trip)
                                                 .frame(alignment: .top)
+                                                .frame(minWidth: 140)
                                         })
                                     }
                                 }
                             }
-                            .padding(.horizontal)
+                            .padding(.horizontal, 15)
                         }
                     }
                 }
@@ -130,8 +164,13 @@ struct ExploreTripsView: View {
         .task {
             if !pulled_trips {
                 print("populating trips and current location")
-                await vm.populateUserTrips()
-                await vm.getCurrentCity()
+                
+                let populateTrips = Task { await vm.populateUserTrips() }
+                let getCity = Task { await vm.getCurrentCity() }
+                
+                await populateTrips.value
+                await getCity.value
+                
                 pulled_trips = true
                 
                 current_trips = vm.user.trips
@@ -164,8 +203,7 @@ struct ExploreTripsView: View {
         var body: some View {
             HStack {
                 Text(title)
-                    .font(.headline)
-                    .bold()
+                    .font(.system(size: 18))
                 Spacer()
                 Button(action: {
                     navigateToAll = true
@@ -177,52 +215,137 @@ struct ExploreTripsView: View {
                     ViewAllTripsView(vm: vm, header: title, trips: trips)
                 })
             }
-            .padding(.vertical, 5)
+            .padding(.top, 5)
+            .padding(.bottom, 3)
         }
     }
     
     struct TripGridView: View {
         @StateObject var trip: Trip
+        @State private var textWidth: CGFloat = 140
         
         var body: some View {
-            VStack {
+            VStack(alignment: .leading) {
                 if trip.coverImageURL.isEmpty {
                     Rectangle()
                         .fill(Color.gray.opacity(0.3))
-                        .frame(width: 120, height: 120)
+                        .frame(width: max(textWidth, 140)) // Use the measured width
+                        .frame(height: 120)
                         .cornerRadius(10)
-                        .padding(.horizontal, 10)
                 } else {
                     AsyncImage(url: URL(string: trip.coverImageURL)) { image in
                         image
                             .resizable()
                             .scaledToFill()
-                            .frame(width: 120, height: 120)
+                            .frame(width: max(textWidth, 140)) // Use the measured width
+                            .frame(height: 120)
                             .cornerRadius(10)
-                            .padding(.horizontal, 10)
-//                            .id($trip.coverImageURL.wrappedValue)
+                            .shadow(color: .black.opacity(0.5), radius: 5, y: 3)
                     } placeholder: {
                         ProgressView()
-                            .frame(width: 120, height: 120)
+                            .frame(width: max(textWidth, 140)) // Use the measured width
+                            .frame(height: 120)
                             .cornerRadius(10)
-                            .padding(.horizontal, 10)
-                    }
-                    .onChange(of: trip.coverImageURL, initial: true) { old, new in
-                        // print("changing image url \(old) \(new)")
                     }
                 }
                 
-                Text(trip.name.isEmpty ? "New Trip" : trip.name)
-                    .lineLimit(3)
-                    .multilineTextAlignment(.center)
-                    .frame(width: 120)
-                    .font(.system(size: 14))
-                    .foregroundStyle(.black)
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(trip.name.isEmpty ? "New Trip" : trip.name)
+                        .lineLimit(3)
+                        .multilineTextAlignment(.leading)
+                        .font(.system(size: 16))
+                        .foregroundStyle(.black)
+                        .padding(.leading, 5)
+                    
+                    HStack(spacing: 1) {
+                        Text(trip.getStartCity())
+                            .foregroundStyle(.gray)
+                            .font(.system(size: 12))
+                        
+                        HStack(spacing: 1) {
+                            Circle()
+                                .frame(width: 1, height: 1)
+                                .foregroundColor(.gray.opacity(0.5))
+                            
+                            Rectangle()
+                                .frame(width: 3, height: 1)
+                                .foregroundColor(.gray.opacity(0.5))
+                            
+                            Rectangle()
+                                .frame(width: 3, height: 1)
+                                .foregroundColor(.gray.opacity(0.5))
+                            
+                            Circle()
+                                .frame(width: 1, height: 1)
+                                .foregroundColor(.gray.opacity(0.5))
+                        }
+                        
+                        Text(trip.getEndCity())
+                            .foregroundStyle(.gray)
+                            .font(.system(size: 12))
+                    }
+                    .padding(.leading, 5)
+                    .padding(.bottom, 5)
+                    .padding(.trailing, 5)
+                    .background(
+                        GeometryReader { geometry in
+                            Color.clear
+                                .onAppear {
+                                    textWidth = geometry.size.width // Capture the width of the HStack
+                                }
+                        }
+                    )
+                    
+                    Text("\(intToWords(trip.getStops().count)) \(trip.getStops().count == 1 ? "stop" : "stops")")
+                        .font(.system(size: 12))
+                        .padding(3)
+                        .padding(.horizontal, 5)
+                        .background(Color.nomadDarkBlue.opacity(0.5))
+                        .cornerRadius(8)
+                        .foregroundColor(.black.opacity(0.7))
+                        .padding(.leading, 5)
+                }
+                .padding(.top, 1)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.vertical, 5)
-//            .onChange(of: trip, initial: true) { old, new in
-//                print("changing trip info \(old.coverImageURL) \(new.coverImageURL)")
-//            }
+            .padding(.horizontal, 2)
+        }
+        
+        func intToWords(_ number: Int) -> String {
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .spellOut
+            return formatter.string(from: NSNumber(value: number)) ?? ""
+        }
+    }
+    
+    struct Triangle: Shape {
+        func path(in rect: CGRect) -> Path {
+            var path = Path()
+            path.move(to: CGPoint(x: rect.midX, y: rect.maxY)) // Bottom center
+            path.addLine(to: CGPoint(x: rect.minX, y: rect.minY)) // Top left
+            path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY)) // Top right
+            path.closeSubpath()
+            return path
+        }
+    }
+    
+    struct MapPinShape: Shape {
+        func path(in rect: CGRect) -> Path {
+            var path = Path()
+            
+            // Circle at the top
+            let circleRadius = rect.width * 0.5
+            let circleCenter = CGPoint(x: rect.midX, y: circleRadius)
+            path.addArc(center: circleCenter, radius: circleRadius, startAngle: .degrees(0), endAngle: .degrees(360), clockwise: false)
+            
+            // Triangle at the bottom
+            path.move(to: CGPoint(x: rect.midX - circleRadius, y: circleRadius + 1.5))
+            path.addLine(to: CGPoint(x: rect.midX + circleRadius, y: circleRadius + 1.5))
+            path.addLine(to: CGPoint(x: rect.midX, y: rect.maxY - 1))
+            path.closeSubpath()
+            
+            return path
         }
     }
 }
