@@ -18,7 +18,7 @@ struct AtlasNavigationView: View {
     let timer = Timer.publish(every:0.5, on: .main, in: .common).autoconnect()
     
     @ObservedObject var AIVM = AIAssistantViewModel()
-    @ObservedObject var ChatVM = ChatViewModel()
+    @StateObject var ChatVM = ChatViewModel()
     @State private var AIResponse: String? {
         didSet {
             if let response = AIResponse {
@@ -141,13 +141,6 @@ struct AtlasNavigationView: View {
             handleMicrophonePress()
             speechRecognizer.atlasSaid = false
         }
-//        .onDisappear {
-//            speechRecognizer.stopTranscribing()
-//            speechRecognizer.resetTranscript()
-//            isListening = false
-//            isMicrophone = false
-//        }
-        
     }
     
     
