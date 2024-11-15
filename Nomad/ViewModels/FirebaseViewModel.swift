@@ -658,7 +658,7 @@ class FirebaseViewModel: ObservableObject {
                         do {
                             let stopDoc = try await stopRef.getDocument()
                             guard let stopData = stopDoc.data() else {
-                                print("Cannot find stop \(stop)")
+                                // print("Cannot find stop \(stop)")
                                 continue
                             }
 
@@ -822,7 +822,7 @@ class FirebaseViewModel: ObservableObject {
                             
                             guard let start_location = await startLocationResult,
                                   let end_location = await endLocationResult else {
-                                print("Start or end location is missing for trip \(tripID)")
+                                // print("Start or end location is missing for trip \(tripID)")
                                 return nil
                             }
                             

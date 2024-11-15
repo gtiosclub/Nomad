@@ -30,17 +30,21 @@ struct MapView: View {
                 UserAnnotation()
                 
                 ForEach(navManager.mapMarkers) { marker in
-                    Annotation("", coordinate: marker.coordinate) {
-                        VStack {
-                            Image(marker.icon.image_path)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: min(100000 / (cameraDistance), 40), height: min(40, 100000 / (cameraDistance)))
-                                .opacity(cameraDistance > 8000 ? 0 : 1)
-                                .clipShape(Circle())
-                                .animation(.easeInOut, value: cameraDistance)
-                            
+                    if marker.icon == .trafficLight || marker.icon == .stopSign {
+                        Annotation("", coordinate: marker.coordinate) {
+                            VStack {
+                                Image(marker.icon.image_path)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: min(100000 / (cameraDistance), 40), height: min(40, 100000 / (cameraDistance)))
+                                    .opacity(cameraDistance > 8000 ? 0 : 1)
+                                    .clipShape(Circle())
+                                    .animation(.easeInOut, value: cameraDistance)
+                                
+                            }
                         }
+                    } else {
+                        Marker(marker.title, coordinate: marker.coordinate)
                     }
                 }
                 // show all polylines
@@ -51,7 +55,7 @@ struct MapView: View {
                 
             }.mapControlVisibility(.hidden)
             MapHUDView(tabSelection: $tabSelection, vm: vm, navManager: navManager, mapManager: mapManager)
-        }
+        }.environmentObject(navManager)
         
         .onChange(of: mapManager.motion, initial: true) { oldMotion, newMotion in
             if let _ = newMotion.coordinate {
@@ -98,7 +102,8 @@ struct MapHUDView: View {
         // All Map HUD
         VStack {
             if navManager.navigating {
-                DirectionView(step: navManager.navigatingStep!)
+                DirectionView(navManager: navManager, step: navManager.navigatingStep!)
+                    .padding()
             }
             HStack {
                 Spacer()
@@ -110,7 +115,7 @@ struct MapHUDView: View {
                     .shadow(color: .gray.opacity(0.8), radius: 8, x: 0, y: 5)
                     
                     // Add Voice Announcer Button
-                    VoiceAnnouncerButtonView(onPress: announceCurrentLocation, isVoiceEnabled: $isVoiceEnabled)
+                    VoiceAnnouncerButtonView(onPress: announceInstruction, isVoiceEnabled: $isVoiceEnabled)
                         .frame(width: 50, height: 50)
                         .shadow(color: .gray.opacity(0.8), radius: 8, x: 0, y: 5)
                     
@@ -178,6 +183,9 @@ struct MapHUDView: View {
                         startNavigation()
                     }, cancel: { cancelNavigation()}).frame(height: 450)
                         .transition(.move(edge: .bottom))
+                } else {
+                    BottomNavView(routeName: vm.navigatingTrip!.name, expectedTravelTime: mapManager.getRemainingTime(leg: navManager.navigatingLeg!), distance: mapManager.getRemainingDistance(leg: navManager.navigatingLeg!), cancel: cancelNavigation)
+                        .offset(y: 20)
                 }
             }
         }.onAppear {
@@ -188,7 +196,7 @@ struct MapHUDView: View {
         }.onChange(of: vm.navigatingTrip) { old, new in
             if let newTrip = new {
                 if let newRoute = newTrip.route {
-                    navManager.setNavigatingRoute(route: newRoute)
+                    navManager.setNavigatingRoute(route: newRoute, trip: newTrip)
                 }
             }
         }
@@ -213,7 +221,9 @@ struct MapHUDView: View {
     }
     private func startNavigation() {
         // start
-        navManager.setNavigatingRoute(route: vm.navigatingTrip!.route!)
+        if let trip = vm.navigatingTrip {
+            navManager.setNavigatingRoute(route: trip.route!, trip: trip)
+        }
         navManager.startNavigating()
     }
     private func cancelNavigation() {
@@ -224,6 +234,7 @@ struct MapHUDView: View {
         navManager.navigatingStep = nil
         navManager.navigating = false
     }
+
     private func formattedRemainingTime() -> String {
         let seconds = Int(navManager.remainingTime ?? 0)
         let hours = Int(seconds) / 3600
@@ -242,46 +253,11 @@ struct MapHUDView: View {
         //        }
     }
     // Function to announce current location
-    private func announceCurrentLocation() {
-        guard let userLocation = MapManager.manager.userLocation else { return }
+    private func announceInstruction() {
+        let locationVoiceManager = LocationVoiceManager.shared
         
-        // Create a CLGeocoder instance
-        let geocoder = CLGeocoder()
-        let location = CLLocation(latitude: userLocation.latitude, longitude: userLocation.longitude)
-        
-        // Reverse geocode the location
-        geocoder.reverseGeocodeLocation(location) { placemarks, error in
-            if let error = error {
-                print("Reverse geocoding error: \(error.localizedDescription)")
-                // If geocoding fails, announce coordinates
-                let announcement = "You are currently at latitude \(String(format: "%.4f", userLocation.latitude)) and longitude \(String(format: "%.4f", userLocation.longitude))"
-                voiceManager.announceLocation(announcement)
-                return
-            }
-            
-            if let placemark = placemarks?.first {
-                // Build location description
-                var locationDescription = "You are currently at"
-                
-                if let streetNumber = placemark.subThoroughfare {
-                    locationDescription += " \(streetNumber)"
-                }
-                
-                if let street = placemark.thoroughfare {
-                    locationDescription += " \(street)"
-                }
-                
-                if let city = placemark.locality {
-                    locationDescription += " in \(city)"
-                }
-                
-                if let state = placemark.administrativeArea {
-                    locationDescription += ", \(state)"
-                }
-                
-                voiceManager.announceLocation(locationDescription)
-            }
-        }
+        let instruction = navManager.getStepInstruction()
+        locationVoiceManager.announceInstruction(instruction)
     }
 }
 

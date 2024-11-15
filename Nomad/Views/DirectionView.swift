@@ -30,27 +30,63 @@ struct HighwayBox: View {
 }
 
 struct DirectionView: View {
+    @ObservedObject var navManager: NavigationManager
     var step: NomadStep
+    
+    private var maneuverType: ManeuverType?
+    private var maneuverDirection: ManeuverDirection?
+    private var text: String?
+    
+    // from components
+    private var exitCode: String?
+    private var image: String? // url to shield image
+    private var streetName: String?
+    private var delimiter: String?
+    
+    
+    init(navManager: NavigationManager, step: NomadStep) {
+        self.navManager = navManager
+        self.step = step
+        if let instruction = step.direction.instructionsDisplayedAlongStep?[0] {
+            self.maneuverType = instruction.primaryInstruction.maneuverType
+            self.maneuverDirection = instruction.primaryInstruction.maneuverDirection
+            self.text = instruction.primaryInstruction.text
+            for comp in instruction.primaryInstruction.components {
+                switch comp {
+                case .delimiter(let text):
+                    self.delimiter = delimiter?.description
+                case .text(let text):
+                    self.streetName = text.text
+                case .image(let image, let altText):
+                    self.image = image.imageBaseURL?.absoluteString
+                case .exitCode(let text):
+                    self.exitCode = text.text
+                default:
+                    continue
+                }
+            }
+        }
+    }
     
     var body: some View {
         VStack {
             HStack(spacing: 20) {
                 VStack(spacing: 20) {
-                    getStepIcon(type: step.direction.maneuverType, direction: step.direction.maneuverDirection)
+                    getStepIcon(type: maneuverType, direction: maneuverDirection)
                         .font(.system(size: 40))
-                    Text("\(getDistanceDescriptor(meters: step.direction.distance)[0]) ")
+                    Text("\(getDistanceDescriptor(meters: navManager.assignDistanceToNextManeuver())[0])")
                         .font(.title2).bold() + Text("\(getDistanceDescriptor(meters: step.direction.distance)[1])")
                         .font(.title3)
                 }
-                if showHighwayIcon() {
-                    HighwayBox(exitNumber : step.direction.exitIndex)
-                    
+                // highway exit
+                if let url = URL(string: image ?? "") {
+                    AsyncImage(url: url)
                 }
                 VStack(alignment: .leading) {
-                    Text(formattedInstructions())
+                    Text(text ?? formattedInstructions())
                         .lineLimit(2)
                         .bold()
-                        .font(.system(size: showHighwayIcon() ? 30 : 40))
+                        .font(.system(size: image != nil ? 30 : 40))
                     if let formattedSubInstructions = formattedSubIntructions() {
                         Text(formattedSubInstructions)
                             .lineLimit(1)
@@ -79,19 +115,25 @@ struct DirectionView: View {
         let feet = miles * 5280
         
         if feet < 800 {
-            strs.append(String(format: "%d", Int(feet / 100) * 100)) // round feet to nearest 100 ft
+            strs.append(String(format: "%d ", Int(feet / 100) * 100)) // round feet to nearest 100 ft
             strs.append("ft")
             
         } else {
-            strs.append(String(format: "%.1f", miles)) // round miles to nearest 0.1 mi
+            strs.append(String(format: "%.1f ", miles)) // round miles to nearest 0.1 mi
             strs.append("mi")
         }
         return strs
     }
     
-    func getStepIcon(type maneuverType: ManeuverType, direction maneuverDirection: ManeuverDirection?) -> Image {
-        if maneuverType == .turn {
-            switch maneuverDirection {
+    func getStepIcon(type maneuverType: ManeuverType?, direction maneuverDirection: ManeuverDirection?) -> Image {
+        var manType: ManeuverType? = maneuverType
+        var manDirection: ManeuverDirection? = maneuverDirection
+        if let next_instruction = step.direction.instructionsDisplayedAlongStep?[0].primaryInstruction {
+            if next_instruction.maneuverType != nil { manType = next_instruction.maneuverType! }
+            manDirection = next_instruction.maneuverDirection
+        }
+        if manType == .turn {
+            switch manDirection {
             case.right:
                 return Image(systemName: "arrow.turn.up.right")
             case.left:
@@ -107,23 +149,23 @@ struct DirectionView: View {
             default:
                 return Image(systemName: "car.fill")
             }
-        } else if maneuverType == .merge {
+        } else if manType == .merge {
             return Image(systemName: "arrow.merge")
         } else {
             return Image(systemName: "car.fill")
         }
     }
+    
     func formattedInstructions() -> String {
-        let maneuverType = step.direction.maneuverType
-        
-        if maneuverType == .turn {
+        if step.direction.maneuverType == .turn {
             return step.direction.names?.last ?? step.direction.instructions
-        } else if maneuverType == .merge {
+        } else if step.direction.maneuverType == .merge {
             return "Exit \(step.direction.exitCodes![0])"
         } else {
             return step.direction.instructions
         }
     }
+    
     func formattedSubIntructions() -> String? {
         if showHighwayIcon() {
             return step.direction.names!.last
@@ -145,6 +187,6 @@ struct DirectionView: View {
     let maneuverType = ManeuverType.turn
     let direction = NomadStep.Direction(distance: CLLocationDistance(distance), instructions: instructions, expectedTravelTime: TimeInterval(time), exitCodes: exitCodes, exitIndex: exitIndex, instructionsDisplayedAlongStep: nil, maneuverDirection: maneuverDirection, maneuverType: maneuverType, intersections: nil, names: [fromStreet, toStreet])
     
-    DirectionView(step: NomadStep(direction: direction))
+    DirectionView(navManager: NavigationManager(), step: NomadStep(direction: direction))
         .padding(20)
 }

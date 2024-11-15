@@ -203,12 +203,17 @@ struct NomadStep {
             Expected Travel Time: \(expectedTravelTime / 60) mins
             Exit Codes: \(exitCodes ?? [])
             Exit Index: \(exitIndex ?? -1)
-            Instructions Displayed Along Step: \(instructionsDisplayedAlongStep?.description ?? "NONE")
             Maneuver Type: \(maneuverType.rawValue)
             Maneuver Direction: \(maneuverDirection?.rawValue ?? "NONE")
-            Intersections: \(intersections ?? [])
+            // Number Instructions Displayed Along Step: \(instructionsDisplayedAlongStep?.count)
             Names: \(names ?? [])
             """
+            // Intersections: \(intersections ?? [])
+
+        }
+        
+        func printInstructions() -> String? {
+            return instructionsDisplayedAlongStep?.description
         }
     }
     
