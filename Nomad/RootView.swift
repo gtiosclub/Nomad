@@ -16,7 +16,7 @@ struct RootView: View {
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            MapView(vm: vm)
+            MapView(tabSelection: $selectedTab, vm: vm)
                 .tabItem {
                     Label("Navigation", systemImage: "map.fill")
                 }
@@ -48,6 +48,7 @@ struct RootView: View {
                 }
             }
         }
+        .tint(Color.nomadDarkBlue)
     }
 }
 

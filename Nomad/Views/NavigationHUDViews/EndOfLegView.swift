@@ -78,7 +78,7 @@ struct POIArrivedView: View {
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
             
-            AsyncImage(url: URL(string: poi.imageURL ?? "")) { image in
+            AsyncImage(url: URL(string: poi.imageUrl ?? "")) { image in
                 image
                     .resizable()
                     .scaledToFit()
@@ -106,9 +106,8 @@ struct POIArrivedView: View {
                     .lineLimit(3) // Allow unlimited lines
                     .multilineTextAlignment(.leading)
                 
-                // Phone Button
-                
             }
+            Spacer()
         }.padding()
     }
 }
