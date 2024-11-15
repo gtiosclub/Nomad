@@ -15,6 +15,7 @@ struct MapView: View {
     @ObservedObject var navManager: NavigationManager = NavigationManager()
     @ObservedObject var mapManager = MapManager.manager
     @State private var cameraDistance: CLLocationDistance = 400
+    let timer = Timer.publish(every: 10, on: .main, in: .common).autoconnect()
     
     var body: some View {
         ZStack {
@@ -45,23 +46,26 @@ struct MapView: View {
                     MapPolyline(polyline)
                         .stroke(.blue, lineWidth: 5)
                 }
-                
-            }.mapControlVisibility(.hidden)
+               }.mapControlVisibility(.hidden)
             MapHUDView(tabSelection: $tabSelection, vm: vm, navManager: navManager, mapManager: mapManager)
         }.environmentObject(navManager)
-        
-        .onChange(of: mapManager.motion, initial: true) { oldMotion, newMotion in
-            if let _ = newMotion.coordinate {
-                print("1")
-                navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
-                navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
-                if let camera = navManager.mapPosition.camera {
-                    print("2")
-                    let movingMap = navManager.movingMap(camera: camera.centerCoordinate)
-                    if !movingMap {
-                        print("3")
-                        withAnimation {
-                            navManager.updateMapPosition(newMotion)
+               
+            .onChange(of: mapManager.motion, initial: true) { oldMotion, newMotion in
+                if let newLoc = newMotion.coordinate {
+                    
+                    print("New User Location")
+                    if !navManager.destinationReached {
+                        navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
+                        navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
+                    }
+                    
+                    if let camera = navManager.mapPosition.camera {
+                        let movingMap = navManager.movingMap(camera: camera.centerCoordinate)
+                        if !movingMap {
+                            withAnimation {
+                                navManager.updateMapPosition(newMotion)
+                            }
+      
                         }
                     }
                 }
@@ -74,7 +78,6 @@ struct MapView: View {
             withAnimation {
                 cameraDistance = camera.camera.distance
             }
-            
         }
     }
 }
@@ -140,8 +143,10 @@ struct MapHUDView: View {
                         }
                     }
                 }
-                .padding(.trailing, 5)
-                .padding(.bottom, 20)
+              .padding(.trailing, 5)
+              .padding(.bottom, 20)
+              
+                
                 
             }
             
@@ -179,8 +184,26 @@ struct MapHUDView: View {
                     }, cancel: { cancelNavigation()}).frame(height: 450)
                         .transition(.move(edge: .bottom))
                 } else {
+                  if !navManager.destinationReached {
                     BottomNavView(routeName: vm.navigatingTrip!.name, expectedTravelTime: mapManager.getRemainingTime(leg: navManager.navigatingLeg!), distance: mapManager.getRemainingDistance(leg: navManager.navigatingLeg!), cancel: cancelNavigation)
                         .offset(y: 20)
+                  } else {
+                VStack {
+                    Text("Destination Reached!")
+                        .font(.largeTitle)
+                        .padding()
+                    Button("Continue") {
+                        navManager.destinationReached.toggle()
+                        navManager.goToNextLeg()
+                    }
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.black.opacity(0.5))
+           
                 }
             }
         }.onChange(of: vm.navigatingTrip) { old, new in

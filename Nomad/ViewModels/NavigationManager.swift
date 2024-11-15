@@ -39,6 +39,7 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     // MAP UI Components
     @Published var mapMarkers: [MapMarker] = []
     @Published var mapPolylines: [MKPolyline] = []
+    @Published var destinationReached = false
     
     var remainingTime: TimeInterval? {
         if let leg = navigatingLeg {
@@ -143,12 +144,17 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     // jump to next leg of route, if no current leg is assigned, go to first leg in current route
     func goToNextLeg() {
+        if let currentLeg = navigatingLeg {
+            removePolyline(leg: currentLeg)
+        }
         if let route = navigatingRoute {
             if let current_leg_index = route.legs.firstIndex(where: { leg in
                 leg.id == navigatingLeg?.id
             }) {
                 if current_leg_index < route.legs.count - 1 {
                     setNavigatingLeg(leg: route.legs[current_leg_index + 1])
+                } else  {
+                    navigating = false
                 }
             } else {
                 if let leg = route.legs.first {
@@ -179,6 +185,9 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func recalibrateCurrentStep() {
         guard let currentLeg = self.navigatingLeg else { return }
         guard let estimatedStep = mapManager.determineCurrentStep(leg: currentLeg) else { return }
+        if mapManager.checkDestinationReached(leg: currentLeg) {
+            destinationReached = true
+        }
         print(estimatedStep.direction.instructions)
         if estimatedStep.id != navigatingStep?.id {
             setNavigatingStep(step: estimatedStep)
