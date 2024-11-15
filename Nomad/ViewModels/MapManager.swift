@@ -500,6 +500,18 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
+    func checkDestinationReached(leg: NomadLeg) -> Bool {
+        guard let userLocation = self.userLocation else { return false }
+        guard let speed = motion.speed else { return false }
+        let endCoord = leg.endCoordinate
+        let measured_distance = userLocation.distance(to: endCoord)
+        let thresholdDistance: CLLocationDistance = 100
+        let thresholdSpeed: CLLocationSpeed = 1.5
+        if measured_distance <= thresholdDistance && speed <= thresholdSpeed {
+            return true
+        }
+        return false
+    }
     func checkOnRouteDirection(step: NomadStep) -> Bool {
         guard let userLocation = self.userLocation else { return false }
         let coords = step.getCoordinates()

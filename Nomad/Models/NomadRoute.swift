@@ -161,8 +161,12 @@ struct NomadLeg {
     
 }
 
-struct NomadStep {
+struct NomadStep: Equatable {
     let id = UUID()
+    
+    static func ==(lhs: NomadStep, rhs: NomadStep) -> Bool {
+        return lhs.id == rhs.id
+    }
     
     struct Direction {
         var distance: CLLocationDistance
@@ -195,6 +199,7 @@ struct NomadStep {
         init() {
             self.init(distance: 500, instructions: "Turn right in 0.4 miles", expectedTravelTime: TimeInterval(50), exitCodes: nil, exitIndex: nil, instructionsDisplayedAlongStep: nil, maneuverDirection: nil, maneuverType: .turn, intersections: nil, names: nil)
         }
+        
         
         func toString() -> String {
             return """

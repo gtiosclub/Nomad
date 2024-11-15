@@ -73,10 +73,23 @@
 import SwiftUI
 
 struct EndOfLegView: View {
+    @ObservedObject var navManager: NavigationManager
+    var continueNavigation: () -> Void
+    
     var reached_stop: any POI
     var next_stop: (any POI)?
     
-    var continueNavigation: () -> Void
+    init(navManager: NavigationManager, continueNavigation: @escaping () -> Void) {
+        self.navManager = navManager
+        
+        let (start, stop) = navManager.getCurrentAndNextPOI()
+        self.reached_stop = start
+        self.next_stop = stop
+        print(reached_stop.name)
+        print(next_stop?.name)
+        
+        self.continueNavigation = continueNavigation
+    }
     
     var body: some View {
         VStack(spacing: 20) {
@@ -183,7 +196,7 @@ struct POIArrivedView: View {
     let next_stop = UserViewModel.my_trips.first!.getEndLocation()
     VStack {
         Spacer()
-        EndOfLegView(reached_stop: arrived_stop, next_stop: next_stop, continueNavigation: {})
+        EndOfLegView(navManager: NavigationManager(), continueNavigation: {})
             .frame(width: 400)
     }.edgesIgnoringSafeArea(.all)
 }
