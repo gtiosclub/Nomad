@@ -259,60 +259,60 @@ class FirebaseViewModel: ObservableObject {
 //        }
 //    }
     func createTrip(tripID: String, createdDate: String, modifiedDate: String, startDate: String, startTime: String, endDate: String, isPrivate: Bool,  startLocation: any POI , endLocation: any POI, routeName: String, stops: [any POI]) async -> Bool {
-               
-               let tripDocRef = db.collection("TRIPS").document(tripID)
-            let stopIDs = stops.map { $0.id }
-               let tripData: [String: Any] = [
-                   "created_date": createdDate,
-                   "end_date" : endDate,
-                   "end_id" : "end",
-                   "isPrivate" : isPrivate,
-                   "modified_date": modifiedDate,
-                   "name" : routeName,
-                   "start_date" : startDate,
-                   "start_id" : "start",
-                   "start_time" : startTime,
-                   "images" : [],
-                   "stops": stopIDs
-               ]
-               do {
-                   try await tripDocRef.setData(tripData)
-
-                   let stopsCollection = tripDocRef.collection("STOPS")
-
-                   let startData: [String: Any] = [
-                       "name": startLocation.getName(),
-                       "address": startLocation.getAddress(),
-                       "city" : startLocation.getCity() ?? "",
-                       "latitude" : startLocation.getLatitude(),
-                       "longitude" : startLocation.getLongitude(),
-                       "type": "GeneralLocation"
-                   ]
-                   try await stopsCollection.document("start").setData(startData)
-
-                   let endData: [String: Any] = [
-                       "name": endLocation.getName(),
-                       "address": endLocation.getAddress(),
-                       "city" : endLocation.getCity() ?? "",
-                        "latitude" : endLocation.getLatitude(),
-                        "longitude" : endLocation.getLongitude(),
-                        "type": "GeneralLocation"
-                    ]
-                    try await stopsCollection.document("end").setData(endData)
-                   
-                   for (index, stop) in stops.enumerated() {
-                       let stopAdded = await addStopToTrip(tripID: tripID, stop: stop, index: index + 1)
-                       if !stopAdded {
-                           print("Failed to add stop \(stop.name)")
-                           return false
-                       }
-                   }
-                    return true
-                } catch {
-                    print("Error creating trip or stops: \(error)")
+        
+        let tripDocRef = db.collection("TRIPS").document(tripID)
+        let stopIDs = stops.map { $0.id }
+        let tripData: [String: Any] = [
+            "created_date": createdDate,
+            "end_date" : endDate,
+            "end_id" : "end",
+            "isPrivate" : isPrivate,
+            "modified_date": modifiedDate,
+            "name" : routeName,
+            "start_date" : startDate,
+            "start_id" : "start",
+            "start_time" : startTime,
+            "images" : [],
+            "stops": []
+        ]
+        do {
+            try await tripDocRef.setData(tripData)
+            
+            let stopsCollection = tripDocRef.collection("STOPS")
+            
+            let startData: [String: Any] = [
+                "name": startLocation.getName(),
+                "address": startLocation.getAddress(),
+                "city" : startLocation.getCity() ?? "",
+                "latitude" : startLocation.getLatitude(),
+                "longitude" : startLocation.getLongitude(),
+                "type": "GeneralLocation"
+            ]
+            try await stopsCollection.document("start").setData(startData)
+            
+            let endData: [String: Any] = [
+                "name": endLocation.getName(),
+                "address": endLocation.getAddress(),
+                "city" : endLocation.getCity() ?? "",
+                "latitude" : endLocation.getLatitude(),
+                "longitude" : endLocation.getLongitude(),
+                "type": "GeneralLocation"
+            ]
+            try await stopsCollection.document("end").setData(endData)
+            
+            for (index, stop) in stops.enumerated() {
+                let stopAdded = await addStopToTrip(tripID: tripID, stop: stop, index: index + 1)
+                if !stopAdded {
+                    print("Failed to add stop \(stop.name)")
                     return false
                 }
             }
+            return true
+        } catch {
+            print("Error creating trip or stops: \(error)")
+            return false
+        }
+    }
     
     func createCopyTrip(newTripID: String, oldTripID: String, createdDate: String) async -> Bool {
         let db = Firestore.firestore()
@@ -405,6 +405,13 @@ class FirebaseViewModel: ObservableObject {
         if let hotel = stop as? Hotel {
             rating = hotel.rating ?? -1.0
             website = hotel.website ?? ""
+        }
+        if let shopping = stop as? Shopping {
+            website = shopping.website ?? ""
+        }
+        if let activity = stop as? Activity {
+            rating = activity.rating ?? -1.0
+            website = activity.website ?? ""
         }
         do {
             try await db.collection("TRIPS").document(tripID).collection("STOPS").document(stop.name).setData(["name" : stop.name, "address" : stop.address, "type" : "\(type(of: stop))", "latitude" : stop.latitude, "longitude" : stop.longitude, "city" : stop.city ?? "", "cuisine" : cuisine, "price" : price, "rating" : rating, "website" : website, "imageURL": stop.imageUrl ?? ""])
@@ -728,7 +735,7 @@ class FirebaseViewModel: ObservableObject {
             "start_date": trip.getStartDate(),
             "start_time": trip.getStartTime(),
             "images": trip.getImages(),
-            "stops": stopIDs
+            "stops": []
         ]
 
         do {
@@ -891,7 +898,7 @@ class FirebaseViewModel: ObservableObject {
                 rating: data["rating"] as? Double,
                 price: data["price"] as? Int,
                 website: data["website"] as? String,
-                imageURL: data["imageUrl"] as? String
+                imageURL: data["imageURL"] as? String
             )
         } catch {
             print("Error fetching location data: \(error)")

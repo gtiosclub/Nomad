@@ -60,17 +60,33 @@ class UserViewModel: ObservableObject {
     
     @MainActor
     func createTrip(start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM", coverImageURL: String = "") async {
-        let temp_trip = Trip(start_location: start_location, end_location: end_location, start_date: start_date, end_date: end_date, stops: stops, start_time: start_time, coverImageURL: coverImageURL)
+        let new_trip = Trip(start_location: start_location, end_location: end_location, start_date: start_date, end_date: end_date, stops: stops, start_time: start_time, coverImageURL: coverImageURL)
 
-        if await fbVM.createTrip(tripID: temp_trip.id, createdDate: Trip.getCurrentDateTime(), modifiedDate: temp_trip.modified_date, startDate: start_date, startTime: start_time, endDate: end_date, isPrivate: false, startLocation: start_location, endLocation: end_location, routeName: "", stops: []) {
-            if await fbVM.addTripToUser(userID: user.id, tripID: temp_trip.id) {
-                self.current_trip = temp_trip
-                let route = await getRoute()
-                self.current_trip?.route = route
-                
-                self.user.addTrip(trip: self.current_trip!)
+        self.current_trip = new_trip
+        let route = await getRoute()
+        self.current_trip?.route = route
+        
+        self.user.addTrip(trip: self.current_trip!)
+    }
+    
+    func addTripToFirebase() async -> Bool {
+        if let trip = current_trip {
+            if await fbVM.createTrip(tripID: trip.id, createdDate: trip.getCreatedDate(), modifiedDate: trip.modified_date, startDate: trip.getStartDate(), startTime: trip.getStartTime(), endDate: trip.getEndDate(), isPrivate: trip.isPrivate, startLocation: trip.getStartLocation(), endLocation: trip.getEndLocation(), routeName: trip.getName(), stops: trip.getStops()) {
+                if await fbVM.addTripToUser(userID: user.id, tripID: trip.id) {
+                    return true
+                }
             }
         }
+        return false
+    }
+    
+    func modifyTripInFirebase() async -> Bool {
+        if let trip = current_trip {
+            if await fbVM.modifyTrip(tripID: trip.id, trip: trip) {
+                return true
+            }
+        }
+        return false
     }
     
     func addTripToUser(trip: Trip) {
@@ -436,6 +452,13 @@ class UserViewModel: ObservableObject {
         return nil
     }
     
+    
+    static let my_trips = [
+        Trip(id: "austintrip2", start_location: Restaurant(address: "848 Spring Street, Atlanta, GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN 37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", created_date: "10-1-2024", modified_date: "10-1-2024", stops: [Activity(address: "1720 S Scenic Hwy, Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)], start_time: "10:00:00", name: "ATL to Nashville", isPrivate: true),
+        Trip(id: "austintrip1", start_location: Activity(address: "1 City Hall Square Suite 500, Boston, MA 02201 United States", name: "Boston City Hall", latitude: 42.360388, longitude: -71.058026, city: "Boston"), end_location: Hotel(address: "145 W 44th St, New York, NY 10036 United States", name: "Millennium Hotel Broadway Times Square", latitude: 40.757067, longitude: -73.984734, city: "New York City"), start_date: "10-12-2024", end_date: "10-12-2024", created_date: "10-1-2024", modified_date: "10-1-2024", stops: [GeneralLocation(address: "127 Wall St, New Haven, CT  06511 United States", name: "Yale University", latitude: 41.311930, longitude: -72.927877)], start_time: "10:00:00", name: "Cross Country", isPrivate: true),
+        Trip(id: "austintrip3", start_location: Hotel(address: "533 State St, Santa Barbara, CA  93101 United States", name: "Hotel Santa Barbara", latitude: 34.417535, longitude: -119.696807, city: "Santa Barbara"), end_location: GeneralLocation(address: "1 World Way, Los Angeles, CA  90045 United States", name: "LAX Airport", latitude: 33.944007, longitude: -118.403811, city: "Los Angeles"), start_date: "10-19-2024", end_date: "10-19-2024", created_date: "10-1-2024", modified_date: "10-1-2024", stops: [Activity(address: "727 N Broadway, Los Angeles, CA 90012", name: "Chinatown", latitude: 34.061303, longitude: -118.239277)], start_time: "10:00:00", name: "GA Mountains", isPrivate: true)
+    ]
+  
     func setTripTitle(newTitle: String) {
         current_trip?.setName(newName: newTitle)
         user.updateTrip(trip: current_trip!)

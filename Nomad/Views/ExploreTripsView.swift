@@ -26,10 +26,8 @@ struct ExploreTripsView: View {
                                 .padding(.leading)
                             if let city = vm.currentCity {
                                 Text("\(city)")
-                                    .font(.headline)
                             } else {
                                 Text("Retrieving Location")
-                                    .font(.headline)
                             }
                             Spacer()
                         }
@@ -69,9 +67,6 @@ struct ExploreTripsView: View {
                                         })
                                     }
                                 }
-                                .onChange(of: vm.user.trips, initial: true) { oldTrips, newTrips in
-                                    current_trips = newTrips
-                                }
                             }
                             .padding(.horizontal)
                             
@@ -81,7 +76,7 @@ struct ExploreTripsView: View {
                             
                             ScrollView(.horizontal) {
                                 HStack {
-                                    ForEach(vm.previous_trips) { trip in
+                                    ForEach($previous_trips.wrappedValue) { trip in
                                         NavigationLink(destination: {
                                             PreviewRouteView(vm: vm, trip: trip)
                                         }, label: {
@@ -89,9 +84,6 @@ struct ExploreTripsView: View {
                                                 .frame(alignment: .top)
                                         })
                                     }
-                                }
-                                .onChange(of: vm.previous_trips, initial: true) { oldTrips, newTrips in
-                                    
                                 }
                             }
                             .padding(.horizontal)
@@ -102,7 +94,7 @@ struct ExploreTripsView: View {
                             
                             ScrollView(.horizontal) {
                                 HStack {
-                                    ForEach(vm.community_trips) { trip in
+                                    ForEach($community_trips.wrappedValue) { trip in
                                         NavigationLink(destination: {
                                             PreviewRouteView(vm: vm, trip: trip)
                                         }, label: {
@@ -110,9 +102,6 @@ struct ExploreTripsView: View {
                                                 .frame(alignment: .top)
                                         })
                                     }
-                                }
-                                .onChange(of: vm.community_trips, initial: true) { oldTrips, newTrips in
-                                    
                                 }
                             }
                             .padding(.horizontal)
@@ -127,8 +116,8 @@ struct ExploreTripsView: View {
                             Image(systemName: "plus")
                                 .font(.system(size: 24))
                                 .padding()
-                                .background(Color(.systemGray4))
-                                .foregroundColor(.black)
+                                .background(Color.nomadDarkBlue)
+                                .foregroundColor(.white)
                                 .clipShape(Circle())
                                 .shadow(radius: 2)
                         }
@@ -158,6 +147,9 @@ struct ExploreTripsView: View {
                 community_trips = vm.community_trips
             }
         }
+        .onChange(of: current_trips, initial: true) {}
+        .onChange(of: previous_trips, initial: true) {}
+        .onChange(of: community_trips, initial: true) {}
     }
     
     struct SectionHeaderView: View {

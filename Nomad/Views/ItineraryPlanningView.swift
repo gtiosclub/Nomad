@@ -217,13 +217,12 @@ struct ItineraryPlanningView: View {
                 HStack {
                     Button(action: {
                         if !isLoading {
-                            isLoading = true
                             Task {
                                 await createTrip("atlas")
                             }
                         }
                     }) {
-                        if !generatingRoute {
+                        if !generatingRoute && !use_current_trip {
                             Label("Generate with Atlas", systemImage: "wand.and.sparkles")
                                 .font(.headline)
                                 .foregroundColor(.white)
@@ -245,7 +244,6 @@ struct ItineraryPlanningView: View {
                     
                     Button(action: {
                         if !generatingRoute {
-                            generatingRoute = true
                             Task {
                                 await createTrip("manual")
                             }
@@ -291,7 +289,6 @@ struct ItineraryPlanningView: View {
             if !use_current_trip {
                 vm.clearCurrentTrip()
             } else {
-                print("filling out current trip info")
                 startTime = timeFormatter(vm.current_trip?.getStartTime())
                 startDate = dateFormatter(vm.current_trip?.getStartDate())
                 endDate = dateFormatter(vm.current_trip?.getEndDate())
@@ -392,39 +389,52 @@ struct ItineraryPlanningView: View {
         }
         
         if startAddressError.isEmpty && endAddressError.isEmpty && bothAddressError.isEmpty {
-            Task {
-                var start_location = GeneralLocation(address: inputAddressStart, name: inputNameStart, latitude: startLatitude, longitude: startLongitude)
-                
-                start_location.imageUrl = await Trip.getCityImageAsync(location: start_location)
-                
-                var end_location = GeneralLocation(address: inputAddressEnd, name: inputNameEnd, latitude: endLatitude, longitude: endLongitude)
-                
-                end_location.imageUrl = await Trip.getCityImageAsync(location: end_location)
-                
-                await vm.createTrip(start_location: start_location, end_location: end_location, start_date: ItineraryPlanningView.dateToString(date: startDate), end_date: ItineraryPlanningView.dateToString(date: endDate), stops: [], start_time: ItineraryPlanningView.timeToString(date: startTime), coverImageURL: end_location.imageUrl!)
-                
-                if version == "atlas" {
-                    await vm.aiVM.generateTripWithAtlas(userVM: vm)
-                    await vm.updateRoute()
+            if version == "Manual" {
+                generatingRoute = true
+            } else {
+                isLoading = true
+            }
+            
+            if !use_current_trip {
+                Task {
+                    var start_location = GeneralLocation(address: inputAddressStart, name: inputNameStart, latitude: startLatitude, longitude: startLongitude)
+                    
+                    start_location.imageUrl = await Trip.getCityImageAsync(location: start_location)
+                    
+                    var end_location = GeneralLocation(address: inputAddressEnd, name: inputNameEnd, latitude: endLatitude, longitude: endLongitude)
+                    
+                    end_location.imageUrl = await Trip.getCityImageAsync(location: end_location)
+                    
+                    await vm.createTrip(start_location: start_location, end_location: end_location, start_date: ItineraryPlanningView.dateToString(date: startDate), end_date: ItineraryPlanningView.dateToString(date: endDate), stops: [], start_time: ItineraryPlanningView.timeToString(date: startTime), coverImageURL: end_location.imageUrl!)
+                    
+                    if version == "atlas" {
+                        await vm.aiVM.generateTripWithAtlas(userVM: vm)
+                        await vm.updateRoute()
+                    }
+                    
+                    inputNameEnd = ""
+                    inputNameStart = ""
+                    inputAddressEnd = ""
+                    inputAddressStart = ""
+                    startDate = Date()
+                    endDate = Date()
+                    startTime = Date()
+                    startLatitude = 0.0
+                    startLongitude = 0.0
+                    endLatitude = 0.0
+                    endLongitude = 0.0
+                    
+                    if version == "atlas" {
+                        editTripAtlas = true
+                        isLoading = false
+                    } else {
+                        editTripContinue = true
+                        generatingRoute = false
+                    }
                 }
-                
-                inputNameEnd = ""
-                inputNameStart = ""
-                inputAddressEnd = ""
-                inputAddressStart = ""
-                startDate = Date()
-                endDate = Date()
-                startTime = Date()
-                startLatitude = 0.0
-                startLongitude = 0.0
-                endLatitude = 0.0
-                endLongitude = 0.0
-                if version == "atlas" {
-                    editTripAtlas = true
-                    isLoading = false
-                } else {
-                    editTripContinue = true
-                }
+            } else {
+                editTripContinue = true
+                generatingRoute = false
             }
         }
     }

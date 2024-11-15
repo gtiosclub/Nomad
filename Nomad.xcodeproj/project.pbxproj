@@ -49,6 +49,7 @@
 		944E9E9B2CACBBEE0032FD34 /* NomadRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = 944E9E9A2CACBBEC0032FD34 /* NomadRoute.swift */; };
 		947F53C22CA0F59F00238C4F /* MapboxNavigationCore in Frameworks */ = {isa = PBXBuildFile; productRef = 947F53C12CA0F59F00238C4F /* MapboxNavigationCore */; };
 		B208F21F2CE3EDC7009BCA45 /* NomadColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = B208F21E2CE3EDC4009BCA45 /* NomadColors.swift */; };
+		B208F2412CE675FD009BCA45 /* EndOfLegView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B208F2402CE675F6009BCA45 /* EndOfLegView.swift */; };
 		B2154C6D2C9D01BA00A6F238 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B2154C6C2C9D01BA00A6F238 /* GoogleService-Info.plist */; };
 		B2154CD02C9E2DF400A6F238 /* CompassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2154CCF2C9E2DF400A6F238 /* CompassView.swift */; };
 		B2154CD22C9E319C00A6F238 /* RecenterMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2154CD12C9E319C00A6F238 /* RecenterMapView.swift */; };
@@ -121,6 +122,7 @@
 		9455F54A2C9F99F0006D03D6 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		94F91F652C9F875F00A63F7A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B208F21E2CE3EDC4009BCA45 /* NomadColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NomadColors.swift; sourceTree = "<group>"; };
+		B208F2402CE675F6009BCA45 /* EndOfLegView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndOfLegView.swift; sourceTree = "<group>"; };
 		B2154C6C2C9D01BA00A6F238 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B2154CCF2C9E2DF400A6F238 /* CompassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompassView.swift; sourceTree = "<group>"; };
 		B2154CD12C9E319C00A6F238 /* RecenterMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecenterMapView.swift; sourceTree = "<group>"; };
@@ -276,6 +278,7 @@
 			children = (
 				84DE8BB12CE154040030A4BC /* ProfileView.swift */,
 				E93AD24B2CC9A16800D1B27C /* AtlasNavigationView.swift */,
+				B208F2402CE675F6009BCA45 /* EndOfLegView.swift */,
 				84FC27152CAC741D008C8339 /* Onboarding */,
 				B2F8F3492C97BC7700B9618E /* RecapView.swift */,
 				48BBC2D12C9CE5070093D9D0 /* DetailRecapView.swift */,
@@ -309,18 +312,18 @@
 				B208F21E2CE3EDC4009BCA45 /* NomadColors.swift */,
 				E90E9AB92CAF5C6900A7C4FA /* VoiceInput.swift */,
 				E90E9AB72CAF5C1400A7C4FA /* SpeechRecognizer.swift */,
-				48974B852C9A449F0057B073 /* Hotel.swift */,
-				48974B832C9A43880057B073 /* Activity.swift */,
 				B29D04002CB0B48700524D8B /* MapMarker.swift */,
 				944E9E9A2CACBBEC0032FD34 /* NomadRoute.swift */,
 				B2F8F3522C97BCAB00B9618E /* User.swift */,
 				B2F8F3542C97BCBB00B9618E /* Trip.swift */,
-				B2F8F3562C97BCC400B9618E /* POI.swift */,
 				B2F8F3582C97BCD400B9618E /* Restaurant.swift */,
-				B2F8F35A2C97BD2200B9618E /* RestStop.swift */,
-				B2F8F35C2C97BD3000B9618E /* GasStation.swift */,
 				599F66162C9CE4F90025A8F8 /* Motion.swift */,
+				48974B832C9A43880057B073 /* Activity.swift */,
+				B2F8F35C2C97BD3000B9618E /* GasStation.swift */,
 				48974B8E2CA0A6130057B073 /* GeneralLocation.swift */,
+				48974B852C9A449F0057B073 /* Hotel.swift */,
+				B2F8F3562C97BCC400B9618E /* POI.swift */,
+				B2F8F35A2C97BD2200B9618E /* RestStop.swift */,
 				6646001B2CC815A10033541C /* Shopping.swift */,
 			);
 			path = Models;
@@ -485,6 +488,7 @@
 			files = (
 				599F66172C9CE4F90025A8F8 /* Motion.swift in Sources */,
 				B2154CD02C9E2DF400A6F238 /* CompassView.swift in Sources */,
+				B208F2412CE675FD009BCA45 /* EndOfLegView.swift in Sources */,
 				B3E575E72CC1CA44009E0355 /* POIDetailView.swift in Sources */,
 				B2154CD22C9E319C00A6F238 /* RecenterMapView.swift in Sources */,
 				B2F8F35D2C97BD3000B9618E /* GasStation.swift in Sources */,
