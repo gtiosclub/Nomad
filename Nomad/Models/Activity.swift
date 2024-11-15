@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Activity: POI, Identifiable, Ratable {
+struct Activity: POI, Identifiable, Ratable, Imagable {
     var id: String
     var address: String
     var name: String
@@ -18,7 +18,7 @@ struct Activity: POI, Identifiable, Ratable {
     var latitude: Double
     var city: String?
 
-    init(address: String, name: String, rating: Double? = nil, website: String? = nil, latitude: Double, longitude: Double, city: String? = nil) {
+    init(address: String, name: String, rating: Double? = nil, website: String? = nil, latitude: Double, longitude: Double, city: String? = nil, imageUrl: String? = nil) {
         self.id = UUID().uuidString
         self.address = address
         self.name = name
@@ -27,6 +27,7 @@ struct Activity: POI, Identifiable, Ratable {
         self.latitude = latitude
         self.longitude = longitude
         self.city = city
+        self.imageUrl = imageUrl
     }
 
     init(from business: Business) {
@@ -72,6 +73,10 @@ struct Activity: POI, Identifiable, Ratable {
     mutating func setCity(newCity: String) {
         self.city = newCity
     }
+    
+    mutating func setImageUrl(newUrl: String) {
+        self.imageUrl = newUrl
+    }
 
     func getAddress() -> String {
         return self.address
@@ -99,5 +104,13 @@ struct Activity: POI, Identifiable, Ratable {
     
     func getCity() -> String? {
         return city
+    }
+    
+    func getImageUrl() -> String? {
+        return imageUrl
+    }
+    
+    func getId() -> String {
+        return id
     }
 }

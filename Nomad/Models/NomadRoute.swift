@@ -21,6 +21,14 @@ struct NomadRoute {
         return legs.last?.endCoordinate ?? CLLocationCoordinate2D()
     }
     
+    func totalDistance() -> CLLocationDistance {
+        return legs.reduce(0) { $0 + $1.totalDistance() } * 0.000621371
+    }
+    
+    func totalTime() -> TimeInterval {
+        return legs.reduce(0) { $0 + $1.totalTime() }
+    }
+    
     // returns an array of polylines for each step of the route.
     func getShape() -> MKPolyline {
         let coords = getCoordinates()
@@ -73,7 +81,15 @@ struct NomadLeg {
     init(steps: [NomadStep]) {
         self.steps = steps
         self.startCoordinate = steps.first?.startCoordinate ?? CLLocationCoordinate2D()
-        self.endCoordinate = steps.last?.endCoordinate ?? CLLocationCoordinate2D()
+        self.endCoordinate = steps.last?.endCoordinate ?? CLLocationCoordinate2D()        
+    }
+  
+    func totalDistance() -> CLLocationDistance {
+        return steps.reduce(0) { $0 + $1.direction.distance }
+    }
+    
+    func totalTime() -> TimeInterval {
+        return steps.reduce(0) { $0 + $1.direction.expectedTravelTime }
     }
     
     func getStartLocation() -> CLLocationCoordinate2D {
@@ -145,13 +161,65 @@ struct NomadLeg {
     
 }
 
-struct NomadStep {
+struct NomadStep: Equatable {
     let id = UUID()
+    
+    static func ==(lhs: NomadStep, rhs: NomadStep) -> Bool {
+        return lhs.id == rhs.id
+    }
     
     struct Direction {
         var distance: CLLocationDistance
         var instructions: String
         var expectedTravelTime: TimeInterval
+        var exitCodes: [String]?
+        var exitIndex: Int?
+        let instructionsDisplayedAlongStep: [VisualInstructionBanner]?
+        let maneuverDirection: ManeuverDirection?
+        let maneuverType: ManeuverType
+        let intersections: [Intersection]?
+        let names: [String]? //The names of the road or path leading from this step’s maneuver to the next step’s maneuver.
+        
+        init(distance: CLLocationDistance, instructions: String, expectedTravelTime: TimeInterval, exitCodes: [String]?, exitIndex: Int?, instructionsDisplayedAlongStep: [VisualInstructionBanner]?, maneuverDirection: ManeuverDirection?, maneuverType: ManeuverType, intersections: [Intersection]?, names: [String]?) {
+            self.distance = distance
+            self.instructions = instructions
+            self.expectedTravelTime = expectedTravelTime
+            self.exitCodes = exitCodes
+            self.exitIndex = exitIndex
+            self.instructionsDisplayedAlongStep = instructionsDisplayedAlongStep
+            self.maneuverDirection = maneuverDirection
+            self.maneuverType = maneuverType
+            self.intersections = intersections
+            self.names = names
+        } //The names of the road or path leading from this step’s maneuver to the next step’s maneuver.
+        
+        init(step: RouteStep) {
+            self.init(distance: step.distance, instructions: step.instructions, expectedTravelTime: step.expectedTravelTime, exitCodes: step.exitCodes, exitIndex: step.exitIndex, instructionsDisplayedAlongStep: step.instructionsDisplayedAlongStep, maneuverDirection: step.maneuverDirection, maneuverType: step.maneuverType, intersections: step.intersections, names: step.names)
+        }
+        init() {
+            self.init(distance: 500, instructions: "Turn right in 0.4 miles", expectedTravelTime: TimeInterval(50), exitCodes: nil, exitIndex: nil, instructionsDisplayedAlongStep: nil, maneuverDirection: nil, maneuverType: .turn, intersections: nil, names: nil)
+        }
+        
+        
+        func toString() -> String {
+            return """
+            Distance: \(distance) m
+            Instructions: \(instructions)
+            Expected Travel Time: \(expectedTravelTime / 60) mins
+            Exit Codes: \(exitCodes ?? [])
+            Exit Index: \(exitIndex ?? -1)
+            Maneuver Type: \(maneuverType.rawValue)
+            Maneuver Direction: \(maneuverDirection?.rawValue ?? "NONE")
+            // Number Instructions Displayed Along Step: \(instructionsDisplayedAlongStep?.count)
+            Names: \(names ?? [])
+            """
+            // Intersections: \(intersections ?? [])
+
+        }
+        
+        func printInstructions() -> String? {
+            return instructionsDisplayedAlongStep?.description
+        }
     }
     
     struct Exit {
@@ -173,7 +241,7 @@ struct NomadStep {
         self.endCoordinate = step.shape?.coordinates.last ?? CLLocationCoordinate2D()
         self.coords = step.shape?.coordinates ?? []
         self.routeShape = NomadRoute.convertToMKPolyline(step.shape?.coordinates ?? [])
-        self.direction = Direction(distance: step.distance, instructions: step.instructions, expectedTravelTime: step.expectedTravelTime)
+        self.direction = Direction(step: step)
         if step.destinations != nil || step.exitCodes != nil || step.exitNames != nil {
             self.exit = Exit(destinations: step.destinations, exitCodes: step.exitCodes, exitNames: step.exitNames)
         } else {
@@ -182,14 +250,15 @@ struct NomadStep {
     }
     
     // placeholder data
-    init() {
+    init(direction: Direction) {
         self.startCoordinate = CLLocationCoordinate2D(latitude: 33.7501, longitude: 84.3885)
         self.endCoordinate = CLLocationCoordinate2D(latitude: 32.7501, longitude: 83.3885)
         self.coords = []
         self.routeShape = NomadRoute.convertToMKPolyline([startCoordinate, endCoordinate])
-        self.direction = Direction(distance: 100, instructions: "Turn right in 100 miles", expectedTravelTime: TimeInterval(5000))
+        self.direction = direction
         self.exit = Exit(destinations: ["Atlanta", "New York"], exitCodes: ["78", "79"], exitNames: ["Georgia Ave.","Peachtree St."])
     }
+    
     
     
     func getStartLocation() -> CLLocationCoordinate2D {

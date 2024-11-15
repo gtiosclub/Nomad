@@ -13,6 +13,8 @@ struct RoutePreviewView: View {
     @ObservedObject var vm: UserViewModel
     @Binding var trip: Trip
     @State var region: MKCoordinateRegion = MKCoordinateRegion()
+    @Binding var currentStopLocation: CLLocationCoordinate2D?
+    var showStopMarker: Bool = false
     
     
     var body: some View {
@@ -21,7 +23,9 @@ struct RoutePreviewView: View {
                 if let route = trip.route {
                     Marker("Start", coordinate: route.getStartLocation())
                     Marker("End", coordinate: route.getEndLocation())
-                    
+                    if (showStopMarker) {
+                        Marker("Stop Search Location", coordinate: $currentStopLocation.wrappedValue!).tint(.blue)
+                    }
                     MapPolyline(route.getShape())
                         .stroke(.blue, lineWidth: 5)
                 }

@@ -7,7 +7,8 @@
 
 import Foundation
 
-struct Restaurant: POI, Identifiable, Ratable {
+struct Restaurant: POI, Identifiable, Ratable, Imagable {
+
     var id: String
     var address: String
     var name: String
@@ -16,13 +17,11 @@ struct Restaurant: POI, Identifiable, Ratable {
     var price: Int?
     var website: String?
     var imageUrl: String?
-    var open_time: String?
-    var close_time: String?
     var longitude: Double
     var latitude: Double
     var city: String?
 
-    init(address: String, name: String, rating: Double? = nil, cuisine: String? = nil, price: Int? = nil, website: String? = nil, latitude: Double, longitude: Double, city: String? = nil) {
+    init(address: String, name: String, rating: Double? = nil, cuisine: String? = nil, price: Int? = nil, website: String? = nil, latitude: Double, longitude: Double, city: String? = nil, imageURL: String? = nil) {
         self.id = UUID().uuidString
         self.address = address
         self.name = name
@@ -33,6 +32,7 @@ struct Restaurant: POI, Identifiable, Ratable {
         self.latitude = latitude
         self.longitude = longitude
         self.city = city
+        self.imageUrl = imageURL
     }
 
     init(from business: Business) {
@@ -40,7 +40,7 @@ struct Restaurant: POI, Identifiable, Ratable {
         self.address = business.location.display_address.joined(separator: ", ")
         self.name = business.name
         self.rating = business.rating
-        self.cuisine = business.categories.first?.title
+        self.cuisine = (business.categories ?? [Category(alias: "", title: "")]).first?.title
         self.price = business.price?.count
         self.website = business.url
         self.imageUrl = business.image_url
@@ -88,7 +88,11 @@ struct Restaurant: POI, Identifiable, Ratable {
     mutating func setCity(newCity: String) {
         self.city = newCity
     }
-
+    
+    mutating func setImageUrl(newUrl: String) {
+        self.imageUrl = newUrl
+    }
+    
     func getAddress() -> String {
         return address
     }
@@ -123,5 +127,13 @@ struct Restaurant: POI, Identifiable, Ratable {
     
     func getCity() -> String? {
         return city
+    }
+    
+    func getImageUrl() -> String?  {
+        return imageUrl
+    }
+
+    func getId() -> String {
+        return id
     }
 }

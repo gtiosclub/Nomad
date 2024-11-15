@@ -10,6 +10,10 @@ import SwiftUI
 struct ExploreTripsView: View {
     @ObservedObject var vm: UserViewModel
     @State private var currentCity: String? = nil
+    @State var current_trips: [Trip] = []
+    @State var previous_trips: [Trip] = []
+    @State var community_trips: [Trip] = []
+    @State var pulled_trips: Bool = false
     
     var body: some View {
         NavigationStack {
@@ -22,29 +26,13 @@ struct ExploreTripsView: View {
                                 .padding(.leading)
                             if let city = vm.currentCity {
                                 Text("\(city)")
-                                    .font(.headline)
                             } else {
                                 Text("Retrieving Location")
-                                    .font(.headline)
                             }
                             Spacer()
                         }
-                        .task {
-                            await vm.getCurrentCity()
-                        }
-                        
-                        //TEMPORARY JUST FOR MID SEM DEMO
-                        NavigationLink(destination: AIAssistantView()) {
-                            Text("Consult Atlas")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .padding()
-                                .background(Color.blue)
-                                .cornerRadius(10)
-                        }.padding(.leading)
-                        
                         HStack {
-                            Text("Plan your next trip, \(vm.user?.getName().split(separator: " ").first ?? "User")!")
+                            Text("Plan your next trip, \(vm.user.getName().split(separator: " ").first!)!")
                                 .bold()
                                 .font(.system(size: 20))
                                 .padding(.horizontal)
@@ -56,7 +44,7 @@ struct ExploreTripsView: View {
                                 Ellipse()
                                     .fill(Color.gray)
                                     .frame(width: 40, height: 40)
-                                Text((vm.user?.getName() ?? "User").prefix(1))
+                                Text((vm.user.getName()).prefix(1).uppercased())
                                     .foregroundColor(.white)
                                     .font(.system(size: 25))
                             }
@@ -65,16 +53,16 @@ struct ExploreTripsView: View {
                         
                         // Itineraries
                         VStack(alignment: .leading) {
-                            SectionHeaderView(title: "My Itineraries")
+                            SectionHeaderView(vm: vm, title: "Upcoming Trips", trips: vm.user.trips)
                                 .padding(.horizontal)
                             
                             ScrollView(.horizontal) {
                                 HStack {
-                                    ForEach(vm.my_trips) { trip in
+                                    ForEach($current_trips.wrappedValue) { trip in
                                         NavigationLink(destination: {
                                             PreviewRouteView(vm: vm, trip: trip)
                                         }, label: {
-                                            TripGridView(trip: Binding.constant(trip))
+                                            TripGridView(trip: trip)
                                                 .frame(alignment: .top)
                                         })
                                     }
@@ -82,17 +70,17 @@ struct ExploreTripsView: View {
                             }
                             .padding(.horizontal)
                             
-                            SectionHeaderView(title: "Previous Itineraries")
+                            SectionHeaderView(vm: vm, title: "Previous Trips", trips: vm.previous_trips)
                                 .padding(.top, 5)
                                 .padding(.horizontal)
                             
                             ScrollView(.horizontal) {
                                 HStack {
-                                    ForEach(vm.previous_trips) { trip in
+                                    ForEach($previous_trips.wrappedValue) { trip in
                                         NavigationLink(destination: {
                                             PreviewRouteView(vm: vm, trip: trip)
                                         }, label: {
-                                            TripGridView(trip: Binding.constant(trip))
+                                            TripGridView(trip: trip)
                                                 .frame(alignment: .top)
                                         })
                                     }
@@ -100,17 +88,17 @@ struct ExploreTripsView: View {
                             }
                             .padding(.horizontal)
                             
-                            SectionHeaderView(title: "Community Favorites")
+                            SectionHeaderView(vm: vm, title: "Community Favorites", trips: vm.community_trips)
                                 .padding(.top, 5)
                                 .padding(.horizontal)
                             
                             ScrollView(.horizontal) {
                                 HStack {
-                                    ForEach(vm.community_trips) { trip in
+                                    ForEach($community_trips.wrappedValue) { trip in
                                         NavigationLink(destination: {
                                             PreviewRouteView(vm: vm, trip: trip)
                                         }, label: {
-                                            TripGridView(trip: Binding.constant(trip))
+                                            TripGridView(trip: trip)
                                                 .frame(alignment: .top)
                                         })
                                     }
@@ -128,8 +116,8 @@ struct ExploreTripsView: View {
                             Image(systemName: "plus")
                                 .font(.system(size: 24))
                                 .padding()
-                                .background(Color(.systemGray4))
-                                .foregroundColor(.black)
+                                .background(Color.nomadDarkBlue)
+                                .foregroundColor(.white)
                                 .clipShape(Circle())
                                 .shadow(radius: 2)
                         }
@@ -138,33 +126,60 @@ struct ExploreTripsView: View {
                     }
                 }
             }
-        }.onAppear() {
-            print("populating trips")
-            vm.populate_my_trips()
-            vm.populate_previous_trips()
-            vm.populate_community_trips()
         }
+        .task {
+            if !pulled_trips {
+                print("populating trips and current location")
+                await vm.populateUserTrips()
+                await vm.getCurrentCity()
+                pulled_trips = true
+                
+                current_trips = vm.user.trips
+                previous_trips = vm.user.pastTrips
+                community_trips = vm.community_trips
+            }
+        }
+        .onAppear() {
+            if pulled_trips {
+                print("repopulating trips")
+                current_trips = vm.user.trips
+                previous_trips = vm.user.pastTrips
+                community_trips = vm.community_trips
+            }
+        }
+        .onChange(of: current_trips, initial: true) {}
+        .onChange(of: previous_trips, initial: true) {}
+        .onChange(of: community_trips, initial: true) {}
     }
     
     struct SectionHeaderView: View {
+        var vm: UserViewModel
         var title: String
+        var trips: [Trip]
+        @State var navigateToAll: Bool = false
+        
         var body: some View {
             HStack {
                 Text(title)
                     .font(.headline)
                     .bold()
                 Spacer()
-                Button(action: {}) {
+                Button(action: {
+                    navigateToAll = true
+                }) {
                     Text("View all")
                         .foregroundColor(.gray)
                 }
+                .navigationDestination(isPresented: $navigateToAll, destination: {
+                    ViewAllTripsView(vm: vm, header: title, trips: trips)
+                })
             }
             .padding(.vertical, 5)
         }
     }
     
     struct TripGridView: View {
-        @Binding var trip: Trip
+        @StateObject var trip: Trip
         
         var body: some View {
             VStack {
@@ -182,6 +197,7 @@ struct ExploreTripsView: View {
                             .frame(width: 120, height: 120)
                             .cornerRadius(10)
                             .padding(.horizontal, 10)
+//                            .id($trip.coverImageURL.wrappedValue)
                     } placeholder: {
                         ProgressView()
                             .frame(width: 120, height: 120)
@@ -193,7 +209,7 @@ struct ExploreTripsView: View {
                     }
                 }
                 
-                Text(trip.getName())
+                Text(trip.name.isEmpty ? "New Trip" : trip.name)
                     .lineLimit(3)
                     .multilineTextAlignment(.center)
                     .frame(width: 120)
@@ -201,6 +217,9 @@ struct ExploreTripsView: View {
                     .foregroundStyle(.black)
             }
             .padding(.vertical, 5)
+//            .onChange(of: trip, initial: true) { old, new in
+//                print("changing trip info \(old.coverImageURL) \(new.coverImageURL)")
+//            }
         }
     }
 }

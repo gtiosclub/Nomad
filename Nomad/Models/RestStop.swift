@@ -7,20 +7,34 @@
 
 import Foundation
 
-struct RestStop: POI {
+struct RestStop: POI, Identifiable, Imagable {    
+    var id: String
     var address: String
     var name: String
     var longitude: Double
     var latitude: Double
     var city: String?
+    var imageUrl: String?
     
-    init(address: String, name: String, latitude: Double, longitude: Double, city: String? = nil) {
+    init(address: String, name: String, latitude: Double, longitude: Double, city: String? = nil, imageURL: String? = nil) {
+        self.id = UUID().uuidString
         self.address = address
         self.name = name
         self.latitude = latitude
         self.longitude = longitude
         self.city = city
     }
+    
+    init(from business: Business) {
+        self.id = business.id
+        self.address = business.location.display_address.joined(separator: ", ")
+        self.name = business.name
+        self.latitude = business.coordinates.latitude
+        self.longitude = business.coordinates.longitude
+        self.city = business.location.city
+        self.imageUrl = business.image_url
+    }
+
     
     static func == (lhs: RestStop, rhs: RestStop) -> Bool {
         return lhs.name == rhs.name && lhs.address == rhs.address
@@ -64,6 +78,14 @@ struct RestStop: POI {
     
     func getCity() -> String? {
         return city
+    }
+    
+    func getId() -> String {
+        return id
+    }
+    
+    func getImageUrl() -> String?  {
+        return imageUrl
     }
 }
 
