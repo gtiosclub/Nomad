@@ -15,8 +15,15 @@ struct MapView: View {
     @ObservedObject var navManager: NavigationManager = NavigationManager()
     @ObservedObject var mapManager = MapManager.manager
     @State private var cameraDistance: CLLocationDistance = 400
+    @State private var remainingTime: TimeInterval = 0
+    @State private var remainingDistance: Double = 0
+    @State var isSheetPresented = false
+    @StateObject var speechRecognizer = SpeechRecognizer()
+
+
     
-    
+    let timer = Timer.publish(every: 7, on: .main, in: .common).autoconnect()
+
     var body: some View {
         ZStack {
             // All views within Map
@@ -173,6 +180,11 @@ struct MapHUDView: View {
                         .transition(.move(edge: .bottom))
                 }
             }
+        }.onAppear {
+            speechRecognizer.pollForAtlas()
+        }
+        .onDisappear {
+            speechRecognizer.resetTranscript()
         }.onChange(of: vm.navigatingTrip) { old, new in
             if let newTrip = new {
                 if let newRoute = newTrip.route {
@@ -180,9 +192,15 @@ struct MapHUDView: View {
                 }
             }
         }
+        .onChange(of: speechRecognizer.atlasSaid) { atlasSaid in
+            isSheetPresented = true
+        }
         .sheet(isPresented: $atlasSheetPresented) {
             AtlasNavigationView(vm: vm)
                 .presentationDetents([.medium, .large])
+                .onDisappear {
+                    speechRecognizer.pollForAtlas()
+                }
         }
         .onReceive(timer) { _ in
             // reset remaining time and distance

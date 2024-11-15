@@ -71,6 +71,10 @@ struct AIAssistantView: View {
                }
            }
            .padding()
+           .onDisappear {
+               speechRecognizer.stopTranscribing()
+               speechRecognizer.resetTranscript()
+           }
        }
        .background(Color.clear)
     }
