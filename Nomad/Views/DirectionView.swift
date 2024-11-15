@@ -126,7 +126,7 @@ struct DirectionView: View {
     }
     func formattedSubIntructions() -> String? {
         if showHighwayIcon() {
-            return step.direction.names!.last
+            return step.direction.names?.last ?? step.direction.instructions
         } else {
             return nil
         }
