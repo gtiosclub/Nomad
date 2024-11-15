@@ -39,6 +39,7 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     // MAP UI Components
     @Published var mapMarkers: [MapMarker] = []
     @Published var mapPolylines: [MKPolyline] = []
+    @Published var destinationReached = false
     
     var remainingTime: TimeInterval? {
         if let leg = navigatingLeg {
@@ -121,12 +122,17 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         self.mapPolylines.removeAll()
         self.mapMarkers.removeAll()
         
-        let leg_index = navigatingRoute!.legs.firstIndex(where: { this_leg in
+        let trip = navigatingTrip!
+        let route = navigatingRoute!
+        let leg_index = route.legs.firstIndex(where: { this_leg in
             this_leg.id == leg.id
-        })!
-        let stops = navigatingTrip!.getStops()
-        let start_stop = leg_index == 0 ? navigatingTrip!.getStartLocation() : stops[leg_index]
-        let end_stop = leg_index + 1 >= stops.count ? navigatingTrip!.getEndLocation() : stops[leg_index]
+        }) ?? 0
+        let stops = trip.getStops()
+        var start_stop = trip.getStartLocation()
+        if leg_index > 0 {
+            start_stop = stops[leg_index - 1]
+        }
+        let end_stop = leg_index + 1 >= route.legs.count ? navigatingTrip!.getEndLocation() : stops[leg_index]
         
         self.showMarker(start_stop.name, coordinate: leg.getStartLocation(), icon: .pin)
         self.showMarker(end_stop.name, coordinate: leg.getEndLocation(), icon: .pin)
@@ -141,14 +147,33 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 //        }
         
     }
+    
+    func getCurrentAndNextPOI() -> (start: any POI, stop: (any POI)?) {
+        let trip = navigatingTrip!
+        let route = navigatingRoute!
+        let leg_i = route.legs.firstIndex(where: { this_leg in
+            this_leg.id == self.navigatingLeg!.id
+        })!
+        let stops = navigatingTrip!.getStops()
+        let curr_stop = leg_i < route.legs.count - 1 ? stops[leg_i] : trip.getEndLocation()
+        let next_stop: (any POI)? = leg_i < route.legs.count - 2 ? stops[leg_i + 1] : (leg_i < route.legs.count - 1 ? trip.getEndLocation() : nil)
+
+        return (curr_stop, next_stop)
+    }
     // jump to next leg of route, if no current leg is assigned, go to first leg in current route
     func goToNextLeg() {
+        self.destinationReached = false
+        if let currentLeg = navigatingLeg {
+            removePolyline(leg: currentLeg)
+        }
         if let route = navigatingRoute {
             if let current_leg_index = route.legs.firstIndex(where: { leg in
                 leg.id == navigatingLeg?.id
             }) {
                 if current_leg_index < route.legs.count - 1 {
                     setNavigatingLeg(leg: route.legs[current_leg_index + 1])
+                } else  {
+                    navigating = false
                 }
             } else {
                 if let leg = route.legs.first {
@@ -176,14 +201,122 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
-    func recalibrateCurrentStep() {
+    // TODO: Modify to make both distance and direction checks to re-route if so
+    func recalibrateCurrentStep() async {
+        var offRouteCount = 0
         guard let currentLeg = self.navigatingLeg else { return }
-        guard let estimatedStep = mapManager.determineCurrentStep(leg: currentLeg) else { return }
-        print(estimatedStep.direction.instructions)
-        if estimatedStep.id != navigatingStep?.id {
-            setNavigatingStep(step: estimatedStep)
+        if mapManager.checkDestinationReached(leg: currentLeg) {
+            destinationReached = true
+        }
+        
+        if let estimatedStep = mapManager.determineCurrentStep(leg: currentLeg) {
+            if estimatedStep.id != navigatingStep?.id {
+                setNavigatingStep(step: estimatedStep)
+            }
+        } else if let currStep = navigatingStep {
+            let isDistance = mapManager.checkOnRouteDistance(step: currStep, thresholdDistance: 200)
+            let isDirection = mapManager.checkOnRouteDirection(step: currStep, thresholdDirection: 90)
+            
+            offRouteCount = !isDistance || !isDirection ? offRouteCount + 1 : 0
+            if offRouteCount > 0 {
+                await reroute(leg: currentLeg, step: currStep)
+                offRouteCount = 0
+            }
         }
     }
+    // Generates new route and updates current leg with that information
+    public func updateTripAndRoute(stop: any POI) async throws -> Trip {
+        print("adding stop")
+        guard let route = self.navigatingRoute else { throw RerouteError.nilFound }
+        guard let leg = self.navigatingLeg else { throw RerouteError.nilFound }
+        guard let trip = self.navigatingTrip else { throw RerouteError.nilFound }
+        guard let userLocation = mapManager.userLocation else { throw RerouteError.nilFound }
+        var stopCoords = [leg.getStartLocation(), userLocation, leg.getEndLocation()]
+        
+        guard let newRoutes = await mapManager.generateRoute(stop_coords: stopCoords) else { throw RerouteError.nilFound }
+        guard let route = newRoutes.first else { throw RerouteError.nilFound }
+        
+        var newLegs = [NomadLeg]()
+        
+        if let firstLeg = route.legs.first {
+            newLegs.append(firstLeg)
+        }
+        if let secondLeg = route.legs.last {
+            newLegs.append(secondLeg)
+        }
+
+        // append legs to route
+        var all_legs = route.legs
+        guard let leg_index = all_legs.firstIndex(where: { this_leg in
+            this_leg.startCoordinate == leg.startCoordinate
+        }) else { throw RerouteError.nilFound }
+        print(leg_index)
+        all_legs.insert(newLegs[1], at: leg_index)
+        all_legs.insert(newLegs[0], at: leg_index) // MAYBE CHECK ORDER PUT IN
+        self.navigatingRoute!.legs = all_legs
+        
+        var all_stops = trip.getStops()
+        all_stops.insert(stop, at: leg_index)
+        
+        self.navigatingTrip!.stops = all_stops
+        self.navigatingTrip!.route = self.navigatingRoute!
+        
+        self.navigatingLeg = newLegs[0]
+        guard let estimatedStep = mapManager.determineCurrentStep(leg: newLegs[0]) else { throw RerouteError.nilFound }
+        self.navigatingStep = estimatedStep
+        
+        setNavigatingRoute(route: self.navigatingRoute!, trip: self.navigatingTrip!)
+        setNavigatingLeg(leg: self.navigatingLeg!)
+        setNavigatingStep(step: self.navigatingStep!)
+        
+        return navigatingTrip!
+    }
+    
+    enum RerouteError: Error {
+    case nilFound
+    
+    }
+    private func reroute(leg: NomadLeg, step: NomadStep) async {
+        print("reroute")
+        guard let userLocation = mapManager.userLocation else { return }
+        var stopCoords = [userLocation, leg.getEndLocation()]
+        if leg.steps.first!.id != step.id {
+            stopCoords.insert(leg.getStartLocation(), at: 0)
+        }
+        guard let newRoutes = await mapManager.generateRoute(stop_coords: stopCoords) else { return }
+        guard let route = newRoutes.first else { return }
+        
+        var newSteps = [NomadStep]()
+        if let earlyHalf = route.legs.first?.steps {
+            newSteps.append(contentsOf: earlyHalf)
+        }
+        if route.legs.count > 1 {
+            newSteps.append(contentsOf: route.legs[1].steps)
+        }
+        
+        let newLeg = NomadLeg(steps: newSteps)
+        guard let estimatedStep = mapManager.determineCurrentStep(leg: newLeg) else { return }
+//
+//        let oldStepIndex = leg.steps.firstIndex { s in s.id == step.id } ?? 0
+//        var updatedSteps = navigatingLeg?.steps[..<oldStepIndex] ?? []
+//        updatedSteps.append(contentsOf: newLeg.steps)
+//        let updatedLeg = NomadLeg(steps: Array(updatedSteps))
+//                
+        for (i, l) in self.navigatingRoute!.legs.enumerated() {
+            if l.id == leg.id {
+                self.navigatingRoute!.legs[i] = newLeg
+            }
+        }
+        // print("Old Leg: \(self.navigatingLeg!.id), New Leg: \(updatedLeg.id)")
+        self.navigatingLeg = newLeg
+        self.navigatingStep = estimatedStep
+        
+        setNavigatingRoute(route: self.navigatingRoute!, trip: self.navigatingTrip!)
+        setNavigatingLeg(leg: self.navigatingLeg!)
+        setNavigatingStep(step: self.navigatingStep!)
+    }
+    
+    
     func onFirstStepOfLeg() -> Bool {
         guard let current_step = self.navigatingStep else { return false }
         guard let current_leg = self.navigatingLeg else { return false }
@@ -261,7 +394,7 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
         
         let dist = self.assignDistanceToNextManeuver()
-        print(dist)
+        // print(dist)
         let formattedDist = self.getDistanceDescriptor(meters: dist)
         
         guard let man_type = maneuverType else { return "" }
@@ -285,7 +418,7 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     func movingMap(camera: CLLocationCoordinate2D) -> Bool {
         let userLocation = mapManager.userLocation ?? CLLocationCoordinate2D()
-        let variance = 0.001 // about 111 feet
+        let variance = 0.001 // about 111 feet per latitude and longitude
         guard let camera = mapPosition.camera else { return false }
         if abs(userLocation.latitude - camera.centerCoordinate.latitude) > variance || abs(userLocation.longitude - camera.centerCoordinate.longitude) > variance {
             return true

@@ -17,7 +17,7 @@ struct AIAssistantView: View {
            ChatMessagesView(chatViewModel: chatViewModel, dotCount: dotCount, timer: timer)
            
            if !chatViewModel.pois.isEmpty {
-               POICarouselView(chatViewModel: chatViewModel, vm: vm, aiViewModel: aiViewModel)
+               POICarouselView(chatViewModel: chatViewModel, vm: vm, aiViewModel: aiViewModel, addStop: addStop)
                    .padding(.bottom, 0)
            }
            
@@ -78,6 +78,24 @@ struct AIAssistantView: View {
        }
        .background(Color.clear)
     }
+    func addStop(_ stop: any POI) {
+            Task {
+                await vm.addStop(stop: stop)
+                
+                guard let start_loc = vm.current_trip?.getStartLocation() else { return }
+                guard let end_loc = vm.current_trip?.getEndLocation() else { return }
+                guard let all_stops = vm.current_trip?.getStops() else { return }
+                
+                var all_pois: [any POI] = []
+                all_pois.append(start_loc)
+                all_pois.append(contentsOf: all_stops)
+                all_pois.append(end_loc)
+                
+                if let newRoutes = await MapManager.manager.generateRoute(pois: all_pois) {
+                    vm.setTripRoute(route: newRoutes[0])
+                }
+            }
+        }
 }
 
 #Preview {
@@ -209,10 +227,12 @@ struct POICarouselView: View {
     var vm: UserViewModel
     var aiViewModel: AIAssistantViewModel
     
+    var addStop: (any POI) -> Void
+    
     var body: some View {
         TabView {
             ForEach(chatViewModel.pois) { poi in
-                POIDetailView(name: poi.name, address: poi.address, distance: poi.distance, phoneNumber: poi.phoneNumber, image: poi.image, rating: poi.rating, price: poi.price, time: poi.time, latitude: poi.latitude, longitude: poi.longitude, city: poi.city, vm: vm, aiVM: aiViewModel)
+                POIDetailView(name: poi.name, address: poi.address, distance: poi.distance, phoneNumber: poi.phoneNumber, image: poi.image, rating: poi.rating, price: poi.price, time: poi.time, latitude: poi.latitude, longitude: poi.longitude, city: poi.city, vm: vm, aiVM: aiViewModel, addStop: addStop)
                     .padding(.horizontal, 5)
                     .padding(.bottom, 35)
             }

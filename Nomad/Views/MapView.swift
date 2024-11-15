@@ -15,14 +15,9 @@ struct MapView: View {
     @ObservedObject var navManager: NavigationManager = NavigationManager()
     @ObservedObject var mapManager = MapManager.manager
     @State private var cameraDistance: CLLocationDistance = 400
-    @State private var remainingTime: TimeInterval = 0
-    @State private var remainingDistance: Double = 0
-    @State var isSheetPresented = false
 
-
+    let timer = Timer.publish(every: 10, on: .main, in: .common).autoconnect()
     
-    let timer = Timer.publish(every: 7, on: .main, in: .common).autoconnect()
-
     var body: some View {
         ZStack {
             // All views within Map
@@ -52,25 +47,31 @@ struct MapView: View {
                     MapPolyline(polyline)
                         .stroke(.blue, lineWidth: 5)
                 }
-                
-            }.mapControlVisibility(.hidden)
+               }.mapControlVisibility(.hidden)
             MapHUDView(tabSelection: $tabSelection, vm: vm, navManager: navManager, mapManager: mapManager)
         }.environmentObject(navManager)
-        
-        .onChange(of: mapManager.motion, initial: true) { oldMotion, newMotion in
-            if let _ = newMotion.coordinate {
-                navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
-                navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
-                if let camera = navManager.mapPosition.camera {
-                    let movingMap = navManager.movingMap(camera: camera.centerCoordinate)
-                    if !movingMap {
-                        withAnimation {
-                            navManager.updateMapPosition(newMotion)
+               
+            .onChange(of: mapManager.motion, initial: true) { oldMotion, newMotion in
+                if let newLoc = newMotion.coordinate {
+                    if !navManager.destinationReached {
+                    Task {
+                        await navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
+                    }
+                    navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
+
+                    }
+                    
+                    if let camera = navManager.mapPosition.camera {
+                        let movingMap = navManager.movingMap(camera: camera.centerCoordinate)
+                        if !movingMap {
+                            withAnimation {
+                                navManager.updateMapPosition(newMotion)
+                            }
+      
                         }
                     }
                 }
             }
-        }
         .onAppear() {
             let motion = mapManager.motion
             navManager.updateMapPosition(motion)
@@ -78,7 +79,6 @@ struct MapView: View {
             withAnimation {
                 cameraDistance = camera.camera.distance
             }
-            
         }
     }
 }
@@ -148,6 +148,8 @@ struct MapHUDView: View {
                 .padding(.trailing, 5)
                 .padding(.bottom, 20)
                 
+                
+                
             }
             
             Spacer()
@@ -184,8 +186,13 @@ struct MapHUDView: View {
                     }, cancel: { cancelNavigation()}).frame(height: 450)
                         .transition(.move(edge: .bottom))
                 } else {
-                    BottomNavView(routeName: vm.navigatingTrip!.name, expectedTravelTime: mapManager.getRemainingTime(leg: navManager.navigatingLeg!), distance: mapManager.getRemainingDistance(leg: navManager.navigatingLeg!), cancel: cancelNavigation)
-                        .offset(y: 20)
+                    if !navManager.destinationReached {
+                        BottomNavView(routeName: vm.navigatingTrip!.name, expectedTravelTime: mapManager.getRemainingTime(leg: navManager.navigatingLeg!), distance: mapManager.getRemainingDistance(leg: navManager.navigatingLeg!), cancel: cancelNavigation)
+                            .offset(y: 20)
+                    } else {
+                        EndOfLegView(navManager: navManager, continueNavigation: { navManager.goToNextLeg() })
+                        
+                    }
                 }
             }
         }.onAppear {
@@ -200,11 +207,17 @@ struct MapHUDView: View {
                 }
             }
         }
+        .onChange(of: navManager.navigatingStep) { oldValue, newValue in
+            navManager.recenterMap()
+        }
         .onChange(of: speechRecognizer.atlasSaid) { atlasSaid in
             atlasSheetPresented = true
         }
         .sheet(isPresented: $atlasSheetPresented) {
-            AtlasNavigationView(vm: vm)
+            AtlasNavigationView(vm: vm, navManager: navManager)
+                .onAppear {
+                    speechRecognizer.resetTranscript()
+                }
                 .presentationDetents([.medium, .large])
                 .onDisappear {
                     speechRecognizer.pollForAtlas()
@@ -212,11 +225,25 @@ struct MapHUDView: View {
         }
         .onReceive(timer) { _ in
             // reset remaining time and distance
-            if navManager.navigating {
-                self.remainingTime = mapManager.getRemainingTime(leg: navManager.navigatingLeg!)
-                self.remainingDistance = mapManager.getRemainingDistance(leg: navManager.navigatingLeg!)
+            Task {
+                await timerUpdate()
             }
-            // REROUTING SHOULD GO HERE
+        }
+    }
+    
+    private func timerUpdate() async {
+        if navManager.navigating {
+            self.remainingTime = mapManager.getRemainingTime(leg: navManager.navigatingLeg!)
+            self.remainingDistance = mapManager.getRemainingDistance(leg: navManager.navigatingLeg!)
+        }
+        // REROUTING SHOULD GO HERE
+        
+        Task {
+            if !navManager.destinationReached {
+                print("recalibrate")
+                await navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
+                navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
+            }
         }
     }
     private func startNavigation() {
@@ -225,6 +252,9 @@ struct MapHUDView: View {
             navManager.setNavigatingRoute(route: trip.route!, trip: trip)
         }
         navManager.startNavigating()
+        Task {
+            await timerUpdate()
+        }
     }
     private func cancelNavigation() {
         // cancel

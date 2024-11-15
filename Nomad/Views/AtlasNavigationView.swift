@@ -11,6 +11,7 @@ import AVFoundation
 
 struct AtlasNavigationView: View {
     @ObservedObject var vm: UserViewModel
+    @ObservedObject var navManager: NavigationManager
     @State var selectedTab = 0
     @State private var mapboxSetUp: Bool = false
     @State var isListening = false
@@ -18,7 +19,7 @@ struct AtlasNavigationView: View {
     let timer = Timer.publish(every:0.5, on: .main, in: .common).autoconnect()
     
     @ObservedObject var AIVM = AIAssistantViewModel()
-    @ObservedObject var ChatVM = ChatViewModel()
+    @StateObject var ChatVM = ChatViewModel()
     @State private var AIResponse: String? {
         didSet {
             if let response = AIResponse {
@@ -62,7 +63,7 @@ struct AtlasNavigationView: View {
             ChatMessagesView(chatViewModel: ChatVM, dotCount: dotCount, timer: timer)
             
             if !ChatVM.pois.isEmpty {
-                POICarouselView(chatViewModel: ChatVM, vm: vm, aiViewModel: AIVM)
+                POICarouselView(chatViewModel: ChatVM, vm: vm, aiViewModel: AIVM, addStop: addStop)
                     .padding(.bottom, 0)
             }
             
@@ -141,13 +142,6 @@ struct AtlasNavigationView: View {
             handleMicrophonePress()
             speechRecognizer.atlasSaid = false
         }
-//        .onDisappear {
-//            speechRecognizer.stopTranscribing()
-//            speechRecognizer.resetTranscript()
-//            isListening = false
-//            isMicrophone = false
-//        }
-        
     }
     
     
@@ -175,10 +169,21 @@ struct AtlasNavigationView: View {
     func toggleIsLoading() {
         isLoading.toggle()
     }
+    
+    func addStop(_ stop: any POI) {
+        Task {
+            do {
+                let newTrip = try await navManager.updateTripAndRoute(stop: stop)
+                vm.setCurrentTrip(trip: newTrip)
+            } catch {
+                print(error)
+            }
+        }
+    }
 }
 
 #Preview {
-    AtlasNavigationView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")))
+    AtlasNavigationView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")), navManager: NavigationManager())
 }
 struct SoundwaveView: View {
     @ObservedObject var speechRecognizer = SpeechRecognizer.shared

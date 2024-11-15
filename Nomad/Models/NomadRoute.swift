@@ -161,8 +161,12 @@ struct NomadLeg {
     
 }
 
-struct NomadStep {
+struct NomadStep: Equatable {
     let id = UUID()
+    
+    static func ==(lhs: NomadStep, rhs: NomadStep) -> Bool {
+        return lhs.id == rhs.id
+    }
     
     struct Direction {
         var distance: CLLocationDistance
@@ -187,6 +191,9 @@ struct NomadStep {
             self.maneuverType = maneuverType
             self.intersections = intersections
             self.names = names
+            
+            print(self.toString())
+            
         } //The names of the road or path leading from this step’s maneuver to the next step’s maneuver.
         
         init(step: RouteStep) {
@@ -195,6 +202,7 @@ struct NomadStep {
         init() {
             self.init(distance: 500, instructions: "Turn right in 0.4 miles", expectedTravelTime: TimeInterval(50), exitCodes: nil, exitIndex: nil, instructionsDisplayedAlongStep: nil, maneuverDirection: nil, maneuverType: .turn, intersections: nil, names: nil)
         }
+        
         
         func toString() -> String {
             return """
@@ -205,7 +213,7 @@ struct NomadStep {
             Exit Index: \(exitIndex ?? -1)
             Maneuver Type: \(maneuverType.rawValue)
             Maneuver Direction: \(maneuverDirection?.rawValue ?? "NONE")
-            // Number Instructions Displayed Along Step: \(instructionsDisplayedAlongStep?.count)
+            // Number Instructions Displayed Along Step: \(instructionsDisplayedAlongStep)
             Names: \(names ?? [])
             """
             // Intersections: \(intersections ?? [])
