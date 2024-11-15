@@ -30,6 +30,7 @@ struct HighwayBox: View {
 }
 
 struct DirectionView: View {
+    @ObservedObject var navManager: NavigationManager
     var step: NomadStep
     
     private var maneuverType: ManeuverType?
@@ -43,7 +44,8 @@ struct DirectionView: View {
     private var delimiter: String?
     
     
-    init(step: NomadStep) {
+    init(navManager: NavigationManager, step: NomadStep) {
+        self.navManager = navManager
         self.step = step
         if let instruction = step.direction.instructionsDisplayedAlongStep?[0] {
             self.maneuverType = instruction.primaryInstruction.maneuverType
@@ -72,7 +74,7 @@ struct DirectionView: View {
                 VStack(spacing: 20) {
                     getStepIcon(type: maneuverType, direction: maneuverDirection)
                         .font(.system(size: 40))
-                    Text("\(getDistanceDescriptor(meters: step.direction.distance)[0]) ")
+                    Text("\(getDistanceDescriptor(meters: navManager.assignDistanceToNextManeuver())[0])")
                         .font(.title2).bold() + Text("\(getDistanceDescriptor(meters: step.direction.distance)[1])")
                         .font(.title3)
                 }
@@ -113,11 +115,11 @@ struct DirectionView: View {
         let feet = miles * 5280
         
         if feet < 800 {
-            strs.append(String(format: "%d", Int(feet / 100) * 100)) // round feet to nearest 100 ft
+            strs.append(String(format: "%d ", Int(feet / 100) * 100)) // round feet to nearest 100 ft
             strs.append("ft")
             
         } else {
-            strs.append(String(format: "%.1f", miles)) // round miles to nearest 0.1 mi
+            strs.append(String(format: "%.1f ", miles)) // round miles to nearest 0.1 mi
             strs.append("mi")
         }
         return strs
@@ -185,6 +187,6 @@ struct DirectionView: View {
     let maneuverType = ManeuverType.turn
     let direction = NomadStep.Direction(distance: CLLocationDistance(distance), instructions: instructions, expectedTravelTime: TimeInterval(time), exitCodes: exitCodes, exitIndex: exitIndex, instructionsDisplayedAlongStep: nil, maneuverDirection: maneuverDirection, maneuverType: maneuverType, intersections: nil, names: [fromStreet, toStreet])
     
-    DirectionView(step: NomadStep(direction: direction))
+    DirectionView(navManager: NavigationManager(), step: NomadStep(direction: direction))
         .padding(20)
 }

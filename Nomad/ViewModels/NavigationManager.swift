@@ -134,10 +134,11 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         self.showStopSignsAndTraffic(leg: leg)
 
         
-        for step in leg.steps {
-            print(step.direction.printInstructions())
-            print("")
-        }
+        // FOR DEBUGGING VISUAL INSTRUCTIONS
+//        for step in leg.steps {
+//            print(step.direction.printInstructions())
+//            print("")
+//        }
         
     }
     // jump to next leg of route, if no current leg is assigned, go to first leg in current route
@@ -234,6 +235,54 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
         return 0
     }
+    func getStepInstruction() -> String {
+        guard let step = self.navigatingStep else { return "" }
+        guard let instruction = step.direction.instructionsDisplayedAlongStep?[0] else { return "" }
+        let maneuverType = instruction.primaryInstruction.maneuverType
+        let maneuverDirection = instruction.primaryInstruction.maneuverDirection
+        let text = instruction.primaryInstruction.text
+        var delimiter: String?
+        var streetName: String?
+        var img: String?
+        var exitCode: String?
+        for comp in instruction.primaryInstruction.components {
+            switch comp {
+            case .delimiter(let text):
+                delimiter = delimiter?.description
+            case .text(let text):
+                streetName = text.text
+            case .image(let image, _):
+                img = image.imageBaseURL?.description
+            case .exitCode(let text):
+                exitCode = text.text
+            default:
+                continue
+            }
+        }
+        
+        let dist = self.assignDistanceToNextManeuver()
+        print(dist)
+        let formattedDist = self.getDistanceDescriptor(meters: dist)
+        
+        guard let man_type = maneuverType else { return "" }
+        guard let man_direction = maneuverDirection else { return "" }
+        let fin = "In \(formattedDist), \(man_type.rawValue) \(man_direction.rawValue) \(streetName != nil ? "onto \(streetName!)." : ".")"
+        print(fin)
+        return fin
+    }
+    
+    func getDistanceDescriptor(meters: Double) -> String {
+        let miles = meters / 1609.34
+        let feet = miles * 5280
+        
+        if feet < 800 {
+            return String(format: "%d feet", Int(feet / 100) * 100) // round feet to nearest 100 ft
+            
+        } else {
+            return String(format: "%.1f miles", miles) // round miles to nearest 0.1 mi
+        }
+    }
+    
     func movingMap(camera: CLLocationCoordinate2D) -> Bool {
         let userLocation = mapManager.userLocation ?? CLLocationCoordinate2D()
         let variance = 0.001 // about 111 feet

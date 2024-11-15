@@ -39,13 +39,13 @@ class LocationVoiceManager: ObservableObject {
     static let shared = LocationVoiceManager()
     private let synthesizer = AVSpeechSynthesizer()
     
-    func announceLocation(_ locationDescription: String) {
+    func announceInstruction(_ instruction: String) {
         // Stop any ongoing speech
         if synthesizer.isSpeaking {
             synthesizer.stopSpeaking(at: .immediate)
         }
         
-        let utterance = AVSpeechUtterance(string: locationDescription)
+        let utterance = AVSpeechUtterance(string: instruction)
         utterance.rate = 0.5
         utterance.volume = 1.0
         utterance.pitchMultiplier = 1.0
