@@ -24,7 +24,7 @@ struct RoutePreviewView: View {
                     Marker("Start", coordinate: route.getStartLocation())
                     Marker("End", coordinate: route.getEndLocation())
                     if (showStopMarker) {
-                        Marker("Stop Search Location", coordinate: $currentStopLocation.wrappedValue!).tint(.blue)
+                        Marker("Stop Search Location", coordinate: $currentStopLocation.wrappedValue!).tint(.red)
                     }
                     MapPolyline(route.getShape())
                         .stroke(.blue, lineWidth: 5)
