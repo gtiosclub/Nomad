@@ -58,7 +58,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     // Handle location access errors
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("Failed to find user's location: \(error.localizedDescription)")
+        // print("Failed to find user's location: \(error.localizedDescription)")
     }
     
     // Route getters

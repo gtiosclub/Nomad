@@ -16,6 +16,7 @@ struct MapView: View {
     @ObservedObject var mapManager = MapManager.manager
     @State private var cameraDistance: CLLocationDistance = 400
     
+    
     var body: some View {
         ZStack {
             // All views within Map
@@ -42,7 +43,7 @@ struct MapView: View {
                         .stroke(.blue, lineWidth: 5)
                 }
                 
-            }
+            }.mapControlVisibility(.hidden)
             MapHUDView(tabSelection: $tabSelection, vm: vm, navManager: navManager, mapManager: mapManager)
         }
         
@@ -81,8 +82,9 @@ struct MapHUDView: View {
     
     @State private var remainingTime: TimeInterval = 0
     @State private var remainingDistance: Double = 0
-    @State private var isSheetPresented = false
-    
+    @State private var atlasSheetPresented = false
+    @State private var navSheetPresented = false
+
     let timer = Timer.publish(every: 7, on: .main, in: .common).autoconnect()
 
     var body: some View {
@@ -108,7 +110,7 @@ struct MapHUDView: View {
                     Spacer()
                     
                     Button {
-                        isSheetPresented = true
+                        atlasSheetPresented = true
                     } label: {
                         ZStack {
                             // White Circle with Drop Shadow
@@ -137,67 +139,40 @@ struct MapHUDView: View {
             }
             
             Spacer()
-            Button {
-                self.tabSelection = 2
-            } label: {
-                
-                HStack(spacing: 30) {
-                    Image(systemName: "chevron.left") // hidden, used for centering
-                        .font(.system(size: 25))
-                        .foregroundStyle(.clear)
-                    VStack(spacing: 15) {
-                        Text("No Trip in Progress").bold()
-                        Text("Select or create a new trip\n from the \"Plan\" tab")
-                    }
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 25))
+            if vm.navigatingTrip == nil {
+                Button {
+                    self.tabSelection = 2
+                } label: {
+                    
+                    HStack(spacing: 30) {
+                        Image(systemName: "chevron.left") // hidden, used for centering
+                            .font(.system(size: 25))
+                            .foregroundStyle(.clear)
+                        VStack(spacing: 15) {
+                            Text("No Trip in Progress").bold()
+                            Text("Select or create a new trip\n from the \"Plan\" tab")
+                        }
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 25))
+                            .foregroundStyle(.white)
+                    }.multilineTextAlignment(.center)
+                        .padding(20)
+                        .frame(maxWidth: .infinity, minHeight: 120, idealHeight: 120)
+                        .background(Color.nomadDarkBlue)
                         .foregroundStyle(.white)
-                }.multilineTextAlignment(.center)
-                    .padding(20)
-                    .frame(maxWidth: .infinity, minHeight: 120, idealHeight: 120)
-                    .background(Color.nomadDarkBlue)
-                    .foregroundStyle(.white)
-                    .cornerRadius(20)
-                    .padding(.horizontal, 5)
-                    .padding(.vertical, 5)
-                    .shadow(color: .gray.opacity(0.8), radius: 8, x: 0, y: 5)
+                        .cornerRadius(20)
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 5)
+                        .shadow(color: .gray.opacity(0.8), radius: 8, x: 0, y: 5)
+                }
+            } else {
+                if !navManager.navigating {
+                    BeginningNavigationView(vm: vm, navManager: navManager, mapManager: mapManager, startNavigation: {
+                        startNavigation()
+                    }, cancel: { cancelNavigation()}).frame(height: 450)
+                        .transition(.move(edge: .bottom))
+                }
             }
-//            if !navManager.navigating {
-//                Button {
-//                    if navManager.navigatingRoute == nil {
-//                        if let trip = vm.navigatingTrip {
-//                            if let route = trip.route {
-//                                navManager.setNavigatingRoute(route: route)
-//                                navManager.startNavigating()
-//                            }
-//                        }
-//                    } else {
-//                        navManager.startNavigating()
-//                    }
-//                } label: {
-//                    Text("Start Navigating")
-//                        .padding()
-//                        .background(.blue)
-//                        .foregroundStyle(.white)
-//                        .padding()
-//                }
-//            } else {
-//                HStack(spacing: 100) {
-//                    VStack {
-//                        Text("\(formattedRemainingTime())")
-//                            .font(.largeTitle)
-//                        Text("hrs")
-//                    }
-//                    VStack {
-//                        Text("\(formattedRemainingDistance())")
-//                            .font(.largeTitle)
-//                        Text("mi")
-//                    }
-//                }.padding()
-//                    .frame(maxWidth: .infinity, idealHeight: 150)
-//                    .background(.white)
-//                
-//            }
         }.onChange(of: vm.navigatingTrip) { old, new in
             if let newTrip = new {
                 if let newRoute = newTrip.route {
@@ -205,7 +180,7 @@ struct MapHUDView: View {
                 }
             }
         }
-        .sheet(isPresented: $isSheetPresented) {
+        .sheet(isPresented: $atlasSheetPresented) {
             AtlasNavigationView(vm: vm)
                 .presentationDetents([.medium, .large])
         }
@@ -215,10 +190,21 @@ struct MapHUDView: View {
                 self.remainingTime = mapManager.getRemainingTime(leg: navManager.navigatingLeg!)
                 self.remainingDistance = mapManager.getRemainingDistance(leg: navManager.navigatingLeg!)
             }
-            
             // REROUTING SHOULD GO HERE
-            
         }
+    }
+    private func startNavigation() {
+        // start
+        navManager.setNavigatingRoute(route: vm.navigatingTrip!.route!)
+        navManager.startNavigating()
+    }
+    private func cancelNavigation() {
+        // cancel
+        vm.navigatingTrip = nil
+        navManager.navigatingRoute = nil
+        navManager.navigatingLeg = nil
+        navManager.navigatingStep = nil
+        navManager.navigating = false
     }
     private func formattedRemainingTime() -> String {
         let seconds = Int(navManager.remainingTime ?? 0)

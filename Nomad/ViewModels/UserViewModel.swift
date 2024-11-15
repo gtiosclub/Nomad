@@ -236,7 +236,7 @@ class UserViewModel: ObservableObject {
         
         var queryItems: [URLQueryItem] = []
         
-        print(searchString)
+        // print(searchString)
         
         if (searchString != "") {
             print("Searching via search bar")

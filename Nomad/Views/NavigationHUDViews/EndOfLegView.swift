@@ -106,9 +106,8 @@ struct POIArrivedView: View {
                     .lineLimit(3) // Allow unlimited lines
                     .multilineTextAlignment(.leading)
                 
-                // Phone Button
-                
             }
+            Spacer()
         }.padding()
     }
 }
