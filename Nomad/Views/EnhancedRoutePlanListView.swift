@@ -69,7 +69,7 @@ struct EnhancedRoutePlanListView: View {
         .padding(.top, isEditing ? -67 : -30)
         .padding(.vertical, 30)
         .frame(maxWidth: UIScreen.main.bounds.width - 40)
-        .background(Color.white)
+        .background(Color.nomadLightBlue)
         .cornerRadius(10)
         .shadow(radius: 5)
         .onAppear {
@@ -90,9 +90,9 @@ struct EnhancedRoutePlanListView: View {
         let minsLeft = Int(new_duration.truncatingRemainder(dividingBy: 60))
         let hours = Int(new_duration / 60)
         if hours > 0 {
-            return "\(Int(new_duration / 60)) HR \(Int(minsLeft)) MIN DRIVE"
+            return "\(Int(new_duration / 60)) HR \(Int(minsLeft)) MIN"
         } else {
-            return "\(Int(minsLeft)) MIN DRIVE"
+            return "\(Int(minsLeft)) MIN"
         }
     }
     
@@ -165,13 +165,18 @@ struct EnhancedRoutePlanListView: View {
             VStack(alignment: .leading, spacing: 0) {
                 // Drive Time
                 if !isEditing, let time = time {
-                    Text(formatTimeDuration(duration: time))
-                        .font(.caption)
-                        .foregroundColor(.black)
-                        .padding(.top, 10)
-                        .padding(.bottom, 10)
-                        .bold()
-                        .frame(height: isEditing ? 40 : nil)
+                    HStack {
+                        Image(systemName: "car.side")
+                            .font(.system(size: 12))
+                        
+                        Text(formatTimeDuration(duration: time))
+                            .font(.caption)
+                            .foregroundColor(.black)
+                            .padding(.top, 10)
+                            .padding(.bottom, 10)
+                            .bold()
+                            .frame(height: isEditing ? 40 : nil)
+                    }
                 }
                 if isEditing {
                     Color.clear
@@ -252,14 +257,11 @@ struct EnhancedRoutePlanListView: View {
                                 .font(.system(size: 16))
                                 .frame(maxWidth: 60)
                                 .frame(maxHeight: 30)
-                                .background(Color.nomadLightBlue)
+                                .background(Color.nomadDarkBlue)
                                 .foregroundColor(.black)
                                 .cornerRadius(10)
+                                .shadow(color: .black.opacity(0.5), radius: 5, y: 3)
                         }
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.black, lineWidth: 0.5)
-                        )
                         .offset(x: 3, y: -31)
                         .padding(0)
                     }

@@ -192,6 +192,7 @@ struct ExploreTripsView: View {
         .onChange(of: vm.user.trips, initial: true) { old, new in
             current_trips = vm.user.trips
         }
+        .onChange(of: vm.current_trip, initial: true) {}
     }
     
     struct SectionHeaderView: View {

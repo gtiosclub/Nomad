@@ -85,7 +85,17 @@ class UserViewModel: ObservableObject {
     
     func modifyTripInFirebase() async -> Bool {
         if let trip = current_trip {
-            if await fbVM.modifyTrip(tripID: trip.id, trip: trip) {
+            var hasDriven = 2
+            
+            if user.pastTrips.contains(where: { $0.id == current_trip!.id }) {
+                hasDriven = 0
+            }
+            
+            if user.currentTrip.contains(where: { $0.id == current_trip!.id }) {
+                hasDriven = 0
+            }
+            
+            if await fbVM.modifyTrip(tripID: trip.id, trip: trip, hasDriven: hasDriven) {
                 return true
             }
         }

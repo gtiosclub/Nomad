@@ -36,35 +36,67 @@ struct PreviewRouteView: View {
                         .padding(.leading)
                         
                     HStack {
-                        VStack {
-                            Text(formatTimeDuration(duration: trip.route?.route?.expectedTravelTime ?? TimeInterval(0)))
-                                .padding(.bottom, 0)
-                                .font(.system(size: 22))
-                            
+                        VStack(alignment: .leading) {
                             Text("Time")
                                 .padding(.top, 0)
                                 .font(.system(size: 14))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(.white)
+                            
+                            Text(formatTimeDuration(duration: trip.route?.route?.expectedTravelTime ?? TimeInterval(0)))
+                                .padding(.bottom, 0)
+                                .font(.system(size: 22))
+                                .foregroundStyle(.white)
+                            
+                            Spacer()
+                            
+                            Text("Start")
+                                .padding(.top, 0)
+                                .font(.system(size: 14))
+                                .foregroundStyle(.white)
+                            
+                            HStack {
+                                Text("\(convertDateToShortFormat(trip.getStartDate())),")
+                                    .padding(.bottom, 0)
+                                    .font(.system(size: 20))
+                                    .foregroundStyle(.white)
+                                
+                                Text(trip.getStartTime())
+                                    .padding(.bottom, 0)
+                                    .font(.system(size: 20))
+                                    .foregroundStyle(.white)
+                            }
                         }
                         .padding(.horizontal)
                         
-                        VStack {
-                            Text(formatDistance(distance: trip.route?.totalDistance() ?? 0))
-                                .padding(.bottom, 0)
-                                .font(.system(size: 22))
-                            
+                        VStack(alignment: .leading) {
                             Text("Distance")
                                 .padding(.top, 0)
                                 .font(.system(size: 14))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(.white)
+                            
+                            Text(formatDistance(distance: trip.route?.totalDistance() ?? 0))
+                                .padding(.bottom, 0)
+                                .font(.system(size: 22))
+                                .foregroundStyle(.white)
+                            
+                            Spacer()
+                            
+                            Text("End")
+                                .padding(.top, 0)
+                                .font(.system(size: 14))
+                                .foregroundStyle(.white)
+                            
+                            Text(convertDateToShortFormat(trip.getEndDate()))
+                                .padding(.bottom, 0)
+                                .font(.system(size: 20))
+                                .foregroundStyle(.white)
                         }
                         .padding(.horizontal)
                     }
                     .padding()
-                    .padding(.trailing, 10)
-                    .padding(.leading, 20)
-                    .background(Color.nomadLightBlue)
-                    .cornerRadius(8)
+                    .background(Color.nomadDarkBlue)
+                    .cornerRadius(10)
+                    .padding(.horizontal, 10)
                     .onChange(of: vm.times) {}
                     
                     Text("Route Details")
@@ -79,7 +111,7 @@ struct PreviewRouteView: View {
                         EnhancedRoutePlanListView(vm: vm)
                             .padding(.top, 0)
                             .padding(.horizontal)
-                            .padding(.bottom, 20)
+                            .padding(.bottom, 30)
                     } else {
                         Rectangle()
                             .fill(Color.gray.opacity(0.3))
@@ -90,17 +122,17 @@ struct PreviewRouteView: View {
                     
                     VStack {
                         if !isCommunityTrip {
-                            Text("Finalize Your Route")
+                            Text("Finalize Your Trip")
                                 .font(.headline)
                                 .fontWeight(.bold)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.leading)
                             
                             VStack(alignment: .leading) {
-                                Text("Route Name")
+                                Text("Name")
                                     .font(.body)
                                     .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.top, 10)
+                                    .padding(.top, 6)
                                     .padding(.leading)
                                     .padding(.bottom, 0)
                                 
@@ -109,7 +141,7 @@ struct PreviewRouteView: View {
                                     .padding(.horizontal, 20)
                                     .padding(.bottom)
                                 
-                                Text("Route Visibility")
+                                Text("Community Visibility")
                                     .font(.body)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.leading)
@@ -149,7 +181,21 @@ struct PreviewRouteView: View {
                                 Spacer(minLength: 20)
                                                                 
                                 Button("Start") {
-                                    vm.startTrip(trip: trip)
+                                    vm.setTripTitle(newTitle: $tripTitle.wrappedValue)
+                                    vm.setIsPrivate(isPrivate: $privacy.wrappedValue == "Private")
+                                    
+                                    var successful: Bool = false
+                                    Task {
+                                        if !letBack {
+                                            successful = await vm.addTripToFirebase()
+                                        } else {
+                                            successful = await vm.modifyTripInFirebase()
+                                        }
+                                        
+                                        if successful {
+                                            vm.startTrip(trip: trip)
+                                        }
+                                    }
                                 }
                                 .padding()
                                 .padding(.horizontal, 15)
@@ -228,6 +274,20 @@ struct PreviewRouteView: View {
             }
             .navigationBarBackButtonHidden(!letBack)
             .toolbar(letBack ? .visible : .hidden, for: .navigationBar)
+        }
+    }
+    
+    func convertDateToShortFormat(_ dateString: String) -> String {
+        let inputFormatter = DateFormatter()
+        inputFormatter.dateFormat = "MM-dd-yyyy"
+        
+        let outputFormatter = DateFormatter()
+        outputFormatter.dateFormat = "MMM. d"
+        
+        if let date = inputFormatter.date(from: dateString) {
+            return outputFormatter.string(from: date)
+        } else {
+            return "" // Return nil if the date string is invalid
         }
     }
         
