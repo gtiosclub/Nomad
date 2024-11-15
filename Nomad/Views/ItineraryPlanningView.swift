@@ -223,7 +223,7 @@ struct ItineraryPlanningView: View {
                         }
                     }) {
                         if !generatingRoute && !use_current_trip {
-                            Label("Generate with Atlas", systemImage: "wand.and.sparkles")
+                            Label(isLoading ? "Generating with Atlas" : "Generate with Atlas", systemImage: "wand.and.sparkles")
                                 .font(.headline)
                                 .foregroundColor(.white)
                                 .padding()
