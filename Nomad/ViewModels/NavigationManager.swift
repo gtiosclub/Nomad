@@ -23,6 +23,7 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var navigatingRoute: NomadRoute? = nil
     @Published var navigatingLeg: NomadLeg? = nil
     @Published var navigatingStep: NomadStep? = nil
+    @Published var offRouteCount: Int = 0
     @Published var distanceToNextManeuver: Double?
     var nextStepManeuver: NomadStep? {
         guard let navStep = navigatingStep else { return nil }
@@ -204,7 +205,8 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
     }
     
-    func recalibrateCurrentStep() {
+    // TODO: Modify to make both distance and direction checks to re-route if so
+    func recalibrateCurrentStep() async {
         guard let currentLeg = self.navigatingLeg else { return }
         guard let estimatedStep = mapManager.determineCurrentStep(leg: currentLeg) else { return }
         if mapManager.checkDestinationReached(leg: currentLeg) {
@@ -213,7 +215,48 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         if estimatedStep.id != navigatingStep?.id {
             setNavigatingStep(step: estimatedStep)
         }
+        
+        // rerouting if step isn't working
+        if let currStep = navigatingStep {
+            let isDistance = mapManager.checkOnRouteDistance(step: currStep, thresholdDistance: 500)
+            let isDirection = mapManager.checkOnRouteDirection(step: currStep, thresholdDirection: 90)
+            
+            offRouteCount = !isDistance || !isDirection ? offRouteCount + 1 : 0
+            if offRouteCount == 2 {
+                await reroute(leg: currentLeg, step: estimatedStep)
+                offRouteCount = 0
+            }
+        }
     }
+    // Generates new route and updates current leg with that information
+    private func reroute(leg: NomadLeg, step: NomadStep) async {
+        guard let userLocation = mapManager.userLocation else { return }
+        let stopCoords = [userLocation, leg.getEndLocation()]
+        guard let newRoutes = await mapManager.generateRoute(stop_coords: stopCoords) else { return }
+        
+        guard let newLeg = newRoutes.first?.legs.first else { return }
+        guard let estimatedStep = mapManager.determineCurrentStep(leg: newLeg) else { return }
+        
+        let oldStepIndex = leg.steps.firstIndex { s in s.id == step.id } ?? 0
+        var updatedSteps = navigatingLeg?.steps[..<oldStepIndex] ?? []
+        updatedSteps.append(contentsOf: newLeg.steps)
+        let updatedLeg = NomadLeg(steps: Array(updatedSteps))
+                
+        for (i, l) in self.navigatingRoute!.legs.enumerated() {
+            if l.id == leg.id {
+                self.navigatingRoute!.legs[i] = updatedLeg
+            }
+        }
+        print("Old Leg: \(self.navigatingLeg!.id), New Leg: \(updatedLeg.id)")
+        self.navigatingLeg = updatedLeg
+        self.navigatingStep = estimatedStep
+        
+        setNavigatingRoute(route: self.navigatingRoute!)
+        setNavigatingLeg(leg: self.navigatingLeg!)
+        setNavigatingStep(step: self.navigatingStep!)
+    }
+    
+    
     func onFirstStepOfLeg() -> Bool {
         guard let current_step = self.navigatingStep else { return false }
         guard let current_leg = self.navigatingLeg else { return false }

@@ -53,6 +53,11 @@ struct MapView: View {
                
             .onChange(of: mapManager.motion, initial: true) { oldMotion, newMotion in
                 if let newLoc = newMotion.coordinate {
+                    Task {
+                        await navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
+                    }
+                    navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
+
                     
                     if !navManager.destinationReached {
                         navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
