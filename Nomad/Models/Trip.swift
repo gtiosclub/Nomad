@@ -10,18 +10,19 @@ import MapKit
 
 class Trip: Identifiable, Equatable, ObservableObject {
     var id: String
-    var route: NomadRoute?
-    private var stops: [any POI]
+    @Published var route: NomadRoute?
+    @Published var stops: [any POI]
     private var start_location: any POI
     private var end_location: any POI
     private var start_date: String
     private var end_date: String
     private var created_date: String
-    private var modified_date: String
+    @Published var modified_date: String
     private var start_time: String
     @Published var coverImageURL: String
-    var name: String
+    @Published var name: String
     var isPrivate: Bool = true
+    private var images: [String]
 
     init(route: NomadRoute? = nil, start_location: any POI, end_location: any POI, start_date: String = "", end_date: String = "", stops: [any POI] = [], start_time: String = "8:00 AM", name: String = "", coverImageURL: String = "") {
         self.route = route
@@ -36,53 +37,67 @@ class Trip: Identifiable, Equatable, ObservableObject {
         self.start_time = start_time
         self.coverImageURL = coverImageURL
         self.name = name
+        self.images = []
         if coverImageURL.isEmpty {
             //print("find image for \(end_location.name)")
             Trip.getCityImage(location: end_location) { imageURL in
                 DispatchQueue.main.async {
                     self.coverImageURL = imageURL
+                    self.updateModifiedDate()
                 }
             }
         }
-//        if coverImageURL.isEmpty {
-//            Task {
-//                self.coverImageURL = await Trip.getCityImageAsync(location: end_location)
-//            }
-//        }
+        
     }
     
-//    func generateRoute() async {
-//        var pois = [self.getStartLocation()]
-//        pois.append(contentsOf: self.getStops())
-//        pois.append(self.getEndLocation())
-//        if let routes = await RootView.mapManager.generateRoute(pois: pois) {
-//            self.setRoute(route: routes[0]) // set main route
-//        }
-//    }
-//    
-//    func setCoverImageURL(newURL: String) {
-//        self.coverImageURL = newURL
-//        self.updateModifiedDate()
-//    }
+    init(id: String, start_location: any POI, end_location: any POI, start_date: String, end_date: String, created_date: String, modified_date: String, stops: [any POI], start_time: String, name: String, isPrivate: Bool) {
+        self.id = id
+        self.start_location = start_location
+        self.end_location = end_location
+        self.start_date = start_date
+        self.start_time = start_time
+        self.end_date = end_date
+        self.stops = stops
+        self.name = name
+        self.isPrivate = isPrivate
+        self.created_date = created_date
+        self.modified_date = modified_date
+        self.coverImageURL = ""
+        self.images = []
+        
+        if self.start_location.imageUrl?.isEmpty ?? true {
+            Trip.getCityImage(location: start_location) { imageURL in
+                DispatchQueue.main.async {
+                    self.start_location.imageUrl = imageURL
+                    self.updateModifiedDate()
+                }
+            }
+        }
+        
+        if coverImageURL.isEmpty {
+            Trip.getCityImage(location: end_location) { imageURL in
+                DispatchQueue.main.async {
+                    self.coverImageURL = imageURL
+                    self.end_location.imageUrl = imageURL
+                    self.updateModifiedDate()
+                }
+            }
+        }
+    }
     
-    @MainActor
     static func getCityImageAsync(location: any POI) async -> String {
         var search_city: String = ""
-        if let city = location.getCity() {
+        if let city = location.getCity(), !city.isEmpty {
             search_city = city
         } else {
             let location_split = location.getAddress().split(separator: ",")
             if location_split.count > 1 {
-                search_city = location_split[1].description
+                search_city = location_split[1].description.trimmingCharacters(in: .whitespacesAndNewlines)
             }
         }
         
-        let urlString = "https://pixabay.com/api/?key=46410552-0c1561d54d98701d038092a47&q=\(search_city)-city-scenic&image_type=photo"
-        
-        guard let url = URL(string: urlString) else {
-            print("Invalid URL")
-            return ""
-        }
+        print("Finding cover image for \(search_city)")
+        let url = URL(string: "https://pixabay.com/api/?key=46410552-0c1561d54d98701d038092a47&q=\(search_city)-city-scenic&image_type=photo")!
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
@@ -114,16 +129,17 @@ class Trip: Identifiable, Equatable, ObservableObject {
     
     static func getCityImage(location: any POI, completion: @escaping (String) -> Void) {
         var search_city: String = ""
-        if let city = location.getCity() {
+        if let city = location.getCity(), !city.isEmpty {
             search_city = city
         } else {
             let location_split = location.getAddress().split(separator: ",")
             if location_split.count > 1 {
-                search_city = location_split[1].description
+                search_city = location_split[1].description.trimmingCharacters(in: .whitespacesAndNewlines)
             }
         }
         
-        let url = URL(string: "https://pixabay.com/api/?key=46410552-0c1561d54d98701d038092a47&q=\(search_city)-city-GA-scenic&image_type=photo")!
+        //print("Finding cover image for \(search_city)")
+        let url = URL(string: "https://pixabay.com/api/?key=46410552-0c1561d54d98701d038092a47&q=\(search_city)-city-scenic&image_type=photo")!
         
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
@@ -170,7 +186,9 @@ class Trip: Identifiable, Equatable, ObservableObject {
     }
     
     func updateModifiedDate() {
-        self.modified_date = Trip.getCurrentDateTime()
+        DispatchQueue.main.async {
+            self.modified_date = Trip.getCurrentDateTime()
+        }
     }
     
     static func getCurrentDateTime() -> String {
@@ -193,6 +211,10 @@ class Trip: Identifiable, Equatable, ObservableObject {
 //        }
     }
     
+    func getModifyDate() -> String {
+        return self.modified_date
+    }
+    
     func setStartDate(newDate: String) {
         self.start_date = newDate
         self.updateModifiedDate()
@@ -201,6 +223,10 @@ class Trip: Identifiable, Equatable, ObservableObject {
     func setEndDate(newDate: String) {
         self.end_date = newDate
         self.updateModifiedDate()
+    }
+    
+    func getCreatedDate() -> String {
+        return self.created_date
     }
     
     func setStartTime(newTime: String) {
@@ -225,6 +251,17 @@ class Trip: Identifiable, Equatable, ObservableObject {
         self.updateModifiedDate()
     }
     
+    func removeStop(stopId: String) {
+        if let index = self.stops.firstIndex(where: { $0.id == stopId }) {
+            self.stops.remove(at: index)
+        }
+        self.updateModifiedDate()
+    }
+    
+    func getStop(stopId: String) -> (any POI)? {
+        return stops.first { $0.id == stopId }
+    }
+    
     func getStops() -> [any POI] {
         return stops
     }
@@ -237,15 +274,15 @@ class Trip: Identifiable, Equatable, ObservableObject {
         return end_location
     }
 
-    func getStartDate() -> String? {
+    func getStartDate() -> String {
         return start_date
     }
 
-    func getEndDate() -> String? {
+    func getEndDate() -> String {
         return end_date
     }
     
-    func getStartTime() -> String? {
+    func getStartTime() -> String {
         return start_time
     }
 
@@ -255,6 +292,7 @@ class Trip: Identifiable, Equatable, ObservableObject {
     
     func setRoute(route: NomadRoute) {
         self.route = route
+        self.updateModifiedDate()
     }
     
     func getRoute() -> NomadRoute? {
@@ -287,5 +325,18 @@ class Trip: Identifiable, Equatable, ObservableObject {
     
     func getEndLocationCoordinates() -> CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: end_location.latitude, longitude: end_location.longitude)
+    }
+    
+    func reorderStops(fromOffsets: IndexSet, toOffset: Int) {
+        self.stops.move(fromOffsets: fromOffsets, toOffset: toOffset)
+        self.updateModifiedDate()
+    }
+    
+    func getImages() -> [String] {
+        return self.images
+    }
+    
+    func setImages(images: [String]) {
+        self.images = images
     }
 }

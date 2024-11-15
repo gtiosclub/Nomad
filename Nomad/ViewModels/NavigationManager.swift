@@ -19,6 +19,7 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @ObservedObject var mapManager = MapManager.manager
     // Route State Info
     @Published var navigating = false
+    @Published var navigatingTrip: Trip? = nil
     @Published var navigatingRoute: NomadRoute? = nil
     @Published var navigatingLeg: NomadLeg? = nil
     @Published var navigatingStep: NomadStep? = nil
@@ -39,6 +40,21 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var mapMarkers: [MapMarker] = []
     @Published var mapPolylines: [MKPolyline] = []
     @Published var destinationReached = false
+    
+    var remainingTime: TimeInterval? {
+        if let leg = navigatingLeg {
+            return mapManager.getRemainingTime(leg: leg)
+        } else {
+            return nil
+        }
+    }
+    var remainingDistance: Double? {
+        if let leg = navigatingLeg {
+            return mapManager.getRemainingDistance(leg: leg)
+        } else {
+            return nil
+        }
+    }
     
     // Map UI Parameters
     @Published var mapPosition: MapCameraPosition = .userLocation(fallback: .camera(MapCamera(centerCoordinate: CLLocationCoordinate2D(latitude: .zero, longitude: .zero), distance: 0)))
@@ -61,24 +77,40 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             self.navigating = true
         }
     }
-    func setNavigatingRoute(route: NomadRoute) {
+    func setNavigatingRoute(route: NomadRoute, trip: Trip) {
+        print("Set navigating route")
         self.navigatingRoute = route
+        self.navigatingTrip = trip
         self.mapPolylines.removeAll()
         self.mapMarkers.removeAll()
         
-        self.showPolyline(route: navigatingRoute!)
+        let stops = trip.getStops()
         
-        for leg in route.legs {
-            for step in leg.steps {
-                if let intersections = step.direction.intersections {
-                    for intersection in intersections {
-                        if intersection.trafficSignal == true {
-                            showMarker("Traffic Light", coordinate: intersection.location, icon: .trafficLight)
-                        }
-                        
-                        if intersection.stopSign == true {
-                            showMarker("Stop Sign", coordinate: intersection.location, icon: .stopSign)
-                        }
+        showPolyline(route: route)
+        showStopSignsAndTraffic(leg: route.legs[0])
+        showMarker(trip.getStartLocation().name, coordinate: route.getStartLocation(), icon: .pin)
+        for i in 0..<route.legs.count - 1 {
+            showMarker(stops[i].name, coordinate: route.legs[i].getEndLocation(), icon: .pin)
+            if i > 0 {
+                showStopSignsAndTraffic(leg: route.legs[i])
+            }
+        }
+        if route.legs.count > 1 {
+            showMarker(trip.getEndLocation().name, coordinate: route.getEndLocation(), icon: .pin)
+            showStopSignsAndTraffic(leg: route.legs.last!)
+        }
+    }
+    
+    func showStopSignsAndTraffic(leg: NomadLeg) {
+        for step in leg.steps {
+            if let intersections = step.direction.intersections {
+                for intersection in intersections {
+                    if intersection.trafficSignal == true {
+                        showMarker("traffic", coordinate: intersection.location, icon: .trafficLight)
+                    }
+                    
+                    if intersection.stopSign == true {
+                        showMarker("stop", coordinate: intersection.location, icon: .stopSign)
                     }
                 }
             }
@@ -87,9 +119,27 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     func setNavigatingLeg(leg: NomadLeg) {
         self.navigatingLeg = leg
-        for step in leg.steps {
-            print("\(step.direction.instructions) in \(step.direction.distance)")
-        }
+        self.mapPolylines.removeAll()
+        self.mapMarkers.removeAll()
+        
+        let leg_index = navigatingRoute!.legs.firstIndex(where: { this_leg in
+            this_leg.id == leg.id
+        })!
+        let stops = navigatingTrip!.getStops()
+        let start_stop = leg_index == 0 ? navigatingTrip!.getStartLocation() : stops[leg_index]
+        let end_stop = leg_index + 1 >= stops.count ? navigatingTrip!.getEndLocation() : stops[leg_index]
+        
+        self.showMarker(start_stop.name, coordinate: leg.getStartLocation(), icon: .pin)
+        self.showMarker(end_stop.name, coordinate: leg.getEndLocation(), icon: .pin)
+        self.showPolyline(leg: leg)
+        self.showStopSignsAndTraffic(leg: leg)
+
+        
+        // FOR DEBUGGING VISUAL INSTRUCTIONS
+//        for step in leg.steps {
+//            print(step.direction.printInstructions())
+//            print("")
+//        }
         
     }
     // jump to next leg of route, if no current leg is assigned, go to first leg in current route
@@ -156,17 +206,13 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     // UI GETTERS
     func assignDistanceToNextManeuver() -> Double {
-        print("1")
         guard let currentStep = self.navigatingStep else { return -1 }
-        print("2")
         let currLoc = mapManager.getClosestCoordinate(step: currentStep) // closest route coordinate to user location
         guard let coord_index = currentStep.getCoordinates().firstIndex(where: { coord in
             coord == currLoc
         }) else { return -1 }
-        print("3")
         let total_coord_count = currentStep.getCoordinates().count
         let distance = (Double(total_coord_count - coord_index)/Double(total_coord_count)) * currentStep.direction.distance
-        print(distance)
         return distance
     }
     func getNavBearing(motion: Motion) -> Double {
@@ -198,9 +244,57 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
         return 0
     }
+    func getStepInstruction() -> String {
+        guard let step = self.navigatingStep else { return "" }
+        guard let instruction = step.direction.instructionsDisplayedAlongStep?[0] else { return "" }
+        let maneuverType = instruction.primaryInstruction.maneuverType
+        let maneuverDirection = instruction.primaryInstruction.maneuverDirection
+        let text = instruction.primaryInstruction.text
+        var delimiter: String?
+        var streetName: String?
+        var img: String?
+        var exitCode: String?
+        for comp in instruction.primaryInstruction.components {
+            switch comp {
+            case .delimiter(let text):
+                delimiter = delimiter?.description
+            case .text(let text):
+                streetName = text.text
+            case .image(let image, _):
+                img = image.imageBaseURL?.description
+            case .exitCode(let text):
+                exitCode = text.text
+            default:
+                continue
+            }
+        }
+        
+        let dist = self.assignDistanceToNextManeuver()
+        print(dist)
+        let formattedDist = self.getDistanceDescriptor(meters: dist)
+        
+        guard let man_type = maneuverType else { return "" }
+        guard let man_direction = maneuverDirection else { return "" }
+        let fin = "In \(formattedDist), \(man_type.rawValue) \(man_direction.rawValue) \(streetName != nil ? "onto \(streetName!)." : ".")"
+        print(fin)
+        return fin
+    }
+    
+    func getDistanceDescriptor(meters: Double) -> String {
+        let miles = meters / 1609.34
+        let feet = miles * 5280
+        
+        if feet < 800 {
+            return String(format: "%d feet", Int(feet / 100) * 100) // round feet to nearest 100 ft
+            
+        } else {
+            return String(format: "%.1f miles", miles) // round miles to nearest 0.1 mi
+        }
+    }
+    
     func movingMap(camera: CLLocationCoordinate2D) -> Bool {
         let userLocation = mapManager.userLocation ?? CLLocationCoordinate2D()
-        let variance = 0.001 // about 111 feet
+        let variance = 0.001 // about 111 feet per latitude and longitude
         guard let camera = mapPosition.camera else { return false }
         if abs(userLocation.latitude - camera.centerCoordinate.latitude) > variance || abs(userLocation.longitude - camera.centerCoordinate.longitude) > variance {
             return true

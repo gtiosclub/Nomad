@@ -9,14 +9,17 @@ import SwiftUI
 
 struct RecapView: View {
     @ObservedObject var vm: UserViewModel
+//    @ObservedObject var firebaseVM: FirebaseViewModel
     
     var body: some View {
         NavigationStack {
             VStack {
-                Text("Let's see where you've been!")
-                    .font(.system(size: 18, weight: .semibold))
-                    .padding(.bottom, 20)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                HStack{
+                    Text("Let's see where you've been!")
+                        .font(.system(size: 18, weight: .semibold))
+                        .padding(.bottom, 20)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
                 let columns = [GridItem(.flexible(), spacing: 20), GridItem(.flexible(), spacing: 10)]
                 LazyVGrid(columns: columns, spacing: 20) {
                     ForEach(vm.getTrips()) { trip in
@@ -85,6 +88,8 @@ struct CardView: View, Identifiable {
         }
     }
 }
+
+
 
 #Preview {
     RecapView(vm: .init(user: User(id: "89379", name: "austin", trips: [               Trip(start_location: Restaurant(address: "848 Spring Street, Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy, Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)], name: "ATL to Nashville", coverImageURL: "https://pixabay.com/get/g396fa4b9bb9c1731092f12dcf2bb686fc52caaa5dc7a6f7a9edafe2c402bfe67b1a3affcdae0731b43338a151f0d3b21_640.jpg"),

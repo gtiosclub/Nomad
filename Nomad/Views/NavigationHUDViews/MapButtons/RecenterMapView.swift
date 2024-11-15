@@ -13,12 +13,14 @@ struct RecenterMapView: View {
         Button {
             recenterMap()
         } label: {
-            ZStack {
-                Circle()
-                    .foregroundStyle(.gray)
-                Image(systemName: "location.north.circle")
-                    .resizable()
-                    .foregroundStyle(.black)
+            GeometryReader { geo in
+                ZStack {
+                    Circle()
+                        .foregroundStyle(Color.nomadDarkBlue)
+                    Image(systemName: "location.north.fill")
+                        .font(.system(size: geo.size.width*0.45))
+                        .foregroundStyle(Color.white)
+                }
             }
         }
     }
