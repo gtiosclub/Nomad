@@ -708,7 +708,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Nomad/Preview Content\"";
-				DEVELOPMENT_TEAM = 3U7XP56VTS;
+				DEVELOPMENT_TEAM = 6UZT7756JG;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Nomad/Info.plist;
@@ -725,7 +725,7 @@
 				);
 				"LD_RUNPATH_SEARCH_PATHS[arch=*]" = "@loader_path/Frameworks";
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.nicholascandello.nomad;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dattakansal.nomad;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -741,7 +741,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Nomad/Preview Content\"";
-				DEVELOPMENT_TEAM = 3U7XP56VTS;
+				DEVELOPMENT_TEAM = 6UZT7756JG;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Nomad/Info.plist;
@@ -757,7 +757,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.nicholascandello.nomad;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dattakansal.nomad;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
