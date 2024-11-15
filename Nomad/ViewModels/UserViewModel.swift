@@ -252,7 +252,7 @@ class UserViewModel: ObservableObject {
         
         var queryItems: [URLQueryItem] = []
         
-        // print(searchString)
+        //print("String to be Searched: \(searchString)")
         
         if (searchString != "") {
             print("Searching via search bar")
@@ -267,12 +267,13 @@ class UserViewModel: ObservableObject {
             queryItems = [
                 URLQueryItem(name: "latitude", value: latitude),
                 URLQueryItem(name: "longitude", value: longitude),
-                URLQueryItem(name: "categories", value: "restaurants,food"),
                 URLQueryItem(name: "sort_by", value: "rating"),
                 URLQueryItem(name: "limit", value: "50")
             ]
             if let cuisine = cuisine, cuisine != "All" && !cuisine.isEmpty {
-                queryItems.append(URLQueryItem(name: "categories", value: cuisine))
+                queryItems.append(URLQueryItem(name: "categories", value: cuisine.lowercased()))
+            } else {
+                queryItems.append(URLQueryItem(name: "categories", value: "restaurants,food"))
             }
             if let price = price, price > 0 {
                 queryItems.append(URLQueryItem(name: "price", value: String(price)))
@@ -326,6 +327,8 @@ class UserViewModel: ObservableObject {
                 URLQueryItem(name: "limit", value: "50")
             ]
         }
+        
+        //print(queryItems)
 
         components.queryItems = queryItems
         var request = URLRequest(url: components.url!)
@@ -347,20 +350,24 @@ class UserViewModel: ObservableObject {
             }
 
             DispatchQueue.main.async {
-                switch stopType {
-                case "Restaurants":
-                    self.restaurants = filteredBusinesses.map { Restaurant(from: $0) }
-                case "Hotels":
-                    self.hotels = filteredBusinesses.map { Hotel(from: $0) }
-                case "Activities":
-                    self.activities = filteredBusinesses.map { Activity(from: $0) }
-                case "Shopping":
-                    self.shopping = filteredBusinesses.map { Shopping(from: $0) }
-                default:
+                if searchString != "" {
                     self.generalLocations = filteredBusinesses.map { GeneralLocation(from: $0) }
+                } else {
+                    switch stopType {
+                    case "Restaurants":
+                        self.restaurants = filteredBusinesses.map { Restaurant(from: $0) }
+                    case "Hotels":
+                        self.hotels = filteredBusinesses.map { Hotel(from: $0) }
+                    case "Activities":
+                        self.activities = filteredBusinesses.map { Activity(from: $0) }
+                    case "Shopping":
+                        self.shopping = filteredBusinesses.map { Shopping(from: $0) }
+                    default:
+                        self.generalLocations = filteredBusinesses.map { GeneralLocation(from: $0) }
+                    }
                 }
             }
-            print("Response Data: \(String(data: data, encoding: .utf8) ?? "No data")")
+            //print("Response Data: \(String(data: data, encoding: .utf8) ?? "No data")")
         } catch DecodingError.keyNotFound(let key, let context) {
             print("Missing key: '\(key.stringValue)' in JSON data: \(context.debugDescription)")
         } catch DecodingError.typeMismatch(let type, let context) {
