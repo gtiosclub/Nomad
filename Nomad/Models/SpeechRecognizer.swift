@@ -75,7 +75,7 @@ actor SpeechRecognizer: ObservableObject {
                 transcribe(error)
             }
         }
-        pollForAtlas()
+        //pollForAtlas()
     }
     
     @MainActor func startTranscribing() {
@@ -128,7 +128,7 @@ actor SpeechRecognizer: ObservableObject {
         }
     }
     
-    private func pollForAtlas() {
+    func pollForAtlas() {
         guard let recognizer, recognizer.isAvailable else {
             self.transcribe(RecognizerError.recognizerIsUnavailable)
             return
@@ -204,10 +204,13 @@ actor SpeechRecognizer: ObservableObject {
             let transcription = result.bestTranscription.formattedString.lowercased()
             print(transcription)
             
-            if transcription.contains("hey atlas") {
+            if transcription.contains("atlas") {
                 print("lalalalala")
                 Task { @MainActor in
                     atlasSaid = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        self.atlasSaid = false
+                    }
                 }
             }
         }
@@ -225,13 +228,6 @@ actor SpeechRecognizer: ObservableObject {
         if let result {
             let transcription = result.bestTranscription.formattedString.lowercased()
             
-            if transcription.contains("hey atlas") {
-                Task { @MainActor in
-                    print("sadfasdfsdfasdfsdfsf")
-                    startTranscribing()
-                }
-            }
-            
             Task { @MainActor in
                 guard isListening else { return }
             }
@@ -248,14 +244,6 @@ actor SpeechRecognizer: ObservableObject {
                 print("New transcription received: \(transcription)")
                 // self.silenceTimer?.invalidate()  // Invalidate any previous timer
                 await self.startSilenceTimer()         // Start a new silence timer
-            }
-            
-            // Check if the word "done" was spoken
-            if transcription.contains("done") {
-                // Stop transcription by calling stopTranscribing()
-                Task { @MainActor in
-                    await stopTranscribing()  // Stop the transcription process
-                }
             }
         }
     }

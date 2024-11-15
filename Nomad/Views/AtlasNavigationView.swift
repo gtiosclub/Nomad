@@ -126,13 +126,27 @@ struct AtlasNavigationView: View {
                 speechRecognizer.atlasSaid = false
             }
         }
-        .onChange(of: ChatVM.pois) { response in
-            speak(text: ChatVM.latestAIResponse ?? "")
-            //toggleIsLoading()
-            isLoading = false
-            isListening = false
-            currentMessage = ""
+        .onChange(of: ChatVM.responseArrived) { response in
+            if ChatVM.responseArrived {
+                speak(text: ChatVM.latestAIResponse ?? "")
+                //toggleIsLoading()
+                isLoading = false
+                isListening = false
+                currentMessage = ""
+                ChatVM.responseArrived = false
+            }
+            
         }
+        .onAppear {
+            handleMicrophonePress()
+            speechRecognizer.atlasSaid = false
+        }
+//        .onDisappear {
+//            speechRecognizer.stopTranscribing()
+//            speechRecognizer.resetTranscript()
+//            isListening = false
+//            isMicrophone = false
+//        }
         
     }
     

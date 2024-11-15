@@ -19,7 +19,8 @@ struct MapView: View {
     
     @State private var remainingTime: TimeInterval = 0
     @State private var remainingDistance: Double = 0
-    @State private var isSheetPresented = false
+    @State var isSheetPresented = false
+    @StateObject var speechRecognizer = SpeechRecognizer()
 
 
     
@@ -158,6 +159,12 @@ struct MapView: View {
                 }
                 
             }
+        }.onAppear {
+            speechRecognizer.pollForAtlas()
+        }
+        .onDisappear {
+            print("wassupp")
+            speechRecognizer.resetTranscript()
         }.onChange(of: vm.navigatingTrip) { old, new in
             if let newTrip = new {
                 if let newRoute = newTrip.route {
@@ -165,9 +172,17 @@ struct MapView: View {
                 }
             }
         }
+        .onChange(of: speechRecognizer.atlasSaid) { atlasSaid in
+            isSheetPresented = true
+        }
         .sheet(isPresented: $isSheetPresented) {
             AtlasNavigationView(vm: vm)
                 .presentationDetents([.medium, .large])
+                .onDisappear {
+                    // Action to take when the sheet is dismissed
+                    print("sheet disappeard")
+                    speechRecognizer.pollForAtlas()
+                }
         }
         .onReceive(timer) { _ in
             // reset remaining time and distance

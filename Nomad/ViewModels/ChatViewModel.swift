@@ -13,6 +13,7 @@ class ChatViewModel: ObservableObject {
     ]
     
     @Published var pois: [POIDetail] = []
+    @Published var responseArrived = false
     @Published var latestAIResponse: String?
     @Published var isQuerying = false //the additional global variable for detecting if the gpt api is calling or not
     
@@ -28,12 +29,14 @@ class ChatViewModel: ObservableObject {
                     let aiMessage = Message(content: self.aiViewModel.atlasResponse, sender: "AI")
                     self.pois = pois  // Update pois with fetched data
                     self.latestAIResponse = aiMessage.content
+                    self.responseArrived = true
                     self.messages.append(aiMessage)
                 }
             } else {
                 DispatchQueue.main.async {
                     let errorMessage = Message(content: "Sorry, I couldn't find any POIs", sender: "AI")
                     self.messages.append(errorMessage)
+                    self.responseArrived = true
                     self.latestAIResponse = "Sorry, I couldn't find any restaurants"
                 }
             }
