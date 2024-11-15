@@ -23,7 +23,7 @@ struct POIDetailView: View {
     @State private var isExpanded = false
     @State private var isAdded: Bool = false
     
-    
+    var addStop: (any POI) -> Void
     
     var body: some View {
         VStack(spacing: 10) {
@@ -176,28 +176,11 @@ struct POIDetailView: View {
             }
         )
     }
-    
-    func addStop(_ stop: any POI) {
-        Task {
-            await vm.addStop(stop: stop)
-            
-            guard let start_loc = vm.current_trip?.getStartLocation() else { return }
-            guard let end_loc = vm.current_trip?.getEndLocation() else { return }
-            guard let all_stops = vm.current_trip?.getStops() else { return }
-            
-            var all_pois: [any POI] = []
-            all_pois.append(start_loc)
-            all_pois.append(contentsOf: all_stops)
-            all_pois.append(end_loc)
-            
-            if let newRoutes = await MapManager.manager.generateRoute(pois: all_pois) {
-                vm.setTripRoute(route: newRoutes[0])
-            }
-        }
-    }
 }
 
 
 #Preview {
-    POIDetailView(name: "Speedway", address: "5 XYZ St, Atlanta, GA 06843", distance: 4.5, phoneNumber: "+19055759875", image: "https://s3-media2.fl.yelpcdn.com/bphoto/xU26QLcW8XAohg_APoojdQ/o.jpg", rating: 4.5, price: "$$", time: 4.2, latitude: 35.0, longitude: 34.0, city: "adsfsad", vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")), aiVM: AIAssistantViewModel())
+    POIDetailView(name: "Speedway", address: "5 XYZ St, Atlanta, GA 06843", distance: 4.5, phoneNumber: "+19055759875", image: "https://s3-media2.fl.yelpcdn.com/bphoto/xU26QLcW8XAohg_APoojdQ/o.jpg", rating: 4.5, price: "$$", time: 4.2, latitude: 35.0, longitude: 34.0, city: "adsfsad", vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")), aiVM: AIAssistantViewModel(), addStop: { poi in
+        print(poi.name)
+    })
 }

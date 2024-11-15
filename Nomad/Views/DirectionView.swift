@@ -58,7 +58,7 @@ struct DirectionView: View {
                 case .text(let text):
                     self.streetName = text.text
                 case .image(let image, let altText):
-                    self.image = image.imageBaseURL?.absoluteString
+                    self.image = image.shield?.baseURL.absoluteString
                 case .exitCode(let text):
                     self.exitCode = text.text
                 default:
@@ -151,6 +151,15 @@ struct DirectionView: View {
             }
         } else if manType == .merge {
             return Image(systemName: "arrow.merge")
+        } else if manType == .arrive {
+            switch manDirection {
+            case .left:
+                return Image(systemName: "signpost.left")
+            case .right:
+                return Image(systemName: "signpost.right")
+            default:
+                return Image(systemName: "mappin.and.ellipse")
+            }
         } else {
             return Image(systemName: "car.fill")
         }
@@ -161,6 +170,9 @@ struct DirectionView: View {
             return step.direction.names?.last ?? step.direction.instructions
         } else if step.direction.maneuverType == .merge {
             return "Exit \(step.direction.exitCodes![0])"
+        } else if step.direction.maneuverType == .arrive {
+            let (curr, next) = navManager.getCurrentAndNextPOI()
+            return "\(curr.name)"
         } else {
             return step.direction.instructions
         }

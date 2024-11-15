@@ -53,10 +53,12 @@ struct MapView: View {
                
             .onChange(of: mapManager.motion, initial: true) { oldMotion, newMotion in
                 if let newLoc = newMotion.coordinate {
-                    
                     if !navManager.destinationReached {
-                        navManager.recalibrateCurrentStep()
-                        navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
+                    Task {
+                        await navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
+                    }
+                    navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
+
                     }
                     
                     if let camera = navManager.mapPosition.camera {
@@ -143,9 +145,9 @@ struct MapHUDView: View {
                         }
                     }
                 }
-              .padding(.trailing, 5)
-              .padding(.bottom, 20)
-              
+                .padding(.trailing, 5)
+                .padding(.bottom, 20)
+                
                 
                 
             }
@@ -212,7 +214,7 @@ struct MapHUDView: View {
             atlasSheetPresented = true
         }
         .sheet(isPresented: $atlasSheetPresented) {
-            AtlasNavigationView(vm: vm)
+            AtlasNavigationView(vm: vm, navManager: navManager)
                 .onAppear {
                     speechRecognizer.resetTranscript()
                 }
@@ -223,13 +225,23 @@ struct MapHUDView: View {
         }
         .onReceive(timer) { _ in
             // reset remaining time and distance
-            if navManager.navigating {
-                self.remainingTime = mapManager.getRemainingTime(leg: navManager.navigatingLeg!)
-                self.remainingDistance = mapManager.getRemainingDistance(leg: navManager.navigatingLeg!)
+            Task {
+                await timerUpdate()
             }
-            // REROUTING SHOULD GO HERE
+        }
+    }
+    
+    private func timerUpdate() async {
+        if navManager.navigating {
+            self.remainingTime = mapManager.getRemainingTime(leg: navManager.navigatingLeg!)
+            self.remainingDistance = mapManager.getRemainingDistance(leg: navManager.navigatingLeg!)
+        }
+        // REROUTING SHOULD GO HERE
+        
+        Task {
             if !navManager.destinationReached {
-                navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
+                print("recalibrate")
+                await navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
                 navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
             }
         }
@@ -240,6 +252,9 @@ struct MapHUDView: View {
             navManager.setNavigatingRoute(route: trip.route!, trip: trip)
         }
         navManager.startNavigating()
+        Task {
+            await timerUpdate()
+        }
     }
     private func cancelNavigation() {
         // cancel

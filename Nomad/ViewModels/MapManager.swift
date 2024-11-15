@@ -462,13 +462,13 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     func determineCurrentStep(leg: NomadLeg) -> NomadStep? {
-        for step in leg.steps {
-            if checkOnStep(step: step) {
-                return step
+            for step in leg.steps {
+                if checkOnRouteDistance(step: step, thresholdDistance: 80) {
+                    return step
+                }
             }
+            return nil
         }
-        return nil
-    }
         
     func getClosestCoordinate(step: NomadStep) -> CLLocationCoordinate2D {
         guard let userLocation = self.userLocation else { return CLLocationCoordinate2D() }
@@ -505,31 +505,54 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         guard let speed = motion.speed else { return false }
         let endCoord = leg.endCoordinate
         let measured_distance = userLocation.distance(to: endCoord)
-        let thresholdDistance: CLLocationDistance = 100
-        let thresholdSpeed: CLLocationSpeed = 1.5
+        let thresholdDistance: CLLocationDistance = 150
+        let thresholdSpeed: CLLocationSpeed = 3.5
+        // print(measured_distance)
+        // print(speed)
         if measured_distance <= thresholdDistance && speed <= thresholdSpeed {
             return true
         }
         return false
     }
-    func checkOnRouteDirection(step: NomadStep) -> Bool {
+    func checkOnRouteDirection(step: NomadStep, thresholdDirection: Double) -> Bool {
         guard let userLocation = self.userLocation else { return false }
         let coords = step.getCoordinates()
-
-        let closest_coord = getClosestCoordinate(step: step)
-        let next_coord_index = Int(coords.firstIndex(of: closest_coord) ?? coords.endIndex) + 1
-        guard let next_closest_coord = coords.dropFirst(next_coord_index).first else { return false }
         
-        // TODO: Verify that this method words
-        // arcsin(x coord diff / distance between coords)
-        var expected_direction = asin((next_closest_coord.latitude - closest_coord.latitude) / next_closest_coord.distance(to: closest_coord)) * (180 / .pi)
-        if expected_direction < 0 {
-            expected_direction = 360 + expected_direction // Convert westward directions to 180+ degs isntead of negative
+        let closestCoord = getClosestCoordinate(step: step)
+        let nextCoordIndex = Int(coords.firstIndex(of: closestCoord) ?? coords.endIndex) + 1
+        
+        // Uses closest coord & next coord in route to find expected direction, if not use curr coordinate & closest
+        let expectedDirection: CLLocationDirection
+        if let nextClosestCoord = coords.dropFirst(nextCoordIndex).first {
+            expectedDirection = calculateHeading(from: closestCoord, to: nextClosestCoord)
+        } else {
+            expectedDirection = calculateHeading(from: motion.coordinate!, to: closestCoord)
         }
-        let user_direction = userLocation.direction(to: next_closest_coord)
-        
-        let thresholdDirection: Double = 90.0
-        return abs(expected_direction - user_direction) < thresholdDirection
+
+        return abs(expectedDirection - motion.direction!) < thresholdDirection
+    }
+    
+    func checkOnRouteDistance(step: NomadStep, thresholdDistance: CLLocationDistance) -> Bool {
+            guard let userLocation = self.userLocation else { return false }
+            let closest_coord = getClosestCoordinate(step: step)
+            let measured_distance = userLocation.distance(to: closest_coord)
+            if measured_distance <= thresholdDistance {
+                return true
+            } else {
+                return false
+            }
+        }
+    
+    // Helper function to calculate heading between two coordinates
+    func calculateHeading(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) -> CLLocationDirection {
+        let deltaL = to.longitude * (.pi / 180.0)  - from.longitude * (.pi / 180.0)
+        let thetaB = from.latitude * (.pi / 180.0)
+        let thetaA = to.latitude * (.pi / 180.0)
+        let x = cos(thetaB) * sin(deltaL)
+        let y = cos(thetaA) * sin(thetaB) - sin(thetaA) * cos(thetaB) * cos(deltaL)
+
+        let bearingDeg = atan2(x, y) * (180.0 / .pi)
+        return bearingDeg < 0 ? 360 + bearingDeg : bearingDeg // CLLocationDirection takes 0-360
     }
  
     func getExampleRoute() async -> NomadRoute? {
