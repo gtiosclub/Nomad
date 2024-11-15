@@ -26,10 +26,8 @@ struct ExploreTripsView: View {
                                 .padding(.leading)
                             if let city = vm.currentCity {
                                 Text("\(city)")
-                                    .font(.headline)
                             } else {
                                 Text("Retrieving Location")
-                                    .font(.headline)
                             }
                             Spacer()
                         }

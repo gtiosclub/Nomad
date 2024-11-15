@@ -217,7 +217,6 @@ struct ItineraryPlanningView: View {
                 HStack {
                     Button(action: {
                         if !isLoading {
-                            isLoading = true
                             Task {
                                 await createTrip("atlas")
                             }
@@ -245,7 +244,6 @@ struct ItineraryPlanningView: View {
                     
                     Button(action: {
                         if !generatingRoute {
-                            generatingRoute = true
                             Task {
                                 await createTrip("manual")
                             }
@@ -391,6 +389,12 @@ struct ItineraryPlanningView: View {
         }
         
         if startAddressError.isEmpty && endAddressError.isEmpty && bothAddressError.isEmpty {
+            if version == "Manual" {
+                generatingRoute = true
+            } else {
+                isLoading = true
+            }
+            
             if !use_current_trip {
                 Task {
                     var start_location = GeneralLocation(address: inputAddressStart, name: inputNameStart, latitude: startLatitude, longitude: startLongitude)
