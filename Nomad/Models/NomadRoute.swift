@@ -205,11 +205,15 @@ struct NomadStep {
             Exit Index: \(exitIndex ?? -1)
             Maneuver Type: \(maneuverType.rawValue)
             Maneuver Direction: \(maneuverDirection?.rawValue ?? "NONE")
+            // Number Instructions Displayed Along Step: \(instructionsDisplayedAlongStep?.count)
             Names: \(names ?? [])
             """
             // Intersections: \(intersections ?? [])
-            // Instructions Displayed Along Step: \(instructionsDisplayedAlongStep?.description ?? "NONE")
 
+        }
+        
+        func printInstructions() -> String? {
+            return instructionsDisplayedAlongStep?.description
         }
     }
     

@@ -96,6 +96,7 @@ struct MapHUDView: View {
         VStack {
             if navManager.navigating {
                 DirectionView(step: navManager.navigatingStep!)
+                    .padding()
             }
             HStack {
                 Spacer()

@@ -135,7 +135,7 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 
         
         for step in leg.steps {
-            print(step.direction.toString())
+            print(step.direction.printInstructions())
             print("")
         }
         
