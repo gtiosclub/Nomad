@@ -55,7 +55,7 @@ struct MapView: View {
                 if let newLoc = newMotion.coordinate {
                     
                     if !navManager.destinationReached {
-                        navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
+                        navManager.recalibrateCurrentStep()
                         navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
                     }
                     
@@ -213,6 +213,9 @@ struct MapHUDView: View {
         }
         .sheet(isPresented: $atlasSheetPresented) {
             AtlasNavigationView(vm: vm)
+                .onAppear {
+                    speechRecognizer.resetTranscript()
+                }
                 .presentationDetents([.medium, .large])
                 .onDisappear {
                     speechRecognizer.pollForAtlas()
