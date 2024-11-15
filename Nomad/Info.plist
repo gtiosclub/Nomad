@@ -4,6 +4,8 @@
 <dict>
 	<key>FirebaseInAppMessagingAutomaticallyDisplayMessages</key>
 	<false/>
+	<key>MBXAccessToken</key>
+	<string>pk.eyJ1Ijoidmlnc2sxNyIsImEiOiJjbTE4cWN5a2IxN29vMmxwemk3OXMycmZqIn0.oNoWSTSnQglUiJKJVaFyKA</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -11,13 +13,5 @@
 		<key>UISceneConfigurations</key>
 		<dict/>
 	</dict>
-	<key>CFBundleIdentifier</key>
-	<string></string>
-	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>We need access to speech recognition to transcribe your voice</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>We need access to your microphone for speech recognition</string>
-	<key>MBXAccessToken</key>
-	<string>pk.eyJ1Ijoidmlnc2sxNyIsImEiOiJjbTE4cWN5a2IxN29vMmxwemk3OXMycmZqIn0.oNoWSTSnQglUiJKJVaFyKA</string>
 </dict>
 </plist>
