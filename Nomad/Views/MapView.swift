@@ -60,6 +60,7 @@ struct MapView: View {
     @StateObject private var voiceManager = LocationVoiceManager.shared
     @State private var isVoiceEnabled: Bool = false
     @State private var cameraDistance: CLLocationDistance = 400
+    let timer = Timer.publish(every: 10, on: .main, in: .common).autoconnect()
     
     
     var body: some View {
@@ -88,6 +89,11 @@ struct MapView: View {
                         .stroke(.blue, lineWidth: 5)
                 }
                 
+            }.onReceive(timer) { time in
+                if let leg = navManager.navigatingLeg, navManager.navigating == true {
+                    navManager.destinationReached = mapManager.checkDestinationReached(leg: leg)
+                    print(navManager.navigatingLeg?.id)
+                }
             }
             .onChange(of: mapManager.motion, initial: true) { oldMotion, newMotion in
                 if let newLoc = newMotion.coordinate {
@@ -120,8 +126,10 @@ struct MapView: View {
             
             // All Map HUD
             VStack {
-                if navManager.navigating {
-                    DirectionView(step: navManager.navigatingStep!)
+                if !navManager.destinationReached {
+                    if navManager.navigating {
+                        DirectionView(step: navManager.navigatingStep!)
+                    }
                 }
                 HStack {
                     Spacer()
@@ -172,8 +180,9 @@ struct MapView: View {
                     Text("Destination Reached!")
                         .font(.largeTitle)
                         .padding()
-                    Button("Toggle Destination Reached") {
+                    Button("Continue") {
                         navManager.destinationReached.toggle()
+                        navManager.goToNextLeg()
                     }
                     .padding()
                     .background(Color.blue)

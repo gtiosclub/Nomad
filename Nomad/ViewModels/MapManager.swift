@@ -366,7 +366,7 @@ class MapManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         guard let userLocation = self.userLocation else { return false }
         let endCoord = leg.endCoordinate
         let measured_distance = userLocation.distance(to: endCoord)
-        let thresholdDistance: CLLocationDistance = 100  // maximum allowed distance from route (in m)
+        let thresholdDistance: CLLocationDistance = 100
         if measured_distance <= thresholdDistance {
             return true
         }

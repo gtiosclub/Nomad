@@ -94,12 +94,17 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     // jump to next leg of route, if no current leg is assigned, go to first leg in current route
     func goToNextLeg() {
+        if let currentLeg = navigatingLeg {
+            removePolyline(leg: currentLeg)
+        }
         if let route = navigatingRoute {
             if let current_leg_index = route.legs.firstIndex(where: { leg in
                 leg.id == navigatingLeg?.id
             }) {
                 if current_leg_index < route.legs.count - 1 {
                     setNavigatingLeg(leg: route.legs[current_leg_index + 1])
+                } else  {
+                    navigating = false
                 }
             } else {
                 if let leg = route.legs.first {
