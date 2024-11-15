@@ -24,7 +24,7 @@ struct BeginningNavigationView: View {
                 Button {
                     cancel()
                 } label: {
-                    Text("cancel")
+                    Text("Cancel")
                         .foregroundStyle(.red)
                 }
 

@@ -150,6 +150,9 @@ struct ExploreTripsView: View {
         .onChange(of: current_trips, initial: true) {}
         .onChange(of: previous_trips, initial: true) {}
         .onChange(of: community_trips, initial: true) {}
+        .onChange(of: vm.user.trips, initial: true) { old, new in
+            current_trips = vm.user.trips
+        }
     }
     
     struct SectionHeaderView: View {
