@@ -265,7 +265,8 @@ class AIAssistantViewModel: ObservableObject {
                         let poi = GeneralLocation(address: "\(business.location.address1), \(business.location.city), \(business.location.state) \(business.location.zipCode)",
                                                   name: business.name,
                                                   latitude: business.coordinates.latitude,
-                                                  longitude: business.coordinates.longitude)
+                                                  longitude: business.coordinates.longitude,
+                                                  imageUrl: business.imageUrl)
                         await userVM.addStop(stop: poi)
                     }
                 }
