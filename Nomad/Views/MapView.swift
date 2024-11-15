@@ -24,17 +24,21 @@ struct MapView: View {
                 UserAnnotation()
                 
                 ForEach(navManager.mapMarkers) { marker in
-                    Annotation("", coordinate: marker.coordinate) {
-                        VStack {
-                            Image(marker.icon.image_path)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: min(100000 / (cameraDistance), 40), height: min(40, 100000 / (cameraDistance)))
-                                .opacity(cameraDistance > 8000 ? 0 : 1)
-                                .clipShape(Circle())
-                                .animation(.easeInOut, value: cameraDistance)
-                            
+                    if marker.icon == .trafficLight || marker.icon == .stopSign {
+                        Annotation("", coordinate: marker.coordinate) {
+                            VStack {
+                                Image(marker.icon.image_path)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: min(100000 / (cameraDistance), 40), height: min(40, 100000 / (cameraDistance)))
+                                    .opacity(cameraDistance > 8000 ? 0 : 1)
+                                    .clipShape(Circle())
+                                    .animation(.easeInOut, value: cameraDistance)
+                                
+                            }
                         }
+                    } else {
+                        Marker(marker.title, coordinate: marker.coordinate)
                     }
                 }
                 // show all polylines
@@ -171,12 +175,15 @@ struct MapHUDView: View {
                         startNavigation()
                     }, cancel: { cancelNavigation()}).frame(height: 450)
                         .transition(.move(edge: .bottom))
+                } else {
+                    BottomNavView(routeName: vm.navigatingTrip!.name, expectedTravelTime: mapManager.getRemainingTime(leg: navManager.navigatingLeg!), distance: mapManager.getRemainingDistance(leg: navManager.navigatingLeg!), cancel: cancelNavigation)
+                        .offset(y: 20)
                 }
             }
         }.onChange(of: vm.navigatingTrip) { old, new in
             if let newTrip = new {
                 if let newRoute = newTrip.route {
-                    navManager.setNavigatingRoute(route: newRoute)
+                    navManager.setNavigatingRoute(route: newRoute, trip: newTrip)
                 }
             }
         }
@@ -195,7 +202,9 @@ struct MapHUDView: View {
     }
     private func startNavigation() {
         // start
-        navManager.setNavigatingRoute(route: vm.navigatingTrip!.route!)
+        if let trip = vm.navigatingTrip {
+            navManager.setNavigatingRoute(route: trip.route!, trip: trip)
+        }
         navManager.startNavigating()
     }
     private func cancelNavigation() {

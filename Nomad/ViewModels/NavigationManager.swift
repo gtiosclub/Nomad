@@ -19,6 +19,7 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @ObservedObject var mapManager = MapManager.manager
     // Route State Info
     @Published var navigating = false
+    @Published var navigatingTrip: Trip? = nil
     @Published var navigatingRoute: NomadRoute? = nil
     @Published var navigatingLeg: NomadLeg? = nil
     @Published var navigatingStep: NomadStep? = nil
@@ -75,25 +76,40 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
             self.navigating = true
         }
     }
-    func setNavigatingRoute(route: NomadRoute) {
+    func setNavigatingRoute(route: NomadRoute, trip: Trip) {
         print("Set navigating route")
         self.navigatingRoute = route
+        self.navigatingTrip = trip
         self.mapPolylines.removeAll()
         self.mapMarkers.removeAll()
         
-        self.showPolyline(route: navigatingRoute!)
+        let stops = trip.getStops()
         
-        for leg in route.legs {
-            for step in leg.steps {
-                if let intersections = step.direction.intersections {
-                    for intersection in intersections {
-                        if intersection.trafficSignal == true {
-                            showMarker("Traffic Light", coordinate: intersection.location, icon: .trafficLight)
-                        }
-                        
-                        if intersection.stopSign == true {
-                            showMarker("Stop Sign", coordinate: intersection.location, icon: .stopSign)
-                        }
+        showPolyline(route: route)
+        showStopSignsAndTraffic(leg: route.legs[0])
+        showMarker(trip.getStartLocation().name, coordinate: route.getStartLocation(), icon: .pin)
+        for i in 0..<route.legs.count - 1 {
+            showMarker(stops[i].name, coordinate: route.legs[i].getEndLocation(), icon: .pin)
+            if i > 0 {
+                showStopSignsAndTraffic(leg: route.legs[i])
+            }
+        }
+        if route.legs.count > 1 {
+            showMarker(trip.getEndLocation().name, coordinate: route.getEndLocation(), icon: .pin)
+            showStopSignsAndTraffic(leg: route.legs.last!)
+        }
+    }
+    
+    func showStopSignsAndTraffic(leg: NomadLeg) {
+        for step in leg.steps {
+            if let intersections = step.direction.intersections {
+                for intersection in intersections {
+                    if intersection.trafficSignal == true {
+                        showMarker("traffic", coordinate: intersection.location, icon: .trafficLight)
+                    }
+                    
+                    if intersection.stopSign == true {
+                        showMarker("stop", coordinate: intersection.location, icon: .stopSign)
                     }
                 }
             }
@@ -102,8 +118,25 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     func setNavigatingLeg(leg: NomadLeg) {
         self.navigatingLeg = leg
+        self.mapPolylines.removeAll()
+        self.mapMarkers.removeAll()
+        
+        let leg_index = navigatingRoute!.legs.firstIndex(where: { this_leg in
+            this_leg.id == leg.id
+        })!
+        let stops = navigatingTrip!.getStops()
+        let start_stop = leg_index == 0 ? navigatingTrip!.getStartLocation() : stops[leg_index]
+        let end_stop = leg_index + 1 >= stops.count ? navigatingTrip!.getEndLocation() : stops[leg_index]
+        
+        self.showMarker(start_stop.name, coordinate: leg.getStartLocation(), icon: .pin)
+        self.showMarker(end_stop.name, coordinate: leg.getEndLocation(), icon: .pin)
+        self.showPolyline(leg: leg)
+        self.showStopSignsAndTraffic(leg: leg)
+
+        
         for step in leg.steps {
-            print("\(step.direction.instructions) in \(step.direction.distance)")
+            print(step.direction.toString())
+            print("")
         }
         
     }
