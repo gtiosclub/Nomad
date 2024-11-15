@@ -7,7 +7,6 @@
 import SwiftUI
 
 struct POIDetailView: View {
-    @State private var isExpanded = false
     var name: String
     var address: String
     var distance: Double
@@ -21,7 +20,7 @@ struct POIDetailView: View {
     var city: String
     @ObservedObject var vm: UserViewModel
     @ObservedObject var aiVM: AIAssistantViewModel
-    
+    @State private var isExpanded = false
     @State private var isAdded: Bool = false
     
     
@@ -68,7 +67,10 @@ struct POIDetailView: View {
                     
                     Button(action: {
                         withAnimation {
-                            isExpanded.toggle()
+//                            isExpanded.toggle()
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                isExpanded.toggle()
+                            }
                         }
                     }) {
                         AsyncImage(url: URL(string: image)) { image in
@@ -150,6 +152,29 @@ struct POIDetailView: View {
                 .shadow(radius: 5)
         )
         .padding()
+        .overlay(
+            ZStack {
+                if isExpanded {                    
+                    AsyncImage(url: URL(string: image)) { image in
+                        image
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: isExpanded ? 200 : 80, height: isExpanded ? 150 : 60)
+                            .cornerRadius(10)
+                            .shadow(radius: 10)
+                            .onTapGesture {
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    isExpanded.toggle()
+                                }
+                            }
+                    } placeholder: {
+                        ProgressView()
+                            .frame(width: 300, height: 250)
+                    }
+                    .transition(.scale(scale: 0.5, anchor: .center))
+                }
+            }
+        )
     }
     
     func addStop(_ stop: any POI) {
@@ -171,6 +196,8 @@ struct POIDetailView: View {
         }
     }
 }
+
+
 #Preview {
-    POIDetailView(name: "Speedway", address: "5 XYZ St, Atlanta, GA 06843", distance: 4.5, phoneNumber: "+19055759875", image: "", rating: 4.5, price: "$$", time: 4.2, latitude: 35.0, longitude: 34.0, city: "adsfsad", vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")), aiVM: AIAssistantViewModel())
+    POIDetailView(name: "Speedway", address: "5 XYZ St, Atlanta, GA 06843", distance: 4.5, phoneNumber: "+19055759875", image: "https://s3-media2.fl.yelpcdn.com/bphoto/xU26QLcW8XAohg_APoojdQ/o.jpg", rating: 4.5, price: "$$", time: 4.2, latitude: 35.0, longitude: 34.0, city: "adsfsad", vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")), aiVM: AIAssistantViewModel())
 }

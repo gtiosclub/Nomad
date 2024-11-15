@@ -50,6 +50,8 @@
 		947F53C22CA0F59F00238C4F /* MapboxNavigationCore in Frameworks */ = {isa = PBXBuildFile; productRef = 947F53C12CA0F59F00238C4F /* MapboxNavigationCore */; };
 		B208F21F2CE3EDC7009BCA45 /* NomadColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = B208F21E2CE3EDC4009BCA45 /* NomadColors.swift */; };
 		B208F2412CE675FD009BCA45 /* EndOfLegView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B208F2402CE675F6009BCA45 /* EndOfLegView.swift */; };
+		B208F2492CE6AF32009BCA45 /* VoiceAnnouncerButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B208F2482CE6AF2C009BCA45 /* VoiceAnnouncerButtonView.swift */; };
+		B208F24C2CE6BF1F009BCA45 /* BeginningNavigationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B208F24B2CE6BF07009BCA45 /* BeginningNavigationView.swift */; };
 		B2154C6D2C9D01BA00A6F238 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B2154C6C2C9D01BA00A6F238 /* GoogleService-Info.plist */; };
 		B2154CD02C9E2DF400A6F238 /* CompassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2154CCF2C9E2DF400A6F238 /* CompassView.swift */; };
 		B2154CD22C9E319C00A6F238 /* RecenterMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2154CD12C9E319C00A6F238 /* RecenterMapView.swift */; };
@@ -123,6 +125,8 @@
 		94F91F652C9F875F00A63F7A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B208F21E2CE3EDC4009BCA45 /* NomadColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NomadColors.swift; sourceTree = "<group>"; };
 		B208F2402CE675F6009BCA45 /* EndOfLegView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EndOfLegView.swift; sourceTree = "<group>"; };
+		B208F2482CE6AF2C009BCA45 /* VoiceAnnouncerButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceAnnouncerButtonView.swift; sourceTree = "<group>"; };
+		B208F24B2CE6BF07009BCA45 /* BeginningNavigationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeginningNavigationView.swift; sourceTree = "<group>"; };
 		B2154C6C2C9D01BA00A6F238 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B2154CCF2C9E2DF400A6F238 /* CompassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompassView.swift; sourceTree = "<group>"; };
 		B2154CD12C9E319C00A6F238 /* RecenterMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecenterMapView.swift; sourceTree = "<group>"; };
@@ -220,10 +224,21 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		B208F24A2CE6BEEA009BCA45 /* NavigationHUDViews */ = {
+			isa = PBXGroup;
+			children = (
+				B208F2402CE675F6009BCA45 /* EndOfLegView.swift */,
+				B208F24B2CE6BF07009BCA45 /* BeginningNavigationView.swift */,
+				B2154CCE2C9E2DE500A6F238 /* MapButtons */,
+			);
+			path = NavigationHUDViews;
+			sourceTree = "<group>";
+		};
 		B2154CCE2C9E2DE500A6F238 /* MapButtons */ = {
 			isa = PBXGroup;
 			children = (
 				B2154CCF2C9E2DF400A6F238 /* CompassView.swift */,
+				B208F2482CE6AF2C009BCA45 /* VoiceAnnouncerButtonView.swift */,
 				B2154CD12C9E319C00A6F238 /* RecenterMapView.swift */,
 				B2154CD32C9E333700A6F238 /* ChangeMapTypeView.swift */,
 			);
@@ -278,16 +293,15 @@
 			children = (
 				84DE8BB12CE154040030A4BC /* ProfileView.swift */,
 				E93AD24B2CC9A16800D1B27C /* AtlasNavigationView.swift */,
-				B208F2402CE675F6009BCA45 /* EndOfLegView.swift */,
 				84FC27152CAC741D008C8339 /* Onboarding */,
 				B2F8F3492C97BC7700B9618E /* RecapView.swift */,
 				48BBC2D12C9CE5070093D9D0 /* DetailRecapView.swift */,
 				B2F8F34B2C97BC7F00B9618E /* MapView.swift */,
 				B2F34D572CC95B8A0098F652 /* DirectionView.swift */,
 				F74D35622CE2D46B0030C72A /* AtlasAnimation.gif */,
+				B208F24A2CE6BEEA009BCA45 /* NavigationHUDViews */,
 				B2F8F34D2C97BC8A00B9618E /* AIAssistantView.swift */,
 				B2F8F34F2C97BC9600B9618E /* ItineraryPlanningView.swift */,
-				B2154CCE2C9E2DE500A6F238 /* MapButtons */,
 				F7C492992CD1988D00E8F255 /* ItineraryParentView.swift */,
 				48974B8C2CA0A3CB0057B073 /* FindStopView.swift */,
 				F79779AC2CDE887100C95095 /* AtlasLoadingView.swift */,
@@ -532,12 +546,14 @@
 				48974B862C9A44A30057B073 /* Hotel.swift in Sources */,
 				397D567F2CCB0BA20020EA99 /* ViewAllTripsView.swift in Sources */,
 				B2F8F3642C97BD9B00B9618E /* UserViewModel.swift in Sources */,
+				B208F24C2CE6BF1F009BCA45 /* BeginningNavigationView.swift in Sources */,
 				08C4C61F2CCB068C00C9B8D9 /* FilterView.swift in Sources */,
 				391165FA2CB53542004B8695 /* PreviewRouteView.swift in Sources */,
 				84DE8BB22CE154090030A4BC /* ProfileView.swift in Sources */,
 				F7C4929A2CD1988D00E8F255 /* ItineraryParentView.swift in Sources */,
 				B2DE8FD52CC81C7000EEDE37 /* NavigationManager.swift in Sources */,
 				E90E9AB82CAF5C1F00A7C4FA /* SpeechRecognizer.swift in Sources */,
+				B208F2492CE6AF32009BCA45 /* VoiceAnnouncerButtonView.swift in Sources */,
 				B3D51D2E2CD17907000CC2D2 /* ChatViewModel.swift in Sources */,
 				B2F8F3622C97BD8900B9618E /* AIAssistantViewModel.swift in Sources */,
 			);
@@ -688,7 +704,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Nomad/Preview Content\"";
-				DEVELOPMENT_TEAM = TL893ZWF55;
+				DEVELOPMENT_TEAM = 3U7XP56VTS;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Nomad/Info.plist;
@@ -697,15 +713,15 @@
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "We need access to speech recognition to transcribe your voice";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				"LD_RUNPATH_SEARCH_PATHS[arch=*]" = "@loader_path/Frameworks";
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.ankitroy;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nicholascandello.nomad;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -721,7 +737,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Nomad/Preview Content\"";
-				DEVELOPMENT_TEAM = TL893ZWF55;
+				DEVELOPMENT_TEAM = 3U7XP56VTS;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Nomad/Info.plist;
@@ -730,14 +746,14 @@
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "We need access to speech recognition to transcribe your voice";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.ankitroy.nomad;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nicholascandello.nomad;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
