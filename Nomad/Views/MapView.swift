@@ -215,6 +215,9 @@ struct MapHUDView: View {
         }
         .sheet(isPresented: $atlasSheetPresented) {
             AtlasNavigationView(vm: vm, navManager: navManager)
+                .onAppear {
+                    speechRecognizer.resetTranscript()
+                }
                 .presentationDetents([.medium, .large])
                 .onDisappear {
                     speechRecognizer.pollForAtlas()
