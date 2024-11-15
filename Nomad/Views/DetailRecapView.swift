@@ -9,7 +9,6 @@ import SwiftUI
 import PhotosUI
 
 struct DetailRecapView: View {
-    @State private var selectedDay = 1
     @State var selectedItems: [PhotosPickerItem] = []
     @State var recapImages: [Image] = []
     @ObservedObject var vm: UserViewModel
@@ -52,7 +51,7 @@ struct DetailRecapView: View {
                             .foregroundColor(.gray.opacity(0.5))
                             .frame(width: 155, height: 87)
                         VStack {
-                            Text(String(round(trip.route?.totalDistance() ?? 0.0)))
+                            Text(String(format: "%.1f", round((trip.route?.totalDistance() ?? 0.0) * 10) / 10))
                                 .font(.system(size: 30))
                             Text("miles traveled")
                         }
@@ -63,7 +62,7 @@ struct DetailRecapView: View {
                             .foregroundColor(.gray.opacity(0.5))
                             .frame(width: 155, height: 87)
                         VStack {
-                            Text(String(round(trip.route?.totalTime() ?? 0.0 / 60)))
+                            Text(String(format: "%.1f", round((trip.route?.totalTime() ?? 0.0) / 3600 * 10) / 10))
                                 .font(.system(size: 30))
                             Text("hours spent")
                         }
@@ -81,18 +80,11 @@ struct DetailRecapView: View {
                     Text("Here's how you moved around")
                         .font(.system(size: 18, weight: .semibold))
                     Spacer()
-                }
-                Picker("Select a day", selection: $selectedDay) {
-                    Text("Day 1").tag(1)
-                    Text("Day 2").tag(2)
-                    Text("Day 3").tag(3)
-                }
-                .pickerStyle(SegmentedPickerStyle())
-                .padding(.bottom, 10)
-
+                }.padding(.bottom, 10)
                 RoutePreviewView(vm: vm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(nil))
-                    .frame(width: .infinity, height: 300)
+                    .frame(height: 400)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .shadow(radius: 5.0)
 
             }.padding(.horizontal, 30)
                 .padding(.bottom, 30)
