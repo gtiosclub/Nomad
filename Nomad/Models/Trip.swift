@@ -64,10 +64,21 @@ class Trip: Identifiable, Equatable, ObservableObject {
         self.modified_date = modified_date
         self.coverImageURL = ""
         self.images = []
+        
+        if self.start_location.imageUrl?.isEmpty ?? true {
+            Trip.getCityImage(location: start_location) { imageURL in
+                DispatchQueue.main.async {
+                    self.start_location.imageUrl = imageURL
+                    self.updateModifiedDate()
+                }
+            }
+        }
+        
         if coverImageURL.isEmpty {
             Trip.getCityImage(location: end_location) { imageURL in
                 DispatchQueue.main.async {
                     self.coverImageURL = imageURL
+                    self.end_location.imageUrl = imageURL
                     self.updateModifiedDate()
                 }
             }
@@ -263,15 +274,15 @@ class Trip: Identifiable, Equatable, ObservableObject {
         return end_location
     }
 
-    func getStartDate() -> String? {
+    func getStartDate() -> String {
         return start_date
     }
 
-    func getEndDate() -> String? {
+    func getEndDate() -> String {
         return end_date
     }
     
-    func getStartTime() -> String? {
+    func getStartTime() -> String {
         return start_time
     }
 

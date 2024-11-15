@@ -12,12 +12,13 @@ import MapKit
 struct PreviewRouteView: View {
     @ObservedObject var vm: UserViewModel
     @State private var tripTitle: String = ""
-    @State private var isPrivate: Bool = true
+    @State private var privacy: String = "Private"
     @Environment(\.dismiss) var dismiss
     @ObservedObject var trip: Trip
     @State var routePlanned: Bool = false
     @State var backToEdit: Bool = false
     var letBack: Bool = true
+    var privacyTypes = ["Private", "Public"]
     
     var body: some View {
         NavigationStack {
@@ -87,19 +88,22 @@ struct PreviewRouteView: View {
                                 TextField("Trip Title", text: $tripTitle)
                                     .textFieldStyle(RoundedBorderTextFieldStyle())
                                     .padding()
+                                    .padding(.top, 2)
                                 
                                 Text("Route Visibility")
                                     .font(.body)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.leading)
                                 
-                                
-                                VStack(alignment: .leading) {
-                                    RadioButton(text: "Public", isSelected: $isPrivate, value: false)
-                                    RadioButton(text: "Private", isSelected: $isPrivate, value: true)
+                                VStack {
+                                    Picker("Private", selection: $privacy) {
+                                        ForEach(privacyTypes, id: \.self) { type in
+                                            Text(type)
+                                        }
+                                    }
                                 }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(.leading, 30)
+                                .pickerStyle(.segmented)
+                                .padding(.horizontal)
                             }
                             
                             HStack {
@@ -108,7 +112,7 @@ struct PreviewRouteView: View {
                                 } label: {
                                     Text("Edit Route")
                                         .padding()
-                                        .background(Color.gray.opacity(0.2))
+                                        .background(Color.gray.opacity(0.4))
                                         .cornerRadius(8)
                                         .foregroundColor(Color.black)
                                 }
@@ -116,20 +120,37 @@ struct PreviewRouteView: View {
                                     ItineraryParentView(vm: vm, cvm: ChatViewModel())
                                 })
                                 
-                                Spacer().frame(width: 60)
+                                Button("Start Route") {
+                                    vm.startTrip(trip: trip)
+                                }
+                                .padding()
+                                .background(Color.gray.opacity(0.4))
+                                .foregroundColor(.black)
+                                .cornerRadius(8)
                                 
                                 Button("Save Route") {
                                     vm.setTripTitle(newTitle: $tripTitle.wrappedValue)
-                                    vm.setIsPrivate(isPrivate: $isPrivate.wrappedValue)
+                                    vm.setIsPrivate(isPrivate: $privacy.wrappedValue == "Private")
                                     
-                                    dismiss()
+                                    var successful: Bool = false
+                                    Task {
+                                        if !letBack {
+                                            successful = await vm.addTripToFirebase()
+                                        } else {
+                                            successful = await vm.modifyTripInFirebase()
+                                        }
+                                        
+                                        if successful {
+                                            dismiss()
+                                        }
+                                    }
                                 }
                                 .padding()
-                                .background(Color.gray.opacity(0.2))
-                                .foregroundColor(.black)
+                                .background(Color.nomadDarkBlue)
+                                .foregroundColor(.white)
                                 .cornerRadius(8)
                             }
-                            .padding(.horizontal)
+                            .padding()
                         } else {
                             Button("Copy to My Trips") {
                                 Task {
@@ -149,21 +170,13 @@ struct PreviewRouteView: View {
                             .foregroundColor(.black)
                             .padding(.horizontal)
                         }
-                        Button("Start Route") {
-                            vm.startTrip(trip: trip)
-                        }
-                        .padding()
-                        .background(Color.gray.opacity(0.2))
-                        .foregroundColor(.black)
-                        .cornerRadius(8)
-                        
                     }
                 }
             }
             .onAppear {
                 vm.setCurrentTrip(trip: trip)
                 tripTitle = vm.current_trip?.getName() ?? ""
-                isPrivate = vm.current_trip?.isPrivate ?? true
+                privacy = (vm.current_trip?.isPrivate ?? true) ? "Private" : "Public"
                 if let route = trip.route {
                     vm.populateLegInfo()
                     routePlanned = true
