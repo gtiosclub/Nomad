@@ -21,7 +21,7 @@ struct DetailRecapView: View {
                 HStack {
                     VStack (alignment: .leading){
                         Text(vm.current_trip?.getName() ?? "Trip Name")
-                            .font(.system(size: 18, weight: .semibold))
+                            .font(.system(size: 22, weight: .bold))
                             .padding(.vertical, 15)
                         PhotosPicker(selection: $selectedItems,
                                      matching: .any(of: [.images, .not(.screenshots)])) {
@@ -48,7 +48,7 @@ struct DetailRecapView: View {
                 HStack {
                     ZStack {
                         RoundedRectangle(cornerRadius: 10)
-                            .foregroundColor(.gray.opacity(0.5))
+                            .fill(LinearGradient(gradient: Gradient(colors: [Color(red: 147/255, green: 201/255, blue: 201/255),Color.nomadLightBlue]), startPoint: .topLeading, endPoint: .bottomTrailing))
                             .frame(width: 155, height: 87)
                         VStack {
                             Text(String(format: "%.1f", round((trip.route?.totalDistance() ?? 0.0) * 10) / 10))
@@ -59,7 +59,7 @@ struct DetailRecapView: View {
                     Spacer()
                     ZStack {
                         RoundedRectangle(cornerRadius: 10)
-                            .foregroundColor(.gray.opacity(0.5))
+                            .fill(LinearGradient(gradient: Gradient(colors: [Color(red: 147/255, green: 201/255, blue: 201/255),Color.nomadLightBlue]), startPoint: .topLeading, endPoint: .bottomTrailing))
                             .frame(width: 155, height: 87)
                         VStack {
                             Text(String(format: "%.1f", round((trip.route?.totalTime() ?? 0.0) / 3600 * 10) / 10))
