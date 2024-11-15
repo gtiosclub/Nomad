@@ -163,7 +163,6 @@ struct MapView: View {
             speechRecognizer.pollForAtlas()
         }
         .onDisappear {
-            print("wassupp")
             speechRecognizer.resetTranscript()
         }.onChange(of: vm.navigatingTrip) { old, new in
             if let newTrip = new {
@@ -179,8 +178,6 @@ struct MapView: View {
             AtlasNavigationView(vm: vm)
                 .presentationDetents([.medium, .large])
                 .onDisappear {
-                    // Action to take when the sheet is dismissed
-                    print("sheet disappeard")
                     speechRecognizer.pollForAtlas()
                 }
         }

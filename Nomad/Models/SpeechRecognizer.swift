@@ -205,7 +205,6 @@ actor SpeechRecognizer: ObservableObject {
             print(transcription)
             
             if transcription.contains("atlas") {
-                print("lalalalala")
                 Task { @MainActor in
                     atlasSaid = true
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -235,11 +234,6 @@ actor SpeechRecognizer: ObservableObject {
             // Transcribe the result
             transcribe(transcription)
 
-            //print("Have transcribed")
-            
-            //send to the view model
-            
-            //start monitoring for silence
             Task { @MainActor in
                 print("New transcription received: \(transcription)")
                 // self.silenceTimer?.invalidate()  // Invalidate any previous timer
@@ -252,7 +246,6 @@ actor SpeechRecognizer: ObservableObject {
     
     nonisolated private func transcribe(_ message: String) {
         Task { @MainActor in
-            //print("In nonisolaed private func transcribe")
             transcript = message
             print(transcript)
         }
