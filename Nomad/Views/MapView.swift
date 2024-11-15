@@ -53,7 +53,6 @@ struct MapView: View {
             .onChange(of: mapManager.motion, initial: true) { oldMotion, newMotion in
                 if let newLoc = newMotion.coordinate {
                     
-                    print("New User Location")
                     if !navManager.destinationReached {
                         navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
                         navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
@@ -70,7 +69,6 @@ struct MapView: View {
                     }
                 }
             }
-        }
         .onAppear() {
             let motion = mapManager.motion
             navManager.updateMapPosition(motion)
@@ -184,26 +182,13 @@ struct MapHUDView: View {
                     }, cancel: { cancelNavigation()}).frame(height: 450)
                         .transition(.move(edge: .bottom))
                 } else {
-                  if !navManager.destinationReached {
-                    BottomNavView(routeName: vm.navigatingTrip!.name, expectedTravelTime: mapManager.getRemainingTime(leg: navManager.navigatingLeg!), distance: mapManager.getRemainingDistance(leg: navManager.navigatingLeg!), cancel: cancelNavigation)
-                        .offset(y: 20)
-                  } else {
-                VStack {
-                    Text("Destination Reached!")
-                        .font(.largeTitle)
-                        .padding()
-                    Button("Continue") {
-                        navManager.destinationReached.toggle()
-                        navManager.goToNextLeg()
+                    if !navManager.destinationReached {
+                        BottomNavView(routeName: vm.navigatingTrip!.name, expectedTravelTime: mapManager.getRemainingTime(leg: navManager.navigatingLeg!), distance: mapManager.getRemainingDistance(leg: navManager.navigatingLeg!), cancel: cancelNavigation)
+                            .offset(y: 20)
+                    } else {
+                        EndOfLegView(navManager: navManager, continueNavigation: { navManager.goToNextLeg() })
+                        
                     }
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.black.opacity(0.5))
-           
                 }
             }
         }.onChange(of: vm.navigatingTrip) { old, new in
@@ -227,6 +212,10 @@ struct MapHUDView: View {
                 self.remainingDistance = mapManager.getRemainingDistance(leg: navManager.navigatingLeg!)
             }
             // REROUTING SHOULD GO HERE
+            if !navManager.destinationReached {
+                navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
+                navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
+            }
         }
     }
     private func startNavigation() {

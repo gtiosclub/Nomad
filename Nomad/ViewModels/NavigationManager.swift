@@ -122,12 +122,14 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         self.mapPolylines.removeAll()
         self.mapMarkers.removeAll()
         
-        let leg_index = navigatingRoute!.legs.firstIndex(where: { this_leg in
+        let trip = navigatingTrip!
+        let route = navigatingRoute!
+        let leg_index = route.legs.firstIndex(where: { this_leg in
             this_leg.id == leg.id
         })!
-        let stops = navigatingTrip!.getStops()
-        let start_stop = leg_index == 0 ? navigatingTrip!.getStartLocation() : stops[leg_index]
-        let end_stop = leg_index + 1 >= stops.count ? navigatingTrip!.getEndLocation() : stops[leg_index]
+        let stops = trip.getStops()
+        let start_stop = leg_index >= route.legs.count - 1 ? stops[leg_index] : trip.getEndLocation()
+        let end_stop = leg_index + 1 >= route.legs.count ? navigatingTrip!.getEndLocation() : stops[leg_index]
         
         self.showMarker(start_stop.name, coordinate: leg.getStartLocation(), icon: .pin)
         self.showMarker(end_stop.name, coordinate: leg.getEndLocation(), icon: .pin)
@@ -141,6 +143,26 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
 //            print("")
 //        }
         
+    }
+    
+    func getCurrentAndNextPOI() -> (start: any POI, stop: (any POI)?) {
+        let trip = navigatingTrip!
+        let route = navigatingRoute!
+        let leg_i = route.legs.firstIndex(where: { this_leg in
+            this_leg.id == self.navigatingLeg!.id
+        })!
+        print(leg_i)
+        let stops = navigatingTrip!.getStops()
+        let start_stop = leg_i >= route.legs.count - 1 ? stops[leg_i] : trip.getEndLocation()
+        var end_stop: (any POI)? = nil
+        if leg_i >= route.legs.count - 1 {
+            end_stop = nil
+        } else if leg_i >= route.legs.count - 2 {
+            end_stop = trip.getEndLocation()
+        } else {
+            end_stop = stops[leg_i + 1]
+        }
+        return (start_stop, end_stop)
     }
     // jump to next leg of route, if no current leg is assigned, go to first leg in current route
     func goToNextLeg() {
@@ -188,7 +210,6 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         if mapManager.checkDestinationReached(leg: currentLeg) {
             destinationReached = true
         }
-        print(estimatedStep.direction.instructions)
         if estimatedStep.id != navigatingStep?.id {
             setNavigatingStep(step: estimatedStep)
         }

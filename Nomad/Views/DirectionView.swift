@@ -75,7 +75,7 @@ struct DirectionView: View {
                     getStepIcon(type: maneuverType, direction: maneuverDirection)
                         .font(.system(size: 40))
                     Text("\(getDistanceDescriptor(meters: navManager.assignDistanceToNextManeuver())[0])")
-                        .font(.title2).bold() + Text("\(getDistanceDescriptor(meters: step.direction.distance)[1])")
+                        .font(.title2).bold() + Text("\(getDistanceDescriptor(meters: navManager.assignDistanceToNextManeuver())[1])")
                         .font(.title3)
                 }
                 // highway exit
