@@ -10,21 +10,19 @@ import AVFoundation
 
 @available(iOS 17.0, *)
 struct MapView: View {
+    @Binding var tabSelection: Int
     @ObservedObject var vm: UserViewModel
     @ObservedObject var navManager: NavigationManager = NavigationManager()
     @ObservedObject var mapManager = MapManager.manager
-    @StateObject private var voiceManager = LocationVoiceManager.shared
-    @State private var isVoiceEnabled: Bool = false
     @State private var cameraDistance: CLLocationDistance = 400
-    
     @State private var remainingTime: TimeInterval = 0
     @State private var remainingDistance: Double = 0
-    @State private var isSheetPresented = false
+    @State var isSheetPresented = false
 
 
     
     let timer = Timer.publish(every: 7, on: .main, in: .common).autoconnect()
-    
+
     var body: some View {
         ZStack {
             // All views within Map
@@ -51,113 +49,142 @@ struct MapView: View {
                         .stroke(.blue, lineWidth: 5)
                 }
                 
-            }
-            
-            .onChange(of: mapManager.motion, initial: true) { oldMotion, newMotion in
-                if let _ = newMotion.coordinate {
-                    navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
-                    navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
-                    if let camera = navManager.mapPosition.camera {
-                        let movingMap = navManager.movingMap(camera: camera.centerCoordinate)
-                        if !movingMap {
-                            withAnimation {
-                                navManager.updateMapPosition(newMotion)
-                            }
+            }.mapControlVisibility(.hidden)
+            MapHUDView(tabSelection: $tabSelection, vm: vm, navManager: navManager, mapManager: mapManager)
+        }
+        
+        .onChange(of: mapManager.motion, initial: true) { oldMotion, newMotion in
+            if let _ = newMotion.coordinate {
+                navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
+                navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
+                if let camera = navManager.mapPosition.camera {
+                    let movingMap = navManager.movingMap(camera: camera.centerCoordinate)
+                    if !movingMap {
+                        withAnimation {
+                            navManager.updateMapPosition(newMotion)
                         }
                     }
                 }
             }
-            .onAppear() {
-                let motion = mapManager.motion
-                navManager.updateMapPosition(motion)
-            }.onMapCameraChange { camera in
-                withAnimation {
-                    cameraDistance = camera.camera.distance
-                }
-                
+        }
+        .onAppear() {
+            let motion = mapManager.motion
+            navManager.updateMapPosition(motion)
+        }.onMapCameraChange { camera in
+            withAnimation {
+                cameraDistance = camera.camera.distance
             }
             
-            // All Map HUD
-            VStack {
-                if navManager.navigating {
-                    DirectionView(step: navManager.navigatingStep!)
-                }
-                HStack {
-                    Spacer()
-                    VStack {
-                        RecenterMapView(recenterMap: {
-                            navManager.recenterMap()
-                        })
-                        .frame(width: 50, height: 50)
-                        
-                        // Add Voice Announcer Button
-                        VoiceAnnouncerButtonView(onPress: announceCurrentLocation, isVoiceEnabled: $isVoiceEnabled)
-                            .frame(width: 50, height: 50)
-                        
-                        Spacer()
-                        
-                        Button {
-                            isSheetPresented = true
-                        } label: {
-                            ZStack {
-                                // White Circle with Drop Shadow
-                                Circle()
-                                    .fill(Color.white)
-                                    .frame(width: 60, height: 60) // Adjust size as needed
-                                    .shadow(color: .gray.opacity(0.8), radius: 8, x: 0, y: 5)
-                                
-                                // Image on top of the circle
-                                Image("AtlasIcon")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 50, height: 50) // Adjust size as needed
-                            }
-                        }
-                    }
-                }
-                
-                
-                
-                
+        }
+    }
+}
+struct MapHUDView: View {
+    @Binding var tabSelection: Int
+    @ObservedObject var vm: UserViewModel
+    @ObservedObject var navManager: NavigationManager
+    @ObservedObject var mapManager: MapManager
+    @StateObject private var voiceManager = LocationVoiceManager.shared
+    @State private var isVoiceEnabled: Bool = false
+    
+    @State private var remainingTime: TimeInterval = 0
+    @State private var remainingDistance: Double = 0
+    @State private var atlasSheetPresented = false
+    @State private var navSheetPresented = false
+    @StateObject var speechRecognizer = SpeechRecognizer()
+
+    let timer = Timer.publish(every: 7, on: .main, in: .common).autoconnect()
+
+    var body: some View {
+        // All Map HUD
+        VStack {
+            if navManager.navigating {
+                DirectionView(step: navManager.navigatingStep!)
+            }
+            HStack {
                 Spacer()
-                if !navManager.navigating {
-                    Button {
-                        if navManager.navigatingRoute == nil {
-                            if let trip = vm.navigatingTrip {
-                                if let route = trip.route {
-                                    navManager.setNavigatingRoute(route: route)
-                                    navManager.startNavigating()
-                                }
-                            }
-                        } else {
-                            navManager.startNavigating()
-                        }
-                    } label: {
-                        Text("Start Navigating")
-                            .padding()
-                            .background(.blue)
-                            .foregroundStyle(.white)
-                            .padding()
-                    }
-                } else {
-                    HStack(spacing: 100) {
-                        VStack {
-                            Text("\(formattedRemainingTime())")
-                                .font(.largeTitle)
-                            Text("hrs")
-                        }
-                        VStack {
-                            Text("\(formattedRemainingDistance())")
-                                .font(.largeTitle)
-                            Text("mi")
-                        }
-                    }.padding()
-                    .frame(maxWidth: .infinity, idealHeight: 150)
-                        .background(.white)
+                VStack(spacing: 15) {
+                    RecenterMapView(recenterMap: {
+                        navManager.recenterMap()
+                    })
+                    .frame(width: 50, height: 50)
+                    .shadow(color: .gray.opacity(0.8), radius: 8, x: 0, y: 5)
                     
+                    // Add Voice Announcer Button
+                    VoiceAnnouncerButtonView(onPress: announceCurrentLocation, isVoiceEnabled: $isVoiceEnabled)
+                        .frame(width: 50, height: 50)
+                        .shadow(color: .gray.opacity(0.8), radius: 8, x: 0, y: 5)
+                    
+                    Spacer()
+                    
+                    Button {
+                        atlasSheetPresented = true
+                    } label: {
+                        ZStack {
+                            // White Circle with Drop Shadow
+                            Circle()
+                                .fill(Color.nomadDarkBlue)
+                                .frame(width: 60, height: 60) // Adjust size as needed
+                                .shadow(color: .gray.opacity(0.8), radius: 8, x: 0, y: 5)
+                            
+                            
+                            Rectangle()
+                                .frame(width: 50, height: 50)
+                                .foregroundStyle(.white)
+                                .mask {
+                                    // Image on top of the circle
+                                    Image("AtlasIcon")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 45, height: 45) // Adjust size as needed
+                                }
+                        }
+                    }
                 }
+                .padding(.trailing, 5)
+                .padding(.bottom, 20)
                 
             }
+            
+            Spacer()
+            if vm.navigatingTrip == nil {
+                Button {
+                    self.tabSelection = 2
+                } label: {
+                    
+                    HStack(spacing: 30) {
+                        Image(systemName: "chevron.left") // hidden, used for centering
+                            .font(.system(size: 25))
+                            .foregroundStyle(.clear)
+                        VStack(spacing: 15) {
+                            Text("No Trip in Progress").bold()
+                            Text("Select or create a new trip\n from the \"Plan\" tab")
+                        }
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 25))
+                            .foregroundStyle(.white)
+                    }.multilineTextAlignment(.center)
+                        .padding(20)
+                        .frame(maxWidth: .infinity, minHeight: 120, idealHeight: 120)
+                        .background(Color.nomadDarkBlue)
+                        .foregroundStyle(.white)
+                        .cornerRadius(20)
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 5)
+                        .shadow(color: .gray.opacity(0.8), radius: 8, x: 0, y: 5)
+                }
+            } else {
+                if !navManager.navigating {
+                    BeginningNavigationView(vm: vm, navManager: navManager, mapManager: mapManager, startNavigation: {
+                        startNavigation()
+                    }, cancel: { cancelNavigation()}).frame(height: 450)
+                        .transition(.move(edge: .bottom))
+                }
+            }
+        }.onAppear {
+            speechRecognizer.pollForAtlas()
+        }
+        .onDisappear {
+            speechRecognizer.resetTranscript()
         }.onChange(of: vm.navigatingTrip) { old, new in
             if let newTrip = new {
                 if let newRoute = newTrip.route {
@@ -165,9 +192,15 @@ struct MapView: View {
                 }
             }
         }
-        .sheet(isPresented: $isSheetPresented) {
+        .onChange(of: speechRecognizer.atlasSaid) { atlasSaid in
+            atlasSheetPresented = true
+        }
+        .sheet(isPresented: $atlasSheetPresented) {
             AtlasNavigationView(vm: vm)
                 .presentationDetents([.medium, .large])
+                .onDisappear {
+                    speechRecognizer.pollForAtlas()
+                }
         }
         .onReceive(timer) { _ in
             // reset remaining time and distance
@@ -175,10 +208,21 @@ struct MapView: View {
                 self.remainingTime = mapManager.getRemainingTime(leg: navManager.navigatingLeg!)
                 self.remainingDistance = mapManager.getRemainingDistance(leg: navManager.navigatingLeg!)
             }
-            
             // REROUTING SHOULD GO HERE
-            
         }
+    }
+    private func startNavigation() {
+        // start
+        navManager.setNavigatingRoute(route: vm.navigatingTrip!.route!)
+        navManager.startNavigating()
+    }
+    private func cancelNavigation() {
+        // cancel
+        vm.navigatingTrip = nil
+        navManager.navigatingRoute = nil
+        navManager.navigatingLeg = nil
+        navManager.navigatingStep = nil
+        navManager.navigating = false
     }
     private func formattedRemainingTime() -> String {
         let seconds = Int(navManager.remainingTime ?? 0)
@@ -189,13 +233,13 @@ struct MapView: View {
     }
     private func formattedRemainingDistance() -> String {
         return String(format: "%.1f", (navManager.remainingDistance ?? 0) / 1609.34)
-//        var miles = self.remainingDistance / 1609.34
-//        if miles > 0.2 {
-//            return String(format: "%.1f miles", miles)
-//        } else {
-//            let feet = 100 * floor(miles * 5280 / 100)
-//            return String(format: "%3.0f feet", feet)
-//        }
+        //        var miles = self.remainingDistance / 1609.34
+        //        if miles > 0.2 {
+        //            return String(format: "%.1f miles", miles)
+        //        } else {
+        //            let feet = 100 * floor(miles * 5280 / 100)
+        //            return String(format: "%3.0f feet", feet)
+        //        }
     }
     // Function to announce current location
     private func announceCurrentLocation() {
@@ -241,51 +285,7 @@ struct MapView: View {
     }
 }
 
-// Voice Button View
-struct VoiceAnnouncerButtonView: View {
-    let onPress: () -> Void
-    @Binding var isVoiceEnabled: Bool
-    
-    var body: some View {
-        Button(action: {
-            isVoiceEnabled.toggle()
-            if isVoiceEnabled {
-                onPress()
-            }
-        }) {
-            ZStack {
-                Circle()
-                    .fill(.white)
-                    .shadow(radius: 4)
-                Image(systemName: isVoiceEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill")
-                    .foregroundColor(.blue)
-            }
-        }
-    }
-}
-
-// Voice Manager
-class LocationVoiceManager: ObservableObject {
-    static let shared = LocationVoiceManager()
-    private let synthesizer = AVSpeechSynthesizer()
-    
-    func announceLocation(_ locationDescription: String) {
-        // Stop any ongoing speech
-        if synthesizer.isSpeaking {
-            synthesizer.stopSpeaking(at: .immediate)
-        }
-        
-        let utterance = AVSpeechUtterance(string: locationDescription)
-        utterance.rate = 0.5
-        utterance.volume = 1.0
-        utterance.pitchMultiplier = 1.0
-        utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
-        
-        synthesizer.speak(utterance)
-    }
-}
-
 
 #Preview {
-    MapView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")))
+    MapView(tabSelection: Binding.constant(1), vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")))
 }

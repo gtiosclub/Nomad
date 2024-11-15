@@ -342,6 +342,8 @@ struct FindStopView: View {
                 }
             }.onAppear() {
                 markerCoordinate = vm.current_trip?.getStartLocationCoordinates() ?? .init(latitude: 0, longitude: 0)
+                routeProgress = (vm.current_trip?.route?.totalTime() ?? 60) / 120
+                updateMarkerPosition(progress: routeProgress)
             }
             .navigationBarBackButtonHidden()
             .toolbar(.hidden, for: .navigationBar)

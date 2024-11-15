@@ -223,7 +223,7 @@ struct ItineraryPlanningView: View {
                         }
                     }) {
                         if !generatingRoute && !use_current_trip {
-                            Label("Generate with Atlas", systemImage: "wand.and.sparkles")
+                            Label(isLoading ? "Generating with Atlas" : "Generate with Atlas", systemImage: "wand.and.sparkles")
                                 .font(.headline)
                                 .foregroundColor(.white)
                                 .padding()
@@ -389,7 +389,7 @@ struct ItineraryPlanningView: View {
         }
         
         if startAddressError.isEmpty && endAddressError.isEmpty && bothAddressError.isEmpty {
-            if version == "Manual" {
+            if version == "manual" {
                 generatingRoute = true
             } else {
                 isLoading = true

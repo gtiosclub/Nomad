@@ -37,18 +37,45 @@ struct PreviewRouteView: View {
                     Spacer().frame(height: 20)
                     
                     HStack {
-                        Text(formatTimeDuration(duration: trip.route?.route?.expectedTravelTime ?? TimeInterval(0)))
+                        Button("Start Route") {
+                            vm.startTrip(trip: trip)
+                        }
+                        .padding()
+                        .background(Color.nomadDarkBlue)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                        .shadow(radius: 5)
+                        .frame(minHeight: 70)
+                        
+                        Spacer()
+                        
+                        HStack {
+                            VStack {
+                                Text(formatTimeDuration(duration: trip.route?.route?.expectedTravelTime ?? TimeInterval(0)))
+                                    .padding(.bottom, 0)
+                                Text("Time")
+                                    .padding(.top, 0)
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(.secondary)
+                            }
                             .padding()
-                            .fontWeight(.bold)
-                            .background(Color.gray.opacity(0.2))
-                            .cornerRadius(8)
-                        Text(formatDistance(distance: trip.route?.totalDistance() ?? 0))
+                            
+                            VStack {
+                                Text(formatDistance(distance: trip.route?.totalDistance() ?? 0))
+                                    .padding(.bottom, 0)
+                                Text("Distance")
+                                    .padding(.top, 0)
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(.secondary)
+                            }
                             .padding()
-                            .fontWeight(.bold)
-                            .background(Color.gray.opacity(0.2))
-                            .cornerRadius(8)
+                        }
+                        .background(Color.gray.opacity(0.2))
+                        .cornerRadius(8)
+                        .padding()
                     }
-                    .padding(.horizontal)
+                    .padding(.trailing, 10)
+                    .padding(.leading, 20)
                     .onChange(of: vm.times) {}
                     
                     Text("Route Details")
@@ -72,23 +99,24 @@ struct PreviewRouteView: View {
                     
                     VStack {
                         if !isCommunityTrip {
+                            Text("Finalize Your Route")
+                                .font(.headline)
+                                .fontWeight(.bold)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.leading)
+                            
                             VStack(alignment: .leading) {
-                                Text("Finalize Your Route")
-                                    .font(.headline)
-                                    .fontWeight(.bold)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.leading)
-                                
                                 Text("Route Name")
                                     .font(.body)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                                     .padding(.top, 10)
                                     .padding(.leading)
+                                    .padding(.bottom, 0)
                                 
                                 TextField("Trip Title", text: $tripTitle)
                                     .textFieldStyle(RoundedBorderTextFieldStyle())
-                                    .padding()
-                                    .padding(.top, 2)
+                                    .padding(.horizontal, 20)
+                                    .padding(.bottom)
                                 
                                 Text("Route Visibility")
                                     .font(.body)
@@ -103,30 +131,31 @@ struct PreviewRouteView: View {
                                     }
                                 }
                                 .pickerStyle(.segmented)
-                                .padding(.horizontal)
+                                .padding(.horizontal, 20)
                             }
+                            .padding(.horizontal)
                             
                             HStack {
+                                Spacer()
+                                
                                 Button {
                                     backToEdit = true
                                 } label: {
-                                    Text("Edit Route")
-                                        .padding()
-                                        .background(Color.gray.opacity(0.4))
-                                        .cornerRadius(8)
-                                        .foregroundColor(Color.black)
+                                    ZStack {
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .fill(Color.gray.opacity(0.2))
+                                            .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 3)
+                                            .frame(maxWidth: 150)
+                                        Text("Edit Route")
+                                            .foregroundColor(Color.black)
+                                            .padding()
+                                    }
                                 }
                                 .navigationDestination(isPresented: $backToEdit, destination: {
                                     ItineraryParentView(vm: vm, cvm: ChatViewModel())
                                 })
                                 
-                                Button("Start Route") {
-                                    vm.startTrip(trip: trip)
-                                }
-                                .padding()
-                                .background(Color.gray.opacity(0.4))
-                                .foregroundColor(.black)
-                                .cornerRadius(8)
+                                Spacer()
                                 
                                 Button("Save Route") {
                                     vm.setTripTitle(newTitle: $tripTitle.wrappedValue)
@@ -146,11 +175,17 @@ struct PreviewRouteView: View {
                                     }
                                 }
                                 .padding()
+                                .padding(.horizontal, 15)
                                 .background(Color.nomadDarkBlue)
                                 .foregroundColor(.white)
                                 .cornerRadius(8)
+                                .shadow(radius: 5)
+                                .frame(width: 150)
+                                
+                                Spacer()
                             }
                             .padding()
+                            .padding(.top, 20)
                         } else {
                             Button("Copy to My Trips") {
                                 Task {
