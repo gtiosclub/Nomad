@@ -241,6 +241,13 @@ class UserViewModel: ObservableObject {
             }
         }
     }
+    
+    func isAddress(_ searchString: String) -> Bool {
+        let addressKeywords = ["Street", "Avenue", "Boulevard", "Rd", "Drive", "Lane", "Way"]
+        let hasNumber = searchString.rangeOfCharacter(from: .decimalDigits) != nil
+        let containsAddressKeyword = addressKeywords.contains { searchString.localizedCaseInsensitiveContains($0) }
+        return hasNumber || containsAddressKeyword
+    }
 
     func fetchPlaces(latitude: String, longitude: String, stopType: String, rating: Double?, price: Int?, cuisine: String?, searchString: String) async {
         let apiKey = aiVM.yelpAPIKey
@@ -255,14 +262,23 @@ class UserViewModel: ObservableObject {
         //print("String to be Searched: \(searchString)")
         
         if (searchString != "") {
-            print("Searching via search bar")
-            queryItems = [
-                URLQueryItem(name: "latitude", value: latitude),
-                URLQueryItem(name: "longitude", value: longitude),
-                URLQueryItem(name: "term", value: searchString),
-                URLQueryItem(name: "sort_by", value: "rating"),
-                URLQueryItem(name: "limit", value: "50")
-            ]
+            if (isAddress(searchString)) {
+                print("Searching via search bar address")
+                queryItems = [
+                    URLQueryItem(name: "location", value: searchString),
+                    URLQueryItem(name: "sort_by", value: "rating"),
+                    URLQueryItem(name: "limit", value: "50")
+                ]
+            } else {
+                print("Searching via search bar name")
+                queryItems = [
+                    URLQueryItem(name: "latitude", value: latitude),
+                    URLQueryItem(name: "longitude", value: longitude),
+                    URLQueryItem(name: "term", value: searchString),
+                    URLQueryItem(name: "sort_by", value: "rating"),
+                    URLQueryItem(name: "limit", value: "50")
+                ]
+            }
         } else if (stopType == "Restaurants") {
             queryItems = [
                 URLQueryItem(name: "latitude", value: latitude),

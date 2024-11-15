@@ -11,7 +11,7 @@ import CoreLocation
 struct FindStopView: View {
     @ObservedObject var vm: UserViewModel
     @State var selection: String = "Restaurants"
-    @State private var searchTerm: String = ""
+    //@State private var searchTerm: String = ""
     @State private var searchString: String = ""
     @State private var price: Int = 0
     @State private var rating: Int = 0
