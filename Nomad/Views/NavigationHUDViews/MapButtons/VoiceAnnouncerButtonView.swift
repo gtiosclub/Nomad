@@ -46,10 +46,10 @@ class LocationVoiceManager: ObservableObject {
         }
         
         let utterance = AVSpeechUtterance(string: instruction)
-        utterance.rate = 0.5
-        utterance.volume = 1.0
+        utterance.voice = AVSpeechSynthesisVoice(identifier: "com.apple.ttsbundle.siri_female_en-GB_compact")
+        utterance.rate = 0.50  // Try increasing this value to speed up the speech
         utterance.pitchMultiplier = 1.0
-        utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
+        utterance.volume = 1
         
         synthesizer.speak(utterance)
     }
