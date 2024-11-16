@@ -43,20 +43,14 @@ class ChatViewModel: ObservableObject {
         }
     }
     
-    //For Testing the Horizontal Scroll View
-//    @Published var pois: [POIDetail] = [
-//        POIDetail(name: "Speedway", address: "901 Gas Station Avenue, Duluth GA", distance: "in 30 mi"),
-//        POIDetail(name: "Shell", address: "123 Main Street, Atlanta GA", distance: "in 40 mi"),
-//        POIDetail(name: "BP", address: "456 Elm Street, Lawrenceville GA", distance: "in 20 mi")
-//    ]
-    // Example function to generate sample POIs (you would use real data here)
-//    func generateSamplePOIs() -> [POIDetail] {
-//        return [
-//            POIDetail(name: "Speedway", address: "901 Gas Station Avenue, Duluth GA", distance: 15, phoneNumber: "4045949429", rating: 3.3, price: "$", image: "", time: 3.0),
-//            POIDetail(name: "Shell", address: "123 Main Street, Atlanta GA", distance: 5, phoneNumber: "4045949429", rating: 3.2, price: "$$$", image: "", time: 4.1),
-//            POIDetail(name: "BP", address: "456 Elm Street, Lawrenceville GA", distance: 7, phoneNumber: "4045949429", rating: 5, price: "$$", image: "", time: 7.2)
-//        ]
-//    }
+    func startNewChat() {
+       messages = [
+           Message(content: "Hi! I'm Atlas, your AI assistant", sender: "AI")
+       ]
+       pois.removeAll()
+       latestAIResponse = nil
+   }
+    
 }
 
 struct Message: Identifiable {
