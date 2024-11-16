@@ -21,7 +21,7 @@ struct ItineraryParentView: View {
                 
                 // Overlay that wipes in and out
                 if showWipeOverlay {
-                    Color.blue
+                    Color.nomadDarkBlue
                         .edgesIgnoringSafeArea(.all)
                         .transition(.wipe)
                         .zIndex(1) // Ensure the blue overlay is on top
