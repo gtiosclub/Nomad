@@ -10,6 +10,7 @@
 		08C4C61F2CCB068C00C9B8D9 /* FilterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08C4C61E2CCB068C00C9B8D9 /* FilterView.swift */; };
 		391165FA2CB53542004B8695 /* PreviewRouteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 391165F92CB53542004B8695 /* PreviewRouteView.swift */; };
 		397D567F2CCB0BA20020EA99 /* ViewAllTripsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 397D567E2CCB0BA20020EA99 /* ViewAllTripsView.swift */; };
+		482E34972CE8F5CF00F406B8 /* Entitlements.plist in Resources */ = {isa = PBXBuildFile; fileRef = 482E34962CE8F5C500F406B8 /* Entitlements.plist */; };
 		48974B842C9A438B0057B073 /* Activity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B832C9A43880057B073 /* Activity.swift */; };
 		48974B862C9A44A30057B073 /* Hotel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B852C9A449F0057B073 /* Hotel.swift */; };
 		48974B8D2CA0A3CB0057B073 /* FindStopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B8C2CA0A3CB0057B073 /* FindStopView.swift */; };
@@ -108,6 +109,7 @@
 		08C4C61E2CCB068C00C9B8D9 /* FilterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterView.swift; sourceTree = "<group>"; };
 		391165F92CB53542004B8695 /* PreviewRouteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewRouteView.swift; sourceTree = "<group>"; };
 		397D567E2CCB0BA20020EA99 /* ViewAllTripsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewAllTripsView.swift; sourceTree = "<group>"; };
+		482E34962CE8F5C500F406B8 /* Entitlements.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Entitlements.plist; sourceTree = "<group>"; };
 		48974B832C9A43880057B073 /* Activity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Activity.swift; sourceTree = "<group>"; };
 		48974B852C9A449F0057B073 /* Hotel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hotel.swift; sourceTree = "<group>"; };
 		48974B8C2CA0A3CB0057B073 /* FindStopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindStopView.swift; sourceTree = "<group>"; };
@@ -270,6 +272,7 @@
 		B2F8F3352C97BB3C00B9618E /* Nomad */ = {
 			isa = PBXGroup;
 			children = (
+				482E34962CE8F5C500F406B8 /* Entitlements.plist */,
 				94F91F652C9F875F00A63F7A /* Info.plist */,
 				B2154C6C2C9D01BA00A6F238 /* GoogleService-Info.plist */,
 				B2F8F3362C97BB3C00B9618E /* NomadApp.swift */,
@@ -485,6 +488,7 @@
 				B2F8F3402C97BB3E00B9618E /* Preview Assets.xcassets in Resources */,
 				B2154C6D2C9D01BA00A6F238 /* GoogleService-Info.plist in Resources */,
 				B2F8F33D2C97BB3E00B9618E /* Assets.xcassets in Resources */,
+				482E34972CE8F5CF00F406B8 /* Entitlements.plist in Resources */,
 				F74D35632CE2D46B0030C72A /* AtlasAnimation.gif in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -716,7 +720,7 @@
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need access to your microphone for speech recognition";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "We need access to speech recognition to transcribe your voice";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = NO;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -751,7 +755,7 @@
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need access to your microphone for speech recognition";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "We need access to speech recognition to transcribe your voice";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = NO;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
