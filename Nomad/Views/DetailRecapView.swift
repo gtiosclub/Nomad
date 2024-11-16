@@ -14,6 +14,7 @@ struct DetailRecapView: View {
     @State var trip: Trip
     @State var images: [UIImage] = []
     @State var routePlanned: Bool = false
+    @State var isRouteReady:Bool = false
     
     var body: some View {
         ScrollView {
@@ -110,10 +111,19 @@ struct DetailRecapView: View {
                         .font(.system(size: 18, weight: .semibold))
                     Spacer()
                 }.padding(.bottom, 10)
-                RoutePreviewView(vm: vm, cvm: ChatViewModel(), trip: Binding.constant(trip), currentStopLocation: Binding.constant(nil))
-                    .frame(height: 400)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                    .shadow(radius: 5.0)
+                if isRouteReady {
+                    RoutePreviewView(vm: vm, cvm: ChatViewModel(), trip: Binding.constant(trip), currentStopLocation: Binding.constant(nil))
+                        .frame(height: 400)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .shadow(radius: 5.0)
+                } else {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color.nomadLightBlue)
+                            .frame(height: 400)
+                        ProgressView("Loading map...") // Show a placeholder until route is ready
+                    }
+                }
 
             }.padding(.horizontal, 30)
                 .padding(.bottom, 30)
@@ -122,6 +132,7 @@ struct DetailRecapView: View {
             Task {
                 await vm.updateRoute()
                 routePlanned = true
+                isRouteReady = true
                 let imageURLs: [String] = await FirebaseViewModel.vm.getAllImages(tripID: trip.id)
                 for image in imageURLs {
                     FirebaseViewModel.vm.getImageFromURL(urlString: image, completion: { uiImage in
@@ -130,7 +141,9 @@ struct DetailRecapView: View {
                 }
             }
         }
-        .onChange(of: routePlanned) {}
+        .onChange(of: routePlanned) {
+            vm.setCurrentTrip(trip: trip)
+        }
     }
 }
 
