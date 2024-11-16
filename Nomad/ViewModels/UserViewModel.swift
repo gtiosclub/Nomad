@@ -85,7 +85,12 @@ class UserViewModel: ObservableObject {
     
     func deleteTrip() async -> Bool {
         if let trip = current_trip {
-            return true
+            if await fbVM.deleteTrip(userID: user.id, tripID: trip.id) {
+                user.trips.removeAll(where: { $0.id == trip.id })
+                user.pastTrips.removeAll(where: { $0.id == trip.id })
+                clearCurrentTrip()
+                return true
+            }
         }
         return false
     }
