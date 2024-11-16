@@ -52,29 +52,29 @@ struct MapView: View {
         }.environmentObject(navManager)
                
             .onChange(of: mapManager.motion, initial: true) { oldMotion, newMotion in
-//                if let newLoc = newMotion.coordinate {
-//                    if !navManager.destinationReached {
-//                    Task {
-//                        await navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
-//                    }
-//                    navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
-//
-//                    }
-//                    
-//                    if let camera = navManager.mapPosition.camera {
-//                        let movingMap = navManager.movingMap(camera: camera.centerCoordinate)
-//                        if !movingMap {
-//                            withAnimation {
-//                                navManager.updateMapPosition(newMotion)
-//                            }
-//      
-//                        }
-//                    }
-//                }
+                if let newLoc = newMotion.coordinate {
+                    if !navManager.destinationReached {
+                    Task {
+                        await navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
+                    }
+                    navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
+
+                    }
+                    
+                    if let camera = navManager.mapPosition.camera {
+                        let movingMap = navManager.movingMap(camera: camera.centerCoordinate)
+                        if !movingMap {
+                            withAnimation {
+                                navManager.updateMapPosition(newMotion)
+                            }
+      
+                        }
+                    }
+                }
             }
         .onAppear() {
-//            let motion = mapManager.motion
-//            navManager.updateMapPosition(motion)
+            let motion = mapManager.motion
+            navManager.updateMapPosition(motion)
         }.onMapCameraChange { camera in
             withAnimation {
                 cameraDistance = camera.camera.distance
@@ -115,11 +115,6 @@ struct MapHUDView: View {
             }
             
             Spacer()
-            Button(action: {
-                navManager.goToNextStep()
-            }) {
-                Text("Next Step")
-            }
             if vm.navigatingTrip == nil {
                 Button {
                     self.tabSelection = 2
@@ -158,7 +153,9 @@ struct MapHUDView: View {
                                 .offset(y: 20)
                         }
                     } else {
-                        EndOfLegView(navManager: navManager, continueNavigation: { navManager.goToNextLeg() })
+                        EndOfLegView(navManager: navManager, continueNavigation: {
+                            endOfLegAction()
+                        })
                         
                     }
                 }
@@ -177,12 +174,12 @@ struct MapHUDView: View {
         }
         
         .onChange(of: navManager.navigatingStep) { oldValue, newValue in
-//            if navManager.getNavigating() {
-//                navManager.recenterMap()
-//                if isVoiceEnabled {
-//                    announceInstruction()
-//                }
-//            }
+            if navManager.getNavigating() {
+                navManager.recenterMap()
+                if isVoiceEnabled {
+                    announceInstruction()
+                }
+            }
         }
         .onChange(of: speechRecognizer.atlasSaid) { atlasSaid in
             atlasSheetPresented = true
@@ -200,9 +197,9 @@ struct MapHUDView: View {
         }
         .onReceive(timer) { _ in
             // reset remaining time and distance
-//            Task {
-//                await timerUpdate()
-//            }
+            Task {
+                await timerUpdate()
+            }
         }
     }
     
@@ -217,7 +214,7 @@ struct MapHUDView: View {
         
         Task {
             if !navManager.destinationReached {
-                //await navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
+                await navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
                 navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
             }
         }
@@ -232,8 +229,18 @@ struct MapHUDView: View {
             await timerUpdate()
         }
     }
+    
+    private func endOfLegAction() {
+        if navManager.navigatingLeg!.id == navManager.navigatingRoute!.legs.last!.id {
+            cancelNavigation()
+        } else {
+            navManager.goToNextLeg()
+        }
+    }
     private func cancelNavigation() {
         // cancel
+        navManager.mapMarkers.removeAll()
+        navManager.mapPolylines.removeAll()
         vm.navigatingTrip = nil
         navManager.navigatingRoute = nil
         navManager.navigatingLeg = nil
