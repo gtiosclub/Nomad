@@ -13,7 +13,7 @@ struct AIAssistantView: View {
 
     var body: some View {
        VStack(spacing: 0){
-           HeaderView(vm: vm)
+           HeaderView(vm: vm, cvm: chatViewModel)
            ChatMessagesView(chatViewModel: chatViewModel, dotCount: dotCount, timer: timer)
            
            if !chatViewModel.pois.isEmpty {
@@ -181,10 +181,11 @@ struct UserMessageView: View {
 
 struct HeaderView: View {
     var vm: UserViewModel
+    var cvm: ChatViewModel
     
     var body: some View {
         if let trip = vm.current_trip {
-            RoutePreviewView(vm: vm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(nil))
+            RoutePreviewView(vm: vm, cvm: cvm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(nil))
                 .frame(minHeight: 200.0)
         } else {
             Text("No current trip available")
