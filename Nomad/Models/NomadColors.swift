@@ -11,6 +11,9 @@ extension Color {
         return Color(red: 89/255, green: 139/255, blue: 139/255)
         }
     public static var nomadLightBlue: Color {
+        return Color(red: 89/255, green: 139/255, blue: 139/255, opacity: 0.17)
+        }
+    public static var nomadMediumBlue: Color {
         return Color(red: 227/255, green: 235/255, blue: 235/255)
         }
     public static var nomadYellow: Color {

@@ -191,6 +191,9 @@ struct NomadStep: Equatable {
             self.maneuverType = maneuverType
             self.intersections = intersections
             self.names = names
+            
+            // print(self.toString())
+            
         } //The names of the road or path leading from this step’s maneuver to the next step’s maneuver.
         
         init(step: RouteStep) {
@@ -210,7 +213,7 @@ struct NomadStep: Equatable {
             Exit Index: \(exitIndex ?? -1)
             Maneuver Type: \(maneuverType.rawValue)
             Maneuver Direction: \(maneuverDirection?.rawValue ?? "NONE")
-            // Number Instructions Displayed Along Step: \(instructionsDisplayedAlongStep?.count)
+            // Number Instructions Displayed Along Step: \(instructionsDisplayedAlongStep)
             Names: \(names ?? [])
             """
             // Intersections: \(intersections ?? [])

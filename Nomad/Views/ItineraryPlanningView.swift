@@ -389,7 +389,7 @@ struct ItineraryPlanningView: View {
         }
         
         if startAddressError.isEmpty && endAddressError.isEmpty && bothAddressError.isEmpty {
-            if version == "Manual" {
+            if version == "manual" {
                 generatingRoute = true
             } else {
                 isLoading = true

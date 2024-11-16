@@ -202,7 +202,7 @@ actor SpeechRecognizer: ObservableObject {
 
         if let result {
             let transcription = result.bestTranscription.formattedString.lowercased()
-            print(transcription)
+            // print(transcription)
             
             if transcription.contains("atlas") {
                 Task { @MainActor in
@@ -247,7 +247,7 @@ actor SpeechRecognizer: ObservableObject {
     nonisolated private func transcribe(_ message: String) {
         Task { @MainActor in
             transcript = message
-            print(transcript)
+            //print(transcript)
         }
     }
     nonisolated private func transcribe(_ error: Error) {

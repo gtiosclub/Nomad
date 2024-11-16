@@ -58,7 +58,9 @@ struct DirectionView: View {
                 case .text(let text):
                     self.streetName = text.text
                 case .image(let image, let altText):
-                    self.image = image.imageBaseURL?.absoluteString
+                    let url = image.imageURL(scale: 3, format: .png)?.absoluteString
+                    print("URL: \(url)")
+                    self.image = url
                 case .exitCode(let text):
                     self.exitCode = text.text
                 default:
@@ -80,13 +82,22 @@ struct DirectionView: View {
                 }
                 // highway exit
                 if let url = URL(string: image ?? "") {
-                    AsyncImage(url: url)
+                    AsyncImage(url: url) { image in
+                        image
+                            .resizable()
+                            .scaledToFit()
+                    } placeholder: {
+                        Image(systemName: "shield.fill")
+                    }.frame(width: 70, height: 70)
+                        
                 }
                 VStack(alignment: .leading) {
                     Text(text ?? formattedInstructions())
                         .lineLimit(2)
                         .bold()
                         .font(.system(size: image != nil ? 30 : 40))
+                        .minimumScaleFactor(0.6)
+                        .frame(width: 200)
 //                    if let formattedSubInstructions = formattedSubIntructions() {
 //                        Text(formattedSubInstructions)
 //                            .lineLimit(1)
@@ -96,7 +107,7 @@ struct DirectionView: View {
 
             }
             .padding(25)
-            .background(Color.nomadLightBlue)
+            .background(Color.nomadMediumBlue)
             .cornerRadius(10)
         }
     }
@@ -151,6 +162,15 @@ struct DirectionView: View {
             }
         } else if manType == .merge {
             return Image(systemName: "arrow.merge")
+        } else if manType == .arrive {
+            switch manDirection {
+            case .left:
+                return Image(systemName: "signpost.left")
+            case .right:
+                return Image(systemName: "signpost.right")
+            default:
+                return Image(systemName: "mappin.and.ellipse")
+            }
         } else {
             return Image(systemName: "car.fill")
         }
@@ -161,6 +181,9 @@ struct DirectionView: View {
             return step.direction.names?.last ?? step.direction.instructions
         } else if step.direction.maneuverType == .merge {
             return "Exit \(step.direction.exitCodes![0])"
+        } else if step.direction.maneuverType == .arrive {
+            let (curr, next) = navManager.getCurrentAndNextPOI()
+            return "\(curr.name)"
         } else {
             return step.direction.instructions
         }

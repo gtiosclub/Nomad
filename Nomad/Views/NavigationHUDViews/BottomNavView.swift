@@ -57,7 +57,7 @@ struct BottomNavView: View {
                 .padding(.bottom, 20)
         }
         .padding()
-        .background(Color.nomadLightBlue)
+        .background(Color.nomadMediumBlue)
         .cornerRadius(20)
     }
     func calculateArrivalTime() -> String {
@@ -80,7 +80,7 @@ struct BottomNavView: View {
     
     func formatMiles() -> String {
         let miles = distance / 1609.34
-        if miles >= 1 {
+        if miles >= 10 {
             return String(format: "%.0f", miles)
         } else {
             return String(format: "%.1f", miles)
