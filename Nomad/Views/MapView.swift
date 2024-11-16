@@ -174,6 +174,9 @@ struct MapHUDView: View {
         .onChange(of: navManager.navigatingStep) { oldValue, newValue in
             if navManager.getNavigating() {
                 navManager.recenterMap()
+                if isVoiceEnabled {
+                    announceInstruction()
+                }
             }
         }
         .onChange(of: speechRecognizer.atlasSaid) { atlasSaid in

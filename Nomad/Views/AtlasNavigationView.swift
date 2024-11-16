@@ -40,7 +40,7 @@ struct AtlasNavigationView: View {
     
     func speak(text: String) {
         let utterance = AVSpeechUtterance(string: text)
-        utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
+        utterance.voice = AVSpeechSynthesisVoice(identifier: "com.apple.ttsbundle.siri_female_en-GB_compact")
         utterance.rate = 0.50  // Try increasing this value to speed up the speech
         utterance.pitchMultiplier = 1.0
         utterance.volume = 1

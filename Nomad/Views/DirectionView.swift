@@ -87,6 +87,8 @@ struct DirectionView: View {
                         .lineLimit(2)
                         .bold()
                         .font(.system(size: image != nil ? 30 : 40))
+                        .minimumScaleFactor(0.6)
+                        .frame(width: 200)
 //                    if let formattedSubInstructions = formattedSubIntructions() {
 //                        Text(formattedSubInstructions)
 //                            .lineLimit(1)
