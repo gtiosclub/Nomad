@@ -83,6 +83,13 @@ class UserViewModel: ObservableObject {
         return false
     }
     
+    func deleteTrip() async -> Bool {
+        if let trip = current_trip {
+            return true
+        }
+        return false
+    }
+    
     func modifyTripInFirebase() async -> Bool {
         if let trip = current_trip {
             var hasDriven = 2
@@ -516,7 +523,7 @@ class UserViewModel: ObservableObject {
     }
 
     func getTripVisibility() -> Bool {
-        return current_trip?.setIsPrivate() ?? true
+        return current_trip?.getIsPrivate() ?? true
     }
     
     func reorderStops(fromOffsets: IndexSet, toOffset: Int) {

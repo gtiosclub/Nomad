@@ -128,7 +128,7 @@ struct ViewAllTripsView: View {
                         .padding(3)
                         .padding(.horizontal, 5)
                         .background(Color.nomadDarkBlue.opacity(0.5))
-                        .cornerRadius(8)
+                        .cornerRadius(10)
                         .foregroundColor(.black.opacity(0.7))
                         .padding(.leading, 5)
                 }

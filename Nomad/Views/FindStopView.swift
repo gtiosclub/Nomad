@@ -140,7 +140,7 @@ struct FindStopView: View {
                                         .padding(.vertical, 10)
                                         .padding(.horizontal, 10)
                                         .background(.white)
-                                        .cornerRadius(8)
+                                        .cornerRadius(10)
                                         .padding(.trailing, 10)
                                 }
                                 .padding(.horizontal, 30)
@@ -292,7 +292,7 @@ struct FindStopView: View {
                                 .background(Color.gray.opacity(0.4))
                                 .cornerRadius(10)
                                 .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
-                                .font(.headline)
+                                .font(.system(size: 18))
                         }
                         .navigationDestination(isPresented: $backToDetails, destination: {
                             ItineraryPlanningView(vm: vm, use_current_trip: true, letBack: false)
@@ -308,7 +308,7 @@ struct FindStopView: View {
                                 .background(Color.nomadDarkBlue)
                                 .cornerRadius(10)
                                 .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
-                                .font(.headline)
+                                .font(.system(size: 18))
                         }
                         .navigationDestination(isPresented: $toPreview, destination: {
                             PreviewRouteView(vm: vm, trip: vm.current_trip!, letBack: false)
@@ -463,8 +463,9 @@ struct FindStopView: View {
             }
         }) {
             Text("Search")
-                .font(.headline)
-                .padding()
+                .font(.system(size: 18))
+                .padding(.horizontal, 15)
+                .padding(.vertical)
                 .background(Color.nomadDarkBlue)
                 .foregroundColor(.white)
                 .cornerRadius(10)

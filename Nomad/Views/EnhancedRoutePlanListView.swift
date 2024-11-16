@@ -225,8 +225,12 @@ struct EnhancedRoutePlanListView: View {
                         }
                         
                         HStack(spacing: 5) {
-                            if let city = location.getCity() {
+                            if let city = location.getCity(), !city.isEmpty {
                                 Text("\(city) ")
+                            } else if let city = vm.current_trip?.getStartCity(), isFirst {
+                                Text(city)
+                            } else if let city = vm.current_trip?.getEndCity(), isLast {
+                                Text(city)
                             }
                             
                             if let ratable = location as? Ratable {
@@ -258,7 +262,7 @@ struct EnhancedRoutePlanListView: View {
                                 .frame(maxWidth: 60)
                                 .frame(maxHeight: 30)
                                 .background(Color.nomadDarkBlue)
-                                .foregroundColor(.black)
+                                .foregroundColor(.white)
                                 .cornerRadius(10)
                                 .shadow(color: .black.opacity(0.5), radius: 5, y: 3)
                         }
