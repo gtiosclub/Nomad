@@ -316,8 +316,6 @@ class FirebaseViewModel: ObservableObject {
     }
     
     func createCopyTrip(newTripID: String, oldTripID: String, createdDate: String) async -> Bool {
-        let db = Firestore.firestore()
-        
         do {
             let document = try await db.collection("TRIPS").document(oldTripID).getDocument()
             let stopsDocs = try await db.collection("TRIPS").document(oldTripID).collection("STOPS").getDocuments()
@@ -417,6 +415,18 @@ class FirebaseViewModel: ObservableObject {
         } catch {
             print(error)
             return false
+        }
+    }
+    
+    
+    func deleteTrip(userID: String, tripID: String) async -> Bool{
+        do {
+            try await db.collection("USERS").document().updateData(["trips": FieldValue.arrayRemove([tripID])])
+            try await db.collection("TRIPS").document(tripID).delete()
+            return true
+       } catch {
+           print("Error deleting trip: \(error)")
+                return false
         }
     }
     
@@ -659,7 +669,7 @@ class FirebaseViewModel: ObservableObject {
                         do {
                             let stopDoc = try await stopRef.getDocument()
                             guard let stopData = stopDoc.data() else {
-                                print("Cannot find stop \(stop)")
+                                // print("Cannot find stop \(stop)")
                                 continue
                             }
 
@@ -824,7 +834,7 @@ class FirebaseViewModel: ObservableObject {
                             
                             guard let start_location = await startLocationResult,
                                   let end_location = await endLocationResult else {
-                                print("Start or end location is missing for trip \(tripID)")
+                                // print("Start or end location is missing for trip \(tripID)")
                                 return nil
                             }
                             

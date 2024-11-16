@@ -91,6 +91,17 @@ struct ExploreTripsView: View {
                                                 .frame(alignment: .top)
                                                 .frame(minWidth: 140)
                                         })
+                                        .simultaneousGesture(
+                                            LongPressGesture(minimumDuration: 0.5)
+                                        )
+                                        .contextMenu {
+                                            Button(action: {
+                                                //TODO: delete trip
+                                            }) {
+                                                Text("Delete")
+                                                Image(systemName: "trash")
+                                            }
+                                        }
                                     }
                                 }
                             }
