@@ -302,7 +302,7 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         
         var newSteps = [NomadStep]()
         if let earlyHalf = route.legs.first?.steps {
-            newSteps.append(contentsOf: earlyHalf)
+            newSteps.append(contentsOf: earlyHalf[0..<earlyHalf.count - 1])
         }
         if route.legs.count > 1 {
             newSteps.append(contentsOf: route.legs[1].steps)
