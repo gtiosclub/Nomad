@@ -11,6 +11,8 @@
 		391165FA2CB53542004B8695 /* PreviewRouteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 391165F92CB53542004B8695 /* PreviewRouteView.swift */; };
 		397D567F2CCB0BA20020EA99 /* ViewAllTripsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 397D567E2CCB0BA20020EA99 /* ViewAllTripsView.swift */; };
 		482E34972CE8F5CF00F406B8 /* Entitlements.plist in Resources */ = {isa = PBXBuildFile; fileRef = 482E34962CE8F5C500F406B8 /* Entitlements.plist */; };
+		482E34992CE8F80A00F406B8 /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 482E34982CE8F80000F406B8 /* CarPlaySceneDelegate.swift */; };
+		482E34A02CE9036200F406B8 /* CarPlay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 482E349A2CE8FC0B00F406B8 /* CarPlay.framework */; };
 		48974B842C9A438B0057B073 /* Activity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B832C9A43880057B073 /* Activity.swift */; };
 		48974B862C9A44A30057B073 /* Hotel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B852C9A449F0057B073 /* Hotel.swift */; };
 		48974B8D2CA0A3CB0057B073 /* FindStopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B8C2CA0A3CB0057B073 /* FindStopView.swift */; };
@@ -110,6 +112,8 @@
 		391165F92CB53542004B8695 /* PreviewRouteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewRouteView.swift; sourceTree = "<group>"; };
 		397D567E2CCB0BA20020EA99 /* ViewAllTripsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewAllTripsView.swift; sourceTree = "<group>"; };
 		482E34962CE8F5C500F406B8 /* Entitlements.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Entitlements.plist; sourceTree = "<group>"; };
+		482E34982CE8F80000F406B8 /* CarPlaySceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarPlaySceneDelegate.swift; sourceTree = "<group>"; };
+		482E349A2CE8FC0B00F406B8 /* CarPlay.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CarPlay.framework; path = System/Library/Frameworks/CarPlay.framework; sourceTree = SDKROOT; };
 		48974B832C9A43880057B073 /* Activity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Activity.swift; sourceTree = "<group>"; };
 		48974B852C9A449F0057B073 /* Hotel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hotel.swift; sourceTree = "<group>"; };
 		48974B8C2CA0A3CB0057B073 /* FindStopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindStopView.swift; sourceTree = "<group>"; };
@@ -193,6 +197,7 @@
 				947F53C22CA0F59F00238C4F /* MapboxNavigationCore in Frameworks */,
 				8419ED6C2C99536E003AD5C2 /* FirebaseAnalytics in Frameworks */,
 				8419ED6E2C99536E003AD5C2 /* FirebaseAnalyticsOnDeviceConversion in Frameworks */,
+				482E34A02CE9036200F406B8 /* CarPlay.framework in Frameworks */,
 				B2F8F3672C97BE2E00B9618E /* ChatGPTSwift in Frameworks */,
 				8419ED802C99536E003AD5C2 /* FirebaseFirestore in Frameworks */,
 				8419ED8E2C99536E003AD5C2 /* FirebaseMessaging in Frameworks */,
@@ -223,6 +228,7 @@
 		9455F5492C9F99F0006D03D6 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				482E349A2CE8FC0B00F406B8 /* CarPlay.framework */,
 				9455F54A2C9F99F0006D03D6 /* XCTest.framework */,
 			);
 			name = Frameworks;
@@ -277,6 +283,7 @@
 				B2154C6C2C9D01BA00A6F238 /* GoogleService-Info.plist */,
 				B2F8F3362C97BB3C00B9618E /* NomadApp.swift */,
 				B2F8F3462C97BB5500B9618E /* RootView.swift */,
+				482E34982CE8F80000F406B8 /* CarPlaySceneDelegate.swift */,
 				B2F8F3482C97BC6400B9618E /* Views */,
 				B2F8F3512C97BC9900B9618E /* Models */,
 				B2F8F35E2C97BD4B00B9618E /* ViewModels */,
@@ -539,6 +546,7 @@
 				B2F8F34E2C97BC8A00B9618E /* AIAssistantView.swift in Sources */,
 				48974BA12CB04B420057B073 /* RoutePreviewView.swift in Sources */,
 				B29D04012CB0B48B00524D8B /* MapMarker.swift in Sources */,
+				482E34992CE8F80A00F406B8 /* CarPlaySceneDelegate.swift in Sources */,
 				B28668172CB309250095F653 /* MapManager.swift in Sources */,
 				B2F8F3552C97BCBB00B9618E /* Trip.swift in Sources */,
 				48BBC2D22C9CE5070093D9D0 /* DetailRecapView.swift in Sources */,
@@ -710,17 +718,16 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Nomad/Preview Content\"";
-				DEVELOPMENT_TEAM = 726XXR46H7;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Nomad/Info.plist;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need access to your microphone for speech recognition";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "We need access to speech recognition to transcribe your voice";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = NO;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -731,7 +738,7 @@
 				);
 				"LD_RUNPATH_SEARCH_PATHS[arch=*]" = "@loader_path/Frameworks";
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.Brayden.nomad;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nicholascandello.nomad;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -745,17 +752,17 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Nomad/Preview Content\"";
-				DEVELOPMENT_TEAM = 726XXR46H7;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Nomad/Info.plist;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "We need access to your microphone for speech recognition";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "We need access to speech recognition to transcribe your voice";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = NO;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -765,8 +772,9 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.Brayden.nomad;
+				PRODUCT_BUNDLE_IDENTIFIER = com.nicholascandello.nomad;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
