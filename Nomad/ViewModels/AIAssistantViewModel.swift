@@ -137,7 +137,7 @@ class AIAssistantViewModel: ObservableObject {
         print(yelpInfo)
         
         guard let businessResponse = parseGetBusinessesIntoModel(yelpInfo: yelpInfo) else {
-            return [POIDetail.null]
+            return []
         }
         
         if(businessResponse.businesses.isEmpty) {
@@ -199,7 +199,6 @@ class AIAssistantViewModel: ObservableObject {
                     city: business.location.city
                     )
             }
-            
             
             
             

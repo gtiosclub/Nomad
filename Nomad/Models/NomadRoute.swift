@@ -192,7 +192,7 @@ struct NomadStep: Equatable {
             self.intersections = intersections
             self.names = names
             
-            print(self.toString())
+            // print(self.toString())
             
         } //The names of the road or path leading from this step’s maneuver to the next step’s maneuver.
         

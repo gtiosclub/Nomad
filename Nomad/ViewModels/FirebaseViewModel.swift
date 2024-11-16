@@ -315,8 +315,6 @@ class FirebaseViewModel: ObservableObject {
     }
     
     func createCopyTrip(newTripID: String, oldTripID: String, createdDate: String) async -> Bool {
-        let db = Firestore.firestore()
-        
         do {
             let document = try await db.collection("TRIPS").document(oldTripID).getDocument()
             let stopsDocs = try await db.collection("TRIPS").document(oldTripID).collection("STOPS").getDocuments()
@@ -416,6 +414,18 @@ class FirebaseViewModel: ObservableObject {
         } catch {
             print(error)
             return false
+        }
+    }
+    
+    
+    func deleteTrip(userID: String, tripID: String) async -> Bool{
+        do {
+            try await db.collection("USERS").document().updateData(["trips": FieldValue.arrayRemove([tripID])])
+            try await db.collection("TRIPS").document(tripID).delete()
+            return true
+       } catch {
+           print("Error deleting trip: \(error)")
+                return false
         }
     }
     

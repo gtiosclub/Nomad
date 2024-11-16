@@ -18,7 +18,7 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     @ObservedObject var mapManager = MapManager.manager
     // Route State Info
-    @Published var navigating = false
+    @Published var navigating2 = false
     @Published var navigatingTrip: Trip? = nil
     @Published var navigatingRoute: NomadRoute? = nil
     @Published var navigatingLeg: NomadLeg? = nil
@@ -41,6 +41,15 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var mapPolylines: [MKPolyline] = []
     @Published var destinationReached = false
     
+    static let nav = NavigationManager()
+    
+    func getNavigating() -> Bool {
+        return self.navigating2
+    }
+    
+    func setNavigating(_ new: Bool) {
+        self.navigating2 = new
+    }
     var remainingTime: TimeInterval? {
         if let leg = navigatingLeg {
             return mapManager.getRemainingTime(leg: leg)
@@ -69,12 +78,12 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func startNavigating() {
         if self.navigatingRoute == nil {
             print("No route assigned")
-            self.navigating = false
+            self.navigating2 = false
         } else {
             // ui changes here
             self.setNavigatingLeg(leg: navigatingRoute!.legs[0])
             self.setNavigatingStep(step: navigatingRoute!.legs[0].steps[0])
-            self.navigating = true
+            self.navigating2 = true
         }
     }
     func setNavigatingRoute(route: NomadRoute, trip: Trip) {
@@ -173,7 +182,7 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                 if current_leg_index < route.legs.count - 1 {
                     setNavigatingLeg(leg: route.legs[current_leg_index + 1])
                 } else  {
-                    navigating = false
+                    //navigating = false
                 }
             } else {
                 if let leg = route.legs.first {
@@ -226,16 +235,15 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     // Generates new route and updates current leg with that information
     public func updateTripAndRoute(stop: any POI) async throws -> Trip {
-        print("adding stop")
-        guard let route = self.navigatingRoute else { throw RerouteError.nilFound }
+
+        guard let navroute = self.navigatingRoute else { throw RerouteError.nilFound }
         guard let leg = self.navigatingLeg else { throw RerouteError.nilFound }
         guard let trip = self.navigatingTrip else { throw RerouteError.nilFound }
         guard let userLocation = mapManager.userLocation else { throw RerouteError.nilFound }
-        var stopCoords = [leg.getStartLocation(), userLocation, leg.getEndLocation()]
+        let stopCoords = [leg.getStartLocation(), CLLocationCoordinate2D(latitude: stop.latitude, longitude: stop.longitude), leg.getEndLocation()]
         
         guard let newRoutes = await mapManager.generateRoute(stop_coords: stopCoords) else { throw RerouteError.nilFound }
         guard let route = newRoutes.first else { throw RerouteError.nilFound }
-        
         var newLegs = [NomadLeg]()
         
         if let firstLeg = route.legs.first {
@@ -246,11 +254,13 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
 
         // append legs to route
-        var all_legs = route.legs
+        var all_legs = navroute.legs
         guard let leg_index = all_legs.firstIndex(where: { this_leg in
             this_leg.startCoordinate == leg.startCoordinate
         }) else { throw RerouteError.nilFound }
         print(leg_index)
+
+        all_legs.remove(at: leg_index)
         all_legs.insert(newLegs[1], at: leg_index)
         all_legs.insert(newLegs[0], at: leg_index) // MAYBE CHECK ORDER PUT IN
         self.navigatingRoute!.legs = all_legs
@@ -260,15 +270,19 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         
         self.navigatingTrip!.stops = all_stops
         self.navigatingTrip!.route = self.navigatingRoute!
-        
+
         self.navigatingLeg = newLegs[0]
         guard let estimatedStep = mapManager.determineCurrentStep(leg: newLegs[0]) else { throw RerouteError.nilFound }
         self.navigatingStep = estimatedStep
         
         setNavigatingRoute(route: self.navigatingRoute!, trip: self.navigatingTrip!)
         setNavigatingLeg(leg: self.navigatingLeg!)
-        setNavigatingStep(step: self.navigatingStep!)
-        
+        setNavigatingStep(step: estimatedStep)
+
+        for step in newLegs[0].steps {
+            print(step.direction.printInstructions())
+        }
+        self.navigating2 = true
         return navigatingTrip!
     }
     
@@ -288,7 +302,7 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         
         var newSteps = [NomadStep]()
         if let earlyHalf = route.legs.first?.steps {
-            newSteps.append(contentsOf: earlyHalf)
+            newSteps.append(contentsOf: earlyHalf[0..<earlyHalf.count - 1])
         }
         if route.legs.count > 1 {
             newSteps.append(contentsOf: route.legs[1].steps)
@@ -343,7 +357,7 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         guard let userLocation = motion.coordinate else { return 0 }
         if motion.direction ?? 0 > 0 {
             return motion.direction!.magnitude
-        } else if navigating {
+        } else if navigating2 {
             if let route = navigatingRoute {
                 let coord1 = userLocation
                 let coord2 = route.getStartLocation()
@@ -438,7 +452,7 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         guard let speed = userMotion.speed else { return }
         let bearing = speed >= minSpeed ? direction : 0
         withAnimation {
-            mapPosition = .camera(MapCamera(centerCoordinate: location, distance: navigating ? navDistance : normalDistance, heading: getNavBearing(motion: userMotion), pitch: navigating ? navPitch : 0))
+            mapPosition = .camera(MapCamera(centerCoordinate: location, distance: navigating2 ? navDistance : normalDistance, heading: getNavBearing(motion: userMotion), pitch: navigating2 ? navPitch : 0))
         }
     }
     // MAPMARKER CRUD
