@@ -13,13 +13,15 @@ struct RoutePreviewView: View {
     @ObservedObject var vm: UserViewModel
     @ObservedObject var cvm: ChatViewModel
     @Binding var trip: Trip
-    @State var region: MKCoordinateRegion = MKCoordinateRegion()
+    @State var position: MapCameraPosition = .automatic
     @Binding var currentStopLocation: CLLocationCoordinate2D?
     var showStopMarker: Bool = false
     
+    
+    
     var body: some View {
         VStack {
-            Map(initialPosition: .automatic) {
+            Map(position: $position) {
                 if let route = trip.route {
                     Marker("Start", coordinate: route.getStartLocation())
                     Marker("End", coordinate: route.getEndLocation())
@@ -43,14 +45,29 @@ struct RoutePreviewView: View {
                 
             }
             .onChange(of: cvm.pois) { newPois in
-                let stopCoords = newPois.map { CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude) }
-                region = calculateRegion(for: stopCoords)
+                var poi_coords = cvm.pois.map { CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude) }
+                
+                if let route = trip.route {
+                    if poi_coords.isEmpty {
+                        poi_coords.append(route.getEndLocation())
+                        poi_coords.append(contentsOf: trip.getStops().map { CLLocationCoordinate2D(latitude: $0.getLatitude(), longitude: $0.getLongitude()) })
+                    }
+                    poi_coords.append(route.getStartLocation())
+                }
+                
+                let region = calculateRegion(for: poi_coords)
+                withAnimation {
+                    self.position = .region(region)
+                }
             }
             .onChange(of: trip, initial: true) { oldTrip, newTrip in
                 let start_coord = self.trip.getRoute()?.getStartLocation() ?? CLLocationCoordinate2D()
                 let end_coord = self.trip.getRoute()?.getEndLocation() ?? CLLocationCoordinate2D()
                 
-                self.region = calculateRegion(for: [start_coord, end_coord])
+                let region = calculateRegion(for: [start_coord, end_coord])
+                withAnimation {
+                    self.position = .region(region)
+                }
             }
         }
     }
