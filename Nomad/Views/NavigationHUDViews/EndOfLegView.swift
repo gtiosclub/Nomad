@@ -71,7 +71,7 @@ struct EndOfLegView: View {
             
         }
         .padding()
-        .background(Color.nomadLightBlue)
+        .background(Color.nomadMediumBlue)
         .cornerRadius(20)
     }
     func continueButtonLabel() -> String {

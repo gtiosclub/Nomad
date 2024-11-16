@@ -96,7 +96,7 @@ struct DirectionView: View {
 
             }
             .padding(25)
-            .background(Color.nomadLightBlue)
+            .background(Color.nomadMediumBlue)
             .cornerRadius(10)
         }
     }

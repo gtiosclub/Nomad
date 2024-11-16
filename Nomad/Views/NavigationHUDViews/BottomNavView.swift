@@ -57,7 +57,7 @@ struct BottomNavView: View {
                 .padding(.bottom, 20)
         }
         .padding()
-        .background(Color.nomadLightBlue)
+        .background(Color.nomadMediumBlue)
         .cornerRadius(20)
     }
     func calculateArrivalTime() -> String {

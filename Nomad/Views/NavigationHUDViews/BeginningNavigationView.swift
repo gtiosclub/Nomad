@@ -86,7 +86,7 @@ struct BeginningNavigationView: View {
             }
             }
             .padding()
-            .background(Color.nomadLightBlue)
+            .background(Color.nomadMediumBlue)
             .cornerRadius(20)
             .offset(y: 20)
     }

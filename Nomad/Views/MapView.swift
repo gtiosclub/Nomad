@@ -87,68 +87,28 @@ struct MapHUDView: View {
     @ObservedObject var vm: UserViewModel
     @ObservedObject var navManager: NavigationManager
     @ObservedObject var mapManager: MapManager
-    @StateObject private var voiceManager = LocationVoiceManager.shared
-    @State private var isVoiceEnabled: Bool = false
+    @State var isVoiceEnabled: Bool = false
     
     @State private var remainingTime: TimeInterval = 0
     @State private var remainingDistance: Double = 0
-    @State private var atlasSheetPresented = false
+    @State var atlasSheetPresented = false
     @State private var navSheetPresented = false
-    @StateObject var speechRecognizer = SpeechRecognizer()
+    @ObservedObject var speechRecognizer = SpeechRecognizer()
 
     let timer = Timer.publish(every: 7, on: .main, in: .common).autoconnect()
 
     var body: some View {
         // All Map HUD
         VStack {
-            if navManager.navigating {
+            if navManager.getNavigating() {
                 DirectionView(navManager: navManager, step: navManager.navigatingStep!)
                     .padding()
             }
             HStack {
                 Spacer()
-                VStack(spacing: 15) {
-                    RecenterMapView(recenterMap: {
-                        navManager.recenterMap()
-                    })
-                    .frame(width: 50, height: 50)
-                    .shadow(color: .gray.opacity(0.8), radius: 8, x: 0, y: 5)
-                    
-                    // Add Voice Announcer Button
-                    VoiceAnnouncerButtonView(onPress: announceInstruction, isVoiceEnabled: $isVoiceEnabled)
-                        .frame(width: 50, height: 50)
-                        .shadow(color: .gray.opacity(0.8), radius: 8, x: 0, y: 5)
-                    
-                    Spacer()
-                    
-                    Button {
-                        atlasSheetPresented = true
-                    } label: {
-                        ZStack {
-                            // White Circle with Drop Shadow
-                            Circle()
-                                .fill(Color.nomadDarkBlue)
-                                .frame(width: 60, height: 60) // Adjust size as needed
-                                .shadow(color: .gray.opacity(0.8), radius: 8, x: 0, y: 5)
-                            
-                            
-                            Rectangle()
-                                .frame(width: 50, height: 50)
-                                .foregroundStyle(.white)
-                                .mask {
-                                    // Image on top of the circle
-                                    Image("AtlasIcon")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 45, height: 45) // Adjust size as needed
-                                }
-                        }
-                    }
-                }
+                MapButtonsView(announceInstruction: announceInstruction, navManager: navManager, atlasSheetPresented: $atlasSheetPresented, isVoiceEnabled: $isVoiceEnabled)
                 .padding(.trailing, 5)
                 .padding(.bottom, 20)
-                
-                
                 
             }
             
@@ -177,12 +137,12 @@ struct MapHUDView: View {
                         .cornerRadius(20)
                         .padding(.horizontal, 5)
                         .padding(.vertical, 5)
-                        .shadow(color: .gray.opacity(0.8), radius: 8, x: 0, y: 5)
                 }
             } else {
-                if !navManager.navigating {
+                if !navManager.getNavigating() {
                     BeginningNavigationView(vm: vm, navManager: navManager, mapManager: mapManager, startNavigation: {
                         startNavigation()
+                            
                     }, cancel: { cancelNavigation()}).frame(height: 450)
                         .transition(.move(edge: .bottom))
                 } else {
@@ -208,7 +168,9 @@ struct MapHUDView: View {
             }
         }
         .onChange(of: navManager.navigatingStep) { oldValue, newValue in
-            navManager.recenterMap()
+            if navManager.getNavigating() {
+                navManager.recenterMap()
+            }
         }
         .onChange(of: speechRecognizer.atlasSaid) { atlasSaid in
             atlasSheetPresented = true
@@ -232,7 +194,7 @@ struct MapHUDView: View {
     }
     
     private func timerUpdate() async {
-        if navManager.navigating {
+        if navManager.getNavigating() {
             self.remainingTime = mapManager.getRemainingTime(leg: navManager.navigatingLeg!)
             self.remainingDistance = mapManager.getRemainingDistance(leg: navManager.navigatingLeg!)
         }
@@ -240,7 +202,6 @@ struct MapHUDView: View {
         
         Task {
             if !navManager.destinationReached {
-                print("recalibrate")
                 await navManager.recalibrateCurrentStep() // check if still on currentStep, and update state accordingly
                 navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
             }
@@ -262,7 +223,8 @@ struct MapHUDView: View {
         navManager.navigatingRoute = nil
         navManager.navigatingLeg = nil
         navManager.navigatingStep = nil
-        navManager.navigating = false
+        print("cancel")
+        navManager.setNavigating(false)
     }
 
     private func formattedRemainingTime() -> String {
@@ -288,6 +250,53 @@ struct MapHUDView: View {
         
         let instruction = navManager.getStepInstruction()
         locationVoiceManager.announceInstruction(instruction)
+    }
+}
+
+struct MapButtonsView: View {
+    var announceInstruction: () -> Void
+    @ObservedObject var navManager: NavigationManager
+    @Binding var atlasSheetPresented: Bool
+    @Binding var isVoiceEnabled: Bool
+    var body: some View {
+        VStack(spacing: 15){
+            RecenterMapView(recenterMap: {
+                navManager.recenterMap()
+            })
+            .frame(width: 50, height: 50)
+            .shadow(color: .gray.opacity(0.8), radius: 8, x: 0, y: 5)
+            
+            // Add Voice Announcer Button
+            VoiceAnnouncerButtonView(onPress: announceInstruction, isVoiceEnabled: $isVoiceEnabled)
+                .frame(width: 50, height: 50)
+                .shadow(color: .gray.opacity(0.8), radius: 8, x: 0, y: 5)
+            
+            Spacer()
+            
+            Button {
+                atlasSheetPresented = true
+            } label: {
+                ZStack {
+                    // White Circle with Drop Shadow
+                    Circle()
+                        .fill(Color.nomadDarkBlue)
+                        .frame(width: 60, height: 60) // Adjust size as needed
+                        .shadow(color: .gray.opacity(0.8), radius: 8, x: 0, y: 5)
+                    
+                    
+                    Rectangle()
+                        .frame(width: 50, height: 50)
+                        .foregroundStyle(.white)
+                        .mask {
+                            // Image on top of the circle
+                            Image("AtlasIcon")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 45, height: 45) // Adjust size as needed
+                        }
+                }
+            }
+        }
     }
 }
 
