@@ -41,6 +41,8 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var mapPolylines: [MKPolyline] = []
     @Published var destinationReached = false
     
+    static let nav = NavigationManager()
+    
     func getNavigating() -> Bool {
         return self.navigating2
     }
@@ -277,6 +279,10 @@ class NavigationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
         setNavigatingLeg(leg: self.navigatingLeg!)
         setNavigatingStep(step: estimatedStep)
 
+        for step in newLegs[0].steps {
+            print(step.direction.printInstructions())
+        }
+        self.navigating2 = true
         return navigatingTrip!
     }
     

@@ -12,7 +12,7 @@ import AVFoundation
 struct MapView: View {
     @Binding var tabSelection: Int
     @ObservedObject var vm: UserViewModel
-    @ObservedObject var navManager: NavigationManager = NavigationManager()
+    @ObservedObject var navManager: NavigationManager = NavigationManager.nav
     @ObservedObject var mapManager = MapManager.manager
     @State private var cameraDistance: CLLocationDistance = 400
 
@@ -101,8 +101,10 @@ struct MapHUDView: View {
         // All Map HUD
         VStack {
             if navManager.getNavigating() {
-                DirectionView(navManager: navManager, step: navManager.navigatingStep!)
-                    .padding()
+                if let step = navManager.navigatingStep {
+                    DirectionView(navManager: navManager, step: step)
+                        .padding()
+                }
             }
             HStack {
                 Spacer()
@@ -142,13 +144,14 @@ struct MapHUDView: View {
                 if !navManager.getNavigating() {
                     BeginningNavigationView(vm: vm, navManager: navManager, mapManager: mapManager, startNavigation: {
                         startNavigation()
-                            
                     }, cancel: { cancelNavigation()}).frame(height: 450)
                         .transition(.move(edge: .bottom))
                 } else {
                     if !navManager.destinationReached {
-                        BottomNavView(routeName: vm.navigatingTrip!.name, expectedTravelTime: mapManager.getRemainingTime(leg: navManager.navigatingLeg!), distance: mapManager.getRemainingDistance(leg: navManager.navigatingLeg!), cancel: cancelNavigation)
-                            .offset(y: 20)
+                        if let leg = navManager.navigatingLeg {
+                            BottomNavView(routeName: vm.navigatingTrip!.name, expectedTravelTime: mapManager.getRemainingTime(leg: leg), distance: mapManager.getRemainingDistance(leg: leg), cancel: cancelNavigation)
+                                .offset(y: 20)
+                        }
                     } else {
                         EndOfLegView(navManager: navManager, continueNavigation: { navManager.goToNextLeg() })
                         
@@ -167,6 +170,7 @@ struct MapHUDView: View {
                 }
             }
         }
+        
         .onChange(of: navManager.navigatingStep) { oldValue, newValue in
             if navManager.getNavigating() {
                 navManager.recenterMap()
@@ -183,6 +187,7 @@ struct MapHUDView: View {
                 .presentationDetents([.medium, .large])
                 .onDisappear {
                     speechRecognizer.pollForAtlas()
+                    navManager.navigating2 = true
                 }
         }
         .onReceive(timer) { _ in
@@ -195,8 +200,10 @@ struct MapHUDView: View {
     
     private func timerUpdate() async {
         if navManager.getNavigating() {
-            self.remainingTime = mapManager.getRemainingTime(leg: navManager.navigatingLeg!)
-            self.remainingDistance = mapManager.getRemainingDistance(leg: navManager.navigatingLeg!)
+            if let leg = navManager.navigatingLeg {
+                self.remainingTime = mapManager.getRemainingTime(leg: leg)
+                self.remainingDistance = mapManager.getRemainingDistance(leg: leg)
+            }
         }
         // REROUTING SHOULD GO HERE
         
