@@ -331,7 +331,7 @@ struct ExploreTripsView: View {
                 imageUrl = trip.coverImageURL
             }
             .onChange(of: imageUrl, initial: true) { old, new in
-                print("got new image url \(new)")
+//                print("got new image url \(new)")
             }
         }
         

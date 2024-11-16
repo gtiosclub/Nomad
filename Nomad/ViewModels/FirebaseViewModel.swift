@@ -421,7 +421,7 @@ class FirebaseViewModel: ObservableObject {
     
     func deleteTrip(userID: String, tripID: String) async -> Bool{
         do {
-            try await db.collection("USERS").document().updateData(["trips": FieldValue.arrayRemove([tripID])])
+            try await db.collection("USERS").document(userID).updateData(["trips": FieldValue.arrayRemove([tripID])])
             try await db.collection("TRIPS").document(tripID).delete()
             return true
        } catch {
