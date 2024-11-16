@@ -14,7 +14,17 @@ struct AIAssistantView: View {
     var body: some View {
        VStack(spacing: 0){
            HeaderView(vm: vm, cvm: chatViewModel)
-           ChatMessagesView(chatViewModel: chatViewModel, dotCount: dotCount, timer: timer)
+           ZStack(alignment: .topTrailing) {
+               ChatMessagesView(chatViewModel: chatViewModel, dotCount: dotCount, timer: timer)
+               
+               Button(action: {
+                   chatViewModel.startNewChat()
+               }) {
+                   
+               }
+               .padding(.top) // Adjust this to control distance from the top
+           }
+           
            
            if !chatViewModel.pois.isEmpty {
                POICarouselView(chatViewModel: chatViewModel, vm: vm, aiViewModel: aiViewModel, addStop: addStop)
@@ -65,7 +75,7 @@ struct AIAssistantView: View {
                }) {
                    Image(systemName: "paperplane.fill")
                        .padding()
-                       .background(Color.blue)
+                       .background(Color.nomadDarkBlue)
                        .foregroundColor(.white)
                        .cornerRadius(10)
                }
@@ -110,36 +120,50 @@ struct ChatMessagesView: View {
     var body: some View {
         ScrollViewReader { reader in
             ScrollView {
-                ForEach(chatViewModel.messages) { message in
-                    HStack {
-                        if message.sender == "AI" {
-                            AtlasMessage(content: message.content, id: message.id)
-                            Spacer()
-                        } else {
-                            Spacer()
-                            UserMessageView(content: message.content)
+                ZStack(alignment: .topTrailing) {
+                    Button(action: {
+                           chatViewModel.startNewChat()
+                       }) {
+                           Image(systemName: "arrow.circlepath")
+                               .resizable()
+                               .frame(width: 35, height: 30)
+                               .padding(5)
+                       }
+                    
+                    
+                    VStack(spacing: 3) {
+                        ForEach(chatViewModel.messages) { message in
+                            HStack {
+                                if message.sender == "AI" {
+                                    AtlasMessage(content: message.content, id: message.id)
+                                    Spacer()
+                                } else {
+                                    Spacer()
+                                    UserMessageView(content: message.content)
+                                }
+                            }
+                            .padding(.horizontal)
+                        }.padding(.top)
+                        
+                        if chatViewModel.isQuerying {
+                            HStack {
+                                Image("AtlasIcon")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 35, height: 35)
+                                
+                                Text(String(repeating: ".", count: dotCount))
+                                    .padding()
+                                    .onReceive(timer) { _ in
+                                        self.dotCount = (dotCount % 3) + 1
+                                    }
+                                    .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+                                    .frame(maxWidth: 270, alignment: .leading)
+                            }
+                            .padding(.horizontal)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         }
                     }
-                    .padding(.horizontal)
-                }.padding(.top)
-                
-                if chatViewModel.isQuerying {
-                    HStack {
-                        Image("AtlasIcon")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 35, height: 35)
-                        
-                        Text(String(repeating: ".", count: dotCount))
-                            .padding()
-                            .onReceive(timer) { _ in
-                                self.dotCount = (dotCount % 3) + 1
-                            }
-                            .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
-                            .frame(maxWidth: 270, alignment: .leading)
-                    }
-                    .padding(.horizontal)
-                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
             .onChange(of: chatViewModel.messages.count) { _ in
