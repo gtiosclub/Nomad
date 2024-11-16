@@ -66,7 +66,7 @@ struct FindStopView: View {
                     }
                     
                     if let trip = vm.current_trip {
-                        RoutePreviewView(vm: vm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(markerCoordinate), showStopMarker: true)
+                        RoutePreviewView(vm: vm, cvm: ChatViewModel(), trip: Binding.constant(trip), currentStopLocation: Binding.constant(markerCoordinate), showStopMarker: true)
                             .frame(minHeight: 250.0)
                     } else {
                         Text("No current trip available")

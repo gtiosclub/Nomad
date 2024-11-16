@@ -164,6 +164,8 @@ class AIAssistantViewModel: ObservableObject {
             
             let coords = CLLocationCoordinate2D(latitude: business.coordinates.latitude, longitude: business.coordinates.longitude)
             
+//            let poi = GeneralLocation(address: "\(business.location.address1), \(business.location.city), \(business.location.state) \(business.location.zipCode)", name: business.name, latitude: business.coordinates.latitude, longitude: business.coordinates.longitude)
+
             var poiDetail: POIDetail
             // Use await to get routeAdditions asynchronously
             if let route = vm.current_trip?.route {
@@ -199,7 +201,6 @@ class AIAssistantViewModel: ObservableObject {
                     city: business.location.city
                     )
             }
-            
             
             
             

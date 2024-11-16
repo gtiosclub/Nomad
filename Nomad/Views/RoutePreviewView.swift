@@ -11,11 +11,11 @@ import SwiftUI
 
 struct RoutePreviewView: View {
     @ObservedObject var vm: UserViewModel
+    @ObservedObject var cvm: ChatViewModel
     @Binding var trip: Trip
     @State var region: MKCoordinateRegion = MKCoordinateRegion()
     @Binding var currentStopLocation: CLLocationCoordinate2D?
     var showStopMarker: Bool = false
-    
     
     var body: some View {
         VStack {
@@ -33,6 +33,18 @@ struct RoutePreviewView: View {
                     let stop_coord = CLLocationCoordinate2D(latitude: stop.getLatitude(), longitude: stop.getLongitude())
                     Marker("\(stop.getName())", coordinate: stop_coord)
                 }
+                
+                ForEach(cvm.pois, id: \.self) { stop in
+                    let stop_coord = CLLocationCoordinate2D(latitude: stop.latitude, longitude: stop.longitude)
+                    Marker("\(stop.name)", coordinate: stop_coord).tint(.green)
+                }
+
+                
+                
+            }
+            .onChange(of: cvm.pois) { newPois in
+                let stopCoords = newPois.map { CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude) }
+                region = calculateRegion(for: stopCoords)
             }
             .onChange(of: trip, initial: true) { oldTrip, newTrip in
                 let start_coord = self.trip.getRoute()?.getStartLocation() ?? CLLocationCoordinate2D()
@@ -42,8 +54,6 @@ struct RoutePreviewView: View {
             }
         }
     }
-    
-    
     func calculateRegion(for coordinates: [CLLocationCoordinate2D]) -> MKCoordinateRegion {
         let minLatitude = coordinates.map { $0.latitude }.min() ?? 0.0
         let maxLatitude = coordinates.map { $0.latitude }.max() ?? 0.0

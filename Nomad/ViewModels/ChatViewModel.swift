@@ -67,7 +67,7 @@ struct Message: Identifiable {
 
 
 // Add a model for POI details
-struct POIDetail: Identifiable, Equatable {
+struct POIDetail: Identifiable, Equatable, Hashable {
     var id = UUID()
     var name: String
     var address: String

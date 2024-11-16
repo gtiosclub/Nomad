@@ -24,7 +24,7 @@ struct PreviewRouteView: View {
         NavigationStack {
             ScrollView {
                 VStack {
-                    RoutePreviewView(vm: vm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(nil))
+                    RoutePreviewView(vm: vm, cvm: ChatViewModel(), trip: Binding.constant(trip), currentStopLocation: Binding.constant(nil))
                         .frame(height: 300)
                     
                     Spacer().frame(height: 20)
