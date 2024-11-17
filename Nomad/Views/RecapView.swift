@@ -9,7 +9,6 @@ import SwiftUI
 
 struct RecapView: View {
     @ObservedObject var vm: UserViewModel
-//    @ObservedObject var firebaseVM: FirebaseViewModel
     
     var body: some View {
         NavigationStack {
@@ -26,7 +25,7 @@ struct RecapView: View {
                         NavigationLink {
                             DetailRecapView(vm: vm, trip: trip)
                         } label: {
-                            CardView(title: trip.getName(), imageURL: trip.getCoverImageURL(), numStops: trip.getStops().count)
+                            TripGridView(trip: trip)
                         }.buttonStyle(PlainButtonStyle())
                     }
                 }
@@ -35,59 +34,6 @@ struct RecapView: View {
         }
     }
 }
-
-struct CardView: View, Identifiable {
-    let id = UUID()
-    let title: String
-    var imageURL: String
-    var numStops: Int
-
-    var body: some View {
-        VStack {
-            if imageURL.isEmpty {
-                Rectangle()
-                    .fill(Color.gray.opacity(0.5))
-                    .frame(width: 165, height: 135)
-                    .cornerRadius(10)
-            } else {
-                AsyncImage(url: URL(string: imageURL)) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 165, height: 135)
-                        .cornerRadius(10)
-                        .padding(.horizontal, 10)
-                } placeholder: {
-                    ZStack {
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.5))
-                            .frame(width: 165, height: 135)
-                            .cornerRadius(10)
-                        ProgressView()
-                            .frame(width: 120, height: 120)
-                            .cornerRadius(10)
-                            .padding(.horizontal, 10)
-                    }
-                }
-            }
-            Text(title)
-                .font(.subheadline)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.top, 5)
-            HStack {
-                ZStack{
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.nomadDarkBlue.opacity(0.5))
-                        .frame(width: 60, height: 20)
-                    (numStops == 1 ? Text("1 stop").font(.caption) : Text("\(numStops) stops").font(.caption))
-                }
-                Spacer()
-            }
-        }
-    }
-}
-
-
 
 #Preview {
     RecapView(vm: .init(user: User(id: "89379", name: "austin", trips: [               Trip(start_location: Restaurant(address: "848 Spring Street, Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090), end_location: Hotel(address: "201 8th Ave S, Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947), start_date: "10-05-2024", end_date: "10-05-2024", stops: [Activity(address: "1720 S Scenic Hwy, Chattanooga, TN  37409 United States", name: "Ruby Falls", latitude: 35.018901, longitude: -85.339367)], name: "ATL to Nashville", coverImageURL: "https://pixabay.com/get/g396fa4b9bb9c1731092f12dcf2bb686fc52caaa5dc7a6f7a9edafe2c402bfe67b1a3affcdae0731b43338a151f0d3b21_640.jpg"),
