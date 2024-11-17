@@ -232,9 +232,6 @@ class Trip: Identifiable, Equatable, ObservableObject {
     func setEndLocation(new_end_location: any POI) {
         self.end_location = new_end_location
         self.updateModifiedDate()
-//        Trip.getCityImage(location: new_end_location) { [self] imageURL in
-//            self.coverImageURL = imageURL
-//        }
     }
     
     func getModifyDate() -> String {
@@ -335,14 +332,16 @@ class Trip: Identifiable, Equatable, ObservableObject {
 
     func setName(newName: String) {
         self.name = newName
+        self.updateModifiedDate()
     }
 
-    func setIsPrivate() -> Bool {
+    func getIsPrivate() -> Bool {
         return isPrivate
     }
 
     func setVisibility(isPrivate: Bool) {
         self.isPrivate = isPrivate
+        self.updateModifiedDate()
     }
   
     func getStartLocationCoordinates() -> CLLocationCoordinate2D {
@@ -364,5 +363,11 @@ class Trip: Identifiable, Equatable, ObservableObject {
     
     func setImages(images: [String]) {
         self.images = images
+        self.updateModifiedDate()
+    }
+    
+    func setImageUrl(imageUrl: String) {
+        self.coverImageURL = imageUrl
+        self.updateModifiedDate()
     }
 }

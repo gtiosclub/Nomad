@@ -224,7 +224,7 @@ struct ItineraryPlanningView: View {
                     }) {
                         if !generatingRoute && !use_current_trip {
                             Label(isLoading ? "Generating with Atlas" : "Generate with Atlas", systemImage: "wand.and.sparkles")
-                                .font(.headline)
+                                .font(.system(size: 18))
                                 .foregroundColor(.white)
                                 .padding()
                                 .background(
@@ -250,7 +250,8 @@ struct ItineraryPlanningView: View {
                         }
                     }) {
                         if !generatingRoute && !isLoading {
-                            Text("Continue").font(.headline)
+                            Text("Continue")
+                                .font(.system(size: 18))
                                 .foregroundColor(.white)
                                 .padding()
                                 .background(Color.nomadDarkBlue)
@@ -262,7 +263,7 @@ struct ItineraryPlanningView: View {
                                     .progressViewStyle(CircularProgressViewStyle(tint: .white))
                                 
                                 Text("Generating Route")
-                                    .font(.headline)
+                                    .font(.system(size: 18))
                                     .foregroundColor(.white)
                             }
                             .padding()
@@ -397,13 +398,30 @@ struct ItineraryPlanningView: View {
             
             if !use_current_trip {
                 Task {
-                    var start_location = GeneralLocation(address: inputAddressStart, name: inputNameStart, latitude: startLatitude, longitude: startLongitude)
+                    let start_location_base = GeneralLocation(
+                        address: inputAddressStart,
+                        name: inputNameStart,
+                        latitude: startLatitude,
+                        longitude: startLongitude
+                    )
                     
-                    start_location.imageUrl = await Trip.getCityImageAsync(location: start_location)
+                    let end_location_base = GeneralLocation(
+                        address: inputAddressEnd,
+                        name: inputNameEnd,
+                        latitude: endLatitude,
+                        longitude: endLongitude
+                    )
                     
-                    var end_location = GeneralLocation(address: inputAddressEnd, name: inputNameEnd, latitude: endLatitude, longitude: endLongitude)
+                    async let startImageUrl = Trip.getCityImageAsync(location: start_location_base)
+                    async let endImageUrl = Trip.getCityImageAsync(location: end_location_base)
                     
-                    end_location.imageUrl = await Trip.getCityImageAsync(location: end_location)
+                    let fetchedStartImageUrl = await startImageUrl
+                    let fetchedEndImageUrl = await endImageUrl
+                    
+                    var start_location = start_location_base
+                    var end_location = end_location_base
+                    start_location.imageUrl = fetchedStartImageUrl
+                    end_location.imageUrl = fetchedEndImageUrl
                     
                     await vm.createTrip(start_location: start_location, end_location: end_location, start_date: ItineraryPlanningView.dateToString(date: startDate), end_date: ItineraryPlanningView.dateToString(date: endDate), stops: [], start_time: ItineraryPlanningView.timeToString(date: startTime), coverImageURL: end_location.imageUrl!)
                     
@@ -411,18 +429,6 @@ struct ItineraryPlanningView: View {
                         await vm.aiVM.generateTripWithAtlas(userVM: vm)
                         await vm.updateRoute()
                     }
-                    
-                    inputNameEnd = ""
-                    inputNameStart = ""
-                    inputAddressEnd = ""
-                    inputAddressStart = ""
-                    startDate = Date()
-                    endDate = Date()
-                    startTime = Date()
-                    startLatitude = 0.0
-                    startLongitude = 0.0
-                    endLatitude = 0.0
-                    endLongitude = 0.0
                     
                     if version == "atlas" {
                         editTripAtlas = true
@@ -433,8 +439,38 @@ struct ItineraryPlanningView: View {
                     }
                 }
             } else {
-                editTripContinue = true
-                generatingRoute = false
+                vm.setStartDate(startDate: ItineraryPlanningView.dateToString(date: startDate))
+                vm.setEndDate(endDate: ItineraryPlanningView.dateToString(date: endDate))
+                vm.setStartTime(startTime: ItineraryPlanningView.timeToString(date: startTime))
+                
+                if inputAddressStart != vm.current_trip?.getStartLocation().address || inputAddressEnd != vm.current_trip?.getEndLocation().address {
+                    Task {
+                        if inputAddressStart != vm.current_trip?.getStartLocation().address {
+                            var start_location = GeneralLocation(address: inputAddressStart, name: inputNameStart, latitude: startLatitude, longitude: startLongitude)
+                            
+                            start_location.imageUrl = await Trip.getCityImageAsync(location: start_location)
+                            
+                            vm.setStartLocation(new_start_location: start_location)
+                        }
+                        
+                        if inputAddressEnd != vm.current_trip?.getEndLocation().address {
+                            var end_location = GeneralLocation(address: inputAddressEnd, name: inputNameEnd, latitude: endLatitude, longitude: endLongitude)
+                            
+                            end_location.imageUrl = await Trip.getCityImageAsync(location: end_location)
+                            
+                            vm.setEndLocation(new_end_location: end_location)
+                            vm.current_trip?.setImageUrl(imageUrl: end_location.imageUrl ?? "")
+                        }
+                        
+                        await vm.updateRoute()
+                        
+                        editTripContinue = true
+                        generatingRoute = false
+                    }
+                } else {
+                    editTripContinue = true
+                    generatingRoute = false
+                }
             }
         }
     }

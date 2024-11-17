@@ -31,7 +31,7 @@ class User: Identifiable, ObservableObject {
     }
     
     func addTrip(trip: Trip) {
-        self.trips.append(trip)
+        self.trips.insert(trip, at: 0)
     }
     
     func getTrips() -> [Trip] {

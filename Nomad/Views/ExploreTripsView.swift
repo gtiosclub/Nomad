@@ -22,7 +22,7 @@ struct ExploreTripsView: View {
                     VStack(alignment: .leading) {
                         VStack(spacing: 0) {
                             HStack {
-                                Text("Let's Explore, \(vm.user.getName().split(separator: " ").first!)!")
+                                Text("Let's Explore, \(vm.user.getName().split(separator: " ").first!.replacingOccurrences(of: "austinhuguenard", with: "Austin"))!")
                                     .bold()
                                     .font(.system(size: 20))
                                     .padding(.horizontal)
@@ -91,6 +91,17 @@ struct ExploreTripsView: View {
                                                 .frame(alignment: .top)
                                                 .frame(minWidth: 140)
                                         })
+                                        .simultaneousGesture(
+                                            LongPressGesture(minimumDuration: 0.5)
+                                        )
+                                        .contextMenu {
+                                            Button(action: {
+                                                //TODO: delete trip
+                                            }) {
+                                                Text("Delete")
+                                                Image(systemName: "trash")
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -192,6 +203,8 @@ struct ExploreTripsView: View {
         .onChange(of: vm.user.trips, initial: true) { old, new in
             current_trips = vm.user.trips
         }
+        .onChange(of: vm.current_trip, initial: true) {}
+        .onChange(of: vm.current_trip?.coverImageURL, initial: true) {}
     }
     
     struct SectionHeaderView: View {
@@ -221,8 +234,9 @@ struct ExploreTripsView: View {
     }
     
     struct TripGridView: View {
-        @StateObject var trip: Trip
+        @ObservedObject var trip: Trip
         @State private var textWidth: CGFloat = 140
+        @State var imageUrl: String = ""
         
         var body: some View {
             VStack(alignment: .leading) {
@@ -301,7 +315,7 @@ struct ExploreTripsView: View {
                         .padding(3)
                         .padding(.horizontal, 5)
                         .background(Color.nomadDarkBlue.opacity(0.5))
-                        .cornerRadius(8)
+                        .cornerRadius(10)
                         .foregroundColor(.black.opacity(0.7))
                         .padding(.leading, 5)
                 }
@@ -310,6 +324,15 @@ struct ExploreTripsView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.vertical, 5)
             .padding(.horizontal, 2)
+            .onAppear {
+                imageUrl = trip.coverImageURL
+            }
+            .onChange(of: $trip.coverImageURL.wrappedValue, initial: true) { old, new in
+                imageUrl = trip.coverImageURL
+            }
+            .onChange(of: imageUrl, initial: true) { old, new in
+//                print("got new image url \(new)")
+            }
         }
         
         func intToWords(_ number: Int) -> String {

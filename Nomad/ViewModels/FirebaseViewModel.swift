@@ -273,7 +273,8 @@ class FirebaseViewModel: ObservableObject {
             "start_id" : "start",
             "start_time" : startTime,
             "images" : [],
-            "stops": []
+            "stops": [],
+            "hasDriven": 2
         ]
         do {
             try await tripDocRef.setData(tripData)
@@ -420,7 +421,7 @@ class FirebaseViewModel: ObservableObject {
     
     func deleteTrip(userID: String, tripID: String) async -> Bool{
         do {
-            try await db.collection("USERS").document().updateData(["trips": FieldValue.arrayRemove([tripID])])
+            try await db.collection("USERS").document(userID).updateData(["trips": FieldValue.arrayRemove([tripID])])
             try await db.collection("TRIPS").document(tripID).delete()
             return true
        } catch {
@@ -727,7 +728,7 @@ class FirebaseViewModel: ObservableObject {
             return public_trips
         }
     
-    func modifyTrip(tripID: String, trip: Trip) async -> Bool {
+    func modifyTrip(tripID: String, trip: Trip, hasDriven: Int) async -> Bool {
 
         let tripDocRef = db.collection("TRIPS").document(tripID)
         let stopsCollectionRef = tripDocRef.collection("STOPS")
@@ -742,7 +743,8 @@ class FirebaseViewModel: ObservableObject {
             "start_date": trip.getStartDate(),
             "start_time": trip.getStartTime(),
             "images": trip.getImages(),
-            "stops": stopNames
+            "stops": stopNames,
+            "hasDriven": hasDriven
         ]
 
         do {
