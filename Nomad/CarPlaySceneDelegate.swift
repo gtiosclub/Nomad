@@ -5,106 +5,103 @@
 //  Created by Shaunak Karnik on 11/6/24.
 //
 
-//import CarPlay
-//import SwiftUI
-
-
 import UIKit
-// CarPlay App Lifecycle
-
 import CarPlay
 import os.log
 import SwiftUI
-
-//class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
-//    var interfaceController: CPInterfaceController?
-//    let logger = Logger()
-//
-//    func templateApplicationScene(_ templateApplicationScene: CPTemplateApplicationScene,
-//            didConnect interfaceController: CPInterfaceController) {
-//
-//        self.interfaceController = interfaceController
-//
-//        let gridButton = CPGridButton(titleVariants: ["Albums"],
-//                                      image: UIImage(systemName: "list.triangle")!)
-//        { button in
-//            interfaceController.pushTemplate(self.listTemplate(),
-//                                             animated: true,
-//                                             completion: nil)
-//
-//        }
-//
-//        let gridTemplate = CPGridTemplate(title: "Nomad", gridButtons:  [])
-//
-//        // SwiftC apparently requires the explicit inclusion of the completion parameter,
-//        // otherwise it will throw a warning
-//        interfaceController.setRootTemplate(gridTemplate,
-//                                            animated: true,
-//                                            completion: nil)
-//    }
-//
-//    func listTemplate() -> CPListTemplate {
-//        let item = CPListItem(text: "Rubber Soul", detailText: "The Beatles")
-//        item.handler = { item, completion in
-//
-//            self.logger.info("Item selected")
-//            completion()
-//        }
-//        let section = CPListSection(items: [item])
-//        return CPListTemplate(title: "Albums", sections: [section])
-//    }
-//
-//    func templateApplicationScene(_ templateApplicationScene: CPTemplateApplicationScene, didDisconnectInterfaceController interfaceController: CPInterfaceController) {
-//        self.interfaceController = nil
-//    }
-//}
+import MapKit
 
 
+// MARK: - CarPlaySceneDelegate
 class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
     @ObservedObject var vm: UserViewModel = UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard"))
-    @State var selectedTab = 2
+    private var hostingController: UIHostingController<CarPlayMapView>?
     var carWindow: CPWindow?
     var interfaceController: CPInterfaceController?
-    
-    //var locationService: LocationService
     var mapTemplate: CPMapTemplate?
     
-    // CarPlay connected
-    func templateApplicationScene(_ templateApplicationScene: CPTemplateApplicationScene, didConnect interfaceController: CPInterfaceController, to window: CPWindow) {
-        print("🚙🚙🚙🚙🚙  Connected to CarPlay.")
+    func templateApplicationScene(
+        _ templateApplicationScene: CPTemplateApplicationScene,
+        didConnect interfaceController: CPInterfaceController,
+        to window: CPWindow
+    ) {
+        print("🚙 Connected to CarPlay.")
+        
         self.interfaceController = interfaceController
-        
-        initTemplates()
-        
-        window.rootViewController = UIHostingController(rootView: MapView(tabSelection: $selectedTab, vm: vm))
         self.carWindow = window
-        self.carWindow?.isUserInteractionEnabled = true
-        self.carWindow?.isMultipleTouchEnabled = true
-        self.interfaceController?.setRootTemplate(self.mapTemplate!, animated: true, completion: {_, _ in })
+        
+        // Initialize CarPlay map view that mirrors the phone's navigation
+        let carPlayMapView = CarPlayMapView(vm: vm)
+        let hostingController = UIHostingController(rootView: carPlayMapView)
+        self.hostingController = hostingController
+        
+        // Set the hosting controller as root
+        window.rootViewController = hostingController
     }
     
-    // CarPlay disconnected
-    private func templateApplicationScene(_ templateApplicationScene: CPTemplateApplicationScene, didDisconnect interfaceController: CPInterfaceController) {
-        print("🚙🚙🚙🚙🚙 Disconnected from CarPlay.")
+    func templateApplicationScene(
+        _ templateApplicationScene: CPTemplateApplicationScene,
+        didDisconnect interfaceController: CPInterfaceController
+    ) {
+        print("🚙 Disconnected from CarPlay.")
         self.interfaceController = nil
+        self.carWindow = nil
     }
-    
+}
 
-    private func initTemplates() {
-        self.mapTemplate = CPMapTemplate()
-        self.mapTemplate?.automaticallyHidesNavigationBar = true
-        self.mapTemplate?.hidesButtonsWithNavigationBar = false
-        
-        // Create the button
-        let atlasButton = CPMapButton { _ in
-            // Button action
-            print("clicked")
+// MARK: - Simple CarPlay MapView
+struct CarPlayMapView: View {
+    @ObservedObject var vm: UserViewModel
+    @StateObject private var navManager = NavigationManager.nav
+    @StateObject private var mapManager = MapManager.manager
+    
+    var body: some View {
+        Map(position: $navManager.mapPosition) {
+            // Show user location
+            UserAnnotation()
+            
+            // Show markers
+            ForEach(navManager.mapMarkers) { marker in
+                if marker.icon == .trafficLight || marker.icon == .stopSign {
+                    Annotation("", coordinate: marker.coordinate) {
+                        Image(marker.icon.image_path)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 30, height: 30)
+                            .clipShape(Circle())
+                    }
+                } else {
+                    Marker(marker.title, coordinate: marker.coordinate)
+                }
+            }
+            
+            // Show route polylines
+            ForEach(navManager.mapPolylines, id: \.self) { polyline in
+                MapPolyline(polyline)
+                    .stroke(.blue, lineWidth: 5)
+            }
         }
-        atlasButton.isHidden = false
-        atlasButton.isEnabled = true
-        atlasButton.image = UIImage(systemName: "mic.fill")
-        
-        // Set map buttons (these are different from bar buttons)
-        self.mapTemplate?.mapButtons = [atlasButton]
+        .mapControlVisibility(.hidden)
+        .onChange(of: mapManager.motion) { _, newMotion in
+            if let newLocation = newMotion.coordinate {
+                if !navManager.destinationReached {
+                    Task {
+                        await navManager.recalibrateCurrentStep()
+                    }
+                    navManager.distanceToNextManeuver = navManager.assignDistanceToNextManeuver()
+                }
+                
+                if let camera = navManager.mapPosition.camera,
+                   !navManager.movingMap(camera: camera.centerCoordinate) {
+                    withAnimation {
+                        navManager.updateMapPosition(newMotion)
+                    }
+                }
+            }
+        }
+        .onAppear {
+            let motion = mapManager.motion
+            navManager.updateMapPosition(motion)
+        }
     }
 }
