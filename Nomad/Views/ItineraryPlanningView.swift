@@ -72,6 +72,7 @@ struct ItineraryPlanningView: View {
                                         .padding()
                                         .background(Color.white)
                                         .cornerRadius(10)
+                                        .frame(height: 50)
                                         .onChange(of: inputAddressStart) { old, new in
                                             let commaCount = new.filter { $0 == "," }.count
                                             
@@ -107,6 +108,7 @@ struct ItineraryPlanningView: View {
                                             .padding()
                                             .background(Color.white)
                                             .cornerRadius(10)
+                                            .frame(height: 50)
                                             .onChange(of: inputAddressEnd) { old, new in
                                                 let commaCount = new.filter { $0 == "," }.count
                                                 
@@ -140,6 +142,7 @@ struct ItineraryPlanningView: View {
                     .padding(.horizontal)
                     .offset(y: -110)
                     .frame(maxHeight: 100)
+                    .shadow(color: .black.opacity(0.5), radius: 5, y: 3)
                     
                     if (lastEdited == .start || lastEdited == .end) && !isClicked {
                         dropdownMenu(inputAddress: lastEdited == .start ? $inputAddressStart : $inputAddressEnd,
@@ -205,12 +208,12 @@ struct ItineraryPlanningView: View {
                         .background(Color.nomadLightBlue)
                         .cornerRadius(15)
                         .padding()
-                        .font(.headline)
                         .padding(.horizontal, 30)
                         .padding(.top, 0)
                     }
                     .padding(.horizontal)
                     .offset(y: 170)
+                    .shadow(color: .black.opacity(0.5), radius: 5, y: 3)
                 }
                 .frame(height: 600)
                 
@@ -365,7 +368,7 @@ struct ItineraryPlanningView: View {
             Text("\(sectionTitle)")
                 .frame(alignment: .leading)
                 .padding(.horizontal)
-                .font(.headline)
+                .font(.system(size: 16))
         }
     }
     

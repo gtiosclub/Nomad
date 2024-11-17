@@ -112,7 +112,7 @@ struct DetailRecapView: View {
                     Spacer()
                 }.padding(.bottom, 10)
                 if isRouteReady {
-                    RoutePreviewView(vm: vm, cvm: ChatViewModel(), trip: Binding.constant(trip), currentStopLocation: Binding.constant(nil))
+                    RouteMapView(vm: vm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(nil))
                         .frame(height: 400)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                         .shadow(radius: 5.0)
@@ -131,6 +131,7 @@ struct DetailRecapView: View {
             vm.setCurrentTrip(trip: trip)
             Task {
                 await vm.updateRoute()
+                vm.populateLegInfo()
                 routePlanned = true
                 isRouteReady = true
                 let imageURLs: [String] = await FirebaseViewModel.vm.getAllImages(tripID: trip.id)

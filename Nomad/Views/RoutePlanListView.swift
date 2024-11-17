@@ -15,7 +15,7 @@ struct RoutePlanListView: View {
         VStack(alignment: .leading, spacing: 0) {
 
             if let startLocation = vm.current_trip?.getStartLocation() {
-                createLocationView(locationName: "Start at \(startLocation.name)", time: nil, isLast: false)
+                createLocationView(locationName: "Start \(("at " + startLocation.name).replacingOccurrences(of: "at Start Location", with: "in \(vm.current_trip!.getStartCity())"))", time: nil, isLast: false)
             }
 
             if let stops = vm.current_trip?.getStops() {
@@ -29,20 +29,16 @@ struct RoutePlanListView: View {
             }
 
             if let endLocation = vm.current_trip?.getEndLocation() {
-                createLocationView(locationName: "End at \(endLocation.name)", time: vm.times.last, isLast: true)
+                createLocationView(locationName: "End \(("at " + endLocation.name).replacingOccurrences(of: "at End Location", with: "in \(vm.current_trip!.getEndCity())"))", time: vm.times.last, isLast: true)
             }
         }
-        .padding(.horizontal, 10)
+        .padding(.horizontal, 5)
         .padding(.vertical, 15)
         .padding(.leading, 0)
-        .padding(.trailing, 40)
         .frame(maxWidth: UIScreen.main.bounds.width)
         .background(Color.white)
         .cornerRadius(10)
         .shadow(radius: 5)
-        .onAppear {
-            vm.populateLegInfo()
-        }
     }
 
     private func createLocationView(locationName: String, time: Double?, isLast: Bool) -> some View {

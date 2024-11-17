@@ -96,7 +96,10 @@ struct ExploreTripsView: View {
                                         )
                                         .contextMenu {
                                             Button(action: {
-                                                //TODO: delete trip
+                                                Task {
+                                                    vm.setCurrentTrip(trip: trip)
+                                                    await vm.deleteTrip()
+                                                }
                                             }) {
                                                 Text("Delete")
                                                 Image(systemName: "trash")
@@ -179,14 +182,20 @@ struct ExploreTripsView: View {
                 let populateTrips = Task { await vm.populateUserTrips() }
                 let getCity = Task { await vm.getCurrentCity() }
                 
-                await populateTrips.value
                 await getCity.value
+                await populateTrips.value
                 
                 pulled_trips = true
                 
                 current_trips = vm.user.trips
                 previous_trips = vm.user.pastTrips
                 community_trips = vm.community_trips
+            }
+            
+            if vm.currentCity == nil {
+                let getCity = Task { await vm.getCurrentCity() }
+                
+                await getCity.value
             }
         }
         .onAppear() {
@@ -312,7 +321,7 @@ struct ExploreTripsView: View {
                     
                     Text("\(intToWords(trip.getStops().count)) \(trip.getStops().count == 1 ? "stop" : "stops")")
                         .font(.system(size: 12))
-                        .padding(3)
+                        .padding(1)
                         .padding(.horizontal, 5)
                         .background(Color.nomadDarkBlue.opacity(0.5))
                         .cornerRadius(10)
