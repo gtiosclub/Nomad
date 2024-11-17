@@ -30,16 +30,19 @@ struct ExploreTripsView: View {
                                 Spacer()
                                 
                                 // Profile picture
-                                ZStack {
-                                    Ellipse()
-                                        .fill(Color.gray)
-                                        .frame(width: 40, height: 40)
-                                    Text((vm.user.getName()).prefix(1).uppercased())
-                                        .foregroundColor(.white)
-                                        .font(.system(size: 25))
+                                NavigationLink(destination: ProfileView(vm: vm)) {
+                                    ZStack {
+                                        Ellipse()
+                                            .fill(Color.gray)
+                                            .frame(width: 40, height: 40)
+                                        Text((vm.user.getName()).prefix(1).uppercased())
+                                            .foregroundColor(.white)
+                                            .font(.system(size: 25))
+                                    }
+                                    .padding(.trailing)
+                                    .offset(y: 20)
                                 }
-                                .padding(.trailing)
-                                .offset(y: 20)
+
                             }
                             
                             HStack {

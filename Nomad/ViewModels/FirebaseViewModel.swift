@@ -65,17 +65,23 @@ class FirebaseViewModel: ObservableObject {
         isLoading = true
         auth.createUser(withEmail: email, password: password) { [weak self] authResult, error in
             guard let self = self else { return }
-            self.isLoading = false
             
             if let error = error {
-                self.errorText = self.parseFirebaseError(error)
-                completion(false)
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    self.errorText = self.parseFirebaseError(error)
+                    completion(false)
+                }
+
                 return
             }
             
             guard let user = authResult?.user else {
-                self.errorText = "Failed to create user. Please try again."
-                completion(false)
+                DispatchQueue.main.async {
+                     self.isLoading = false
+                     self.errorText = "Failed to create user. Please try again."
+                     completion(false)
+                 }
                 return
             }
             let changeRequest = user.createProfileChangeRequest()
@@ -89,13 +95,18 @@ class FirebaseViewModel: ObservableObject {
             let trips: [String] = []
             db.collection("USERS").document(name).setData([
                 "email": email, "name": name, "trips": trips
-            ]) { error in
-                if let error = error {
-                    self.errorText = "Failed to save user data: \(error.localizedDescription)"
-                    completion(false)
-                } else {
-                    self.errorText = nil
-                    completion(true)
+            ]) { [weak self] error in
+                guard let self = self else {return}
+                
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    if let error = error {
+                        self.errorText = "Failed to save user data: \(error.localizedDescription)"
+                        completion(false)
+                    } else {
+                        self.errorText = nil
+                        completion(true)
+                    }
                 }
             }
         }
@@ -430,7 +441,7 @@ class FirebaseViewModel: ObservableObject {
         }
     }
     
-    func updateStop(tripID: String, stop: any POI, index: Int, document: DocumentSnapshot) async -> Bool {
+    func updateStop(tripID: String, stop: any POI, document: DocumentSnapshot) async -> Bool {
         let stopDocRef = document.reference
         
         var updateData = [String: Any]()
@@ -490,7 +501,6 @@ class FirebaseViewModel: ObservableObject {
     }
 
 
-    
     func removeStopFromTrip(tripID: String, stop: any POI) async -> Bool {
         // Remove stop from tripID array
         let docRef = db.collection("TRIPS").document(tripID)
@@ -759,13 +769,26 @@ class FirebaseViewModel: ObservableObject {
 
             var processedStopNames = Set<String>()
 
+            if let startDoc = existingStopsMap["start"] {
+                let updated = await updateStop(tripID: tripID, stop: trip.getStartLocation(), document: startDoc)
+                if !updated {
+                    print("Failed to update start stop")
+                    return false
+                }
+            }
+            if let endDoc = existingStopsMap["end"] {
+                let updated = await updateStop(tripID: tripID, stop: trip.getEndLocation(), document: endDoc)
+                if !updated {
+                    print("Failed to update end stop")
+                    return false
+                }
+            }
             for (index, stop) in trip.getStops().enumerated() {
                 let stopName = stop.getName()
                 processedStopNames.insert(stopName)
-//                processedStopIDs.insert(stop.id)
                 
                 if let existingStopDoc = existingStopsMap[stopName] {
-                    let updated = await updateStop(tripID: tripID, stop: stop, index: index, document: existingStopDoc)
+                    let updated = await updateStop(tripID: tripID, stop: stop, document: existingStopDoc)
                     if !updated {
                         print("Failed to update stop \(stop.getName())")
                         return false
@@ -780,7 +803,7 @@ class FirebaseViewModel: ObservableObject {
             }
 
             for (stopName, document) in existingStopsMap {
-                if stopName != "end" || stopName != "start" {
+                if stopName != "end" && stopName != "start" {
                     if !processedStopNames.contains(stopName) {
                         try await document.reference.delete()
                         print("Deleted stop with ID \(stopName)")

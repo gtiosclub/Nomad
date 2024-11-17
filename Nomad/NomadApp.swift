@@ -52,24 +52,10 @@ struct YourApp: App {
 
     var body: some Scene {
         WindowGroup {
-            VStack {
-                if firebaseViewModel.current_user != nil {
-                    RootView(vm: UserViewModel(user: firebaseViewModel.current_user!))
-                      .toolbar(.hidden, for: .navigationBar)
-                } else {
-                    SignUpView(vm: firebaseViewModel)
-                }
-            }
+            SplashView(firebaseViewModel: firebaseViewModel)
             .onAppear {
                 firebaseViewModel.onSetupCompleted = { vm in
                     print("made it to firebase setup")
-                    DispatchQueue.main.async {
-                        if let user = firebaseViewModel.auth.currentUser {
-                            Task {
-                                _ = await firebaseViewModel.setCurrentUser(userId: user.displayName ?? "")
-                            }
-                        }
-                    }
                 }
                 firebaseViewModel.configure()
             }

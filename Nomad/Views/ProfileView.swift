@@ -7,8 +7,8 @@
 import SwiftUI
 
 struct ProfileView: View {
+    @ObservedObject var vm: UserViewModel
     var body: some View {
-//        Text("Hello World")
         NavigationView {
             VStack {
                 Image(systemName: "person.crop.circle")
@@ -17,7 +17,7 @@ struct ProfileView: View {
                 Text("Name")
                     .font(.title2)
                     .bold()
-                Text("email")
+                Text("Email")
                     .font(.title3)
                     
                 Button {
@@ -37,6 +37,6 @@ struct ProfileView: View {
 }
 
 
-#Preview {
-    ProfileView()
-}
+//#Preview {
+//    ProfileView(vm: UserViewModel(user: User(id: "previewUser", name: "Preview User")))
+//}
