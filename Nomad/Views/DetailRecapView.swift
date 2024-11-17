@@ -14,7 +14,6 @@ struct DetailRecapView: View {
     @State var trip: Trip
     @State var images: [UIImage] = []
     @State var routePlanned: Bool = false
-    @State var isRouteReady:Bool = false
     
     var body: some View {
         ScrollView {
@@ -111,20 +110,10 @@ struct DetailRecapView: View {
                         .font(.system(size: 18, weight: .semibold))
                     Spacer()
                 }.padding(.bottom, 10)
-                if isRouteReady {
-                    RouteMapView(vm: vm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(nil))
-                        .frame(height: 400)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                        .shadow(radius: 5.0)
-                } else {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(Color.nomadLightBlue)
-                            .frame(height: 400)
-                        ProgressView("Loading map...") // Show a placeholder until route is ready
-                    }
-                }
-
+                RouteMapView(vm: vm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(nil))
+                    .frame(height: 400)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .shadow(radius: 5.0)
             }.padding(.horizontal, 30)
                 .padding(.bottom, 30)
         }.onAppear{
@@ -133,7 +122,6 @@ struct DetailRecapView: View {
                 await vm.updateRoute()
                 vm.populateLegInfo()
                 routePlanned = true
-                isRouteReady = true
                 let imageURLs: [String] = await FirebaseViewModel.vm.getAllImages(tripID: trip.id)
                 for image in imageURLs {
                     FirebaseViewModel.vm.getImageFromURL(urlString: image, completion: { uiImage in

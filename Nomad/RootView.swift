@@ -30,7 +30,7 @@ struct RootView: View {
             
             RecapView(vm: vm, header: "Your Memories")
                 .tabItem {
-                    Label("Recaps", systemImage: "play.square.stack")
+                    Label("Memories", systemImage: "play.square.stack")
                 }
                 .tag(3)
         }.environmentObject(vm)
