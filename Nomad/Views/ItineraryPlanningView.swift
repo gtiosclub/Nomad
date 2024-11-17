@@ -8,6 +8,7 @@
 import SwiftUI
 import CoreLocation
 import MapKit
+import Combine
 
 struct ItineraryPlanningView: View {
     @State var inputAddressStart: String = ""
@@ -32,6 +33,7 @@ struct ItineraryPlanningView: View {
     @State var isLoading: Bool = false
     @State var bothAddressError: String = ""
     @State var generatingRoute: Bool = false
+    @State private var debounceTask: AnyCancellable? = nil
     
     var use_current_trip: Bool = false
     var letBack: Bool = true
@@ -68,14 +70,10 @@ struct ItineraryPlanningView: View {
                         ZStack {
                             VStack(spacing: 15) {
                                 ZStack {
-                                    TextField("Start Location", text: $inputAddressStart)
-                                        .padding()
-                                        .background(Color.white)
-                                        .cornerRadius(10)
-                                        .frame(height: 50)
-                                        .onChange(of: inputAddressStart) { old, new in
-                                            let commaCount = new.filter { $0 == "," }.count
-                                            
+                                    
+                                    DebounceTextField(label: "Start Location", value: $inputAddressStart) { new in
+                                        let commaCount = new.filter { $0 == "," }.count
+
                                             if commaCount != 2 {
                                                 if !startAddressError.isEmpty {
                                                     startAddressError = ""
@@ -104,22 +102,19 @@ struct ItineraryPlanningView: View {
                                 
                                 ZStack {
                                     VStack {
-                                        TextField("End Location", text: $inputAddressEnd)
-                                            .padding()
-                                            .background(Color.white)
-                                            .cornerRadius(10)
-                                            .frame(height: 50)
-                                            .onChange(of: inputAddressEnd) { old, new in
-                                                let commaCount = new.filter { $0 == "," }.count
-                                                
-                                                if commaCount != 2 {
-                                                    if !endAddressError.isEmpty {
-                                                        endAddressError = ""
-                                                    }
-                                                    lastEdited = .end
-                                                    mapSearch.searchTerm = inputAddressEnd
+                                        
+                                        DebounceTextField(label: "End Location", value: $inputAddressEnd) { new in
+                                            let commaCount = new.filter { $0 == "," }.count
+                                            
+                                            if commaCount != 2 {
+                                                if !endAddressError.isEmpty {
+                                                    endAddressError = ""
                                                 }
+                                                lastEdited = .end
+                                                mapSearch.searchTerm = inputAddressEnd
                                             }
+                                        }
+                                        
                                         
                                         if !startAddressError.isEmpty {
                                             Text(startAddressError + endAddressError + bothAddressError)
@@ -600,6 +595,38 @@ extension MapSearch {
         
         return (coordinate.latitude, coordinate.longitude, address)
     }
+}
+
+struct DebounceTextField: View {
+  
+  @State var publisher = PassthroughSubject<String, Never>()
+  
+  @State var label: String
+  @Binding var value: String
+  var valueChanged: ((_ value: String) -> Void)?
+  
+    @State var debounceSeconds = 0.7
+  
+  var body: some View {
+    TextField(label, text: $value)
+      .padding()
+      .background(Color.white)
+      .cornerRadius(10)
+      .frame(height: 50)
+      .onChange(of: value) { value in
+        publisher.send(value)
+      }
+      .onReceive(
+        publisher.debounce(
+          for: .seconds(debounceSeconds),
+          scheduler: DispatchQueue.main
+        )
+      ) { value in
+        if let valueChanged = valueChanged {
+          valueChanged(value)
+        }
+      }
+  }
 }
 
 

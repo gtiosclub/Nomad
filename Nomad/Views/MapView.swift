@@ -160,8 +160,6 @@ struct MapHUDView: View {
                     }
                 }
             }
-        }.onAppear {
-            speechRecognizer.pollForAtlas()
         }
         .onDisappear {
             speechRecognizer.resetTranscript()
@@ -181,9 +179,6 @@ struct MapHUDView: View {
                 }
             }
         }
-        .onChange(of: speechRecognizer.atlasSaid) { atlasSaid in
-            atlasSheetPresented = true
-        }
         .sheet(isPresented: $atlasSheetPresented) {
             AtlasNavigationView(vm: vm, navManager: navManager)
                 .onAppear {
@@ -191,7 +186,7 @@ struct MapHUDView: View {
                 }
                 .presentationDetents([.medium, .large])
                 .onDisappear {
-                    speechRecognizer.pollForAtlas()
+                    //speechRecognizer.pollForAtlas()
                     navManager.navigating2 = true
                 }
         }
