@@ -22,7 +22,7 @@ struct SplashView: View {
             }
         } else {
             VStack {
-                Image("SplashIcon")
+                Image("AtlasIcon")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 150, height: 150)
