@@ -22,6 +22,7 @@ struct PreviewRouteView: View {
     @State var navigateToCopiedTrip: Bool = false
     @State var startingRoute: Bool = false
     @State var savingRoute: Bool = false
+    var newTrip: Bool
     
     var body: some View {
         NavigationStack {
@@ -67,7 +68,7 @@ struct PreviewRouteView: View {
                                     .font(.system(size: 20))
                             }
                             .navigationDestination(isPresented: $backToEdit, destination: {
-                                ItineraryParentView(vm: vm, cvm: ChatViewModel())
+                                ItineraryParentView(vm: vm, cvm: ChatViewModel(), newTrip: newTrip)
                             })
                             .padding(.trailing, 20)
                             .padding(.leading, 10)
@@ -136,16 +137,22 @@ struct PreviewRouteView: View {
                                     .foregroundStyle(.black)
                             }
                         }
-                        .padding(.horizontal)
+                        .padding(.leading)
                         
                         Spacer()
                     }
-                    .padding()
+                    .padding(.vertical)
+                    .padding(.leading)
                     .background(Color.white)
                     .cornerRadius(10)
                     .padding(.horizontal, 10)
                     .onChange(of: vm.times) {}
                     .frame(alignment: .leading)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color.black, lineWidth: 0.5)
+                    )
+                    .padding(.horizontal, 20)
                     
                     Text("Route Details")
                         .font(.headline)
@@ -156,7 +163,7 @@ struct PreviewRouteView: View {
                     
                     
                     if vm.current_trip != nil {
-                        EnhancedRoutePlanListView(vm: vm, isEditable: false)
+                        EnhancedRoutePlanListView(vm: vm, isEditable: isCommunityTrip ? false : true)
                             .padding(.top, 0)
                             .padding(.horizontal)
                             .padding(.bottom, 30)
@@ -217,7 +224,7 @@ struct PreviewRouteView: View {
                                         
                                         Task {
                                             var successful = false
-                                            if !letBack {
+                                            if newTrip {
                                                 successful = await vm.addTripToFirebase()
                                             } else {
                                                 successful = await vm.modifyTripInFirebase()
@@ -245,7 +252,7 @@ struct PreviewRouteView: View {
                                         
                                         Task {
                                             var successful = false
-                                            if !letBack {
+                                            if newTrip {
                                                 successful = await vm.addTripToFirebase()
                                             } else {
                                                 successful = await vm.modifyTripInFirebase()
@@ -306,7 +313,7 @@ struct PreviewRouteView: View {
                             .padding(.bottom, 20)
                             .navigationDestination(isPresented: $navigateToCopiedTrip, destination: {
                                 if let trip = vm.current_trip {
-                                    PreviewRouteView(vm: vm, trip: trip, letBack: false)
+                                    PreviewRouteView(vm: vm, trip: trip, letBack: false, newTrip: true)
                                 }
                             })
                         }
@@ -415,5 +422,5 @@ struct PreviewRouteView: View {
              start_date: "10-05-2024", end_date: "10-05-2024", stops: [])
     ])), trip: Trip(start_location: Restaurant(address: "848 Spring Street Atlanta GA 30308", name: "Tiff's Cookies", rating: 4.5, price: 1, latitude: 33.778033, longitude: -84.389090),
                     end_location: Hotel(address: "201 8th Ave S Nashville, TN  37203 United States", name: "JW Marriott", latitude: 36.156627, longitude: -86.780947),
-                    start_date: "10-05-2024", end_date: "10-05-2024", stops: []))
+                    start_date: "10-05-2024", end_date: "10-05-2024", stops: []), newTrip: true)
 }

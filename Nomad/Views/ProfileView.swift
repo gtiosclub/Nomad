@@ -14,10 +14,10 @@ struct ProfileView: View {
                 Image(systemName: "person.crop.circle")
                     .resizable()
                     .frame(width: 150, height: 150)
-                Text("Name")
+                Text("\(vm.user.getName())")
                     .font(.title2)
                     .bold()
-                Text("Email")
+                Text("\(vm.user.email)")
                     .font(.title3)
                     
                 Button {

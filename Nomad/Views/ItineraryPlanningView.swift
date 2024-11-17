@@ -37,6 +37,7 @@ struct ItineraryPlanningView: View {
     
     var use_current_trip: Bool = false
     var letBack: Bool = true
+    var newTrip: Bool
     
     enum completion {
         case null, start, end
@@ -116,10 +117,12 @@ struct ItineraryPlanningView: View {
                                         }
                                         
                                         
-                                        if !startAddressError.isEmpty {
+                                        if !startAddressError.isEmpty || !endAddressError.isEmpty || !bothAddressError.isEmpty {
                                             Text(startAddressError + endAddressError + bothAddressError)
                                                 .foregroundColor(.red)
                                                 .font(.caption)
+                                                .lineLimit(2)
+                                                .multilineTextAlignment(.leading)
                                         }
                                     }
                                 }
@@ -137,8 +140,7 @@ struct ItineraryPlanningView: View {
                     .padding(.horizontal)
                     .offset(y: -110)
                     .frame(maxHeight: 100)
-                    .shadow(color: .black.opacity(0.5), radius: 5, y: 3)
-                    
+                
                     if (lastEdited == .start || lastEdited == .end) && !isClicked {
                         dropdownMenu(inputAddress: lastEdited == .start ? $inputAddressStart : $inputAddressEnd,
                                      inputName: lastEdited == .start ? $inputNameStart : $inputNameEnd,
@@ -208,7 +210,6 @@ struct ItineraryPlanningView: View {
                     }
                     .padding(.horizontal)
                     .offset(y: 170)
-                    .shadow(color: .black.opacity(0.5), radius: 5, y: 3)
                 }
                 .frame(height: 600)
                 
@@ -237,7 +238,7 @@ struct ItineraryPlanningView: View {
                         }
                     }
                     .navigationDestination(isPresented: $editTripAtlas) {
-                        ItineraryParentView(vm: vm, cvm: ChatViewModel())
+                        ItineraryParentView(vm: vm, cvm: ChatViewModel(), newTrip: newTrip)
                     }
                     
                     Button(action: {
@@ -272,7 +273,7 @@ struct ItineraryPlanningView: View {
                         }
                     }
                     .navigationDestination(isPresented: $editTripContinue) {
-                        ItineraryParentView(vm: vm, cvm: ChatViewModel())
+                        ItineraryParentView(vm: vm, cvm: ChatViewModel(), newTrip: newTrip)
                     }
                     
                 }
@@ -632,5 +633,5 @@ struct DebounceTextField: View {
 
 
 #Preview {
-    ItineraryPlanningView(vm: .init(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "177 North Avenue NW, Atlanta, GA 30332", name: "Georgia Tech", latitude: 33.771712, longitude: -84.392842), end_location: Hotel(address: "387 West Peachtree, Atlanta, GA", name: "Hilton", latitude: 33.763814, longitude: -84.387338))])))
+    ItineraryPlanningView(vm: .init(user: User(id: "89379", name: "austin", trips: [Trip(start_location: GeneralLocation(address: "177 North Avenue NW, Atlanta, GA 30332", name: "Georgia Tech", latitude: 33.771712, longitude: -84.392842), end_location: Hotel(address: "387 West Peachtree, Atlanta, GA", name: "Hilton", latitude: 33.763814, longitude: -84.387338))])), newTrip: true)
 }

@@ -39,7 +39,7 @@ struct ViewAllTripsView: View {
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())]) {
                         ForEach(trips) { trip in
                             NavigationLink(destination: {
-                                PreviewRouteView(vm: vm, trip: trip)
+                                PreviewRouteView(vm: vm, trip: trip, newTrip: false)
                             }, label: {
                                 TripGridView(trip: trip)
                                     .frame(alignment: .top)

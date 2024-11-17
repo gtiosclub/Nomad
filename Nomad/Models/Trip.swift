@@ -306,6 +306,10 @@ class Trip: Identifiable, Equatable, ObservableObject {
     }
     
     func getStartTime() -> String {
+        if start_time.hasPrefix("0") {
+            return String(start_time.dropFirst(1))
+        }
+        
         return start_time
     }
 

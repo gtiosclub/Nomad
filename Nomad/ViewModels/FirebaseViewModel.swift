@@ -420,8 +420,35 @@ class FirebaseViewModel: ObservableObject {
                     return false
                 }
             } else {
-                print("Stop already in user stop list")
-                return false;
+                print("Stop already in user stop list, adding info to STOPS collection")
+                var cuisine: String = ""
+                var price: Int = -1
+                var rating: Double = -1
+                var website: String = ""
+                if let restaurant = stop as? Restaurant {
+                    cuisine = restaurant.cuisine ?? ""
+                    price = restaurant.price ?? -1
+                    rating = restaurant.rating ?? -1.0
+                    website = restaurant.website ?? ""
+                }
+                if let hotel = stop as? Hotel {
+                    rating = hotel.rating ?? -1.0
+                    website = hotel.website ?? ""
+                }
+                if let shopping = stop as? Shopping {
+                    website = shopping.website ?? ""
+                }
+                if let activity = stop as? Activity {
+                    rating = activity.rating ?? -1.0
+                    website = activity.website ?? ""
+                }
+                do {
+                    try await db.collection("TRIPS").document(tripID).collection("STOPS").document(stop.name).setData(["name" : stop.name, "address" : stop.address, "type" : "\(type(of: stop))", "latitude" : stop.latitude, "longitude" : stop.longitude, "city" : stop.city ?? "", "cuisine" : cuisine, "price" : price, "rating" : rating, "website" : website, "imageURL": stop.imageUrl ?? ""])
+                    return true
+                } catch {
+                    print(error)
+                    return false
+                }
             }
         } catch {
             print(error)
@@ -1065,11 +1092,11 @@ class FirebaseViewModel: ObservableObject {
     private func getPOI(name: String, address: String, type: String, longitude: Double, latitude: Double, city: String?, cuisine: String? = nil, rating: Double? = nil, price: Int? = nil, website: String? = nil, imageURL: String? = nil) -> any POI {
         switch type {
         case "Restaurant":
-            return Restaurant(address: address, name: name, rating: rating, cuisine: cuisine, price: price, website: website, latitude: latitude, longitude: longitude, city: city, imageURL: imageURL)
+            return Restaurant(address: address, name: name, rating: rating, cuisine: cuisine, price: price, website: website, latitude: latitude, longitude: longitude, city: city, imageUrl: imageURL)
         case "RestStop":
-            return RestStop(address: address, name: name, latitude: latitude, longitude: longitude, city: city, imageURL: imageURL)
+            return RestStop(address: address, name: name, latitude: latitude, longitude: longitude, city: city, imageUrl: imageURL)
         case "GasStation":
-            return GasStation(address: address, name: name, latitude: latitude, longitude: longitude, city: city, imageURL: imageURL)
+            return GasStation(address: address, name: name, latitude: latitude, longitude: longitude, city: city, imageUrl: imageURL)
         case "GeneralLocation":
             return GeneralLocation(address: address, name: name, latitude: latitude, longitude: longitude, city: city, imageUrl: imageURL)
         case "Hotel":
