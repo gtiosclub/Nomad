@@ -28,17 +28,6 @@ struct SignUpView: View {
     var body: some View {
         NavigationStack {
             VStack {
-//                ZStack {
-//                    Image("") // Background Image
-//                        .resizable()
-//                        .aspectRatio(contentMode: .fit)
-//                        .frame(width: screenWidth, height: screenHeight / 4)
-//                        .padding(.top, -8)
-//                    Image("") // Title Image
-//                        .resizable()
-//                        .aspectRatio(contentMode: .fit)
-//                        .frame(width: screenWidth * 2 / 3, height: screenHeight / 5)
-//                }
                 Spacer()
                 Text("Create Account")
                     .font(Font.custom("Quicksand-Medium", size: 32))
@@ -177,7 +166,15 @@ struct SignUpView: View {
         }
         .onChange(of: vm.isAuthenticated) { _, newValue in
             if newValue {
-                self.isLoggedIn = true
+                Task {
+                    if let user = vm.auth.currentUser {
+                        let _ = await vm.setCurrentUser(userId: user.displayName ?? "")
+
+                         DispatchQueue.main.async {
+                             self.isLoggedIn = true
+                         }
+                    }
+                }
             }
         }
         .onAppear() {
@@ -201,13 +198,13 @@ struct SignUpView: View {
         }
         vm.firebase_email_password_sign_up(email: email, password: password, name: name) { success in
             if success {
-                DispatchQueue.main.async {
-                    self.isLoggedIn = true
-                }
+//                DispatchQueue.main.async {
+//                    self.isLoggedIn = true
+                print("Sign up successful, waiting for auth state change")
+//                }
             }
         }
     }
-
 }
 
 
