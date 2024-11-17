@@ -12,25 +12,27 @@ struct RecapView: View {
     
     var body: some View {
         NavigationStack {
-            VStack {
-                HStack{
-                    Text("Let's see where you've been!")
-                        .font(.system(size: 18, weight: .semibold))
-                        .padding(.bottom, 20)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                let columns = [GridItem(.flexible(), spacing: 20), GridItem(.flexible(), spacing: 10)]
-                LazyVGrid(columns: columns, spacing: 20) {
-                    ForEach(vm.getTrips()) { trip in
-                        NavigationLink {
-                            DetailRecapView(vm: vm, trip: trip)
-                        } label: {
-                            TripGridView(trip: trip)
-                        }.buttonStyle(PlainButtonStyle())
+            ScrollView {
+                VStack {
+                    HStack{
+                        Text("Let's see where you've been!")
+                            .font(.system(size: 18, weight: .semibold))
+                            .padding(.bottom, 20)
+                            .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                }
-                Spacer()
-            }.padding(20)
+                    let columns = [GridItem(.flexible(), spacing: 20), GridItem(.flexible(), spacing: 10)]
+                    LazyVGrid(columns: columns, spacing: 20) {
+                        ForEach(vm.getTrips()) { trip in
+                            NavigationLink {
+                                DetailRecapView(vm: vm, trip: trip)
+                            } label: {
+                                TripGridView(trip: trip)
+                            }.buttonStyle(PlainButtonStyle())
+                        }
+                    }
+                    Spacer()
+                }.padding(20)
+            }
         }
     }
 }
