@@ -27,6 +27,7 @@ struct Hotel: POI, Identifiable, Ratable, Imagable {
         self.latitude = latitude
         self.longitude = longitude
         self.city = city
+        self.imageUrl = imageUrl
     }
     
     init(from business: Business) {

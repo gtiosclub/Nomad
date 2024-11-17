@@ -225,7 +225,7 @@ struct EnhancedRoutePlanListView: View {
                                 .lineLimit(1)
                         }
                         
-                        HStack(spacing: 5) {
+                        HStack(spacing: 2) {
                             if let city = location.getCity(), !city.isEmpty {
                                 Text("\(city) ")
                             } else if let city = vm.current_trip?.getStartCity(), isFirst {
@@ -278,7 +278,7 @@ struct EnhancedRoutePlanListView: View {
     }
         
     private func showRating(location: any POI, ratable: Ratable) -> some View {
-        HStack {
+        HStack(spacing: 0) {
             if (location.getCity()) != nil {
                 Text("•")
             }
@@ -287,7 +287,7 @@ struct EnhancedRoutePlanListView: View {
                 .resizable()
                 .frame(width: 14, height: 14)
                 .foregroundColor(.secondary)
-                .padding(.leading, -5)
+                .padding(.leading, 2)
         }
     }
 

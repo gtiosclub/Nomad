@@ -28,7 +28,7 @@ struct RootView: View {
                 }
                 .tag(2)
             
-            RecapView(vm: vm, header: "Your Memories")
+            RecapView(vm: vm)
                 .tabItem {
                     Label("Memories", systemImage: "play.square.stack")
                 }

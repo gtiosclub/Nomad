@@ -21,8 +21,9 @@ struct DetailRecapView: View {
                 HStack {
                     VStack (alignment: .leading){
                         Text(vm.current_trip?.getName() ?? "Trip Name")
-                            .font(.system(size: 22, weight: .bold))
-                            .padding(.vertical, 15)
+                            .font(.system(size: 20, weight: .bold))
+                            .padding(.vertical, 10)
+                        
                         ScrollView(.horizontal, showsIndicators: true) {
                             HStack {
                                 ForEach(images, id: \.self) { image in
@@ -41,82 +42,200 @@ struct DetailRecapView: View {
                                             .resizable()
                                             .aspectRatio(contentMode: .fit)
                                             .frame(width: 30)
-                                    }.padding(.bottom, 30)
+                                    }.padding(.bottom, 20)
                                 }
                             }
-                        }   .scrollIndicators(.visible)
-                            .onChange(of: selectedItems) { _, _ in
-                                if !selectedItems.isEmpty {
-                                    for eachItem in selectedItems {
-                                        Task {
-                                            if let imageData = try? await eachItem.loadTransferable(type: Data.self) {
-                                                if let image = UIImage(data: imageData) {
-                                                    images.append(image)
-                                                    print("image appended")
-                                                    FirebaseViewModel.vm.storeImageAndReturnURL(image: image, tripID: trip.id, completion: {
-                                                        url in
-                                                    })
-                                                }
+                        }
+                        .scrollIndicators(.visible)
+                        .onChange(of: selectedItems) { _, _ in
+                            if !selectedItems.isEmpty {
+                                for eachItem in selectedItems {
+                                    Task {
+                                        if let imageData = try? await eachItem.loadTransferable(type: Data.self) {
+                                            if let image = UIImage(data: imageData) {
+                                                images.append(image)
+                                                print("image appended")
+                                                FirebaseViewModel.vm.storeImageAndReturnURL(image: image, tripID: trip.id, completion: {
+                                                    url in
+                                                })
                                             }
                                         }
                                     }
                                 }
-                                selectedItems.removeAll()
                             }
+                            selectedItems.removeAll()
+                        }
+                        
                         Text("Trip Details")
                             .font(.system(size: 18, weight: .semibold))
-                            .padding(.bottom, 10)
+                            .padding(.bottom, 0)
+                        
                         HStack {
-                            Image(systemName: "mappin")
-                                .foregroundStyle(.red)
-                            Text((vm.current_trip?.getEndLocation().getName() ?? "Destination"))
-                        }.padding(.bottom, 10)
+                            HStack {
+                                ZStack {
+                                    MapPinShape()
+                                        .fill(Color.gray)
+                                        .frame(width: 10, height: 16) // Adjust as needed
+                                    
+                                    Circle()
+                                        .frame(width: 4, height: 4)
+                                        .foregroundColor(.white)
+                                        .offset(y: -3)
+                                        .zIndex(3)
+                                }
+//                                    .padding(.leading, 10)
+                                .padding(.vertical, 0)
+                                
+                                HStack(spacing: 4) {
+                                    Text(trip.getStartCity())
+                                        .foregroundStyle(.gray)
+                                        .font(.system(size: 16))
+                                    
+                                    HStack(spacing: 1) {
+                                        Circle()
+                                            .frame(width: 1, height: 1)
+                                            .foregroundColor(.gray)
+                                        
+                                        Rectangle()
+                                            .frame(width: 3, height: 1)
+                                            .foregroundColor(.gray)
+                                        
+                                        Rectangle()
+                                            .frame(width: 3, height: 1)
+                                            .foregroundColor(.gray)
+                                        
+                                        Circle()
+                                            .frame(width: 1, height: 1)
+                                            .foregroundColor(.gray)
+                                        
+                                        Image(systemName: "car.side")
+                                            .font(.system(size: 16))
+                                            .scaleEffect(x: -1, y: 1)
+                                            .foregroundColor(.gray)
+                                    }
+                                    
+                                    Text(trip.getEndCity())
+                                        .foregroundStyle(.gray)
+                                        .font(.system(size: 16))
+                                }
+                                .padding(.leading, 5)
+                                .padding(.bottom, 1)
+                                .padding(.trailing, 5)
+                            }
+                            .padding(1)
+                            .cornerRadius(14)
+                            .foregroundColor(.black.opacity(0.7))
+                            .padding(.trailing, 10)
+                            .padding(.leading, 0)
+                            
+                            Spacer()
+                        }
                     }
                     Spacer()
                 }
+                
                 HStack {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(LinearGradient(gradient: Gradient(colors: [Color(red: 147/255, green: 201/255, blue: 201/255),Color.nomadLightBlue]), startPoint: .topLeading, endPoint: .bottomTrailing))
-                            .frame(width: 155, height: 87)
-                        VStack {
-                            Text(String(format: "%.1f", round((trip.route?.totalDistance() ?? 0.0) * 10) / 10))
-                                .font(.system(size: 30))
-                            Text("miles traveled")
+                    VStack(alignment: .leading) {
+                        Text("Time")
+                            .padding(.top, 0)
+                            .font(.system(size: 14))
+                            .foregroundStyle(.black)
+                        
+                        Text(formatTimeDuration(duration: trip.route?.route?.expectedTravelTime ?? TimeInterval(0)))
+                            .padding(.bottom, 0)
+                            .font(.system(size: 22))
+                            .foregroundStyle(.black)
+                        
+                        Spacer()
+                        
+                        Text("Started")
+                            .padding(.top, 0)
+                            .font(.system(size: 14))
+                            .foregroundStyle(.black)
+                        
+                        HStack {
+                            Text("\(convertDateToShortFormat(trip.getStartDate())),")
+                                .padding(.bottom, 0)
+                                .font(.system(size: 22))
+                                .foregroundStyle(.black)
+                            
+                            Text(trip.getStartTime())
+                                .padding(.bottom, 0)
+                                .font(.system(size: 22))
+                                .foregroundStyle(.black)
                         }
                     }
+                    .padding(.trailing, 10)
+                    
                     Spacer()
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(LinearGradient(gradient: Gradient(colors: [Color(red: 147/255, green: 201/255, blue: 201/255),Color.nomadLightBlue]), startPoint: .topLeading, endPoint: .bottomTrailing))
-                            .frame(width: 155, height: 87)
-                        VStack {
-                            Text(String(format: "%.1f", round((trip.route?.totalTime() ?? 0.0) / 3600 * 10) / 10))
-                                .font(.system(size: 30))
-                            Text("hours spent")
-                        }
+                    
+                    VStack(alignment: .leading) {
+                        Text("Distance")
+                            .padding(.top, 0)
+                            .font(.system(size: 14))
+                            .foregroundStyle(.black)
+                        
+                        Text(formatDistance(distance: trip.route?.totalDistance() ?? 0))
+                            .padding(.bottom, 0)
+                            .font(.system(size: 22))
+                            .foregroundStyle(.black)
+                        
+                        Spacer()
+                        
+                        Text("Ended")
+                            .padding(.top, 0)
+                            .font(.system(size: 14))
+                            .foregroundStyle(.black)
+                        
+                        Text(convertDateToShortFormat(trip.getEndDate()))
+                            .padding(.bottom, 0)
+                            .font(.system(size: 22))
+                            .foregroundStyle(.black)
                     }
-                }.padding(.bottom, 40)
+                    .padding(.trailing, 0)
+                    
+                    Spacer()
+                }
+                .padding(.vertical)
+                .background(Color.white)
+                .cornerRadius(10)
+                .padding(.leading, 15)
+                .onChange(of: vm.times) {}
+                .frame(alignment: .leading)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.black, lineWidth: 0.5)
+                )
+                .padding(.horizontal, 0)
+                .padding(.bottom, 20)
+                .padding(.top, 0)
+                
                 HStack {
-                    Text("Here are the places you stopped!")
+                    Text("The places you stopped")
                         .font(.system(size: 18, weight: .semibold))
                         .padding(.bottom, 10)
                     Spacer()
                 }
-                RoutePlanListView(vm: vm, reload: $routePlanned)
-                    .padding(.bottom, 30)
+                
+                EnhancedRoutePlanListView(vm: vm, isEditable: false)
+                    .padding(.bottom, 20)
+                
                 HStack {
-                    Text("Here's how you moved around")
+                    Text("How you moved around")
                         .font(.system(size: 18, weight: .semibold))
                     Spacer()
-                }.padding(.bottom, 10)
+                }
+                .padding(.bottom, 10)
+                
                 RouteMapView(vm: vm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(nil))
                     .frame(height: 400)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                     .shadow(radius: 5.0)
-            }.padding(.horizontal, 30)
-                .padding(.bottom, 30)
-        }.onAppear{
+            }
+            .padding(.horizontal, 30)
+            .padding(.bottom, 30)
+        }
+        .onAppear{
             vm.setCurrentTrip(trip: trip)
             Task {
                 await vm.updateRoute()
@@ -133,6 +252,48 @@ struct DetailRecapView: View {
         .onChange(of: routePlanned) {
             vm.setCurrentTrip(trip: trip)
         }
+    }
+    
+    struct MapPinShape: Shape {
+        func path(in rect: CGRect) -> Path {
+            var path = Path()
+            
+            // Circle at the top
+            let circleRadius = rect.width * 0.5
+            let circleCenter = CGPoint(x: rect.midX, y: circleRadius)
+            path.addArc(center: circleCenter, radius: circleRadius, startAngle: .degrees(0), endAngle: .degrees(360), clockwise: false)
+            
+            // Triangle at the bottom
+            path.move(to: CGPoint(x: rect.midX - circleRadius, y: circleRadius + 1.5))
+            path.addLine(to: CGPoint(x: rect.midX + circleRadius, y: circleRadius + 1.5))
+            path.addLine(to: CGPoint(x: rect.midX, y: rect.maxY - 1))
+            path.closeSubpath()
+            
+            return path
+        }
+    }
+    
+    func convertDateToShortFormat(_ dateString: String) -> String {
+        let inputFormatter = DateFormatter()
+        inputFormatter.dateFormat = "MM-dd-yyyy"
+        
+        let outputFormatter = DateFormatter()
+        outputFormatter.dateFormat = "MMM. d"
+        
+        if let date = inputFormatter.date(from: dateString) {
+            return outputFormatter.string(from: date)
+        } else {
+            return "" // Return nil if the date string is invalid
+        }
+    }
+    
+    func formatTimeDuration(duration: TimeInterval) -> String {
+        let minsLeft = Int(duration.truncatingRemainder(dividingBy: 3600))
+        return "\(Int(duration / 3600)) hr \(Int(minsLeft / 60)) min"
+    }
+    
+    func formatDistance(distance: Double) -> String {
+        return String(format: "%.0f miles", distance)
     }
 }
 

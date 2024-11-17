@@ -29,7 +29,7 @@ struct FindStopView: View {
     @State private var isRatingDropdownOpen = false
     @State private var isPriceDropdownOpen = false
     @Environment(\.dismiss) var dismiss
-    @State private var dynamicHeight: CGFloat = 500
+    @State private var dynamicHeight: CGFloat = 425
     @State var manualSearch: String = "Filter Search"
     var searchTypes = ["Filter Search", "Manual Search"]
     
@@ -38,6 +38,7 @@ struct FindStopView: View {
     
     @State var backToDetails: Bool = false
     @State var toPreview: Bool = false
+    var newTrip: Bool
     
     var body: some View {
         NavigationStack {
@@ -167,7 +168,7 @@ struct FindStopView: View {
                                 
                                 if selection == "Restaurants" {
                                     ZStack {
-                                        HStack() {
+                                        HStack(alignment: .top) {
                                             Spacer(minLength: 2)
                                             
                                             FilterDropdownView(
@@ -179,6 +180,7 @@ struct FindStopView: View {
                                                 allowsMultipleSelection: true
                                             )
                                             .frame(minWidth: 120)
+                                            .offset(y: isCuisineDropdownOpen ? 0 : ((isRatingDropdownOpen || isPriceDropdownOpen) ? 0 : -27))
                                             
                                             FilterDropdownView(
                                                 title: "Rating",
@@ -189,6 +191,7 @@ struct FindStopView: View {
                                                 allowsMultipleSelection: false
                                             )
                                             .frame(minWidth: 100)
+                                            .offset(y: isRatingDropdownOpen ? 0 : ((isPriceDropdownOpen || isCuisineDropdownOpen) ? 0 : -27))
                                             
                                             FilterDropdownView(
                                                 title: "Price",
@@ -199,19 +202,20 @@ struct FindStopView: View {
                                                 allowsMultipleSelection: false
                                             )
                                             .frame(minWidth: 100)
+                                            .offset(y: isPriceDropdownOpen ? 0 : ((isRatingDropdownOpen || isCuisineDropdownOpen) ? 0 : -27))
                                             
                                             Spacer(minLength: 2)
                                         }
                                         .padding(.horizontal)
                                         .zIndex(1)
-                                        //                                    .offset(y: -30)
+//                                        .animation(.easeIn(duration: 0.3))
                                         
                                         HStack {
                                             Spacer()
                                             fetchResults
                                             Spacer()
                                         } //Runs parameters through yelp api when search button is clicked
-                                        .offset(y: 90)
+                                        .offset(y: (isPriceDropdownOpen || isCuisineDropdownOpen || isRatingDropdownOpen) ? 135 : 35)
                                         .zIndex(0)
                                     }
                                 } else if selection == "Activities" || selection == "Hotels" {
@@ -254,7 +258,7 @@ struct FindStopView: View {
                         .tag(2)
                     }
                     .frame(height: dynamicHeight)
-                    .animation(.easeInOut(duration: 0.3), value: dynamicHeight)
+//                    .animation(.easeInOut(duration: 0.3), value: dynamicHeight)
                     .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
                     .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
                     
@@ -294,7 +298,7 @@ struct FindStopView: View {
                                 .font(.system(size: 18))
                         }
                         .navigationDestination(isPresented: $backToDetails, destination: {
-                            ItineraryPlanningView(vm: vm, use_current_trip: true, letBack: false)
+                            ItineraryPlanningView(vm: vm, use_current_trip: true, letBack: false, newTrip: newTrip)
                         })
                         
                         Button {
@@ -310,7 +314,7 @@ struct FindStopView: View {
                                 .font(.system(size: 18))
                         }
                         .navigationDestination(isPresented: $toPreview, destination: {
-                            PreviewRouteView(vm: vm, trip: vm.current_trip!, letBack: false)
+                            PreviewRouteView(vm: vm, trip: vm.current_trip!, letBack: false, newTrip: newTrip)
                         })
                         
                         Spacer(minLength: 80)
@@ -319,6 +323,7 @@ struct FindStopView: View {
                     .padding(.bottom, 15)
                 }
                 .padding(.top, 5)
+                .animation(.easeInOut(duration: 0.3), value: dynamicHeight)
                 .onChange(of: selectedTab) {
                     updateHeight()
                 }
@@ -359,18 +364,18 @@ struct FindStopView: View {
         switch tab {
         case 1:
             if $manualSearch.wrappedValue == "Manual Search" {
-                size = 150
+                size = 140
             } else {
                 
                 if selection == "Restaurants" {
-                    size = 200
+                    size = 125
                     if isPriceDropdownOpen || isCuisineDropdownOpen || isRatingDropdownOpen {
-                        size += 50
+                        size += 145
                     }
                 } else if selection == "Activities" || selection == "Hotels" {
-                    size = 150
+                    size = 140
                 } else {
-                    size = 90
+                    size = 70
                 }
             }
         case 2:
@@ -622,19 +627,19 @@ struct FindStopView: View {
                         .font(.headline)
                         .lineLimit(1)
                     
-                    HStack {
+                    HStack(spacing: 2) {
                         Text(stop.address[..<(stop.address.firstIndex(of: ",") ?? stop.address.endIndex)])
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                             .lineLimit(1)
                         
-                        Text("\("•  " + (stop.city ?? ""))")
+                        Text("\("• " + (stop.city ?? ""))")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                             .lineLimit(1)
                     }
                     
-                    HStack {
+                    HStack(spacing: 2) {
                         if let restaurant = stop as? Restaurant {
                             Text(restaurant.cuisine?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "")
                                 .font(.system(size: 16))
@@ -701,52 +706,52 @@ extension Array {
     }
 }
 
-#Preview {
-    struct FindStopPreviewWrapper: View {
-        @StateObject private var vm = UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard"))
-        @State private var isLoading = true
-
-        var body: some View {
-            Group {
-                if isLoading {
-                    ProgressView("Loading trip...")
-                } else {
-                    FindStopView(vm: vm)
-                }
-            }
-            .onAppear {
-                Task {
-                    await vm.createTrip(
-                        start_location: Restaurant(
-                            address: "848 Spring Street, Atlanta, GA 30308",
-                            name: "Tiff's Cookies",
-                            rating: 4.5,
-                            price: 1,
-                            latitude: 33.778033,
-                            longitude: -84.389090
-                        ),
-                        end_location: Hotel(
-                            address: "201 8th Ave S, Nashville, TN 37203 United States",
-                            name: "JW Marriott",
-                            latitude: 36.156627,
-                            longitude: -86.780947
-                        ),
-                        start_date: "10-05-2024",
-                        end_date: "10-05-2024",
-                        stops: [
-                            Activity(
-                                address: "1720 S Scenic Hwy Chattanooga, TN 37409 United States",
-                                name: "Ruby Falls",
-                                latitude: 35.018901,
-                                longitude: -85.339367
-                            )
-                        ]
-                    )
-                    isLoading = false
-                }
-            }
-        }
-    }
-    return FindStopPreviewWrapper()
-}
+//#Preview {
+//    struct FindStopPreviewWrapper: View {
+//        @StateObject private var vm = UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard"))
+//        @State private var isLoading = true
+//
+//        var body: some View {
+//            Group {
+//                if isLoading {
+//                    ProgressView("Loading trip...")
+//                } else {
+//                    FindStopView(vm: vm, newTrip: true)
+//                }
+//            }
+//            .onAppear {
+//                Task {
+//                    await vm.createTrip(
+//                        start_location: Restaurant(
+//                            address: "848 Spring Street, Atlanta, GA 30308",
+//                            name: "Tiff's Cookies",
+//                            rating: 4.5,
+//                            price: 1,
+//                            latitude: 33.778033,
+//                            longitude: -84.389090
+//                        ),
+//                        end_location: Hotel(
+//                            address: "201 8th Ave S, Nashville, TN 37203 United States",
+//                            name: "JW Marriott",
+//                            latitude: 36.156627,
+//                            longitude: -86.780947
+//                        ),
+//                        start_date: "10-05-2024",
+//                        end_date: "10-05-2024",
+//                        stops: [
+//                            Activity(
+//                                address: "1720 S Scenic Hwy Chattanooga, TN 37409 United States",
+//                                name: "Ruby Falls",
+//                                latitude: 35.018901,
+//                                longitude: -85.339367
+//                            )
+//                        ]
+//                    )
+//                    isLoading = false
+//                }
+//            }
+//        }
+//    }
+//    return FindStopPreviewWrapper()
+//}
 

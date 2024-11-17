@@ -16,14 +16,14 @@ struct GasStation: POI, Imagable, Identifiable {
     var city: String?
     var imageUrl: String?
     
-    init(address: String, name: String, latitude: Double, longitude: Double, city: String? = nil, imageURL: String? = nil) {
+    init(address: String, name: String, latitude: Double, longitude: Double, city: String? = nil, imageUrl: String? = nil) {
         self.id = UUID().uuidString
         self.address = address
         self.name = name
         self.latitude = latitude
         self.longitude = longitude
         self.city = city
-        self.imageUrl = imageURL
+        self.imageUrl = imageUrl
     }
     
     static func == (lhs: GasStation, rhs: GasStation) -> Bool {

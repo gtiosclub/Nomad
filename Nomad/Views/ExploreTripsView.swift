@@ -49,30 +49,35 @@ struct ExploreTripsView: View {
                                 HStack {
                                     ZStack {
                                         MapPinShape()
-                                            .fill(Color.white)
+                                            .fill(Color.black)
                                             .frame(width: 10, height: 16) // Adjust as needed
                                         
                                         Circle()
                                             .frame(width: 4, height: 4)
-                                            .foregroundColor(.nomadDarkBlue)
+                                            .foregroundColor(.white)
                                             .offset(y: -3)
                                             .zIndex(3)
                                     }
-                                    .padding(.leading, 10)
+//                                    .padding(.leading, 10)
                                     .padding(.vertical, 5)
                                     
                                     Text("\(vm.currentCity ?? "Retrieving Location")")
-                                        .foregroundStyle(Color.white)
+                                        .foregroundStyle(Color.black)
                                         .padding(.leading, 5)
-                                        .padding(.trailing, 10)
+                                        .padding(.trailing, 5)
                                         .font(.system(size: 14))
                                 }
                                 .padding(1)
-                                .background(Color.nomadDarkBlue)
+//                                .background(Color.nomadDarkBlue)
                                 .cornerRadius(14)
                                 .foregroundColor(.black.opacity(0.7))
-                                .padding(.leading, 5)
+//                                .padding(.leading, 5)
                                 .padding(.horizontal, 10)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 14)
+                                        .stroke(Color.black, lineWidth: 0.5)
+                                )
+                                .padding(.leading, 15)
                                 
                                 Spacer()
                             }
@@ -85,10 +90,10 @@ struct ExploreTripsView: View {
                                 .padding(.horizontal)
                             
                             ScrollView(.horizontal) {
-                                HStack(spacing: 15) {
+                                HStack(spacing: 5) {
                                     ForEach($current_trips.wrappedValue) { trip in
                                         NavigationLink(destination: {
-                                            PreviewRouteView(vm: vm, trip: trip)
+                                            PreviewRouteView(vm: vm, trip: trip, newTrip: false)
                                         }, label: {
                                             TripGridView(trip: trip)
                                                 .frame(alignment: .top)
@@ -111,7 +116,7 @@ struct ExploreTripsView: View {
                                     }
                                 }
                             }
-                            .padding(.horizontal, 15)
+                            .padding(.leading, 5)
                             
                             Divider()
                                 .foregroundStyle(Color.nomadDarkBlue.opacity(0.3))
@@ -121,10 +126,10 @@ struct ExploreTripsView: View {
                                 .padding(.horizontal)
                             
                             ScrollView(.horizontal) {
-                                HStack(spacing: 15) {
+                                HStack(spacing: 5) {
                                     ForEach($previous_trips.wrappedValue) { trip in
                                         NavigationLink(destination: {
-                                            PreviewRouteView(vm: vm, trip: trip)
+                                            PreviewRouteView(vm: vm, trip: trip, newTrip: false)
                                         }, label: {
                                             TripGridView(trip: trip)
                                                 .frame(alignment: .top)
@@ -133,7 +138,7 @@ struct ExploreTripsView: View {
                                     }
                                 }
                             }
-                            .padding(.horizontal, 15)
+                            .padding(.leading, 5)
                             
                             Divider()
                                 .foregroundStyle(Color.nomadDarkBlue.opacity(0.3))
@@ -143,10 +148,10 @@ struct ExploreTripsView: View {
                                 .padding(.horizontal)
                             
                             ScrollView(.horizontal) {
-                                HStack(spacing: 15) {
+                                HStack(spacing: 5) {
                                     ForEach($community_trips.wrappedValue) { trip in
                                         NavigationLink(destination: {
-                                            PreviewRouteView(vm: vm, trip: trip)
+                                            PreviewRouteView(vm: vm, trip: trip, newTrip: true)
                                         }, label: {
                                             TripGridView(trip: trip)
                                                 .frame(alignment: .top)
@@ -155,7 +160,7 @@ struct ExploreTripsView: View {
                                     }
                                 }
                             }
-                            .padding(.horizontal, 15)
+                            .padding(.leading, 5)
                         }
                     }
                 }
@@ -163,7 +168,7 @@ struct ExploreTripsView: View {
                     Spacer()
                     HStack {
                         Spacer()
-                        NavigationLink(destination: ItineraryPlanningView(vm: vm)) {
+                        NavigationLink(destination: ItineraryPlanningView(vm: vm, newTrip: true)) {
                             Image(systemName: "plus")
                                 .font(.system(size: 24))
                                 .padding()
@@ -294,19 +299,19 @@ struct ExploreTripsView: View {
                         HStack(spacing: 1) {
                             Circle()
                                 .frame(width: 1, height: 1)
-                                .foregroundColor(.gray.opacity(0.5))
+                                .foregroundColor(.gray)
                             
                             Rectangle()
                                 .frame(width: 3, height: 1)
-                                .foregroundColor(.gray.opacity(0.5))
+                                .foregroundColor(.gray)
                             
                             Rectangle()
                                 .frame(width: 3, height: 1)
-                                .foregroundColor(.gray.opacity(0.5))
+                                .foregroundColor(.gray)
                             
                             Circle()
                                 .frame(width: 1, height: 1)
-                                .foregroundColor(.gray.opacity(0.5))
+                                .foregroundColor(.gray)
                         }
                         
                         Text(trip.getEndCity())
@@ -314,7 +319,7 @@ struct ExploreTripsView: View {
                             .font(.system(size: 12))
                     }
                     .padding(.leading, 5)
-                    .padding(.bottom, 5)
+                    .padding(.bottom, 3)
                     .padding(.trailing, 5)
                     .background(
                         GeometryReader { geometry in
@@ -338,10 +343,11 @@ struct ExploreTripsView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.vertical, 5)
-            .padding(.horizontal, 2)
+            .padding(.leading, 10)
+//            .padding(.trailing, -7)
             .onAppear {
                 imageUrl = trip.coverImageURL
-                print("setting image as \(trip.coverImageURL) for \(trip.getName())")
+//                print("setting image as \(trip.coverImageURL) for \(trip.getName())")
             }
             .onChange(of: $trip.coverImageURL.wrappedValue, initial: true) { old, new in
                 imageUrl = new
@@ -355,17 +361,6 @@ struct ExploreTripsView: View {
             let formatter = NumberFormatter()
             formatter.numberStyle = .spellOut
             return formatter.string(from: NSNumber(value: number)) ?? ""
-        }
-    }
-    
-    struct Triangle: Shape {
-        func path(in rect: CGRect) -> Path {
-            var path = Path()
-            path.move(to: CGPoint(x: rect.midX, y: rect.maxY)) // Bottom center
-            path.addLine(to: CGPoint(x: rect.minX, y: rect.minY)) // Top left
-            path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY)) // Top right
-            path.closeSubpath()
-            return path
         }
     }
     

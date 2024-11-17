@@ -5,7 +5,7 @@ struct ItineraryParentView: View {
     @State private var showWipeOverlay = false
     @ObservedObject var vm: UserViewModel
     @ObservedObject var cvm: ChatViewModel
-    
+    var newTrip: Bool
 
     var body: some View {
         NavigationStack {
@@ -15,7 +15,7 @@ struct ItineraryParentView: View {
                     AIAssistantView(vm: vm, chatViewModel: cvm)
                         .transition(.identity) // No animation on the content itself
                 } else {
-                    FindStopView(vm: vm)
+                    FindStopView(vm: vm, newTrip: newTrip)
                         .transition(.identity) // No animation on the content itself
                 }
                 
@@ -158,5 +158,5 @@ struct WipeShape: Shape {
 }
 
 #Preview {
-    ItineraryParentView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")), cvm: ChatViewModel())
+    ItineraryParentView(vm: UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard")), cvm: ChatViewModel(), newTrip: true)
 }
