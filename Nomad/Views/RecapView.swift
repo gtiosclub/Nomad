@@ -2,7 +2,7 @@
 //  RecapView.swift
 //  Nomad
 //
-//  Created by Nicholas Candello on 9/15/24.
+//  Created by Austin Huguenard on 11/17/24.
 //
 
 import SwiftUI
@@ -33,6 +33,15 @@ struct RecapView: View {
                     Spacer()
                 }.padding(20)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 5)
+            .padding(.horizontal, 5)
+        }
+        
+        func intToWords(_ number: Int) -> String {
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .spellOut
+            return formatter.string(from: NSNumber(value: number)) ?? ""
         }
     }
 }
@@ -42,4 +51,3 @@ struct RecapView: View {
         Trip(start_location: Activity(address: "123 Start St", name: "Scenic California Mountain Route", latitude: 34.0522, longitude: -118.2437, city: "Boston"), end_location: Hotel(address: "456 End Ave", name: "End Hotel", latitude: 34.0522, longitude: -118.2437, city: "Seattle"), name: "Cross Country", coverImageURL: "https://pixabay.com/get/g1a5413e9933d659796d14abf3640f03304a18c6867d6a64987aa896e3b6ac83ccc2ac1e5a4a2a7697a92161d1487186b7e2b6d4c17e0f11906a0098eef1da812_640.jpg"),
         Trip(start_location: Activity(address: "789 Another St", name: "Johnson Family Spring Retreat", latitude: 34.0522, longitude: -118.2437, city: "Los Angeles"), end_location: Hotel(address: "123 Another Ave", name: "Another Hotel", latitude: 34.0522, longitude: -118.2437, city: "Blue Ridge"), name: "GA Mountains", coverImageURL: "https://pixabay.com/get/gceb5f3134c78efcc8fbd206f7fb8520990df3bb7096474f685f8c3cb95749647d5f4752db8cf1521e69fa27b940044b7f477dd18e51de093dd7f79b833ceca1b_640.jpg")])))
 }
-

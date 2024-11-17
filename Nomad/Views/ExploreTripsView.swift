@@ -216,7 +216,9 @@ struct ExploreTripsView: View {
             current_trips = vm.user.trips
         }
         .onChange(of: vm.current_trip, initial: true) {}
-        .onChange(of: vm.current_trip?.coverImageURL, initial: true) {}
+        .onChange(of: vm.current_trip?.coverImageURL, initial: true) {
+            print("reload")
+        }
     }
     
     struct SectionHeaderView: View {
@@ -259,7 +261,7 @@ struct ExploreTripsView: View {
                         .frame(height: 120)
                         .cornerRadius(10)
                 } else {
-                    AsyncImage(url: URL(string: trip.coverImageURL)) { image in
+                    AsyncImage(url: URL(string: imageUrl)) { image in
                         image
                             .resizable()
                             .scaledToFill()
@@ -273,6 +275,7 @@ struct ExploreTripsView: View {
                             .frame(height: 120)
                             .cornerRadius(10)
                     }
+                    .onChange(of: imageUrl, initial: true) {}
                 }
                 
                 VStack(alignment: .leading, spacing: 0) {
@@ -338,9 +341,10 @@ struct ExploreTripsView: View {
             .padding(.horizontal, 2)
             .onAppear {
                 imageUrl = trip.coverImageURL
+                print("setting image as \(trip.coverImageURL) for \(trip.getName())")
             }
             .onChange(of: $trip.coverImageURL.wrappedValue, initial: true) { old, new in
-                imageUrl = trip.coverImageURL
+                imageUrl = new
             }
             .onChange(of: imageUrl, initial: true) { old, new in
 //                print("got new image url \(new)")
