@@ -129,6 +129,7 @@ actor SpeechRecognizer: ObservableObject {
     }
     
     func pollForAtlas() {
+        print("asdfasdf")
         guard let recognizer, recognizer.isAvailable else {
             self.transcribe(RecognizerError.recognizerIsUnavailable)
             return
@@ -202,7 +203,7 @@ actor SpeechRecognizer: ObservableObject {
 
         if let result {
             let transcription = result.bestTranscription.formattedString.lowercased()
-            // print(transcription)
+             print(transcription)
             
             if transcription.contains("atlas") {
                 Task { @MainActor in

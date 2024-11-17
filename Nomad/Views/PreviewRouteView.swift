@@ -20,12 +20,14 @@ struct PreviewRouteView: View {
     var letBack: Bool = true
     var privacyTypes = ["Private", "Public"]
     @State var navigateToCopiedTrip: Bool = false
+    @State var startingRoute: Bool = false
+    @State var savingRoute: Bool = false
     
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack {
-                    RoutePreviewView(vm: vm, cvm: ChatViewModel(), trip: Binding.constant(trip), currentStopLocation: Binding.constant(nil))
+                    RouteMapView(vm: vm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(nil))
                         .frame(height: 300)
                     
                     Spacer().frame(height: 20)
@@ -86,21 +88,23 @@ struct PreviewRouteView: View {
                             
                             Spacer()
                             
-                            Text("Start")
-                                .padding(.top, 0)
-                                .font(.system(size: 14))
-                                .foregroundStyle(.black)
-                            
-                            HStack {
-                                Text("\(convertDateToShortFormat(trip.getStartDate())),")
-                                    .padding(.bottom, 0)
-                                    .font(.system(size: 22))
+                            if !isCommunityTrip {
+                                Text("Start")
+                                    .padding(.top, 0)
+                                    .font(.system(size: 14))
                                     .foregroundStyle(.black)
                                 
-                                Text(trip.getStartTime())
-                                    .padding(.bottom, 0)
-                                    .font(.system(size: 22))
-                                    .foregroundStyle(.black)
+                                HStack {
+                                    Text("\(convertDateToShortFormat(trip.getStartDate())),")
+                                        .padding(.bottom, 0)
+                                        .font(.system(size: 22))
+                                        .foregroundStyle(.black)
+                                    
+                                    Text(trip.getStartTime())
+                                        .padding(.bottom, 0)
+                                        .font(.system(size: 22))
+                                        .foregroundStyle(.black)
+                                }
                             }
                         }
                         .padding(.trailing, 10)
@@ -120,15 +124,17 @@ struct PreviewRouteView: View {
                             
                             Spacer()
                             
-                            Text("End")
-                                .padding(.top, 0)
-                                .font(.system(size: 14))
-                                .foregroundStyle(.black)
-                            
-                            Text(convertDateToShortFormat(trip.getEndDate()))
-                                .padding(.bottom, 0)
-                                .font(.system(size: 22))
-                                .foregroundStyle(.black)
+                            if !isCommunityTrip {
+                                Text("End")
+                                    .padding(.top, 0)
+                                    .font(.system(size: 14))
+                                    .foregroundStyle(.black)
+                                
+                                Text(convertDateToShortFormat(trip.getEndDate()))
+                                    .padding(.bottom, 0)
+                                    .font(.system(size: 22))
+                                    .foregroundStyle(.black)
+                            }
                         }
                         .padding(.horizontal)
                         
@@ -150,7 +156,7 @@ struct PreviewRouteView: View {
                     
                     
                     if vm.current_trip != nil {
-                        EnhancedRoutePlanListView(vm: vm)
+                        EnhancedRoutePlanListView(vm: vm, isEditable: false)
                             .padding(.top, 0)
                             .padding(.horizontal)
                             .padding(.bottom, 30)
@@ -201,78 +207,78 @@ struct PreviewRouteView: View {
                             .padding(.horizontal)
                             
                             HStack {
-                                Spacer()
-                                
-//                                Button {
-//                                    backToEdit = true
-//                                } label: {
-//                                    Button("Edit") {
-//                                        backToEdit = true
-//                                    }
-//                                    .padding()
-//                                    .padding(.horizontal, 15)
-//                                    .background(Color.gray.opacity(0.2))
-//                                    .foregroundColor(.black)
-//                                    .cornerRadius(8)
-//                                    .shadow(radius: 5)
-//                                }
-//                                .navigationDestination(isPresented: $backToEdit, destination: {
-//                                    ItineraryParentView(vm: vm, cvm: ChatViewModel())
-//                                })
-//                                
-//                                Spacer(minLength: 20)
-                                                                
-                                Button("Start") {
-                                    vm.setTripTitle(newTitle: $tripTitle.wrappedValue)
-                                    vm.setIsPrivate(isPrivate: $privacy.wrappedValue == "Private")
+                                if !savingRoute && !startingRoute {
+                                    Spacer()
                                     
-                                    var successful: Bool = false
-                                    Task {
-                                        if !letBack {
-                                            successful = await vm.addTripToFirebase()
-                                        } else {
-                                            successful = await vm.modifyTripInFirebase()
-                                        }
+                                    Button("Start") {
+                                        startingRoute = true
+                                        vm.setTripTitle(newTitle: $tripTitle.wrappedValue)
+                                        vm.setIsPrivate(isPrivate: $privacy.wrappedValue == "Private")
                                         
-                                        if successful {
-                                            vm.startTrip(trip: trip)
+                                        var successful: Bool = false
+                                        Task {
+                                            if !letBack {
+                                                successful = await vm.addTripToFirebase()
+                                            } else {
+                                                successful = await vm.modifyTripInFirebase()
+                                            }
+                                            
+                                            if successful {
+                                                dismiss()
+                                                vm.startTrip(trip: trip)
+                                            }
                                         }
                                     }
-                                }
-                                .padding()
-                                .padding(.horizontal, 30)
-                                .background(Color.nomadLightBlue)
-                                .foregroundColor(.black)
-                                .cornerRadius(10)
-                                .shadow(color: .black.opacity(0.5), radius: 5, y: 3)
-                                
-                                Spacer(minLength: 20)
-                                                                
-                                Button("Save") {
-                                    vm.setTripTitle(newTitle: $tripTitle.wrappedValue)
-                                    vm.setIsPrivate(isPrivate: $privacy.wrappedValue == "Private")
+                                    .padding()
+                                    .padding(.horizontal, 30)
+                                    .background(Color.nomadLightBlue)
+                                    .foregroundColor(.black)
+                                    .cornerRadius(10)
+                                    .shadow(color: .black.opacity(0.5), radius: 5, y: 3)
                                     
-                                    var successful: Bool = false
-                                    Task {
-                                        if !letBack {
-                                            successful = await vm.addTripToFirebase()
-                                        } else {
-                                            successful = await vm.modifyTripInFirebase()
-                                        }
+                                    Spacer(minLength: 20)
+                                    
+                                    Button("Save") {
+                                        savingRoute = true
+                                        vm.setTripTitle(newTitle: $tripTitle.wrappedValue)
+                                        vm.setIsPrivate(isPrivate: $privacy.wrappedValue == "Private")
                                         
-                                        if successful {
-                                            dismiss()
+                                        var successful: Bool = false
+                                        Task {
+                                            if !letBack {
+                                                successful = await vm.addTripToFirebase()
+                                            } else {
+                                                successful = await vm.modifyTripInFirebase()
+                                            }
+                                            
+                                            if successful {
+                                                dismiss()
+                                            }
                                         }
                                     }
+                                    .padding()
+                                    .padding(.horizontal, 30)
+                                    .background(Color.nomadDarkBlue)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(10)
+                                    .shadow(color: .black.opacity(0.5), radius: 5, y: 3)
+                                    
+                                    Spacer()
+                                } else {
+                                    HStack {
+                                        ProgressView()
+                                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                        
+                                        Text("\(startingRoute ? "Starting" : "Saving") Route")
+                                            .font(.system(size: 18))
+                                            .foregroundColor(.white)
+                                    }
+                                    .padding()
+                                    .background(Color.nomadDarkBlue)
+                                    .cornerRadius(15)
+                                    .shadow(color: .gray.opacity(0.5), radius: 10, x: 0, y: 5)
+                                    .frame(minWidth: 300)
                                 }
-                                .padding()
-                                .padding(.horizontal, 30)
-                                .background(Color.nomadDarkBlue)
-                                .foregroundColor(.white)
-                                .cornerRadius(10)
-                                .shadow(color: .black.opacity(0.5), radius: 5, y: 3)
-                                
-                                Spacer()
                             }
                             .padding()
                             .padding(.top, 20)

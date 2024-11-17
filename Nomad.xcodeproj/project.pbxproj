@@ -14,9 +14,10 @@
 		48974B862C9A44A30057B073 /* Hotel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B852C9A449F0057B073 /* Hotel.swift */; };
 		48974B8D2CA0A3CB0057B073 /* FindStopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B8C2CA0A3CB0057B073 /* FindStopView.swift */; };
 		48974B8F2CA0A6130057B073 /* GeneralLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974B8E2CA0A6130057B073 /* GeneralLocation.swift */; };
-		48974BA12CB04B420057B073 /* RoutePreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974BA02CB04B420057B073 /* RoutePreviewView.swift */; };
+		48974BA12CB04B420057B073 /* RoutePreviewAtlasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974BA02CB04B420057B073 /* RoutePreviewAtlasView.swift */; };
 		48974BAF2CB30AAF0057B073 /* EnhancedRoutePlanListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48974BAE2CB30AAF0057B073 /* EnhancedRoutePlanListView.swift */; };
 		48BBC2D22C9CE5070093D9D0 /* DetailRecapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48BBC2D12C9CE5070093D9D0 /* DetailRecapView.swift */; };
+		48DB12702CE9743500E1C4A9 /* RouteMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48DB126F2CE9743500E1C4A9 /* RouteMapView.swift */; };
 		48FF8FCE2CE40A0600BB65E5 /* FilterDropdownView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48FF8FCD2CE40A0600BB65E5 /* FilterDropdownView.swift */; };
 		599F66172C9CE4F90025A8F8 /* Motion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 599F66162C9CE4F90025A8F8 /* Motion.swift */; };
 		66443CD72CADDB77000D3F12 /* RoutePlanListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66443CD62CADDB77000D3F12 /* RoutePlanListView.swift */; };
@@ -112,9 +113,10 @@
 		48974B852C9A449F0057B073 /* Hotel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hotel.swift; sourceTree = "<group>"; };
 		48974B8C2CA0A3CB0057B073 /* FindStopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindStopView.swift; sourceTree = "<group>"; };
 		48974B8E2CA0A6130057B073 /* GeneralLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralLocation.swift; sourceTree = "<group>"; };
-		48974BA02CB04B420057B073 /* RoutePreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePreviewView.swift; sourceTree = "<group>"; };
+		48974BA02CB04B420057B073 /* RoutePreviewAtlasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePreviewAtlasView.swift; sourceTree = "<group>"; };
 		48974BAE2CB30AAF0057B073 /* EnhancedRoutePlanListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnhancedRoutePlanListView.swift; sourceTree = "<group>"; };
 		48BBC2D12C9CE5070093D9D0 /* DetailRecapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailRecapView.swift; sourceTree = "<group>"; };
+		48DB126F2CE9743500E1C4A9 /* RouteMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteMapView.swift; sourceTree = "<group>"; };
 		48FF8FCD2CE40A0600BB65E5 /* FilterDropdownView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterDropdownView.swift; sourceTree = "<group>"; };
 		599F66162C9CE4F90025A8F8 /* Motion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Motion.swift; sourceTree = "<group>"; };
 		66443CD62CADDB77000D3F12 /* RoutePlanListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutePlanListView.swift; sourceTree = "<group>"; };
@@ -312,12 +314,13 @@
 				F79779AE2CDE8CE600C95095 /* GIFImageView.swift */,
 				6B3E9F672CAF60A100C24BDB /* ExploreTripsView.swift */,
 				391165F92CB53542004B8695 /* PreviewRouteView.swift */,
-				48974BA02CB04B420057B073 /* RoutePreviewView.swift */,
+				48974BA02CB04B420057B073 /* RoutePreviewAtlasView.swift */,
 				66443CD62CADDB77000D3F12 /* RoutePlanListView.swift */,
 				48974BAE2CB30AAF0057B073 /* EnhancedRoutePlanListView.swift */,
 				397D567E2CCB0BA20020EA99 /* ViewAllTripsView.swift */,
 				B3E575E62CC1CA44009E0355 /* POIDetailView.swift */,
 				48FF8FCD2CE40A0600BB65E5 /* FilterDropdownView.swift */,
+				48DB126F2CE9743500E1C4A9 /* RouteMapView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -512,6 +515,7 @@
 				B2F8F3592C97BCD400B9618E /* Restaurant.swift in Sources */,
 				B208F21F2CE3EDC7009BCA45 /* NomadColors.swift in Sources */,
 				48974BAF2CB30AAF0057B073 /* EnhancedRoutePlanListView.swift in Sources */,
+				48DB12702CE9743500E1C4A9 /* RouteMapView.swift in Sources */,
 				B35A09032CB6181C00C8F02B /* Businesses.swift in Sources */,
 				48974B8D2CA0A3CB0057B073 /* FindStopView.swift in Sources */,
 				944E9E9B2CACBBEE0032FD34 /* NomadRoute.swift in Sources */,
@@ -533,7 +537,7 @@
 				B2154CD42C9E333700A6F238 /* ChangeMapTypeView.swift in Sources */,
 				B2F8F34C2C97BC7F00B9618E /* MapView.swift in Sources */,
 				B2F8F34E2C97BC8A00B9618E /* AIAssistantView.swift in Sources */,
-				48974BA12CB04B420057B073 /* RoutePreviewView.swift in Sources */,
+				48974BA12CB04B420057B073 /* RoutePreviewAtlasView.swift in Sources */,
 				B29D04012CB0B48B00524D8B /* MapMarker.swift in Sources */,
 				B28668172CB309250095F653 /* MapManager.swift in Sources */,
 				B2F8F3552C97BCBB00B9618E /* Trip.swift in Sources */,

@@ -14,6 +14,7 @@ struct EnhancedRoutePlanListView: View {
     @State private var newIndex: Int? = nil
     @State private var dragOffset = CGSize.zero
     @State private var stops: [any POI] = []
+    @State var isEditable: Bool = true
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -252,7 +253,7 @@ struct EnhancedRoutePlanListView: View {
                         .padding(.top, 10)
                     }
 
-                    if isFirst, !stops.isEmpty {
+                    if isFirst, !stops.isEmpty, isEditable {
                         Spacer()
                         Button(action: {
                             isEditing.toggle()
@@ -264,7 +265,7 @@ struct EnhancedRoutePlanListView: View {
                                 .background(Color.nomadDarkBlue)
                                 .foregroundColor(.white)
                                 .cornerRadius(10)
-                                .shadow(color: .black.opacity(0.5), radius: 5, y: 3)
+//                                .shadow(color: .black.opacity(0.5), radius: 5, y: 3)
                         }
                         .offset(x: 3, y: -31)
                         .padding(0)

@@ -66,7 +66,7 @@ struct FindStopView: View {
                     }
                     
                     if let trip = vm.current_trip {
-                        RoutePreviewView(vm: vm, cvm: ChatViewModel(), trip: Binding.constant(trip), currentStopLocation: Binding.constant(markerCoordinate), showStopMarker: true)
+                        RouteMapView(vm: vm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(markerCoordinate), showStopMarker: true)
                             .frame(minHeight: 250.0)
                     } else {
                         Text("No current trip available")
@@ -159,11 +159,11 @@ struct FindStopView: View {
                                 } //Runs parameters through yelp api when search button is clicked
                                 .offset(y: -20)
                             } else {
-                                VStack(spacing: 8) {
+                                VStack(spacing: 4) {
                                     listCuisines //Lists out stops type that can be selected
                                 }
-                                .padding(5)
-                                .padding(.bottom, 0)
+                                .padding(.horizontal, 5)
+                                .padding(.vertical, 0)
                                 
                                 if selection == "Restaurants" {
                                     ZStack {
@@ -171,7 +171,7 @@ struct FindStopView: View {
                                             Spacer(minLength: 2)
                                             
                                             FilterDropdownView(
-                                                title: "Cuisine",
+                                                title: "Cuisines",
                                                 options: cuisines,
                                                 selectedOptions: $selectedCuisines,
                                                 selectedOption: .constant(0),
@@ -255,7 +255,6 @@ struct FindStopView: View {
                     }
                     .frame(height: dynamicHeight)
                     .animation(.easeInOut(duration: 0.3), value: dynamicHeight)
-                    //                .frame(height: dynamicHeight(for: selectedTab))
                     .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
                     .indexViewStyle(PageIndexViewStyle(backgroundDisplayMode: .always))
                     
@@ -316,6 +315,7 @@ struct FindStopView: View {
                         
                         Spacer(minLength: 80)
                     }
+                    .padding(.top, 10)
                     .padding(.bottom, 15)
                 }
                 .padding(.top, 5)
@@ -337,7 +337,7 @@ struct FindStopView: View {
                 .onChange(of: isPriceDropdownOpen) {
                     updateHeight()
                 }
-                .onChange(of: vm.times) {
+                .onChange(of: vm.current_trip?.modified_date) {
                     updateHeight()
                 }
             }.onAppear() {
@@ -586,8 +586,10 @@ struct FindStopView: View {
         var body: some View {
             HStack(spacing: 12) {
                 Button(action: {
-                    addStop(stop)
-                    hasAdded = true
+                    if !hasAdded {
+                        addStop(stop)
+                        hasAdded = true
+                    }
                 }) {
                     ZStack {
                         Circle()

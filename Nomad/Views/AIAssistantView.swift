@@ -209,7 +209,7 @@ struct HeaderView: View {
     
     var body: some View {
         if let trip = vm.current_trip {
-            RoutePreviewView(vm: vm, cvm: cvm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(nil))
+            RoutePreviewAtlasView(vm: vm, cvm: cvm, trip: Binding.constant(trip), currentStopLocation: Binding.constant(nil))
                 .frame(minHeight: 200.0)
         } else {
             Text("No current trip available")
