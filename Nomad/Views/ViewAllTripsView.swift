@@ -9,7 +9,6 @@ import SwiftUI
 
 struct ViewAllTripsView: View {
     @ObservedObject var vm: UserViewModel
-    @State private var currentCity: String? = nil
     var header: String
     @State var trips: [Trip]
     

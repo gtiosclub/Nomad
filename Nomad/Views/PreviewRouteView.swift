@@ -43,8 +43,8 @@ struct PreviewRouteView: View {
                         
                         if !isCommunityTrip {
                             Button {
-                                var successful: Bool = false
                                 Task {
+                                    var successful = false
                                     successful = await vm.deleteTrip()
                                     
                                     if successful {
@@ -215,8 +215,8 @@ struct PreviewRouteView: View {
                                         vm.setTripTitle(newTitle: $tripTitle.wrappedValue)
                                         vm.setIsPrivate(isPrivate: $privacy.wrappedValue == "Private")
                                         
-                                        var successful: Bool = false
                                         Task {
+                                            var successful = false
                                             if !letBack {
                                                 successful = await vm.addTripToFirebase()
                                             } else {
@@ -243,8 +243,8 @@ struct PreviewRouteView: View {
                                         vm.setTripTitle(newTitle: $tripTitle.wrappedValue)
                                         vm.setIsPrivate(isPrivate: $privacy.wrappedValue == "Private")
                                         
-                                        var successful: Bool = false
                                         Task {
+                                            var successful = false
                                             if !letBack {
                                                 successful = await vm.addTripToFirebase()
                                             } else {

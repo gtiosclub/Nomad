@@ -10,7 +10,7 @@ import MapKit
 
 struct RootView: View {
     @State var selectedTab = 2
-    @State private var mapboxSetUp: Bool = false
+    @State var mapboxSetUp: Bool = false
     @ObservedObject var vm: UserViewModel
 //    UserViewModel(user: User(id: "austinhuguenard", name: "Austin Huguenard"))
     
@@ -27,8 +27,8 @@ struct RootView: View {
                     Label("Plan", systemImage: "pencil")
                 }
                 .tag(2)
-
-            RecapView(vm: vm)
+            
+            RecapView(vm: vm, header: "Your Memories")
                 .tabItem {
                     Label("Recaps", systemImage: "play.square.stack")
                 }

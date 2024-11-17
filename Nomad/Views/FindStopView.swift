@@ -85,7 +85,7 @@ struct FindStopView: View {
                                         ZStack(alignment: .leading) {
                                             Slider(
                                                 value: $routeProgress,
-                                                in: 0...((vm.current_trip?.route?.totalTime() ?? 60) / 60),
+                                                in: 0...(max(1, (vm.current_trip?.route?.totalTime() ?? 60) / 60)),
                                                 step: 1
                                             )
                                             .padding(.top)
