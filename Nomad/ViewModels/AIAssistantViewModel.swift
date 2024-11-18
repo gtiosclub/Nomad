@@ -273,6 +273,10 @@ class AIAssistantViewModel: ObservableObject {
                 print("Failed to decode JSON: \(error)")
             }
         }
+        let numStops = userVM.current_trip?.stops.count
+        if(numStops == 0) {
+            await generateTripWithAtlas(userVM: userVM)
+        }
         return ""
     }
     
