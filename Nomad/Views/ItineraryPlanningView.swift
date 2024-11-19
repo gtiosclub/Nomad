@@ -196,10 +196,11 @@ struct ItineraryPlanningView: View {
                                 HStack {
                                     DatePicker("", selection: $endDate, displayedComponents: [.date])
                                     
-                                    Spacer(minLength: 115)
+                                    Spacer(minLength: UIScreen.main.bounds.width / 3)
                                 }
                                 .padding(.horizontal)
                                 .padding(.bottom)
+                                .frame(alignment: .leading)
                             }
                         }
                         .background(Color.nomadLightBlue)
