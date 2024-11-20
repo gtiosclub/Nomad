@@ -1,5 +1,5 @@
 # Nomad
-Fall 2024 Project
+Georgia Tech iOS Club Fall 2024 "Best App" and "Popular App" Winner
 
 Tech Leads: Nick Candello, Rik Roy
 
