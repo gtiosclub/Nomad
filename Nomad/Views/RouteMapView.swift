@@ -16,7 +16,6 @@ struct RouteMapView: View {
     @Binding var currentStopLocation: CLLocationCoordinate2D?
     var showStopMarker: Bool = false
     
-    
     var body: some View {
         VStack {
             Map(initialPosition: .automatic) {
@@ -32,6 +31,10 @@ struct RouteMapView: View {
                 ForEach(trip.getStops(), id: \.latitude) { stop in
                     let stop_coord = CLLocationCoordinate2D(latitude: stop.getLatitude(), longitude: stop.getLongitude())
                     Marker("\(stop.getName())", coordinate: stop_coord)
+                }
+                ForEach(vm.stops(for: vm.currentSelection), id: \.latitude) { stop in
+                    let stop_coord = CLLocationCoordinate2D(latitude: stop.latitude, longitude: stop.longitude)
+                    Marker("\(stop.name)", coordinate: stop_coord).tint(.green)
                 }
             }
             .onChange(of: trip, initial: true) { oldTrip, newTrip in

@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct GeneralLocation: POI, Identifiable, Imagable {
+struct GeneralLocation: POI, Identifiable, Imagable, Hashable {
     var id: String
     var address: String
     var name: String

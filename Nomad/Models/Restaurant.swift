@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Restaurant: POI, Identifiable, Ratable, Imagable {
+struct Restaurant: POI, Identifiable, Ratable, Imagable, Hashable {
 
     var id: String
     var address: String

@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct RestStop: POI, Identifiable, Imagable {    
+struct RestStop: POI, Identifiable, Imagable, Hashable {    
     var id: String
     var address: String
     var name: String
