@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Shopping: POI, Identifiable, Imagable {
+struct Shopping: POI, Identifiable, Imagable, Hashable {
     var id: String
     var address: String
     var name: String

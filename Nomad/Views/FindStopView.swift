@@ -20,7 +20,7 @@ struct FindStopView: View {
     @State private var hasSearched: Bool = false
     @State private var stopName: String = ""
     @State private var stopAddress: String = ""
-    @State private var selectedStop: (any POI)?
+    //@State private var selectedStop: (any POI)?
     @State private var isEditing: Bool = false
     @State private var routeProgress: Double = 0.0
     @State private var markerCoordinate: CLLocationCoordinate2D = .init(latitude: 0, longitude: 0)
@@ -33,7 +33,7 @@ struct FindStopView: View {
     @State var manualSearch: String = "Filter Search"
     var searchTypes = ["Filter Search", "Manual Search"]
     
-    let stop_types = ["Restaurants", "Activities", "Rest Stops", "Hotels", "Tours & Landmarks", "Entertainment", "Shopping"]
+    let stop_types = ["Restaurants", "Activities", "Hotels", "Rest Stops", "Gas", "Tours & Landmarks", "Entertainment", "Shopping"]
     let cuisines = ["Chinese", "Italian", "Indian", "American", "Japanese", "Korean"]
     
     @State var backToDetails: Bool = false
@@ -127,6 +127,14 @@ struct FindStopView: View {
                                     ForEach(searchTypes, id: \.self) { type in
                                         Text(type)
                                     }
+                                }
+                                .onChange(of: manualSearch) { newValue in
+                                    if newValue == "Manual Search" {
+                                        vm.setSelection(stop: "General Location")
+                                    } else {
+                                        vm.setSelection(stop: selection)
+                                    }
+                                    vm.searching.toggle()
                                 }
                             }
                             .pickerStyle(.segmented)
@@ -391,13 +399,14 @@ struct FindStopView: View {
     }
 
     private var listCuisines: some View {
-        let rows = stop_types.chunked(into: 4)
+        let rows = stop_types.chunked(into: 5)
         return ForEach(rows, id: \.self) { row in
             HStack(spacing: 2) {
                 Spacer()
                 ForEach(row, id: \.self) { option in
                     Button(action: {
                         selection = option
+                        vm.setSelection(stop: selection)
                     }) {
                         Text(option)
                             .padding(8)
@@ -512,6 +521,8 @@ struct FindStopView: View {
             return vm.shopping
         case "Rest Stops":
             return vm.reststops
+        case "Gas":
+            return vm.gasStations
         default:
             return vm.generalLocations
         }
@@ -676,6 +687,13 @@ struct FindStopView: View {
                         showRating(activity.rating)
                     } else if let hotel = stop as? Hotel {
                         showRating(hotel.rating)
+                    }
+                    if let gas = stop as? GasStation {
+                        HStack {
+                            Text("$\(gas.price)")
+                                .font(.system(size: 16))
+                                .foregroundColor(.secondary)
+                        }
                     }
                 }
                 .padding(.vertical, 2)

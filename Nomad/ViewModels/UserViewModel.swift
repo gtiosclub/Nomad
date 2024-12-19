@@ -22,12 +22,15 @@ class UserViewModel: ObservableObject {
     @Published var currentCity: String?
     @Published var currentAddress: String?
     
+    @Published var searching: Bool = false
+    @Published var currentSelection: String = "Restaurants"
     @Published var restaurants: [Restaurant] = []
     @Published var hotels: [Hotel] = []
     @Published var activities: [Activity] = []
     @Published var shopping: [Shopping] = []
     @Published var generalLocations: [GeneralLocation] = []
     @Published var reststops: [RestStop] = []
+    @Published var gasStations: [GasStation] = []
     
     var aiVM = AIAssistantViewModel()
     var fbVM = FirebaseViewModel.vm
@@ -120,6 +123,32 @@ class UserViewModel: ObservableObject {
     
     func getTrips() -> [Trip] {
         return user.getTrips()
+    }
+    
+    func setSelection(stop: String) {
+        currentSelection = stop
+    }
+    
+    func stops(for selection: String) -> [any POI] {
+        if searching == true {
+            return generalLocations
+        }
+        switch selection {
+        case "Restaurants":
+            return restaurants
+        case "Hotels":
+            return hotels
+        case "Activities":
+            return activities
+        case "Shopping":
+            return shopping
+        case "Rest Stops":
+            return reststops
+        case "Gas":
+            return gasStations
+        default:
+            return generalLocations
+        }
     }
     
     func addStop(stop: any POI) async {
@@ -358,6 +387,14 @@ class UserViewModel: ObservableObject {
                 URLQueryItem(name: "sort_by", value: "rating"),
                 URLQueryItem(name: "limit", value: "50")
             ]
+        } else if (stopType == "Gas") {
+            queryItems = [
+                URLQueryItem(name: "latitude", value: latitude),
+                URLQueryItem(name: "longitude", value: longitude),
+                URLQueryItem(name: "categories", value: "servicestations"),
+                URLQueryItem(name: "sort_by", value: "distance"),
+                URLQueryItem(name: "limit", value: "50")
+            ]
         } else { //entertainment
             queryItems = [
                 URLQueryItem(name: "latitude", value: latitude),
@@ -402,6 +439,17 @@ class UserViewModel: ObservableObject {
                         self.activities = filteredBusinesses.map { Activity(from: $0) }
                     case "Shopping":
                         self.shopping = filteredBusinesses.map { Shopping(from: $0) }
+                    case "Gas":
+                        self.gasStations = filteredBusinesses.map { GasStation(from: $0) }
+                        Task {
+                            let latitude = String(self.gasStations[0].latitude)
+                            let longitude = String(self.gasStations[0].longitude)
+                            print(latitude)
+                            if let price = await self.fetchGasPrice(latitude: latitude, longitude: longitude) {
+                                self.gasStations[0].price = price
+                                print(price)
+                            }
+                        }
                     default:
                         self.generalLocations = filteredBusinesses.map { GeneralLocation(from: $0) }
                     }
@@ -459,6 +507,90 @@ class UserViewModel: ObservableObject {
             print("Value not ofund for the type \(type), \(context.debugDescription)")
         } catch {
             print("Error fetching data: \(error.localizedDescription)")
+        }
+    }
+    
+    //Updates all Gas Station prices
+//    func fetchGasPrice(for gasStation: GasStation) async -> GasStation {
+//        let headers = [
+//            "content-type": "application/json",
+//            "authorization": apiKey
+//        ]
+//
+//        guard let url = URL(string: "https://api.collectapi.com/gasPrice/coordinatesPrice?lat=\(gasStation.latitude)&lon=\(gasStation.longitude)") else {
+//            print("Invalid URL")
+//            return gasStation // Return as-is if the URL is invalid
+//        }
+//
+//        var request = URLRequest(url: url)
+//        request.httpMethod = "GET"
+//        request.allHTTPHeaderFields = headers
+//
+//        do {
+//            let (data, response) = try await URLSession.shared.data(for: request)
+//
+//            // Validate the HTTP response
+//            if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
+//                print("HTTP error: \(httpResponse.statusCode)")
+//                return gasStation // Return without a gas price
+//            }
+//
+//            // Parse the JSON response
+//            if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+//               let result = json["result"] as? [String: Any],
+//               let gasolinePriceString = result["gasoline"] as? String,
+//               let gasolinePrice = Double(gasolinePriceString) {
+//                var updatedStation = gasStation
+//                updatedStation.price = gasolinePrice
+//                return updatedStation
+//            } else {
+//                print("Error parsing JSON response")
+//                return gasStation // Return without a gas price
+//            }
+//        } catch {
+//            print("Error fetching gas price: \(error)")
+//            return gasStation // Return without a gas price
+//        }
+//    }
+    
+    //single test so it doesnt use all the queries
+    func fetchGasPrice(latitude: String, longitude: String) async -> Double? {
+        let headers = [
+            "content-type": "application/json",
+            "authorization": aiVM.gasPricesAPIKey
+        ]
+
+        guard let url = URL(string: "https://api.collectapi.com/gasPrice/coordinatesPrice?lat=\(longitude)&lon=\(latitude)") else {
+            print("Invalid URL")
+            return nil // Return as-is if the URL is invalid
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.allHTTPHeaderFields = headers
+        
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            
+            // Validate the HTTP response
+            if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
+                print("HTTP error: \(httpResponse.statusCode)")
+                return nil // Return without a gas price
+            }
+            
+            // Parse the JSON response
+            if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+               let result = json["result"] as? [String: Any],
+               let gasolinePriceString = result["gasoline"] as? String,
+               let gasolinePrice = Double(gasolinePriceString) {
+                return gasolinePrice
+            } else {
+                print("Error parsing JSON response")
+                return nil // Return without a gas price
+            }
+        } catch {
+            print("Error fetching gas price: \(error)")
+            return nil // Return without a gas price
         }
     }
     
