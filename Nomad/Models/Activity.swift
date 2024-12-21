@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Activity: POI, Identifiable, Ratable, Imagable {
+struct Activity: POI, Identifiable, Ratable, Imagable, Hashable {
     var id: String
     var address: String
     var name: String

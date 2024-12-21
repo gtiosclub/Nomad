@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct GasStation: POI, Imagable, Identifiable {
+struct GasStation: POI, Imagable, Identifiable, Hashable {
     var id: String
     var name: String
     var address: String
@@ -15,8 +15,9 @@ struct GasStation: POI, Imagable, Identifiable {
     var latitude: Double
     var city: String?
     var imageUrl: String?
+    var price: Double?
     
-    init(address: String, name: String, latitude: Double, longitude: Double, city: String? = nil, imageUrl: String? = nil) {
+    init(address: String, name: String, latitude: Double, longitude: Double, city: String? = nil, imageUrl: String? = nil, price: Double? = nil) {
         self.id = UUID().uuidString
         self.address = address
         self.name = name
@@ -24,6 +25,17 @@ struct GasStation: POI, Imagable, Identifiable {
         self.longitude = longitude
         self.city = city
         self.imageUrl = imageUrl
+        self.price = price
+    }
+    
+    init(from business: Business) {
+        self.id = business.id
+        self.address = business.location.display_address.joined(separator: ", ")
+        self.name = business.name
+        self.latitude = business.coordinates.latitude
+        self.longitude = business.coordinates.longitude
+        self.city = business.location.city
+        self.imageUrl = business.image_url
     }
     
     static func == (lhs: GasStation, rhs: GasStation) -> Bool {
@@ -48,6 +60,14 @@ struct GasStation: POI, Imagable, Identifiable {
     
     mutating func setCity(newCity: String) {
         self.city = newCity
+    }
+    
+    mutating func setImageUrl(newImageUrl: String) {
+        self.imageUrl = newImageUrl
+    }
+    
+    mutating func setPrice(newPrice: Double) {
+        self.price = newPrice
     }
     
     func getAddress() -> String {
@@ -76,6 +96,10 @@ struct GasStation: POI, Imagable, Identifiable {
     
     func getImageUrl() -> String? {
         return imageUrl
+    }
+    
+    func getPrice() -> Double? {
+        return price
     }
 
 }
